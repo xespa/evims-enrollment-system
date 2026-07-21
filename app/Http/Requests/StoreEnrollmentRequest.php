@@ -85,7 +85,7 @@ class StoreEnrollmentRequest extends FormRequest
             'special_health_problems' => ['nullable', 'string'],
 
             // Billing
-            'payment_option' => ['required', 'in:MONTHLY,BI_MONTHLY'],
+            'payment_option' => ['required', 'in:MONTHLY,BI_MONTHLY,FULL_PAYMENT'],
             'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }

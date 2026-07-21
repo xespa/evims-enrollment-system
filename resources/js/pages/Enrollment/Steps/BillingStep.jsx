@@ -1,13 +1,23 @@
 import SelectInput from '../Components/SelectInput';
 
-export default function BillingStep({ data, setData, errors }) {
+export default function BillingStep({ data, gradeLevels, setData, errors }) {
+    const selectedGrade = gradeLevels.find((g) => String(g.id) === String(data.grade_level_id));
+    const fee = selectedGrade?.tuition_fee ?? 0;
+
     const handleFile = (e) => {
         setData('scanned_contract', e.target.files[0] ?? null);
     };
 
+    const formattedFee = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(fee);
+
     return (
         <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Billing / Tuition Contract</h2>
+
+            <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3">
+                <p className="text-sm text-gray-600">Total Tuition Fee for {selectedGrade?.name ?? 'selected grade'}</p>
+                <p className="text-xl font-bold text-blue-700">{formattedFee}</p>
+            </div>
 
             <SelectInput
                 label="Payment Option"
@@ -17,8 +27,9 @@ export default function BillingStep({ data, setData, errors }) {
                 error={errors.payment_option}
                 required
                 options={[
-                    { value: 'MONTHLY', label: 'Monthly' },
-                    { value: 'BI_MONTHLY', label: 'Bi-Monthly' },
+                    { value: 'MONTHLY', label: 'Monthly (10 installments)' },
+                    { value: 'BI_MONTHLY', label: 'Bi-Monthly (5 installments)' },
+                    { value: 'FULL_PAYMENT', label: 'Full Payment (1 payment)' },
                 ]}
             />
 

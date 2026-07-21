@@ -44,4 +44,50 @@ class EnrollmentManagementController extends Controller
             'filters' => $request->only(['search', 'status', 'grade_level_id', 'school_year']),
         ]);
     }
+    
+    public function show(Enrollment $enrollment)
+    {
+        $enrollment->load([
+            'student.address',
+            'student.parentProfile',
+            'gradeLevel',
+            'subjects',
+            'academicHistory',
+            'vitalInformation',
+            'billingContract',
+            'officeVerification',
+        ]);
+
+        return Inertia::render('Admin/Enrollments/Show', [
+            'enrollment' => $enrollment,
+        ]);
+    }
+
+    public function updateStatus(Request $request, Enrollment $enrollment)
+    {
+        $validated = $request->validate([
+            'enrollment_status' => ['required', 'in:PENDING,APPROVED,REJECTED'],
+        ]);
+
+        $enrollment->update($validated);
+
+        return back()->with('success', 'Enrollment status updated.');
+    }
+
+    public function updateVerification(Request $request, Enrollment $enrollment)
+    {
+        $validated = $request->validate([
+            'has_form_138' => ['boolean'],
+            'has_birth_certificate' => ['boolean'],
+            'has_good_moral_certificate' => ['boolean'],
+        ]);
+
+        $enrollment->officeVerification()->update([
+            ...$validated,
+            'verified_by' => $request->user()->id,
+            'verified_at' => now(),
+        ]);
+
+        return back()->with('success', 'Document verification updated.');
+    }
 }

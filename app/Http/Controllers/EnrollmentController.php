@@ -96,11 +96,16 @@ class EnrollmentController extends Controller
                 $scannedPath = $request->file('scanned_contract')->store('contracts', 'public');
             }
 
-            $enrollment->billingContract()->create([
+            $gradeLevel = \App\Models\GradeLevel::find($validated['grade_level_id']);
+
+            $billingContract = $enrollment->billingContract()->create([
                 'payment_option' => $validated['payment_option'],
+                'total_fee' => $gradeLevel->tuition_fee,
                 'scanned_contract_url' => $scannedPath,
             ]);
 
+            $billingContract->generateInstallments();
+            
             $enrollment->officeVerification()->create([
                 'has_form_138' => false,
                 'has_birth_certificate' => false,

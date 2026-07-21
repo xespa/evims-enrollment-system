@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class GradeLevel extends Model
 {
-    protected $fillable = ['name', 'level_order'];
+    protected $fillable = ['name', 'level_order', 'tuition_fee'];
+
+    protected $casts = [
+        'tuition_fee' => 'decimal:2',
+    ];
 
     public function subjects()
     {
