@@ -98,6 +98,7 @@ class EnrollmentController extends Controller
 
             $gradeLevel = \App\Models\GradeLevel::find($validated['grade_level_id']);
 
+
             $billingContract = $enrollment->billingContract()->create([
                 'payment_option' => $validated['payment_option'],
                 'total_fee' => $gradeLevel->tuition_fee,
@@ -105,7 +106,7 @@ class EnrollmentController extends Controller
             ]);
 
             $billingContract->generateInstallments();
-            
+
             $enrollment->officeVerification()->create([
                 'has_form_138' => false,
                 'has_birth_certificate' => false,
