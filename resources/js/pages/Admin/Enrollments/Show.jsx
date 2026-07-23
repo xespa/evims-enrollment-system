@@ -1,4 +1,6 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+
 
 function InfoRow({ label, value }) {
     return (
@@ -20,6 +22,140 @@ function CheckboxField({ label, checked, onChange }) {
             />
             <span className="text-sm text-gray-700">{label}</span>
         </label>
+    );
+}
+
+const INSTALLMENT_STATUS_STYLES = {
+    UNPAID: 'bg-gray-100 text-gray-700',
+    PARTIALLY_PAID: 'bg-yellow-100 text-yellow-800',
+    PAID: 'bg-green-100 text-green-800',
+};
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
+}
+
+function PaymentsSection({ enrollment }) {
+    const [payingInstallmentId, setPayingInstallmentId] = useState(null);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        installment_id: '',
+        amount: '',
+    });
+
+    const installments = enrollment.billing_contract?.installments ?? [];
+
+    const totalDue = installments.reduce((sum, i) => sum + Number(i.amount_due), 0);
+    const totalPaid = installments.reduce(
+        (sum, i) => sum + i.payments.filter((p) => p.status === 'COMPLETED').reduce((s, p) => s + Number(p.amount), 0),
+        0
+    );
+
+    const openPayForm = (installment) => {
+        setPayingInstallmentId(installment.id);
+        setData({
+            installment_id: installment.id,
+            amount: (Number(installment.amount_due) - installmentPaid(installment)).toFixed(2),
+        });
+    };
+
+    const installmentPaid = (installment) =>
+        installment.payments.filter((p) => p.status === 'COMPLETED').reduce((s, p) => s + Number(p.amount), 0);
+
+    const submitCashPayment = (e) => {
+        e.preventDefault();
+        post(route('admin.enrollments.payments.cash', enrollment.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setPayingInstallmentId(null);
+                reset();
+            },
+        });
+    };
+
+    return (
+        <div className="rounded-lg bg-white p-4 shadow-sm md:col-span-2">
+            <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-600">Payments</h2>
+                <div className="text-sm text-gray-600">
+                    Paid <span className="font-semibold text-green-700">{formatCurrency(totalPaid)}</span> of{' '}
+                    <span className="font-semibold text-gray-900">{formatCurrency(totalDue)}</span>
+                </div>
+            </div>
+
+            <div className="divide-y divide-gray-100">
+                {installments.map((installment) => {
+                    const paid = installmentPaid(installment);
+                    const remaining = Number(installment.amount_due) - paid;
+
+                    return (
+                        <div key={installment.id} className="py-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <span className="text-sm font-medium text-gray-800">
+                                        Installment #{installment.installment_number}
+                                    </span>
+                                    <span className="ml-2 text-xs text-gray-500">
+                                        Due {installment.due_date}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm text-gray-700">{formatCurrency(installment.amount_due)}</span>
+                                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${INSTALLMENT_STATUS_STYLES[installment.status]}`}>
+                                        {installment.status}
+                                    </span>
+                                    {installment.status !== 'PAID' && (
+                                        <button
+                                            onClick={() => openPayForm(installment)}
+                                            className="text-xs text-blue-600 hover:underline"
+                                        >
+                                            Record Cash Payment
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {payingInstallmentId === installment.id && (
+                                <form onSubmit={submitCashPayment} className="mt-2 flex items-center gap-2 rounded-md bg-gray-50 p-3">
+                                    <span className="text-xs text-gray-500">Amount:</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.amount}
+                                        onChange={(e) => setData('amount', e.target.value)}
+                                        className="w-32 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                    >
+                                        Confirm
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPayingInstallmentId(null)}
+                                        className="text-xs text-gray-500 hover:underline"
+                                    >
+                                        Cancel
+                                    </button>
+                                    {errors.amount && <span className="text-xs text-red-600">{errors.amount}</span>}
+                                </form>
+                            )}
+
+                            {paid > 0 && installment.status !== 'PAID' && (
+                                <p className="mt-1 text-xs text-gray-500">
+                                    {formatCurrency(paid)} paid so far, {formatCurrency(remaining)} remaining
+                                </p>
+                            )}
+                        </div>
+                    );
+                })}
+
+                {installments.length === 0 && (
+                    <p className="py-3 text-sm text-gray-400">No installment schedule found.</p>
+                )}
+            </div>
+        </div>
     );
 }
 
@@ -190,6 +326,7 @@ export default function Show({ enrollment }) {
                                 checked={verification?.has_good_moral_certificate}
                                 onChange={() => toggleVerification('has_good_moral_certificate', verification?.has_good_moral_certificate)}
                             />
+                            <PaymentsSection enrollment={enrollment} />
                         </div>
                     </div>
                 </div>

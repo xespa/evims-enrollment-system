@@ -19,6 +19,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/enrollments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
     Route::patch('/enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
     Route::patch('/enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
+    Route::post('/enrollments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
 });
 
 require __DIR__.'/settings.php';

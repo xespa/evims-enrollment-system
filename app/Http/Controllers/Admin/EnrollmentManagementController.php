@@ -44,7 +44,7 @@ class EnrollmentManagementController extends Controller
             'filters' => $request->only(['search', 'status', 'grade_level_id', 'school_year']),
         ]);
     }
-    
+
     public function show(Enrollment $enrollment)
     {
         $enrollment->load([
@@ -54,7 +54,7 @@ class EnrollmentManagementController extends Controller
             'subjects',
             'academicHistory',
             'vitalInformation',
-            'billingContract',
+            'billingContract.installments.payments',
             'officeVerification',
         ]);
 
@@ -89,5 +89,35 @@ class EnrollmentManagementController extends Controller
         ]);
 
         return back()->with('success', 'Document verification updated.');
+    }
+
+    public function recordCashPayment(Request $request, Enrollment $enrollment)
+    {
+        $validated = $request->validate([
+            'installment_id' => ['required', 'exists:installments,id'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $installment = \App\Models\Installment::findOrFail($validated['installment_id']);
+
+        // Guard: don't allow paying more than what's actually still owed on this installment
+        $remaining = $installment->amount_due - $installment->totalPaid();
+        if ($validated['amount'] > $remaining) {
+            return back()->withErrors(['amount' => "Amount exceeds remaining balance of ₱{$remaining} for this installment."]);
+        }
+
+        \App\Models\Payment::create([
+            'installment_id' => $installment->id,
+            'enrollment_id' => $enrollment->id,
+            'amount' => $validated['amount'],
+            'method' => 'CASH',
+            'status' => 'COMPLETED',
+            'recorded_by' => $request->user()->id,
+            'paid_at' => now(),
+        ]);
+
+        $installment->refreshStatus();
+
+        return back()->with('success', 'Cash payment recorded.');
     }
 }
