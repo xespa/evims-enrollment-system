@@ -10,6 +10,7 @@ import SubjectsStep from './Steps/SubjectsStep';
 import BillingStep from './Steps/BillingStep';
 import ReviewStep from './Steps/ReviewStep';
 
+
 // Fields required to proceed past each step (client-side gatekeeping only —
 // the server re-validates everything again in StoreEnrollmentRequest).
 const STEP_REQUIRED_FIELDS = {
@@ -19,7 +20,7 @@ const STEP_REQUIRED_FIELDS = {
     4: [],
     5: [],
     6: ['subject_ids'],
-    7: ['payment_option'],
+    7: ['payment_option', 'payment_channel'],
     8: [],
 };
 
@@ -51,7 +52,7 @@ const FIELD_TO_STEP = {
     payment_option: 7, scanned_contract: 7,
 };
 
-export default function Create({ gradeLevels }) {
+export default function Create({ gradeLevels, schoolGcash }) {
     const [step, setStep] = useState(1);
 
     const { data, setData, post, processing, errors, transform } = useForm({
@@ -148,7 +149,7 @@ export default function Create({ gradeLevels }) {
         });
     };
 
-    const stepProps = { data, setData, errors, gradeLevels };
+    const stepProps = { data, setData, errors, gradeLevels, schoolGcash };
 
     return (
         <>

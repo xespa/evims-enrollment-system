@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class BillingContract extends Model
 {
-    protected $fillable = ['enrollment_id', 'payment_option', 'total_fee', 'scanned_contract_url'];
+    protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee', 'scanned_contract_url'];
 
     protected $casts = [
         'total_fee' => 'decimal:2',
@@ -37,8 +37,18 @@ class BillingContract extends Model
 
         $count = $counts[$this->payment_option] ?? 1;
         $amountPerInstallment = round($this->total_fee / $count, 2);
-        $intervalMonths = intdiv(10, $count);
 
+        // PayMongo (and most PH payment gateways) reject transactions below ~₱20.
+        // If the chosen plan would produce installments too small to actually pay
+        // online, fall back to fewer, larger installments instead of silently failing later.
+        $minInstallmentAmount = 20.00;
+
+        if ($amountPerInstallment < $minInstallmentAmount) {
+            $count = max(1, (int) floor($this->total_fee / $minInstallmentAmount));
+            $amountPerInstallment = round($this->total_fee / $count, 2);
+        }
+
+        $intervalMonths = intdiv(10, $count) ?: 10;
         $startDate = Carbon::create(now()->year, 6, 15);
 
         for ($i = 1; $i <= $count; $i++) {

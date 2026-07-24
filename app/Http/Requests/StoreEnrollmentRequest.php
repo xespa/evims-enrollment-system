@@ -87,6 +87,7 @@ class StoreEnrollmentRequest extends FormRequest
             // Billing
             'payment_option' => ['required', 'in:MONTHLY,BI_MONTHLY,FULL_PAYMENT'],
             'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'payment_channel' => ['required', 'in:COUNTER,GCASH'],
         ];
     }
 }

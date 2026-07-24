@@ -15,6 +15,10 @@ class EnrollmentController extends Controller
     {
         return Inertia::render('Enrollment/Create', [
             'gradeLevels' => GradeLevel::with('subjects')->orderBy('level_order')->get(),
+            'schoolGcash' => [
+                'number' => config('services.school_gcash.number'),
+                'account_name' => config('services.school_gcash.account_name'),
+            ],
         ]);
     }
 
@@ -101,6 +105,7 @@ class EnrollmentController extends Controller
 
             $billingContract = $enrollment->billingContract()->create([
                 'payment_option' => $validated['payment_option'],
+                'payment_channel' => $validated['payment_channel'],
                 'total_fee' => $gradeLevel->tuition_fee,
                 'scanned_contract_url' => $scannedPath,
             ]);
