@@ -36,8 +36,13 @@ export default function Index({ enrollments, gradeLevels, filters }) {
 
             <div className="min-h-screen bg-gray-50 py-8 px-4">
                 <div className="mx-auto max-w-6xl">
-                    <h1 className="mb-6 text-2xl font-bold text-gray-900">Enrollment Applications</h1>
-
+                    <div className="mb-6 flex items-center justify-between">
+                        <h1 className="text-2xl font-bold text-gray-900">Enrollment Applications</h1>
+                        <Link href={route('admin.gradeLevels.index')} className="text-sm text-blue-600 hover:underline">
+                            Manage Tuition Fees →
+                        </Link>
+                    </div>
+                    
                     {/* Filters */}
                     <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
                         <form onSubmit={handleSearchSubmit} className="flex flex-wrap gap-3">

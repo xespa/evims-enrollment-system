@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\GradeLevelController;
 
 
 Route::inertia('/', 'welcome')->name('home');
@@ -30,6 +31,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
     Route::patch('/enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
     Route::post('/enrollments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
+
+    Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');
+    Route::patch('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'update'])->name('gradeLevels.update');
 });
 
 require __DIR__.'/settings.php';
