@@ -5,6 +5,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\DashboardController;
 
 
 Route::inertia('/', 'welcome')->name('home');
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/enrollments', [EnrollmentManagementController::class, 'index'])->name('enrollments.index');
     Route::get('/enrollments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
     Route::patch('/enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');

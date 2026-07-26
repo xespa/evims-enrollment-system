@@ -74,43 +74,6 @@ class PaymentController extends Controller
         return Inertia::location($source['attributes']['redirect']['checkout_url']);
     }
 
-    //     public function sandboxCheckout(Payment $payment)
-    // {
-    //     if (! config('services.paymongo.sandbox_mode')) {
-    //         abort(404);
-    //     }
-
-    //     $payment->load('installment', 'enrollment.student');
-
-    //     return Inertia::render('Payments/SandboxCheckout', [
-    //         'payment' => $payment,
-    //     ]);
-    // }
-
-    // public function sandboxConfirm(Payment $payment)
-    // {
-    //     if (! config('services.paymongo.sandbox_mode')) {
-    //         abort(404);
-    //     }
-
-    //     if ($payment->status !== 'PENDING') {
-    //         return redirect()->route('payments.show', $payment->enrollment_id);
-    //     }
-
-    //     // Mirrors exactly what the real webhook() method does upon a genuine
-    //     // source.chargeable + successful charge — same end state, fake trigger.
-    //     $payment->update([
-    //         'status' => 'COMPLETED',
-    //         'paymongo_payment_intent_id' => 'pay_sandbox_' . uniqid(),
-    //         'paid_at' => now(),
-    //     ]);
-
-    //     $payment->installment->refreshStatus();
-
-    //     return redirect()
-    //         ->route('payments.show', $payment->enrollment_id)
-    //         ->with('success', 'Sandbox payment completed successfully.');
-    // }
 
     public function callbackSuccess(Enrollment $enrollment, Installment $installment)
     {
@@ -138,6 +101,16 @@ class PaymentController extends Controller
 
     public function webhook(Request $request)
     {
+        $signatureHeader = $request->header('Paymongo-Signature');
+
+        if (! $this->verifyWebhookSignature($request->getContent(), $signatureHeader)) {
+            Log::warning('PayMongo webhook: signature verification failed', [
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+
         Log::info('PayMongo webhook received', $request->all());
 
         $eventType = $request->input('data.attributes.type');
@@ -169,5 +142,35 @@ class PaymentController extends Controller
         }
 
         return response()->json(['status' => 'ok'], 200);
+    }
+
+    protected function verifyWebhookSignature(string $rawPayload, ?string $signatureHeader): bool
+    {
+        if (! $signatureHeader) {
+            return false;
+        }
+
+        // Header format: "t=1633036800,te=abc123...,li=def456..."
+        $parts = [];
+        foreach (explode(',', $signatureHeader) as $segment) {
+            if (str_contains($segment, '=')) {
+                [$key, $value] = explode('=', $segment, 2);
+                $parts[$key] = $value;
+            }
+        }
+
+        $timestamp = $parts['t'] ?? null;
+        $testSignature = $parts['te'] ?? null;
+        $liveSignature = $parts['li'] ?? null;
+        $providedSignature = $testSignature ?: $liveSignature;
+
+        if (! $timestamp || ! $providedSignature) {
+            return false;
+        }
+
+        $signedPayload = "{$timestamp}.{$rawPayload}";
+        $expectedSignature = hash_hmac('sha256', $signedPayload, config('services.paymongo.webhook_secret'));
+
+        return hash_equals($expectedSignature, $providedSignature);
     }
 }

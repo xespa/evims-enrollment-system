@@ -1,0 +1,14 @@
+[90m= [39m[34;4mApp\Models\Payment[39;24m {#8386
+    [34mid[39m: [35m37[39m,
+    [34minstallment_id[39m: [35m6[39m,
+    [34menrollment_id[39m: [35m12[39m,
+    [34mamount[39m: [32m"[39m[32m5600.00[39m[32m"[39m,
+    [34mmethod[39m: [32m"[39m[32mGCASH[39m[32m"[39m,
+    [34mstatus[39m: [32m"[39m[32mCOMPLETED[39m[32m"[39m,
+    [34mrecorded_by[39m: [36mnull[39m,
+    [34mpaymongo_payment_intent_id[39m: [32m"[39m[32mpay_MZGTjqLacTUDfXXAvVb18Egw[39m[32m"[39m,
+    [34mpaymongo_source_id[39m: [32m"[39m[32msrc_qXi25rKG567LDTTi2UTTQiSS[39m[32m"[39m,
+    [34mpaid_at[39m: [32m"[39m[32m2026-07-26 15:32:36[39m[32m"[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-07-26 15:32:33[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-07-26 15:32:36[39m[32m"[39m,
+  }

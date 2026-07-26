@@ -38,7 +38,7 @@ return [
     'paymongo' => [
         'secret_key' => env('PAYMONGO_SECRET_KEY'),
         'public_key' => env('PAYMONGO_PUBLIC_KEY'),
-        // 'sandbox_mode' => env('PAYMONGO_SANDBOX_MODE', false),
+        'webhook_secret' => env('PAYMONGO_WEBHOOK_SECRET'),
     ],
 
     'school_gcash' => [
