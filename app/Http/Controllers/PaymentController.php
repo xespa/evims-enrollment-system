@@ -144,10 +144,7 @@ class PaymentController extends Controller
 
         if ($eventType === 'source.chargeable') {
             $sourceId = $request->input('data.attributes.data.id');
-            $amount = $request->input('data.attributes.data.amount') / 100;
-
-            Log::info('Webhook computed amount', ['amount' => $amount, 'raw' => $request->input('data.attributes.data.amount')]);
-            
+            $amount = $request->input('data.attributes.data.attributes.amount') / 100;
             $payment = Payment::where('paymongo_source_id', $sourceId)->first();
 
             if (! $payment) {

@@ -1,6 +1,6 @@
 import SelectInput from '../Components/SelectInput';
 
-export default function BillingStep({ data, gradeLevels, schoolGcash, setData, errors }) {
+export default function BillingStep({ data, gradeLevels, setData, errors }) {
     const selectedGrade = gradeLevels.find((g) => String(g.id) === String(data.grade_level_id));
     const fee = selectedGrade?.tuition_fee ?? 0;
 
@@ -79,16 +79,11 @@ export default function BillingStep({ data, gradeLevels, schoolGcash, setData, e
 
             {data.payment_channel === 'GCASH' && (
                 <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-center">
-                    <p className="mb-2 text-sm font-medium text-gray-700">Scan the QR code or send payment to:</p>
-                    <img
-                        src="/images/gcash-qr.png"
-                        alt="School GCash QR Code"
-                        className="mx-auto mb-3 h-40 w-40 rounded-md border border-gray-200 bg-white object-contain"
-                    />
-                    <p className="text-lg font-bold text-gray-900">{schoolGcash?.number}</p>
-                    <p className="text-sm text-gray-600">{schoolGcash?.account_name}</p>
-                    <p className="mt-2 text-xs text-gray-500">
-                        Please keep your payment reference number — you may be asked to present it at enrollment.
+                    <p className="text-sm font-medium text-gray-700">
+                        After you submit this application, you'll receive a secure GCash payment link on the confirmation page.
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                        No need to pay right now — just complete your application first.
                     </p>
                 </div>
             )}

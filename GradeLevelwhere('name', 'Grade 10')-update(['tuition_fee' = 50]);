@@ -1,0 +1,14 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#8465
+    [34mall[39m: [
+      [34;4mApp\Models\Installment[39;24m {#8469
+        [34mid[39m: [35m13[39m,
+        [34mbilling_contract_id[39m: [35m7[39m,
+        [34minstallment_number[39m: [35m1[39m,
+        [34mamount_due[39m: [32m"[39m[32m5.00[39m[32m"[39m,
+        [34mdue_date[39m: [32m"[39m[32m2026-06-15[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mUNPAID[39m[32m"[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-07-26 14:32:54[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-07-26 14:32:54[39m[32m"[39m,
+      },
+    ],
+  }

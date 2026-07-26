@@ -52,7 +52,7 @@ const FIELD_TO_STEP = {
     payment_option: 7, scanned_contract: 7,
 };
 
-export default function Create({ gradeLevels, schoolGcash }) {
+export default function Create({ gradeLevels }) {
     const [step, setStep] = useState(1);
 
     const { data, setData, post, processing, errors, transform } = useForm({
@@ -149,7 +149,7 @@ export default function Create({ gradeLevels, schoolGcash }) {
         });
     };
 
-    const stepProps = { data, setData, errors, gradeLevels, schoolGcash };
+    const stepProps = { data, setData, errors, gradeLevels };
 
     return (
         <>
