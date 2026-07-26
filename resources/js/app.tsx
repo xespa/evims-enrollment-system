@@ -5,6 +5,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import EvimsAdminLayout from '@/layouts/EvimsAdminLayout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,9 +20,7 @@ createInertiaApp({
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             case name.startsWith('Admin/'):
-                return AppLayout;
-            case name === 'dashboard':
-                return AppLayout;
+                return EvimsAdminLayout;
             default:
                 return null;
         }

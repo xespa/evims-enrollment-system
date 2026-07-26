@@ -38,14 +38,6 @@ export default function Index({ enrollments, gradeLevels, filters }) {
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 flex items-center justify-between">
                         <h1 className="text-2xl font-bold text-gray-900">Enrollment Applications</h1>
-                        <div className="flex gap-4 text-sm">
-                            <Link href={route('admin.dashboard')} className="text-blue-600 hover:underline">
-                                ← Dashboard
-                            </Link>
-                            <Link href={route('admin.gradeLevels.index')} className="text-blue-600 hover:underline">
-                                Manage Tuition Fees →
-                            </Link>
-                        </div>
                     </div>
 
                     {/* Filters */}

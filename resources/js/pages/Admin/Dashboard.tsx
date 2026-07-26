@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 function formatCurrency(value) {
@@ -33,14 +33,6 @@ export default function Dashboard({ stats, recentEnrollments, recentPayments }) 
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 flex items-center justify-between">
                         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <div className="flex gap-4 text-sm">
-                            <Link href={route('admin.enrollments.index')} className="text-blue-600 hover:underline">
-                                View Enrollments →
-                            </Link>
-                            <Link href={route('admin.gradeLevels.index')} className="text-blue-600 hover:underline">
-                                Manage Fees →
-                            </Link>
-                        </div>
                     </div>
 
                     {/* Stat cards */}
