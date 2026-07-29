@@ -4,26 +4,26 @@ export default function Success({ enrollment }) {
     return (
         <>
             <Head title="Application Submitted" />
-            <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-                <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-sm">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl text-green-600">✓</div>
-                    <h1 className="mb-2 text-xl font-bold text-gray-900">Application Submitted</h1>
-                    <p className="mb-1 text-sm text-gray-600">
+            <div className="flex min-h-screen items-center justify-center bg-[#FBF8F2] px-4 py-12">
+                <div className="w-full max-w-md rounded-[2rem] border border-[#1F2A24]/10 bg-white p-8 text-center shadow-xl shadow-[#1F2A24]/5">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-2xl text-[#2F6F4E]">✓</div>
+                    <h1 className="font-serif text-xl font-semibold text-[#1F2A24]">Application Submitted</h1>
+                    <p className="mt-2 text-sm text-[#1F2A24]/70">
                         {enrollment.student.first_name} {enrollment.student.last_name}
                     </p>
-                    <p className="mb-4 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-[#1F2A24]/50">
                         Grade: {enrollment.grade_level.name} · Status: {enrollment.enrollment_status}
                     </p>
-                    <p className="text-xs text-gray-400 mb-4">Reference No: #{enrollment.id}</p>
+                    <p className="mt-3 text-xs text-[#1F2A24]/40">Reference No: #{enrollment.id}</p>
 
                     <Link
                         href={route('payments.show', enrollment.id)}
-                        className="block w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        className="mt-6 block w-full rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
                     >
                         Proceed to Payment
                     </Link>
 
-                    <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
+                    <Link href="/" className="mt-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline">
                         Back to Home
                     </Link>
                 </div>

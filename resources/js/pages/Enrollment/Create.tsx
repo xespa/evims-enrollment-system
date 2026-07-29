@@ -155,19 +155,32 @@ export default function Create({ gradeLevels }) {
         <>
             <Head title="Enrollment Application" />
 
-            <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <div className="min-h-screen bg-[#FBF8F2] px-4 py-12">
                 <div className="mx-auto max-w-3xl">
-                    <h1 className="mb-6 text-2xl font-bold text-gray-900">EVIMS Enrollment Application</h1>
+                    <div className="mb-6 text-center">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                            School Year 2026–2027
+                        </span>
+                        <h1 className="mt-3 font-serif text-3xl font-semibold text-[#1F2A24]">
+                            EVIMS Enrollment Application
+                        </h1>
+                        <p className="mt-1 text-sm text-[#1F2A24]/60">
+                            A few short steps and your child's seat is reserved.
+                        </p>
+                    </div>
 
                     {Object.keys(errors).length > 0 && (
-                        <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <div className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]">
                             Please fix the highlighted errors below before submitting.
                         </div>
                     )}
 
                     <StepperNav currentStep={step} />
 
-                    <form onSubmit={handleSubmit} className="rounded-lg bg-white p-6 shadow-sm">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8"
+                    >
                         {step === 1 && <StudentInfoStep {...stepProps} />}
                         {step === 2 && <AddressStep {...stepProps} />}
                         {step === 3 && <ParentInfoStep {...stepProps} />}
@@ -177,12 +190,12 @@ export default function Create({ gradeLevels }) {
                         {step === 7 && <BillingStep {...stepProps} />}
                         {step === 8 && <ReviewStep {...stepProps} />}
 
-                        <div className="mt-6 flex justify-between border-t border-gray-100 pt-4">
+                        <div className="mt-6 flex justify-between border-t border-[#1F2A24]/10 pt-5">
                             <button
                                 type="button"
                                 onClick={goBack}
                                 disabled={step === 1}
-                                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+                                className="rounded-full border border-[#1F2A24]/15 px-5 py-2 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 disabled:opacity-40"
                             >
                                 Back
                             </button>
@@ -191,7 +204,7 @@ export default function Create({ gradeLevels }) {
                                 <button
                                     type="button"
                                     onClick={goNext}
-                                    className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                                    className="rounded-full bg-[#2F6F4E] px-6 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                                 >
                                     Next
                                 </button>
@@ -199,7 +212,7 @@ export default function Create({ gradeLevels }) {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="rounded-md bg-green-600 px-5 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                    className="rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-sm transition-colors hover:bg-[#d6922e] disabled:opacity-50"
                                 >
                                     {processing ? 'Submitting...' : 'Submit Application'}
                                 </button>
