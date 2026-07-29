@@ -6,9 +6,14 @@ use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Models\GradeLevel;
 
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', function () {
+    return inertia('Site/Home', [
+        'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
+    ]);
+})->name('home');
 Route::get('/enroll', [EnrollmentController::class, 'create'])->name('enrollment.create');
 Route::post('/enroll', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::get('/enroll/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
