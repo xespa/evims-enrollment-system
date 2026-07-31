@@ -55,20 +55,19 @@ export default function Home({ gradeLevels }) {
                         </span>
 
                         <h1 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl lg:text-6xl">
-                            Where every child's
-                            <span className="block text-[#2F6F4E]">first chapter</span>
-                            is written well.
+                            Be Part of Something
+                            <span className="block text-[#2F6F4E]">Exceptional</span>
                         </h1>
 
                         <p className="mt-6 max-w-xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                            EVIMS is a Kinder-to-Grade-10 community school built on steady
-                            teachers, small class sizes, and a registrar that makes
-                            enrollment painless for busy parents.
+                            At <span className="font-bold">Eastern Visayas International Montessori School Inc.</span>,
+                            we cultivate excellence through innovative education,
+                            dedicated teaching, and a thriving community of learners and leaders.
                         </p>
 
                         <div className="mt-8 flex flex-wrap items-center gap-4">
                             <Link
-                                href="/enroll"
+                                href="/admission"
                                 className="rounded-full bg-[#2F6F4E] px-6 py-3 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                             >
                                 Start Enrollment
@@ -113,12 +112,6 @@ export default function Home({ gradeLevels }) {
                                     </li>
                                 ))}
                             </ul>
-                            <Link
-                                href="/academics"
-                                className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#2F6F4E] hover:underline"
-                            >
-                                See full curriculum →
-                            </Link>
                         </div>
                     </div>
                 </div>
@@ -173,7 +166,7 @@ export default function Home({ gradeLevels }) {
                         </p>
                     </div>
                     <Link
-                        href="/enroll"
+                        href="/admission"
                         className="shrink-0 rounded-full bg-[#FBF8F2] px-6 py-3 text-sm font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-white"
                     >
                         Enroll Now

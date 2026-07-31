@@ -14,9 +14,10 @@ Route::get('/', function () {
         'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
     ]);
 })->name('home');
-Route::get('/enroll', [EnrollmentController::class, 'create'])->name('enrollment.create');
-Route::post('/enroll', [EnrollmentController::class, 'store'])->name('enrollment.store');
-Route::get('/enroll/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
+Route::inertia('/about', 'Site/About')->name('site.about');
+Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollment.create');
+Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
+Route::get('/admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
 
 Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
 Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
@@ -33,11 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/enrollments', [EnrollmentManagementController::class, 'index'])->name('enrollments.index');
-    Route::get('/enrollments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
-    Route::patch('/enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
-    Route::patch('/enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
-    Route::post('/enrollments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
+    Route::get('/admissionments', [EnrollmentManagementController::class, 'index'])->name('enrollments.index');
+    Route::get('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
+    Route::patch('/admissionments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
+    Route::patch('/admissionments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
+    Route::post('/admissionments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
 
     Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');
     Route::patch('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'update'])->name('gradeLevels.update');

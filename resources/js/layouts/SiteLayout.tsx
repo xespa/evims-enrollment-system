@@ -23,13 +23,18 @@ export default function SiteLayout({ children }) {
             <header className="sticky top-0 z-40 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/95 backdrop-blur">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
                     <Link href="/" className="flex items-center gap-2.5">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2F6F4E] font-serif text-sm font-semibold text-[#FBF8F2]">
-                            EV
+                        <span className="flex items-center gap-2.5">
+                            <img
+                                src="\images\logoevims.png"
+                                alt="evims-logo"
+                                className="h-15 w-15 rounded-full object-cover"
+                            />
                         </span>
                         <span className="flex flex-col leading-none">
                             <span className="font-serif text-lg font-semibold tracking-tight">EVIMS</span>
                             <span className="text-[10px] uppercase tracking-[0.18em] text-[#1F2A24]/60">
-                                School Enrollment &amp; Community
+                                EASTERN VISAYAS INTERNATIONAL <br></br>
+                                MONTESSORI SCHOOL, INC.
                             </span>
                         </span>
                     </Link>
@@ -52,7 +57,7 @@ export default function SiteLayout({ children }) {
 
                     <div className="hidden lg:block">
                         <Link
-                            href="/enroll"
+                            href="/admission"
                             className="rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                         >
                             Enroll Now
@@ -89,7 +94,7 @@ export default function SiteLayout({ children }) {
                                 </Link>
                             ))}
                             <Link
-                                href="/enroll"
+                                href="/admission"
                                 onClick={() => setMenuOpen(false)}
                                 className="mt-2 rounded-full bg-[#2F6F4E] px-4 py-2 text-center text-sm font-semibold text-[#FBF8F2]"
                             >
@@ -105,7 +110,14 @@ export default function SiteLayout({ children }) {
             <footer className="border-t border-[#1F2A24]/10 bg-[#1F2A24] text-[#FBF8F2]">
                 <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <span className="font-serif text-lg font-semibold">EVIMS</span>
+                        <div className="flex items-center gap-2">
+                            <img
+                                src="/images/logoevims.png"
+                                alt="evims-logo"
+                                className="h-15 w-15 rounded-full object-cover"
+                            />
+                            <span className="font-serif text-lg font-semibold">EVIMS</span>
+                        </div>
                         <p className="mt-2 text-sm text-[#FBF8F2]/70">
                             Guiding Kinder through Grade 10 learners with a curriculum built on
                             curiosity, character, and community.
