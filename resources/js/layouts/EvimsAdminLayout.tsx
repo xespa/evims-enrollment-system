@@ -4,6 +4,7 @@ import { useState } from 'react';
 const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard' },
     { label: 'Enrollment Applications', route: 'admin.enrollments.index' },
+    { label: 'Events', route: 'admin.events.index' },
     { label: 'Tuition Fees', route: 'admin.gradeLevels.index' },
 ];
 

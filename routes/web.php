@@ -7,6 +7,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Models\GradeLevel;
+use App\Http\Controllers\Admin\EventController;
+use App\Models\Event;
 
 
 Route::get('/', function () {
@@ -15,6 +17,11 @@ Route::get('/', function () {
     ]);
 })->name('home');
 Route::inertia('/about', 'Site/About')->name('site.about');
+Route::get('/events', function () {
+    return inertia('Site/Events', [
+        'events' => Event::upcoming()->orderBy('event_date')->get(),
+    ]);
+})->name('site.events');
 Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollment.create');
 Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::get('/admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
@@ -42,6 +49,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');
     Route::patch('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'update'])->name('gradeLevels.update');
+
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+    Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 });
 
 require __DIR__.'/settings.php';
