@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Models\Event;
 
 
+
 Route::get('/', function () {
     return inertia('Site/Home', [
         'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),

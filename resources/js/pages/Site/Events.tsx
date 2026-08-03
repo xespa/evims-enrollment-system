@@ -1,56 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
 
-const UPCOMING_EVENTS = [
-    {
-        day: '14',
-        month: 'Aug',
-        title: 'Foundation Day Assembly',
-        time: '8:00 AM – 12:00 NN',
-        location: 'School Covered Court',
-        tag: 'Whole School',
-    },
-    {
-        day: '29',
-        month: 'Aug',
-        title: 'Parent–Teacher Conference',
-        time: '1:00 PM – 5:00 PM',
-        location: 'Homeroom Classrooms',
-        tag: 'Parents',
-    },
-    {
-        day: '05',
-        month: 'Sep',
-        title: 'Intramurals Opening Program',
-        time: '7:30 AM – 4:00 PM',
-        location: 'School Grounds',
-        tag: 'Grades 4–10',
-    },
-    {
-        day: '20',
-        month: 'Sep',
-        title: 'Kinder & Grade 1 Family Day',
-        time: '9:00 AM – 11:30 AM',
-        location: 'Multipurpose Hall',
-        tag: 'Kinder–Grade 1',
-    },
-    {
-        day: '10',
-        month: 'Oct',
-        title: 'Buwan ng Wika Culmination',
-        time: '8:00 AM – 12:00 NN',
-        location: 'School Covered Court',
-        tag: 'Whole School',
-    },
-    {
-        day: '28',
-        month: 'Oct',
-        title: 'First Quarter Recognition Day',
-        time: '1:00 PM – 4:00 PM',
-        location: 'School Covered Court',
-        tag: 'By Grade Level',
-    },
-];
-
 const ANNUAL_HIGHLIGHTS = [
     {
         label: 'June',
@@ -70,13 +19,18 @@ const ANNUAL_HIGHLIGHTS = [
 ];
 
 const STAY_UPDATED_STEPS = [
-    { mark: 'Step 1', title: 'Check the calendar', copy: 'Visit this page regularly — dates are updated as soon as they\u2019re confirmed by the registrar.' },
+    { mark: 'Step 1', title: 'Check the calendar', copy: "Visit this page regularly — dates are updated as soon as they're confirmed by the registrar." },
     { mark: 'Step 2', title: 'Watch for reminders', copy: 'Homeroom teachers send reminder slips and text blasts a week before major events.' },
-    { mark: 'Step 3', title: 'Confirm attendance', copy: 'RSVP through your child\u2019s homeroom teacher for events that require parent attendance.' },
+    { mark: 'Step 3', title: 'Confirm attendance', copy: "RSVP through your child's homeroom teacher for events that require parent attendance." },
     { mark: 'Step 4', title: 'Relive the moment', copy: 'Photos from each event are posted in the Gallery within a few days.' },
 ];
 
-export default function Events() {
+function formatDay(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+
+export default function Events({ events = [] }) {
     return (
         <>
             <Head title="EVIMS — Events" />
@@ -100,8 +54,8 @@ export default function Events() {
 
                     <dl className="mt-12 grid max-w-2xl grid-cols-3 gap-6 border-t border-[#1F2A24]/10 pt-6">
                         <div>
-                            <dt className="text-2xl font-semibold text-[#1F2A24]">20+</dt>
-                            <dd className="text-xs text-[#1F2A24]/60">Events per school year</dd>
+                            <dt className="text-2xl font-semibold text-[#1F2A24]">{events.length}</dt>
+                            <dd className="text-xs text-[#1F2A24]/60">Upcoming events</dd>
                         </div>
                         <div>
                             <dt className="text-2xl font-semibold text-[#1F2A24]">4</dt>
@@ -122,9 +76,9 @@ export default function Events() {
                             <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Mark your calendar</p>
                             <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Upcoming events</h2>
                         </div>
-                        <a href="/contact" className="text-sm font-semibold text-[#2F6F4E] hover:underline">
+                        <Link href="/contact" className="text-sm font-semibold text-[#2F6F4E] hover:underline">
                             Ask the registrar →
-                        </a>
+                        </Link>
                     </div>
 
                     {events.length === 0 ? (
