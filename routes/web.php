@@ -19,9 +19,15 @@ Route::get('/', function () {
 })->name('home');
 Route::inertia('/about', 'Site/About')->name('site.about');
 Route::get('/events', function () {
+    $events = Event::upcoming()->orderBy('event_date')->get();
+
+    if ($events->isEmpty()) {
+        $events = Event::orderBy('event_date', 'desc')->limit(6)->get();
+    }
+
     return inertia('Site/Events', [
-        'events' => Event::upcoming()->orderBy('event_date')->get(),
-    ]);
+        'events' => $events,
+     ]);
 })->name('site.events');
 Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollment.create');
 Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
