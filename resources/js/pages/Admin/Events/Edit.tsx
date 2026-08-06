@@ -10,12 +10,11 @@ export default function Edit({ event }) {
         location: event.location ?? '',
         description: event.description ?? '',
         image: null,
-        _method: 'put',
     });
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('admin.events.update', event.id), { forceFormData: true });
+        patch(route('admin.events.update', event.id), { forceFormData: true });
     };
 
     return (
