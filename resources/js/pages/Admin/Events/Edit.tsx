@@ -10,11 +10,18 @@ export default function Edit({ event }) {
         location: event.location ?? '',
         description: event.description ?? '',
         image: null,
+        _method: 'patch',
     });
 
     const submit = (e) => {
         e.preventDefault();
-        patch(route('admin.events.update', event.id), { forceFormData: true });
+        post(route('admin.events.update', event.id), {
+            forceFormData: true,
+            onSuccess: () => {
+                // optional — Inertia already redirects via the server response,
+                // this just lets you hook in extra client-side behavior if needed
+            },
+        });
     };
 
     return (
