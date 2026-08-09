@@ -18,6 +18,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 Route::inertia('/about', 'Site/About')->name('site.about');
+Route::inertia('/contact', 'Site/Contact')->name('site.contact');
 Route::get('/events', function () {
     $events = Event::upcoming()->orderBy('event_date')->get();
 

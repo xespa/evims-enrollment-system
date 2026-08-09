@@ -38,7 +38,7 @@ class EnrollmentManagementController extends Controller
 
         $enrollments = $query->paginate(15)->withQueryString();
 
-        return Inertia::render('Admin/admissionments/Index', [
+        return Inertia::render('Admin/Enrollments/Index', [
             'enrollments' => $enrollments,
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'filters' => $request->only(['search', 'status', 'grade_level_id', 'school_year']),
@@ -58,7 +58,7 @@ class EnrollmentManagementController extends Controller
             'officeVerification',
         ]);
 
-        return Inertia::render('Admin/admissionments/Show', [
+        return Inertia::render('Admin/Enrollments/Show', [
             'enrollment' => $enrollment,
         ]);
     }
