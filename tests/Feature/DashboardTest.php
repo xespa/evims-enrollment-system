@@ -2,14 +2,17 @@
 
 use App\Models\User;
 
-test('guests are redirected to the login page', function () {
+test('admin users are redirected to the admin dashboard', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $this->actingAs($admin);
+
     $response = $this->get(route('dashboard'));
-    $response->assertRedirect(route('login'));
+    $response->assertRedirect(route('admin.dashboard'));
 });
 
-test('authenticated users can visit the dashboard', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
+test('staff users see the regular dashboard', function () {
+    $staff = User::factory()->create(['role' => 'STAFF']);
+    $this->actingAs($staff);
 
     $response = $this->get(route('dashboard'));
     $response->assertOk();

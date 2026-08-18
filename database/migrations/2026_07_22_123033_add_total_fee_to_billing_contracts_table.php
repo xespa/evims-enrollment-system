@@ -13,7 +13,9 @@ return new class extends Migration
             $table->decimal('total_fee', 10, 2)->after('payment_option');
         });
 
-        DB::statement("ALTER TABLE billing_contracts MODIFY payment_option ENUM('MONTHLY', 'BI_MONTHLY', 'FULL_PAYMENT') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE billing_contracts MODIFY payment_option ENUM('MONTHLY', 'BI_MONTHLY', 'FULL_PAYMENT') NOT NULL");
+        }
     }
 
     public function down(): void
@@ -22,6 +24,8 @@ return new class extends Migration
             $table->dropColumn('total_fee');
         });
 
-        DB::statement("ALTER TABLE billing_contracts MODIFY payment_option ENUM('MONTHLY', 'BI_MONTHLY') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE billing_contracts MODIFY payment_option ENUM('MONTHLY', 'BI_MONTHLY') NOT NULL");
+        }
     }
 };

@@ -16,6 +16,13 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
+
+
+Event::listen(Login::class, function (Login $event) {
+    // only needed if STAFF and ADMIN shouldn't share a landing page
+});
 
 class FortifyServiceProvider extends ServiceProvider
 {
