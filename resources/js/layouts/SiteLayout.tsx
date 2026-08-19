@@ -1,5 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { login } from '@/routes';
+
 
 const NAV_LINKS = [
     { label: 'Home', href: '/' },
@@ -153,8 +155,11 @@ export default function SiteLayout({ children }) {
                         </ul>
                     </div>
                 </div>
-                <div className="border-t border-[#FBF8F2]/10 px-5 py-4 text-center text-xs text-[#FBF8F2]/50">
-                    © {new Date().getFullYear()} EVIMS. All rights reserved.
+                <div className="flex flex-col items-center justify-between gap-2 border-t border-[#FBF8F2]/10 px-5 py-4 text-center text-xs text-[#FBF8F2]/50 sm:flex-row">
+                    <span>© {new Date().getFullYear()} EVIMS. All rights reserved.</span>
+                    <Link href={login()} className="text-[#FBF8F2]/40 hover:text-[#FBF8F2]/70 hover:underline">
+                        Staff Login
+                    </Link>
                 </div>
             </footer>
         </div>

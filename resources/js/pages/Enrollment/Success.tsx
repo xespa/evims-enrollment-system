@@ -15,14 +15,12 @@ export default function Success({ enrollment }) {
                         Grade: {enrollment.grade_level.name} · Status: {enrollment.enrollment_status}
                     </p>
                     <p className="mt-3 text-xs text-[#1F2A24]/40">Reference No: #{enrollment.id}</p>
-
                     <Link
-                        href={route('payments.show', enrollment.id)}
+                        href={paymentUrl}
                         className="mt-6 block w-full rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
                     >
                         Proceed to Payment
                     </Link>
-
                     <Link href="/" className="mt-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline">
                         Back to Home
                     </Link>

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Enrollment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'student_id', 'grade_level_id', 'school_year', 'student_type',
         'date_of_application', 'age', 'session_time_preference', 'enrollment_status',

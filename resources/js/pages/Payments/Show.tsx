@@ -1,4 +1,6 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react'
+
 
 function formatCurrency(value) {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -13,7 +15,8 @@ export default function Show({ enrollment }) {
     const { post, processing } = useForm();
 
     const payWithGcash = (installmentId) => {
-        post(route('payments.gcash.initiate', [enrollment.id, installmentId]));
+        const url = gcashInitiateUrlBase.replace('__INSTALLMENT__', installmentId);
+        router.post(url);
     };
 
     const installmentPaid = (installment) =>
@@ -26,7 +29,7 @@ export default function Show({ enrollment }) {
                     {props.flash.success}
                 </div>
             )}
-            
+
             <Head title="Tuition Payments" />
             <div className="min-h-screen bg-gray-50 py-8 px-4">
                 <div className="mx-auto max-w-2xl">

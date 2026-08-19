@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Services\PayMongoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -20,6 +21,10 @@ class PaymentController extends Controller
 
         return Inertia::render('Payments/Show', [
             'enrollment' => $enrollment,
+            'gcashInitiateUrlBase' => URL::signedRoute('payments.gcash.initiate', [
+                'enrollment' => $enrollment->id,
+                'installment' => '__INSTALLMENT__',
+            ]),
         ]);
     }
 
@@ -34,7 +39,7 @@ class PaymentController extends Controller
         if (config('services.paymongo.sandbox_mode')) {
             // SANDBOX: skip the real PayMongo API entirely, fake a source ID,
             // and send the parent to our own simulated checkout page instead.
-            $fakeSourceId = 'src_sandbox_' . uniqid();
+            $fakeSourceId = 'src_sandbox_'.uniqid();
 
             $payment = Payment::create([
                 'installment_id' => $installment->id,
@@ -57,7 +62,7 @@ class PaymentController extends Controller
             failedUrl: route('payments.callback.failed', [$enrollment->id, $installment->id]),
             billing: [
                 'name' => "{$student->first_name} {$student->last_name}",
-                'email' => 'parent+' . $enrollment->id . '@evims.test', // placeholder — see note below
+                'email' => 'parent+'.$enrollment->id.'@evims.test', // placeholder — see note below
                 'phone' => $parentProfile?->father_mobile_no ?? $parentProfile?->mother_mobile_no ?? '09000000000',
             ]
         );
@@ -73,7 +78,6 @@ class PaymentController extends Controller
 
         return Inertia::location($source['attributes']['redirect']['checkout_url']);
     }
-
 
     public function callbackSuccess(Enrollment $enrollment, Installment $installment)
     {
@@ -122,6 +126,7 @@ class PaymentController extends Controller
 
             if (! $payment) {
                 Log::warning("Webhook: no matching payment for source {$sourceId}");
+
                 return response()->json(['status' => 'ignored'], 200);
             }
 

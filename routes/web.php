@@ -1,16 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\Admin\EnrollmentManagementController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Models\GradeLevel;
+use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\PaymentController;
 use App\Models\Event;
-
-
+use App\Models\GradeLevel;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return inertia('Site/Home', [
@@ -28,17 +26,21 @@ Route::get('/events', function () {
 
     return inertia('Site/Events', [
         'events' => $events,
-     ]);
+    ]);
 })->name('site.events');
 Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollment.create');
 Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::get('/admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
 
-Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
-Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
+Route::middleware('signed')->group(function () {
+    Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
+});
+
+// PayMongo callback + webhook stay unsigned — they're driven by PayMongo's own
+// redirect/webhook, not something we can attach our signature to.
 Route::get('/payments/{enrollment}/{installment}/success', [PaymentController::class, 'callbackSuccess'])->name('payments.callback.success');
 Route::get('/payments/{enrollment}/{installment}/failed', [PaymentController::class, 'callbackFailed'])->name('payments.callback.failed');
-
 Route::post('/paymongo/webhook', [PaymentController::class, 'webhook'])->name('paymongo.webhook');
 Route::get('/payments/sandbox/{payment}/checkout', [PaymentController::class, 'sandboxCheckout'])->name('payments.sandbox.checkout');
 Route::post('/payments/sandbox/{payment}/confirm', [PaymentController::class, 'sandboxConfirm'])->name('payments.sandbox.confirm');
