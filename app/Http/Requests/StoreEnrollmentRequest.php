@@ -40,6 +40,7 @@ class StoreEnrollmentRequest extends FormRequest
             'date_of_application' => ['required', 'date'],
             'age' => ['required', 'integer', 'min:2', 'max:25'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],
+            'email' => ['required', 'email', 'max:255'],
             'subject_ids' => ['required', 'array', 'min:1'],
             'subject_ids.*' => ['exists:subjects,id'],
 

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EnrollmentStatusUpdated;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
+use App\Models\Installment;
+use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class EnrollmentManagementController extends Controller
@@ -19,8 +23,8 @@ class EnrollmentManagementController extends Controller
             $search = $request->string('search');
             $query->whereHas('student', function ($q) use ($search) {
                 $q->where('last_name', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('lrn', 'like', "%{$search}%");
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('lrn', 'like', "%{$search}%");
             });
         }
 
@@ -69,7 +73,15 @@ class EnrollmentManagementController extends Controller
             'enrollment_status' => ['required', 'in:PENDING,APPROVED,REJECTED'],
         ]);
 
+        $statusChanged = $enrollment->enrollment_status !== $validated['enrollment_status'];
+
         $enrollment->update($validated);
+
+        if ($statusChanged
+            && in_array($validated['enrollment_status'], ['APPROVED', 'REJECTED'])
+            && $enrollment->email) {
+            Mail::to($enrollment->email)->send(new EnrollmentStatusUpdated($enrollment));
+        }
 
         return back()->with('success', 'Enrollment status updated.');
     }
@@ -98,7 +110,7 @@ class EnrollmentManagementController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        $installment = \App\Models\Installment::findOrFail($validated['installment_id']);
+        $installment = Installment::findOrFail($validated['installment_id']);
 
         // Guard: don't allow paying more than what's actually still owed on this installment
         $remaining = $installment->amount_due - $installment->totalPaid();
@@ -106,7 +118,7 @@ class EnrollmentManagementController extends Controller
             return back()->withErrors(['amount' => "Amount exceeds remaining balance of ₱{$remaining} for this installment."]);
         }
 
-        \App\Models\Payment::create([
+        Payment::create([
             'installment_id' => $installment->id,
             'enrollment_id' => $enrollment->id,
             'amount' => $validated['amount'],

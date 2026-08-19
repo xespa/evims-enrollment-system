@@ -26,6 +26,7 @@ export default function ReviewStep({ data, gradeLevels }) {
                 <ReviewRow label="Student Type" value={data.student_type} />
                 <ReviewRow label="School Year" value={data.school_year} />
                 <ReviewRow label="Session" value={data.session_time_preference} />
+                <ReviewRow label="Email" value={data.email} />
             </div>
 
             <div className="mb-4">

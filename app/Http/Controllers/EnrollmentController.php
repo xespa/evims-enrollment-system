@@ -66,6 +66,7 @@ class EnrollmentController extends Controller
                 'date_of_application' => $validated['date_of_application'],
                 'age' => $validated['age'],
                 'session_time_preference' => $validated['session_time_preference'],
+                'email' => $validated['email'],
                 'enrollment_status' => 'PENDING',
             ]);
 

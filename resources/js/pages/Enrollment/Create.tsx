@@ -14,7 +14,7 @@ import ReviewStep from './Steps/ReviewStep';
 // Fields required to proceed past each step (client-side gatekeeping only —
 // the server re-validates everything again in StoreEnrollmentRequest).
 const STEP_REQUIRED_FIELDS = {
-    1: ['student_type', 'grade_level_id', 'last_name', 'first_name', 'date_of_birth', 'sex', 'school_year', 'date_of_application', 'age', 'session_time_preference'],
+    1: ['student_type', 'grade_level_id', 'last_name', 'first_name', 'date_of_birth', 'sex', 'school_year', 'date_of_application', 'age', 'session_time_preference', 'email'],
     2: ['barangay', 'city_municipality', 'province', 'country'],
     3: [],
     4: [],
@@ -28,7 +28,7 @@ const FIELD_TO_STEP = {
     student_type: 1, grade_level_id: 1, lrn: 1, psa_birth_cert_no: 1,
     last_name: 1, first_name: 1, middle_name: 1, extension_name: 1,
     date_of_birth: 1, age: 1, sex: 1, school_year: 1,
-    date_of_application: 1, session_time_preference: 1,
+    date_of_application: 1, session_time_preference: 1, email: 1,
 
     house_number_street: 2, barangay: 2, city_municipality: 2,
     province: 2, country: 2, zip_code: 2,
@@ -68,6 +68,7 @@ export default function Create({ gradeLevels }) {
         age: '',
         sex: '',
         session_time_preference: '',
+        email: '',
         grade_level_id: '',
         school_year: '2026-2027',
         date_of_application: new Date().toISOString().slice(0, 10),

@@ -91,6 +91,17 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     { value: 'SCHOOL_SERVICE', label: 'School Service' },
                 ]}
             />
+            
+            <TextInput
+                label="Email Address (for status updates)"
+                name="email"
+                type="email"
+                value={data.email}
+                onChange={setData}
+                error={errors.email}
+                required
+            />
+
         </div>
     );
 }
