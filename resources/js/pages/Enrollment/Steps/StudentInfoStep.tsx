@@ -78,6 +78,16 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                 <TextInput label="Date of Application" name="date_of_application" type="date" value={data.date_of_application} onChange={setData} error={errors.date_of_application} required />
             </div>
 
+            <TextInput
+                label="Email Address (for status updates)"
+                name="email"
+                type="email"
+                value={data.email}
+                onChange={setData}
+                error={errors.email}
+                required
+            />
+
             <SelectInput
                 label="Session Time Preference"
                 name="session_time_preference"
@@ -91,17 +101,6 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     { value: 'SCHOOL_SERVICE', label: 'School Service' },
                 ]}
             />
-            
-            <TextInput
-                label="Email Address (for status updates)"
-                name="email"
-                type="email"
-                value={data.email}
-                onChange={setData}
-                error={errors.email}
-                required
-            />
-
         </div>
     );
 }
