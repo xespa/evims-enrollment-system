@@ -24,6 +24,9 @@ export default function Success({ enrollment }) {
                     <Link href="/" className="mt-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline">
                         Back to Home
                     </Link>
+                    <Link href={route('portal.register')} className="mt-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline">
+                        Create an account to track this application →
+                    </Link>
                 </div>
             </div>
         </>

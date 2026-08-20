@@ -25,6 +25,8 @@ createInertiaApp({
                 return [AppLayout, SettingsLayout];
             case name.startsWith('Admin/'):
                 return EvimsAdminLayout;
+            case name.startsWith('Portal/'):
+                return SiteLayout;
             default:
                 return null;
         }
