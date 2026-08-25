@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
-export default function Processing({ enrollment_id }) {
+export default function Processing({ enrollment_id, paymentUrl }) {
     return (
         <>
             <Head title="Processing Payment" />
@@ -12,7 +12,7 @@ export default function Processing({ enrollment_id }) {
                         This usually takes a few seconds. You can refresh the page below to check the latest status.
                     </p>
                     <Link
-                        href={route('payments.show', enrollment_id)}
+                        href={paymentUrl}
                         className="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                     >
                         Check Payment Status
