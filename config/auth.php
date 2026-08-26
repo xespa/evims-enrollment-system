@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\EnrolleeUser;
 use App\Models\User;
 
 return [
@@ -43,11 +42,6 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-
-        'enrollee' => [
-            'driver' => 'session',
-            'provider' => 'enrollees',
-        ],
     ],
 
     /*
@@ -73,10 +67,10 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        'enrollees' => [
-            'driver' => 'eloquent',
-            'model' => EnrolleeUser::class,
-        ],
+        // 'users' => [
+        //     'driver' => 'database',
+        //     'table' => 'users',
+        // ],
     ],
 
     /*

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEnrollmentRequest;
-use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
@@ -118,14 +117,6 @@ class EnrollmentController extends Controller
 
             return $enrollment;
         });
-
-        $verifiedAccount = EnrolleeUser::where('email', $validated['email'])
-            ->whereNotNull('email_verified_at')
-            ->first();
-
-        if ($verifiedAccount) {
-            $enrollment->update(['enrollee_user_id' => $verifiedAccount->id]);
-        }
 
         return redirect()->route('enrollment.success', $enrollment->id);
     }

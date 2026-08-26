@@ -10,25 +10,14 @@ class Enrollment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_id', 'enrollee_user_id', 'grade_level_id', 'school_year', 'student_type',
+        'student_id', 'grade_level_id', 'school_year', 'student_type',
         'date_of_application', 'age', 'session_time_preference', 'email',
-        'enrollment_status', 'cancelled_at',
+        'enrollment_status',
     ];
 
     protected $casts = [
         'date_of_application' => 'date',
-        'cancelled_at' => 'datetime',
     ];
-
-    public function enrolleeUser()
-    {
-        return $this->belongsTo(EnrolleeUser::class);
-    }
-
-    public function isCancelled(): bool
-    {
-        return $this->cancelled_at !== null;
-    }
 
     public function student()
     {
