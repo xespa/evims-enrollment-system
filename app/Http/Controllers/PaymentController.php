@@ -19,18 +19,12 @@ class PaymentController extends Controller
     {
         $enrollment->load('student', 'billingContract.installments.payments');
 
-        $installments = $enrollment->billingContract?->installments
-            ->map(function ($installment) use ($enrollment) {
-                $installment->gcash_initiate_url = URL::signedRoute('payments.gcash.initiate', [
-                    'enrollment' => $enrollment->id,
-                    'installment' => $installment->id,
-                ]);
-
-                return $installment;
-            });
-
         return Inertia::render('Payments/Show', [
             'enrollment' => $enrollment,
+            'gcashInitiateUrlBase' => URL::signedRoute('payments.gcash.initiate', [
+                'enrollment' => $enrollment->id,
+                'installment' => '__INSTALLMENT__',
+            ]),
         ]);
     }
 
@@ -87,9 +81,11 @@ class PaymentController extends Controller
 
     public function callbackSuccess(Enrollment $enrollment, Installment $installment)
     {
+        // The browser redirect landing here does NOT confirm payment —
+        // it just means the parent finished the GCash flow on PayMongo's side.
+        // Actual confirmation happens via the webhook. We just show a "processing" screen.
         return Inertia::render('Payments/Processing', [
             'enrollment_id' => $enrollment->id,
-            'paymentUrl' => URL::signedRoute('payments.show', $enrollment->id),
         ]);
     }
 

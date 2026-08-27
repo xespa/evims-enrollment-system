@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
-export default function Success({ enrollment, paymentUrl  }) {
+export default function Success({ enrollment }) {
     return (
         <>
             <Head title="Application Submitted" />

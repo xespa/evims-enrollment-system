@@ -1,5 +1,6 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react'
+
 
 function formatCurrency(value) {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -8,15 +9,14 @@ function formatCurrency(value) {
 export default function Show({ enrollment }) {
     const { props } = usePage();
     const errorMsg = props.flash?.error;
-    const [processing, setProcessing] = useState(false);
 
     const installments = enrollment.billing_contract?.installments ?? [];
 
-    const payWithGcash = (installment) => {
-        setProcessing(true);
-        router.post(installment.gcash_initiate_url, {}, {
-            onFinish: () => setProcessing(false),
-        });
+    const { post, processing } = useForm();
+
+    const payWithGcash = (installmentId) => {
+        const url = gcashInitiateUrlBase.replace('__INSTALLMENT__', installmentId);
+        router.post(url);
     };
 
     const installmentPaid = (installment) =>
@@ -65,7 +65,7 @@ export default function Show({ enrollment }) {
                                         </span>
                                     ) : (
                                         <button
-                                            onClick={() => payWithGcash(installment)}
+                                            onClick={() => payWithGcash(installment.id)}
                                             disabled={processing}
                                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                                         >

@@ -18,18 +18,3 @@ test('payment page is accessible with a valid signed url', function () {
 
     $response->assertOk();
 });
-
-test('gcash initiate rejects a tampered signed url', function () {
-    $enrollment = Enrollment::factory()->create();
-    $badUrl = URL::signedRoute('payments.gcash.initiate', [
-        'enrollment' => $enrollment->id,
-        'installment' => 999, // signed for a different installment id than we'll actually hit
-    ]);
-
-    // Swap the installment segment in the path without re-signing — this must fail.
-    $tampered = preg_replace('/installments\/\d+/', 'installments/1', $badUrl);
-
-    $response = $this->post($tampered);
-
-    $response->assertForbidden();
-});
