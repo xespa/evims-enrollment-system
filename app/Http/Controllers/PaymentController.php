@@ -17,19 +17,29 @@ class PaymentController extends Controller
 
     public function show(Enrollment $enrollment)
     {
+        abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+
         $enrollment->load('student', 'billingContract.installments.payments');
+
+        $installments = $enrollment->billingContract?->installments
+            ->map(function ($installment) use ($enrollment) {
+                $installment->gcash_initiate_url = URL::signedRoute('payments.gcash.initiate', [
+                    'enrollment' => $enrollment->id,
+                    'installment' => $installment->id,
+                ]);
+
+                return $installment;
+            });
 
         return Inertia::render('Payments/Show', [
             'enrollment' => $enrollment,
-            'gcashInitiateUrlBase' => URL::signedRoute('payments.gcash.initiate', [
-                'enrollment' => $enrollment->id,
-                'installment' => '__INSTALLMENT__',
-            ]),
         ]);
     }
 
-    public function initiateGcash(Request $request, Enrollment $enrollment, Installment $installment)
+    public function initiateGcash(Enrollment $enrollment, Installment $installment)
     {
+        abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+
         $remaining = $installment->amount_due - $installment->totalPaid();
 
         if ($remaining <= 0) {

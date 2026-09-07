@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { login } from '@/routes';
+import { UserCircle } from 'lucide-react';
 
 
 const NAV_LINKS = [
@@ -17,6 +18,8 @@ const NAV_LINKS = [
 export default function SiteLayout({ children }) {
     const { url } = usePage();
     const [menuOpen, setMenuOpen] = useState(false);
+    const { props } = usePage();
+    const enrollee = props.auth?.enrollee;
 
     const isActive = (href) => (href === '/' ? url === '/' : url.startsWith(href));
 
@@ -57,12 +60,20 @@ export default function SiteLayout({ children }) {
                         ))}
                     </nav>
 
-                    <div className="hidden lg:block">
+                    <div className="hidden items-center gap-3 lg:flex">
+
                         <Link
                             href="/admission"
                             className="rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                         >
                             Enroll Now
+                        </Link>
+                        <Link
+                            href={enrollee ? route('portal.dashboard') : route('portal.login')}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                            title={enrollee ? `My Account (${enrollee.name})` : 'Log in to track your application'}
+                        >
+                            <UserCircle className="h-10 w-10" />
                         </Link>
                     </div>
 
@@ -101,6 +112,13 @@ export default function SiteLayout({ children }) {
                                 className="mt-2 rounded-full bg-[#2F6F4E] px-4 py-2 text-center text-sm font-semibold text-[#FBF8F2]"
                             >
                                 Enroll Now
+                            </Link>
+                            <Link
+                                href={enrollee ? route('portal.dashboard') : route('portal.login')}
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                                title={enrollee ? `My Account (${enrollee.name})` : 'Log in to track your application'}
+                            >
+                                <UserCircle className="h-6 w-6" />
                             </Link>
                         </div>
                     </nav>

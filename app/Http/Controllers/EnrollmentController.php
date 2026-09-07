@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEnrollmentRequest;
+use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class EnrollmentController extends Controller
@@ -70,6 +70,14 @@ class EnrollmentController extends Controller
                 'enrollment_status' => 'PENDING',
             ]);
 
+            $verifiedAccount = EnrolleeUser::where('email', $validated['email'])
+                ->whereNotNull('email_verified_at')
+                ->first();
+
+            if ($verifiedAccount) {
+                $enrollment->update(['enrollee_user_id' => $verifiedAccount->id]);
+            }
+
             $enrollment->subjects()->sync($validated['subject_ids']);
 
             $enrollment->academicHistory()->create([
@@ -127,7 +135,6 @@ class EnrollmentController extends Controller
 
         return Inertia::render('Enrollment/Success', [
             'enrollment' => $enrollment,
-            'paymentUrl' => URL::signedRoute('payments.show', $enrollment->id),
         ]);
     }
 }

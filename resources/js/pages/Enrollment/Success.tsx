@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
-export default function Success({ enrollment, paymentUrl }) {
+export default function Success({ enrollment }) {
     const registerUrl = route('portal.register', {
         name: enrollment.applicant_name,
         email: enrollment.email,
@@ -21,15 +21,16 @@ export default function Success({ enrollment, paymentUrl }) {
                     </p>
                     <p className="mt-3 text-xs text-[#1F2A24]/40">Reference No: #{enrollment.id}</p>
 
+                    <p className="mt-6 rounded-xl bg-[#1F2A24]/5 px-4 py-3 text-sm text-[#1F2A24]/70">
+                        Your application is now under review. We'll email you once it's approved —
+                        you'll be able to pay tuition from your account after that.
+                    </p>
+
                     <Link
-                        href={paymentUrl}
+                        href={registerUrl}
                         className="mt-6 block w-full rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
                     >
-                        Proceed to Payment
-                    </Link>
-
-                    <Link href={registerUrl} className="mt-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline">
-                        Create an account to track this application →
+                        Create an Account to Track Status
                     </Link>
 
                     <Link href="/" className="mt-4 block text-sm font-medium text-[#2F6F4E] hover:underline">
