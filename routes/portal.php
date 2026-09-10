@@ -24,7 +24,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
             ->middleware('throttle:6,1')
             ->name('verification.resend');
 
-        Route::middleware('verified:enrollee')->group(function () {
+        Route::middleware('verified:portal.verification.notice')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::post('enrollments/{enrollment}/cancel', [DashboardController::class, 'cancel'])->name('enrollments.cancel');
         });
