@@ -9,13 +9,37 @@ use App\Models\GradeLevel;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+
+
 
 class EnrollmentController extends Controller
 {
     public function create()
     {
+        $previousApplication = null;
+        $enrollee = Auth::guard('enrollee')->user();
+
+        if ($enrollee) {
+            $latestEnrollment = $enrollee->enrollments()->with('student')->latest()->first();
+
+            if ($latestEnrollment) {
+                $previousApplication = [
+                    'last_name' => $latestEnrollment->student->last_name,
+                    'first_name' => $latestEnrollment->student->first_name,
+                    'middle_name' => $latestEnrollment->student->middle_name,
+                    'extension_name' => $latestEnrollment->student->extension_name,
+                    'lrn' => $latestEnrollment->student->lrn,
+                    'date_of_birth' => $latestEnrollment->student->date_of_birth->format('Y-m-d'),
+                    'sex' => $latestEnrollment->student->sex,
+                    'psa_birth_cert_no' => $latestEnrollment->student->psa_birth_cert_no,
+                ];
+            }
+        }
+
         return Inertia::render('Enrollment/Create', [
             'gradeLevels' => GradeLevel::with('subjects')->orderBy('level_order')->get(),
+            'previousApplication' => $previousApplication,
         ]);
     }
 
@@ -24,18 +48,26 @@ class EnrollmentController extends Controller
         $validated = $request->validated();
 
         $enrollment = DB::transaction(function () use ($validated, $request) {
-            $student = Student::create([
-                'lrn' => $validated['lrn'] ?? null,
-                'psa_birth_cert_no' => $validated['psa_birth_cert_no'] ?? null,
-                'last_name' => $validated['last_name'],
-                'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'] ?? null,
-                'extension_name' => $validated['extension_name'] ?? null,
-                'date_of_birth' => $validated['date_of_birth'],
-                'sex' => $validated['sex'],
-            ]);
+            $enrollee = Auth::guard('enrollee')->user();
+            $existingStudentId = $enrollee?->enrollments()->value('student_id');
 
-            $student->address()->create([
+            if ($existingStudentId) {
+                // Re-applying: reuse the same student record, don't let identity fields drift.
+                $student = Student::findOrFail($existingStudentId);
+            } else {
+                $student = Student::create([
+                    'lrn' => $validated['lrn'] ?? null,
+                    'psa_birth_cert_no' => $validated['psa_birth_cert_no'] ?? null,
+                    'last_name' => $validated['last_name'],
+                    'first_name' => $validated['first_name'],
+                    'middle_name' => $validated['middle_name'] ?? null,
+                    'extension_name' => $validated['extension_name'] ?? null,
+                    'date_of_birth' => $validated['date_of_birth'],
+                    'sex' => $validated['sex'],
+                ]);
+            }
+
+            $student->address()->updateOrCreate([], [
                 'house_number_street' => $validated['house_number_street'] ?? null,
                 'barangay' => $validated['barangay'],
                 'city_municipality' => $validated['city_municipality'],
@@ -44,7 +76,7 @@ class EnrollmentController extends Controller
                 'zip_code' => $validated['zip_code'] ?? null,
             ]);
 
-            $student->parentProfile()->create([
+            $student->parentProfile()->updateOrCreate([], [
                 'father_last_name' => $validated['father_last_name'] ?? null,
                 'father_first_name' => $validated['father_first_name'] ?? null,
                 'father_middle_name' => $validated['father_middle_name'] ?? null,
@@ -70,12 +102,16 @@ class EnrollmentController extends Controller
                 'enrollment_status' => 'PENDING',
             ]);
 
-            $verifiedAccount = EnrolleeUser::where('email', $validated['email'])
-                ->whereNotNull('email_verified_at')
-                ->first();
+            if ($enrollee) {
+                $enrollment->update(['enrollee_user_id' => $enrollee->id]);
+            } else {
+                $verifiedAccount = EnrolleeUser::where('email', $validated['email'])
+                    ->whereNotNull('email_verified_at')
+                    ->first();
 
-            if ($verifiedAccount) {
-                $enrollment->update(['enrollee_user_id' => $verifiedAccount->id]);
+                if ($verifiedAccount) {
+                    $enrollment->update(['enrollee_user_id' => $verifiedAccount->id]);
+                }
             }
 
             $enrollment->subjects()->sync($validated['subject_ids']);

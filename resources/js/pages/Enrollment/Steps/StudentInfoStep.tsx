@@ -1,8 +1,33 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 
+
+function calculateAge(dateOfBirth) {
+    if (!dateOfBirth) return '';
+
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const hasHadBirthdayThisYear =
+        today.getMonth() > dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+    if (!hasHadBirthdayThisYear) age -= 1;
+
+    return age >= 0 ? age : '';
+}
+
 export default function StudentInfoStep({ data, setData, errors, gradeLevels }) {
     const gradeOptions = gradeLevels.map((g) => ({ value: g.id, label: g.name }));
+
+    const handleDateOfBirthChange = (name, value) => {
+        setData((prevData) => ({
+            ...prevData,
+            date_of_birth: value,
+            age: calculateAge(value),
+        }));
+    };
 
     return (
         <div>
@@ -56,11 +81,26 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                 <TextInput label="Last Name" name="last_name" value={data.last_name} onChange={setData} error={errors.last_name} required />
                 <TextInput label="First Name" name="first_name" value={data.first_name} onChange={setData} error={errors.first_name} required />
                 <TextInput label="Middle Name" name="middle_name" value={data.middle_name} onChange={setData} error={errors.middle_name} />
-                <TextInput label="Extension Name (Jr., III)" name="extension_name" value={data.extension_name} onChange={setData} error={errors.extension_name} />
+                <SelectInput
+                    label="Extension Name"
+                    name="extension_name"
+                    value={data.extension_name}
+                    onChange={setData}
+                    error={errors.extension_name}
+                    options={[
+                        { value: 'N/A', label: 'N/A' },
+                        { value: 'Jr.', label: 'Jr.' },
+                        { value: 'Sr.', label: 'Sr.' },
+                        { value: 'II', label: 'II' },
+                        { value: 'III', label: 'III' },
+                        { value: 'IV', label: 'IV' },
+                        { value: 'V', label: 'V' },
+                    ]}
+                />
             </div>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
-                <TextInput label="Date of Birth" name="date_of_birth" type="date" value={data.date_of_birth} onChange={setData} error={errors.date_of_birth} required />
+                <TextInput label="Date of Birth" name="date_of_birth" type="date" value={data.date_of_birth} onChange={handleDateOfBirthChange} error={errors.date_of_birth} required />
                 <TextInput label="Age" name="age" type="number" value={data.age} onChange={setData} error={errors.age} required />
                 <SelectInput
                     label="Sex"

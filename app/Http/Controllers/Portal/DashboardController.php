@@ -17,13 +17,26 @@ class DashboardController extends Controller
         $enrollee = Auth::guard('enrollee')->user();
 
         $enrollments = $enrollee->enrollments()
-            ->with('student', 'gradeLevel', 'billingContract.installments')
+            ->with('student', 'gradeLevel', 'billingContract.installments.payments', 'officeVerification')
             ->latest()
             ->get()
             ->map(function (Enrollment $enrollment) {
                 $enrollment->payment_url = $enrollment->enrollment_status === 'APPROVED'
                     ? URL::signedRoute('payments.show', $enrollment->id)
                     : null;
+
+                if ($enrollment->billingContract) {
+                    $totalBilled = (float) $enrollment->billingContract->total_fee;
+                    $totalPaid = $enrollment->billingContract->installments->sum(
+                        fn ($installment) => $installment->payments->where('status', 'COMPLETED')->sum('amount')
+                    );
+
+                    $enrollment->total_billed = $totalBilled;
+                    $enrollment->remaining_balance = round($totalBilled - $totalPaid, 2);
+                } else {
+                    $enrollment->total_billed = null;
+                    $enrollment->remaining_balance = null;
+                }
 
                 return $enrollment;
             });

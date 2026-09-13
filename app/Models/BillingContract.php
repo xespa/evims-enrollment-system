@@ -41,7 +41,7 @@ class BillingContract extends Model
         // PayMongo (and most PH payment gateways) reject transactions below ~₱20.
         // If the chosen plan would produce installments too small to actually pay
         // online, fall back to fewer, larger installments instead of silently failing later.
-        $minInstallmentAmount = 20.00;
+        $minInstallmentAmount = 100.00;
 
         if ($amountPerInstallment < $minInstallmentAmount) {
             $count = max(1, (int) floor($this->total_fee / $minInstallmentAmount));

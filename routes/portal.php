@@ -4,6 +4,8 @@ use App\Http\Controllers\Portal\AuthController;
 use App\Http\Controllers\Portal\DashboardController;
 use App\Http\Controllers\Portal\VerificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Portal\ProfileController;
+
 
 Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware('guest:enrollee')->group(function () {
@@ -23,6 +25,8 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('email/resend', [VerificationController::class, 'resend'])
             ->middleware('throttle:6,1')
             ->name('verification.resend');
+
+        Route::post('profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update'); // ← must be here, inside auth:enrollee
 
         Route::middleware('verified:portal.verification.notice')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

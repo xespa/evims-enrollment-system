@@ -26,7 +26,7 @@ export default function SiteLayout({ children }) {
     return (
         <div className="min-h-screen bg-[#FBF8F2] font-sans text-[#1F2A24]">
             <header className="sticky top-0 z-40 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/95 backdrop-blur">
-                <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6">
                     <Link href="/" className="flex items-center gap-2.5">
                         <span className="flex items-center gap-2.5">
                             <img
@@ -36,7 +36,7 @@ export default function SiteLayout({ children }) {
                             />
                         </span>
                         <span className="flex flex-col leading-none">
-                            <span className="font-serif text-lg font-semibold tracking-tight">EVIMS</span>
+                            <span className="font-serif text-xl font-semibold tracking-tight">EVIMS</span>
                             <span className="text-[10px] uppercase tracking-[0.18em] text-[#1F2A24]/60">
                                 EASTERN VISAYAS INTERNATIONAL <br></br>
                                 MONTESSORI SCHOOL, INC.
@@ -49,7 +49,7 @@ export default function SiteLayout({ children }) {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`text-sm font-medium transition-colors ${
+                                className={`text-base font-medium transition-colors ${
                                     isActive(item.href)
                                         ? 'text-[#2F6F4E]'
                                         : 'text-[#1F2A24]/70 hover:text-[#2F6F4E]'
@@ -64,7 +64,7 @@ export default function SiteLayout({ children }) {
 
                         <Link
                             href="/admission"
-                            className="rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                            className="rounded-full bg-[#2F6F4E] px-5 py-2 text-base font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                         >
                             Enroll Now
                         </Link>
@@ -115,10 +115,14 @@ export default function SiteLayout({ children }) {
                             </Link>
                             <Link
                                 href={enrollee ? route('portal.dashboard') : route('portal.login')}
-                                className="flex h-9 w-9 items-center justify-center rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                                 title={enrollee ? `My Account (${enrollee.name})` : 'Log in to track your application'}
                             >
-                                <UserCircle className="h-6 w-6" />
+                                {enrollee?.profile_photo_url ? (
+                                    <img src={enrollee.profile_photo_url} alt={enrollee.name} className="h-9 w-9 rounded-full object-cover" />
+                                ) : (
+                                    <UserCircle className="h-10 w-10" />
+                                )}
                             </Link>
                         </div>
                     </nav>
@@ -128,7 +132,7 @@ export default function SiteLayout({ children }) {
             <main>{children}</main>
 
             <footer className="border-t border-[#1F2A24]/10 bg-[#1F2A24] text-[#FBF8F2]">
-                <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <div className="flex items-center gap-2">
                             <img

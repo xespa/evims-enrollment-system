@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm, Head } from '@inertiajs/react';
+import { useForm, Head, usePage } from '@inertiajs/react';
 import StepperNav from './Components/StepperNav';
 import StudentInfoStep from './Steps/StudentInfoStep';
 import AddressStep from './Steps/AddressStep';
@@ -9,10 +9,10 @@ import VitalInfoStep from './Steps/VitalInfoStep';
 import SubjectsStep from './Steps/SubjectsStep';
 import BillingStep from './Steps/BillingStep';
 import ReviewStep from './Steps/ReviewStep';
+const stepProps = { data, setData, errors, gradeLevels, locked: !!previousApplication };
 
 
-// Fields required to proceed past each step (client-side gatekeeping only —
-// the server re-validates everything again in StoreEnrollmentRequest).
+
 const STEP_REQUIRED_FIELDS = {
     1: ['student_type', 'grade_level_id', 'last_name', 'first_name', 'date_of_birth', 'sex', 'school_year', 'date_of_application', 'age', 'session_time_preference', 'email'],
     2: ['barangay', 'city_municipality', 'province', 'country'],
@@ -52,25 +52,48 @@ const FIELD_TO_STEP = {
     payment_option: 7, scanned_contract: 7,
 };
 
-export default function Create({ gradeLevels }) {
+function getDefaultSchoolYear() {
+    const now = new Date();
+    const month = now.getMonth() + 1; // 1–12
+    // PH school year runs roughly June–March/April; before June we're still
+    // in the school year that started the previous calendar year.
+    const startYear = month >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+    return `${startYear}-${startYear + 1}`;
+}
+
+function calculateAge(dateOfBirth) {
+    if (!dateOfBirth) return '';
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const hasHadBirthdayThisYear =
+        today.getMonth() > dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+    if (!hasHadBirthdayThisYear) age -= 1;
+    return age >= 0 ? age : '';
+}
+
+export default function Create({ gradeLevels, previousApplication }) {
     const [step, setStep] = useState(1);
+    const { props } = usePage();
+    const enrollee = props.auth?.enrollee;
 
     const { data, setData, post, processing, errors, transform } = useForm({
         // Student
         student_type: '',
-        lrn: '',
-        psa_birth_cert_no: '',
-        last_name: '',
-        first_name: '',
-        middle_name: '',
-        extension_name: '',
-        date_of_birth: '',
-        age: '',
-        sex: '',
+        lrn: previousApplication?.lrn ?? '',
+        psa_birth_cert_no: previousApplication?.psa_birth_cert_no ?? '',
+        last_name: previousApplication?.last_name ?? '',
+        first_name: previousApplication?.first_name ?? '',
+        middle_name: previousApplication?.middle_name ?? '',
+        extension_name: previousApplication?.extension_name ?? '',
+        date_of_birth: previousApplication?.date_of_birth ?? '',
+        age: previousApplication?.date_of_birth ? calculateAge(previousApplication.date_of_birth) : '',
+        sex: previousApplication?.sex ?? '',
         session_time_preference: '',
-        email: '',
+        email: enrollee?.email ?? '',
         grade_level_id: '',
-        school_year: '2026-2027',
+        school_year: getDefaultSchoolYear(),
         date_of_application: new Date().toISOString().slice(0, 10),
 
         // Address
@@ -182,7 +205,13 @@ export default function Create({ gradeLevels }) {
                         onSubmit={handleSubmit}
                         className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8"
                     >
-                        {step === 1 && <StudentInfoStep {...stepProps} />}
+                        {previousApplication && step === 1 && (
+                            <div className="mb-4 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
+                                This application is for <span className="font-semibold">{previousApplication.first_name} {previousApplication.last_name}</span>,
+                                the student already on file with your account. Their identifying details are locked below — contact the registrar if any of it
+                                needs correcting.
+                            </div>
+                        )}
                         {step === 2 && <AddressStep {...stepProps} />}
                         {step === 3 && <ParentInfoStep {...stepProps} />}
                         {step === 4 && <AcademicHistoryStep {...stepProps} />}

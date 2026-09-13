@@ -21,15 +21,12 @@ class PaymentController extends Controller
 
         $enrollment->load('student', 'billingContract.installments.payments');
 
-        $installments = $enrollment->billingContract?->installments
-            ->map(function ($installment) use ($enrollment) {
-                $installment->gcash_initiate_url = URL::signedRoute('payments.gcash.initiate', [
-                    'enrollment' => $enrollment->id,
-                    'installment' => $installment->id,
-                ]);
-
-                return $installment;
-            });
+        $enrollment->billingContract?->installments?->each(function ($installment) use ($enrollment) {
+            $installment->gcash_initiate_url = URL::signedRoute('payments.gcash.initiate', [
+                'enrollment' => $enrollment->id,
+                'installment' => $installment->id,
+            ]);
+        });
 
         return Inertia::render('Payments/Show', [
             'enrollment' => $enrollment,
@@ -187,5 +184,31 @@ class PaymentController extends Controller
         $expectedSignature = hash_hmac('sha256', $signedPayload, config('services.paymongo.webhook_secret'));
 
         return hash_equals($expectedSignature, $providedSignature);
+    }
+
+    public function sandboxCheckout(Payment $payment)
+    {
+        abort_unless(config('services.paymongo.sandbox_mode'), 404);
+
+        $payment->load('enrollment.student');
+
+        return Inertia::render('Payments/SandboxCheckout', [
+            'payment' => $payment,
+        ]);
+    }
+
+    public function sandboxConfirm(Payment $payment)
+    {
+        abort_unless(config('services.paymongo.sandbox_mode'), 404);
+
+        $payment->update([
+            'status' => 'COMPLETED',
+            'paid_at' => now(),
+        ]);
+
+        $payment->installment->refreshStatus();
+
+        return redirect(URL::signedRoute('payments.show', $payment->enrollment_id))
+            ->with('success', 'Payment successful! (Simulated)');
     }
 }

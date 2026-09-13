@@ -14,9 +14,8 @@ export default function Show({ enrollment }) {
 
     const { post, processing } = useForm();
 
-    const payWithGcash = (installmentId) => {
-        const url = gcashInitiateUrlBase.replace('__INSTALLMENT__', installmentId);
-        router.post(url);
+    const payWithGcash = (installment) => {
+        router.post(installment.gcash_initiate_url);
     };
 
     const installmentPaid = (installment) =>
@@ -32,7 +31,7 @@ export default function Show({ enrollment }) {
 
             <Head title="Tuition Payments" />
             <div className="min-h-screen bg-gray-50 py-8 px-4">
-                <div className="mx-auto max-w-2xl">
+                <div className="mx-auto max-w-5xl">
                     <h1 className="mb-1 text-2xl font-bold text-gray-900">Tuition Payments</h1>
                     <p className="mb-6 text-sm text-gray-500">
                         {enrollment.student.first_name} {enrollment.student.last_name} — Reference #{enrollment.id}
@@ -65,7 +64,7 @@ export default function Show({ enrollment }) {
                                         </span>
                                     ) : (
                                         <button
-                                            onClick={() => payWithGcash(installment.id)}
+                                            onClick={() => payWithGcash(installment)}
                                             disabled={processing}
                                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                                         >

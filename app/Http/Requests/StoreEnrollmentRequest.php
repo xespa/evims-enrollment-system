@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
@@ -20,12 +22,21 @@ class StoreEnrollmentRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+
     public function rules(): array
     {
+        $enrollee = Auth::guard('enrollee')->user();
+        $existingStudentId = $enrollee?->enrollments()->value('student_id');
+
+        $schoolYearRules = ['required', 'string', 'max:9'];
+        if ($existingStudentId) {
+            $schoolYearRules[] = Rule::unique('enrollments', 'school_year')->where('student_id', $existingStudentId);
+        }
+
         return [
             // Student
             'student_type' => ['required', 'in:NO_LRN,WITH_LRN,RETURNEE'],
-            'lrn' => ['nullable', 'digits:14', 'unique:students,lrn'],
+            'lrn' => ['nullable', 'digits:14', Rule::unique('students', 'lrn')->ignore($existingStudentId)],
             'psa_birth_cert_no' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -36,13 +47,12 @@ class StoreEnrollmentRequest extends FormRequest
 
             // Enrollment
             'grade_level_id' => ['required', 'exists:grade_levels,id'],
-            'school_year' => ['required', 'string', 'max:9'],
+            'school_year' => $schoolYearRules,
             'date_of_application' => ['required', 'date'],
             'age' => ['required', 'integer', 'min:2', 'max:25'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],
             'email' => ['required', 'email', 'max:255'],
             'subject_ids' => ['required', 'array', 'min:1'],
-            'subject_ids.*' => ['exists:subjects,id'],
 
             // Address
             'house_number_street' => ['nullable', 'string', 'max:255'],

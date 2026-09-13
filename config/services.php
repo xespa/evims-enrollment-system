@@ -39,6 +39,8 @@ return [
         'secret_key' => env('PAYMONGO_SECRET_KEY'),
         'public_key' => env('PAYMONGO_PUBLIC_KEY'),
         'webhook_secret' => env('PAYMONGO_WEBHOOK_SECRET'),
+        # Set to true for sandbox mode, false for production
+        'sandbox_mode' => env('PAYMONGO_SANDBOX_MODE', false),
     ],
 
     'school_gcash' => [
