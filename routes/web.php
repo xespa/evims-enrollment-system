@@ -9,6 +9,14 @@ use App\Http\Controllers\PaymentController;
 use App\Models\Event;
 use App\Models\GradeLevel;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PhAddressController;
+
+
+Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
+    Route::get('provinces', [PhAddressController::class, 'provinces'])->name('provinces');
+    Route::get('cities/{provinceCode}', [PhAddressController::class, 'cities'])->name('cities');
+    Route::get('barangays/{munCode}', [PhAddressController::class, 'barangays'])->name('barangays');
+});
 
 Route::get('/', function () {
     return inertia('Site/Home', [
