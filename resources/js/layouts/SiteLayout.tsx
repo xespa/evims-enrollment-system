@@ -26,13 +26,13 @@ export default function SiteLayout({ children }) {
     return (
         <div className="min-h-screen bg-[#FBF8F2] font-sans text-[#1F2A24]">
             <header className="sticky top-0 z-40 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/95 backdrop-blur">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6">
+                <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-5 py-6">
                     <Link href="/" className="flex items-center gap-2.5">
                         <span className="flex items-center gap-2.5">
                             <img
                                 src="\images\logoevims.png"
                                 alt="evims-logo"
-                                className="h-15 w-15 rounded-full object-cover"
+                                className="h-16 w-16 rounded-full object-cover"
                             />
                         </span>
                         <span className="flex flex-col leading-none">
@@ -68,12 +68,18 @@ export default function SiteLayout({ children }) {
                         >
                             Enroll Now
                         </Link>
+
+                        {/* Desktop profile icon — sized to match the EVIMS logo (h-15 w-15) */}
                         <Link
                             href={enrollee ? route('portal.dashboard') : route('portal.login')}
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                            className="flex h-15 w-15 items-center justify-center overflow-hidden rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                             title={enrollee ? `My Account (${enrollee.name})` : 'Log in to track your application'}
                         >
-                            <UserCircle className="h-10 w-10" />
+                            {enrollee?.profile_photo_url ? (
+                                <img src={enrollee.profile_photo_url} alt={enrollee.name} className="h-15 w-15 rounded-full object-cover" />
+                            ) : (
+                                <UserCircle className="h-15 w-15" />
+                            )}
                         </Link>
                     </div>
 
@@ -113,15 +119,17 @@ export default function SiteLayout({ children }) {
                             >
                                 Enroll Now
                             </Link>
+
+                            {/* Mobile profile icon — sized to match the EVIMS logo (h-15 w-15) */}
                             <Link
                                 href={enrollee ? route('portal.dashboard') : route('portal.login')}
-                                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                                className="flex h-15 w-15 items-center justify-center overflow-hidden rounded-full text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                                 title={enrollee ? `My Account (${enrollee.name})` : 'Log in to track your application'}
                             >
                                 {enrollee?.profile_photo_url ? (
-                                    <img src={enrollee.profile_photo_url} alt={enrollee.name} className="h-9 w-9 rounded-full object-cover" />
+                                    <img src={enrollee.profile_photo_url} alt={enrollee.name} className="h-15 w-15 rounded-full object-cover" />
                                 ) : (
-                                    <UserCircle className="h-10 w-10" />
+                                    <UserCircle className="h-15 w-15" />
                                 )}
                             </Link>
                         </div>
@@ -132,7 +140,7 @@ export default function SiteLayout({ children }) {
             <main>{children}</main>
 
             <footer className="border-t border-[#1F2A24]/10 bg-[#1F2A24] text-[#FBF8F2]">
-                <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <div className="flex items-center gap-2">
                             <img

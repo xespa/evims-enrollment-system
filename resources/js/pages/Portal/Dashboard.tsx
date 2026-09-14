@@ -152,7 +152,7 @@ export default function Dashboard({ enrollments }) {
                             )}
                         </div>
                         <p className="text-sm text-[#1F2A24]/60">{enrollee?.email}</p>
-                        <p className="text-sm text-[#1F2A24]/50">Parent / Guardian Account</p>
+                        <p className="text-sm text-[#1F2A24]/50">Student Account</p>
                     </div>
                 </div>
 
