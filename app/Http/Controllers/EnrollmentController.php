@@ -33,6 +33,8 @@ class EnrollmentController extends Controller
                     'date_of_birth' => $latestEnrollment->student->date_of_birth->format('Y-m-d'),
                     'sex' => $latestEnrollment->student->sex,
                     'psa_birth_cert_no' => $latestEnrollment->student->psa_birth_cert_no,
+                    'student_type' => $latestEnrollment->student_type,
+                    'grade_level_id' => $latestEnrollment->grade_level_id,
                 ];
             }
         }

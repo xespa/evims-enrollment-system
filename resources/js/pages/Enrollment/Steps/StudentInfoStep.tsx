@@ -1,7 +1,6 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 
-
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return '';
 
@@ -58,21 +57,37 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                 />
             </div>
 
-            <TextInput label="LRN" name="lrn" value={data.lrn} onChange={setData} error={errors.lrn} readOnly={locked} />
-            <TextInput label="PSA Birth Certificate No." name="psa_birth_cert_no" value={data.psa_birth_cert_no} onChange={setData} error={errors.psa_birth_cert_no} readOnly={locked} />
+            {data.student_type !== 'NO_LRN' && (
+                <TextInput
+                    label="LRN (14-digit)"
+                    name="lrn"
+                    value={data.lrn}
+                    onChange={setData}
+                    error={errors.lrn}
+                    maxLength={14}
+                />
+            )}
+
+            <TextInput
+                label="PSA Birth Certificate No."
+                name="psa_birth_cert_no"
+                value={data.psa_birth_cert_no}
+                onChange={setData}
+                error={errors.psa_birth_cert_no}
+            />
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-                <TextInput label="Last Name" name="last_name" value={data.last_name} onChange={setData} error={errors.last_name} required readOnly={locked} />
-                <TextInput label="First Name" name="first_name" value={data.first_name} onChange={setData} error={errors.first_name} required readOnly={locked} />
-                <TextInput label="Middle Name" name="middle_name" value={data.middle_name} onChange={setData} error={errors.middle_name} readOnly={locked} />
+                <TextInput label="Last Name" name="last_name" value={data.last_name} onChange={setData} error={errors.last_name} required />
+                <TextInput label="First Name" name="first_name" value={data.first_name} onChange={setData} error={errors.first_name} required />
+                <TextInput label="Middle Name" name="middle_name" value={data.middle_name} onChange={setData} error={errors.middle_name} />
                 <SelectInput
                     label="Extension Name"
                     name="extension_name"
                     value={data.extension_name}
                     onChange={setData}
                     error={errors.extension_name}
-                    disabled={locked}
                     options={[
+                        { value: 'N/A', label: 'N/A' },
                         { value: 'Jr.', label: 'Jr.' },
                         { value: 'Sr.', label: 'Sr.' },
                         { value: 'II', label: 'II' },
@@ -84,7 +99,7 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
             </div>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
-                <TextInput label="Date of Birth" name="date_of_birth" type="date" value={data.date_of_birth} onChange={handleDateOfBirthChange} error={errors.date_of_birth} required readOnly={locked} />
+                <TextInput label="Date of Birth" name="date_of_birth" type="date" value={data.date_of_birth} onChange={handleDateOfBirthChange} error={errors.date_of_birth} required />
                 <TextInput label="Age" name="age" type="number" value={data.age} onChange={setData} error={errors.age} required />
                 <SelectInput
                     label="Sex"
@@ -93,7 +108,6 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     onChange={setData}
                     error={errors.sex}
                     required
-                    disabled={locked}
                     options={[{ value: 'MALE', label: 'Male' }, { value: 'FEMALE', label: 'Female' }]}
                 />
             </div>
