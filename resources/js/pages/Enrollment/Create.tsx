@@ -9,7 +9,6 @@ import VitalInfoStep from './Steps/VitalInfoStep';
 import SubjectsStep from './Steps/SubjectsStep';
 import BillingStep from './Steps/BillingStep';
 import ReviewStep from './Steps/ReviewStep';
-const stepProps = { data, setData, errors, gradeLevels, locked: !!previousApplication };
 
 
 
@@ -173,7 +172,7 @@ export default function Create({ gradeLevels, previousApplication }) {
         });
     };
 
-    const stepProps = { data, setData, errors, gradeLevels };
+    const stepProps = { data, setData, errors, gradeLevels, locked: !!previousApplication };
 
     return (
         <>

@@ -124,6 +124,7 @@ class EnrollmentController extends Controller
                 'previous_school_address' => $validated['previous_school_address'] ?? null,
             ]);
 
+
             $enrollment->vitalInformation()->create([
                 'has_attended_summer_school' => $validated['has_attended_summer_school'] ?? false,
                 'has_emotional_mental_physical_difficulties' => $validated['has_emotional_mental_physical_difficulties'] ?? false,
