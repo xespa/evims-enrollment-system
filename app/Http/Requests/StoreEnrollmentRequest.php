@@ -2,31 +2,42 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\Student;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * Find the student this submission belongs to, if any:
+     * an LRN match takes priority (works even for guests), falling back
+     * to the logged-in account's existing student (for NO_LRN cases).
      */
+    protected function resolveExistingStudentId(): ?int
+    {
+        $lrn = $this->input('lrn');
+
+        if ($lrn) {
+            $student = Student::where('lrn', $lrn)->first();
+            if ($student) {
+                return $student->id;
+            }
+        }
+
+        $enrollee = Auth::guard('enrollee')->user();
+
+        return $enrollee?->enrollments()->value('student_id');
+    }
 
     public function rules(): array
     {
-        $enrollee = Auth::guard('enrollee')->user();
-        $existingStudentId = $enrollee?->enrollments()->value('student_id');
+        $existingStudentId = $this->resolveExistingStudentId();
 
         $schoolYearRules = ['required', 'string', 'max:9'];
         if ($existingStudentId) {
@@ -34,9 +45,10 @@ class StoreEnrollmentRequest extends FormRequest
         }
 
         return [
-            // Student
+            // Student — 'lrn' is intentionally NOT unique anymore. A matching LRN
+            // means "this is the same returning student," not a validation error.
             'student_type' => ['required', 'in:NO_LRN,WITH_LRN,RETURNEE'],
-            'lrn' => ['nullable', 'digits:14', Rule::unique('students', 'lrn')->ignore($existingStudentId)],
+            'lrn' => ['nullable', 'digits:14'],
             'psa_birth_cert_no' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -52,7 +64,6 @@ class StoreEnrollmentRequest extends FormRequest
             'age' => ['required', 'integer', 'min:2', 'max:25'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],
             'email' => ['required', 'email', 'max:255'],
-            'subject_ids' => ['required', 'array', 'min:1'],
 
             // Address
             'house_number_street' => ['nullable', 'string', 'max:255'],
@@ -62,7 +73,7 @@ class StoreEnrollmentRequest extends FormRequest
             'country' => ['required', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:10'],
 
-            // Parent profile
+            // Parents
             'father_last_name' => ['nullable', 'string', 'max:255'],
             'father_first_name' => ['nullable', 'string', 'max:255'],
             'father_middle_name' => ['nullable', 'string', 'max:255'],
@@ -76,14 +87,14 @@ class StoreEnrollmentRequest extends FormRequest
             'mother_name_of_office' => ['nullable', 'string', 'max:255'],
             'mother_mobile_no' => ['nullable', 'string', 'max:20'],
 
-            // Academic history (only relevant for RETURNEE, but keep nullable)
+            // Academic history
             'last_grade_level_completed' => ['nullable', 'string', 'max:255'],
-            'last_school_year_completed' => ['nullable', 'string', 'max:255'],
+            'last_school_year_completed' => ['nullable', 'string', 'max:9'],
             'previous_school_name' => ['nullable', 'string', 'max:255'],
             'previous_school_id' => ['nullable', 'string', 'max:255'],
-            'previous_school_address' => ['nullable', 'string'],
+            'previous_school_address' => ['nullable', 'string', 'max:255'],
 
-            // Vital information
+            // Vital info
             'has_attended_summer_school' => ['boolean'],
             'has_emotional_mental_physical_difficulties' => ['boolean'],
             'has_learning_difficulties' => ['boolean'],
@@ -95,10 +106,14 @@ class StoreEnrollmentRequest extends FormRequest
             'history_particulars' => ['nullable', 'string'],
             'special_health_problems' => ['nullable', 'string'],
 
+            // Subjects
+            'subject_ids' => ['required', 'array', 'min:1'],
+            'subject_ids.*' => ['exists:subjects,id'],
+
             // Billing
-            'payment_option' => ['required', 'in:MONTHLY,BI_MONTHLY,FULL_PAYMENT'],
-            'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'payment_channel' => ['required', 'in:COUNTER,GCASH'],
+            'payment_option' => ['required', 'string'],
+            'payment_channel' => ['required', 'string'],
+            'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
     }
 }

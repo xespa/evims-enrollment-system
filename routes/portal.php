@@ -8,7 +8,7 @@ use App\Http\Controllers\Portal\ProfileController;
 
 
 Route::prefix('portal')->name('portal.')->group(function () {
-    Route::middleware('guest:enrollee')->group(function () {
+    Route::middleware('guest.enrollee')->group(function () {
         Route::get('register', [AuthController::class, 'create'])->name('register');
         Route::post('register', [AuthController::class, 'store'])->name('register.store');
         Route::get('login', [AuthController::class, 'showLogin'])->name('login');
