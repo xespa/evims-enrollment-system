@@ -18,7 +18,15 @@ const NAV_LINKS = [
         ],
     },
     { label: 'Admission', href: '/admission' },
-    { label: 'Student Services', href: '/student-services' },
+    {
+        label: 'Student Services',
+        href: '/student-services',
+        children: [
+            { label: 'Guidance & Counseling', href: '/student-services/guidance-counseling' },
+            { label: 'Health Services', href: '/student-services/health-services' },
+            { label: 'Library', href: '/student-services/library' },
+        ],
+    },
     { label: 'Events', href: '/events' },
     { label: 'Gallery', href: '/gallery' },
     { label: 'Contact Us', href: '/contact' },

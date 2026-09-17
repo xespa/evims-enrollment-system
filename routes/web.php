@@ -4,13 +4,12 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
 use App\Models\Event;
 use App\Models\GradeLevel;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\PhAddressController;
-
 
 Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
     Route::get('provinces', [PhAddressController::class, 'provinces'])->name('provinces');
@@ -24,6 +23,8 @@ Route::get('/', function () {
     ]);
 })->name('home');
 Route::inertia('/about', 'Site/About')->name('site.about');
+Route::inertia('/academics/pre-elementary', 'Site/Academics/PreElementary')->name('site.academics.pre-elementary');
+Route::inertia('/academics/lower-elementary', 'Site/Academics/LowerElementary')->name('site.academics.lower-elementary');
 Route::inertia('/contact', 'Site/Contact')->name('site.contact');
 Route::get('/events', function () {
     $events = Event::upcoming()->orderBy('event_date')->get();
