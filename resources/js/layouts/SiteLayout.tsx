@@ -1,13 +1,22 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { login } from '@/routes';
-import { UserCircle } from 'lucide-react';
+import { ChevronDown, UserCircle } from 'lucide-react';
 
 
 const NAV_LINKS = [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about' },
-    { label: 'Academics', href: '/academics' },
+    {
+        label: 'Academics',
+        href: '/academics',
+        children: [
+            { label: 'Pre-Elementary', href: '/academics/pre-elementary' },
+            { label: 'Lower Elementary', href: '/academics/lower-elementary' },
+            { label: 'Upper Elementary', href: '/academics/upper-elementary' },
+            { label: 'High School', href: '/academics/high-school' },
+        ],
+    },
     { label: 'Admission', href: '/admission' },
     { label: 'Student Services', href: '/student-services' },
     { label: 'Events', href: '/events' },
@@ -18,6 +27,9 @@ const NAV_LINKS = [
 export default function SiteLayout({ children }) {
     const { url } = usePage();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const [openMobileSection, setOpenMobileSection] = useState(null);
+    const desktopNavRef = useRef(null);
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
 
@@ -25,10 +37,38 @@ export default function SiteLayout({ children }) {
 
     useEffect(() => {
         document.body.style.overflow = menuOpen ? 'hidden' : '';
+        if (!menuOpen) {
+            setOpenMobileSection(null);
+        }
         return () => {
             document.body.style.overflow = '';
         };
     }, [menuOpen]);
+
+    useEffect(() => {
+        if (!openDropdown) {
+            return;
+        }
+
+        const closeOnOutsideClick = (event) => {
+            if (desktopNavRef.current && !desktopNavRef.current.contains(event.target)) {
+                setOpenDropdown(null);
+            }
+        };
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') {
+                setOpenDropdown(null);
+            }
+        };
+
+        document.addEventListener('mousedown', closeOnOutsideClick);
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', closeOnOutsideClick);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [openDropdown]);
 
     return (
         <div className="min-h-screen bg-[#FBF8F2] font-sans text-[#1F2A24]">
@@ -51,20 +91,73 @@ export default function SiteLayout({ children }) {
                         </span>
                     </Link>
 
-                    <nav className="hidden flex-nowrap items-center gap-5 whitespace-nowrap xl:flex">
-                        {NAV_LINKS.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`text-base font-medium transition-colors ${
-                                    isActive(item.href)
-                                        ? 'text-[#2F6F4E]'
-                                        : 'text-[#1F2A24]/70 hover:text-[#2F6F4E]'
-                                }`}
-                            >
-                                {item.label}
-                            </Link>
-                        ))}
+                    <nav ref={desktopNavRef} className="hidden flex-nowrap items-center gap-5 whitespace-nowrap xl:flex">
+                        {NAV_LINKS.map((item) =>
+                            item.children ? (
+                                <div
+                                    key={item.href}
+                                    className="relative"
+                                    onMouseEnter={() => setOpenDropdown(item.href)}
+                                    onMouseLeave={() => setOpenDropdown(null)}
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setOpenDropdown((current) => (current === item.href ? null : item.href))
+                                        }
+                                        aria-haspopup="true"
+                                        aria-expanded={openDropdown === item.href}
+                                        className={`flex items-center gap-1 text-base font-medium transition-colors ${
+                                            isActive(item.href)
+                                                ? 'text-[#2F6F4E]'
+                                                : 'text-[#1F2A24]/70 hover:text-[#2F6F4E]'
+                                        }`}
+                                    >
+                                        {item.label}
+                                        <ChevronDown
+                                            className={`h-4 w-4 transition-transform ${
+                                                openDropdown === item.href ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </button>
+
+                                    <div
+                                        className={`absolute top-full left-0 z-50 w-56 pt-3 ${
+                                            openDropdown === item.href ? 'block' : 'hidden'
+                                        }`}
+                                    >
+                                        <div className="overflow-hidden rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] py-2 shadow-lg">
+                                            {item.children.map((child) => (
+                                                <Link
+                                                    key={child.href}
+                                                    href={child.href}
+                                                    onClick={() => setOpenDropdown(null)}
+                                                    className={`block px-4 py-2 text-sm font-medium transition-colors ${
+                                                        isActive(child.href)
+                                                            ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                                                            : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#2F6F4E]'
+                                                    }`}
+                                                >
+                                                    {child.label}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`text-base font-medium transition-colors ${
+                                        isActive(item.href)
+                                            ? 'text-[#2F6F4E]'
+                                            : 'text-[#1F2A24]/70 hover:text-[#2F6F4E]'
+                                    }`}
+                                >
+                                    {item.label}
+                                </Link>
+                            ),
+                        )}
                     </nav>
 
                     <div className="hidden items-center gap-3 xl:flex">
@@ -146,20 +239,63 @@ export default function SiteLayout({ children }) {
                 </div>
 
                 <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-5">
-                    {NAV_LINKS.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setMenuOpen(false)}
-                            className={`rounded-md px-3 py-2.5 text-sm font-medium ${
-                                isActive(item.href)
-                                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                                    : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
-                            }`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
+                    {NAV_LINKS.map((item) =>
+                        item.children ? (
+                            <div key={item.href}>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setOpenMobileSection((current) => (current === item.href ? null : item.href))
+                                    }
+                                    aria-expanded={openMobileSection === item.href}
+                                    className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium ${
+                                        isActive(item.href)
+                                            ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                                            : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                    }`}
+                                >
+                                    {item.label}
+                                    <ChevronDown
+                                        className={`h-4 w-4 transition-transform ${
+                                            openMobileSection === item.href ? 'rotate-180' : ''
+                                        }`}
+                                    />
+                                </button>
+
+                                {openMobileSection === item.href && (
+                                    <div className="mt-1 ml-3 flex flex-col gap-1 border-l border-[#1F2A24]/10 pl-3">
+                                        {item.children.map((child) => (
+                                            <Link
+                                                key={child.href}
+                                                href={child.href}
+                                                onClick={() => setMenuOpen(false)}
+                                                className={`rounded-md px-3 py-2 text-sm font-medium ${
+                                                    isActive(child.href)
+                                                        ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                                                        : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                                }`}
+                                            >
+                                                {child.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setMenuOpen(false)}
+                                className={`rounded-md px-3 py-2.5 text-sm font-medium ${
+                                    isActive(item.href)
+                                        ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                                        : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                }`}
+                            >
+                                {item.label}
+                            </Link>
+                        ),
+                    )}
                 </nav>
 
                 <div className="border-t border-[#1F2A24]/10 p-5">
