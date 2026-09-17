@@ -54,7 +54,7 @@ export default function About() {
             <Head title="EVIMS — About Us" />
 
             <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16 lg:py-24">
+                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
                     <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
                         About EVIMS
                     </span>
@@ -84,7 +84,7 @@ export default function About() {
             </section>
 
             <section className="border-y border-[#1F2A24]/10 bg-white gap-10">
-                <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-6 px-5 py-16 lg:grid-cols-2 lg:gap-10">
+                <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-5 py-16 lg:grid-cols-2 lg:gap-10">
                     <div className="rounded-2xl border border-[#1F2A24]/10 p-6">
                         <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Our Mission</p>
                         <p className="mt-3 font-serif text-xl leading-snug text-[#1F2A24]">
@@ -103,7 +103,7 @@ export default function About() {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-screen-2xl px-5 py-16">
+            <section className="mx-auto max-w-7xl px-5 py-16">
                 <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">What Drives Us Forward</p>
                 <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">The fundamental principles that guide our actions and shape our community</h2>
 
@@ -119,7 +119,7 @@ export default function About() {
             </section>
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16">
+                <div className="mx-auto max-w-7xl px-5 py-16">
                     <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Our story</p>
                     <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Growing with the community</h2>
 
@@ -136,7 +136,7 @@ export default function About() {
             </section>
 
             <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-screen-2xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
                             Come see EVIMS for yourself.

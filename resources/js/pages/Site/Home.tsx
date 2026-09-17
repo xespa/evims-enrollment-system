@@ -48,7 +48,7 @@ export default function Home({ gradeLevels }) {
             <Head title="EVIMS — Home" />
 
             <section className="relative overflow-hidden">
-                <div className="mx-auto grid max-w-screen-2xl grid-cols-1 items-center gap-12 px-5 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+                <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
                     <div>
                         <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
                             School Year 2026–2027 Enrollment is Open
@@ -118,7 +118,7 @@ export default function Home({ gradeLevels }) {
             </section>
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16">
+                <div className="mx-auto max-w-7xl px-5 py-16">
                     <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Why families choose EVIMS</p>
                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                         {HIGHLIGHTS.map((item) => (
@@ -132,7 +132,7 @@ export default function Home({ gradeLevels }) {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-screen-2xl px-5 py-16">
+            <section className="mx-auto max-w-7xl px-5 py-16">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">How enrollment works</p>
@@ -155,7 +155,7 @@ export default function Home({ gradeLevels }) {
             </section>
 
             <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-screen-2xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
                             Ready to reserve your child's seat?

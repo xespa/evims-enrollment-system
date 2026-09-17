@@ -36,7 +36,7 @@ export default function Events({ events = [] }) {
             <Head title="EVIMS — Events" />
 
             <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16 lg:py-24">
+                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
                     <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
                         School Events &amp; Calendar
                     </span>
@@ -70,7 +70,7 @@ export default function Events({ events = [] }) {
             </section>
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16">
+                <div className="mx-auto max-w-7xl px-5 py-16">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Mark your calendar</p>
@@ -141,7 +141,7 @@ export default function Events({ events = [] }) {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-screen-2xl px-5 py-16">
+            <section className="mx-auto max-w-7xl px-5 py-16">
                 <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Traditions we look forward to</p>
                 <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Annual highlights</h2>
 
@@ -157,7 +157,7 @@ export default function Events({ events = [] }) {
             </section>
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-screen-2xl px-5 py-16">
+                <div className="mx-auto max-w-7xl px-5 py-16">
                     <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Never miss a date</p>
                     <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">How families stay updated</h2>
 
@@ -174,7 +174,7 @@ export default function Events({ events = [] }) {
             </section>
 
             <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-screen-2xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
                             Relive the last event.
