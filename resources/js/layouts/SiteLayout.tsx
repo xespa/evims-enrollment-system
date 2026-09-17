@@ -27,9 +27,9 @@ const NAV_LINKS = [
 export default function SiteLayout({ children }) {
     const { url } = usePage();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const [openMobileSection, setOpenMobileSection] = useState(null);
-    const desktopNavRef = useRef(null);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
+    const desktopNavRef = useRef<HTMLElement | null>(null);
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
 
@@ -50,12 +50,12 @@ export default function SiteLayout({ children }) {
             return;
         }
 
-        const closeOnOutsideClick = (event) => {
-            if (desktopNavRef.current && !desktopNavRef.current.contains(event.target)) {
+        const closeOnOutsideClick = (event: MouseEvent) => {
+            if (desktopNavRef.current && !desktopNavRef.current.contains(event.target as Node)) {
                 setOpenDropdown(null);
             }
         };
-        const closeOnEscape = (event) => {
+        const closeOnEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 setOpenDropdown(null);
             }
