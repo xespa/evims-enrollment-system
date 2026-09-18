@@ -33,6 +33,11 @@ class Student extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+    public function latestEnrollment()
+    {
+        return $this->hasOne(Enrollment::class)->latestOfMany();
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->last_name}, {$this->first_name} {$this->middle_name} {$this->extension_name}");

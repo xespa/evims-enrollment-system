@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
@@ -69,6 +71,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+
     Route::get('/admissionments', [EnrollmentManagementController::class, 'index'])->name('enrollments.index');
     Route::get('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
     Route::patch('/admissionments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
@@ -84,6 +88,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+
+    Route::redirect('/settings', '/admin/settings/profile');
+    Route::get('/settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');
+    Route::patch('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::get('/settings/security', [SettingsController::class, 'editSecurity'])->name('settings.security.edit');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    Route::delete('/settings', [SettingsController::class, 'destroy'])->name('settings.destroy');
 });
 
 require __DIR__.'/settings.php';
