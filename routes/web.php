@@ -25,6 +25,11 @@ Route::get('/', function () {
 Route::inertia('/about', 'Site/About')->name('site.about');
 Route::inertia('/academics/pre-elementary', 'Site/Academics/PreElementary')->name('site.academics.pre-elementary');
 Route::inertia('/academics/lower-elementary', 'Site/Academics/LowerElementary')->name('site.academics.lower-elementary');
+Route::inertia('/academics/upper-elementary', 'Site/Academics/UpperElementary')->name('site.academics.upper-elementary');
+Route::inertia('/academics/high-school', 'Site/Academics/HighSchool')->name('site.academics.high-school');
+Route::inertia('/student-services/guidance-counseling', 'Site/StudentServices/GuidanceCounseling')->name('site.student-services.guidance-counseling');
+Route::inertia('/student-services/health-services', 'Site/StudentServices/HealthServices')->name('site.student-services.health-services');
+Route::inertia('/student-services/library', 'Site/StudentServices/Library')->name('site.student-services.library');
 Route::inertia('/contact', 'Site/Contact')->name('site.contact');
 Route::get('/events', function () {
     $events = Event::upcoming()->orderBy('event_date')->get();

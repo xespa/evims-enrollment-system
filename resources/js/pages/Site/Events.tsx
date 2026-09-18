@@ -26,7 +26,7 @@ const STAY_UPDATED_STEPS = [
 ];
 
 function formatDay(dateStr) {
-    const [y, m, d] = dateStr.split('-').map(Number);
+    const [y, m, d] = dateStr.split('T')[0].split('-').map(Number);
     return new Date(y, m - 1, d);
 }
 
@@ -74,11 +74,7 @@ export default function Events({ events = [] }) {
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Mark your calendar</p>
-                            <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Upcoming events</h2>
                         </div>
-                        <Link href="/contact" className="text-sm font-semibold text-[#2F6F4E] hover:underline">
-                            Ask the registrar →
-                        </Link>
                     </div>
 
                     {events.length === 0 ? (
