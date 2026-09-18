@@ -9,6 +9,7 @@ class OfficeVerification extends Model
     protected $fillable = [
         'enrollment_id', 'has_form_138', 'has_birth_certificate',
         'has_good_moral_certificate', 'verified_by', 'verified_at',
+        'form_138_path', 'birth_certificate_path', 'good_moral_path',
     ];
 
     protected $casts = [
@@ -25,6 +26,6 @@ class OfficeVerification extends Model
 
     public function verifiedBy()
     {
-        return $this->belongsTo(\App\Models\User::class, 'verified_by');
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

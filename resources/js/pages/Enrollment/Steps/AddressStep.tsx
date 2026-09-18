@@ -14,14 +14,62 @@ export default function AddressStep({ data, setData, errors }) {
     const [loadingCities, setLoadingCities] = useState(false);
     const [loadingBarangays, setLoadingBarangays] = useState(false);
 
+    // Load provinces, then restore the previously selected province (if this
+    // step was already filled in and the user came back to it) so it doesn't
+    // look like the selection was lost.
     useEffect(() => {
         fetch('/api/ph-address/provinces')
             .then((res) => res.json())
-            .then((json) => setProvinces(Array.isArray(json) ? json : []))
+            .then((json) => {
+                const list = Array.isArray(json) ? json : [];
+                setProvinces(list);
+
+                if (data.province) {
+                    const match = list.find((p) => p.name === data.province);
+                    if (match) setProvinceCode(match.prov_code);
+                }
+            })
             .catch(() => setProvinces([]))
             .finally(() => setLoadingProvinces(false));
+        // Only ever run once on mount — restoration reads `data` at that point.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    
+
+    // Whenever the province code is known (picked by the user, or restored
+    // above), load its cities and restore the previously selected city.
+    useEffect(() => {
+        if (!provinceCode) return;
+
+        setLoadingCities(true);
+        fetch(`/api/ph-address/cities/${provinceCode}`)
+            .then((res) => res.json())
+            .then((json) => {
+                const list = Array.isArray(json) ? json : [];
+                setCities(list);
+
+                if (data.city_municipality) {
+                    const match = list.find(
+                        (c) => c.name === data.city_municipality,
+                    );
+                    if (match) setCityCode(match.mun_code);
+                }
+            })
+            .finally(() => setLoadingCities(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [provinceCode]);
+
+    // Whenever the city code is known, load its barangays so the barangay
+    // dropdown has the previously selected option available to show.
+    useEffect(() => {
+        if (!cityCode) return;
+
+        setLoadingBarangays(true);
+        fetch(`/api/ph-address/barangays/${cityCode}`)
+            .then((res) => res.json())
+            .then((json) => setBarangays(Array.isArray(json) ? json : []))
+            .finally(() => setLoadingBarangays(false));
+    }, [cityCode]);
+
     const handleProvinceChange = (name, value) => {
         const selected = provinces.find((p) => p.prov_code === value);
 
@@ -36,14 +84,6 @@ export default function AddressStep({ data, setData, errors }) {
             city_municipality: '',
             barangay: '',
         }));
-
-        if (!value) return;
-
-        setLoadingCities(true);
-        fetch(`/api/ph-address/cities/${value}`)
-            .then((res) => res.json())
-            .then(setCities)
-            .finally(() => setLoadingCities(false));
     };
 
     const handleCityChange = (name, value) => {
@@ -57,14 +97,6 @@ export default function AddressStep({ data, setData, errors }) {
             city_municipality: selected ? selected.name : '',
             barangay: '',
         }));
-
-        if (!value) return;
-
-        setLoadingBarangays(true);
-        fetch(`/api/ph-address/barangays/${value}`)
-            .then((res) => res.json())
-            .then(setBarangays)
-            .finally(() => setLoadingBarangays(false));
     };
 
     const handleBarangayChange = (name, value) => {
@@ -73,7 +105,9 @@ export default function AddressStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Residential Address</h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                Residential Address
+            </h2>
 
             <TextInput
                 label="House No. / Street"
@@ -92,7 +126,10 @@ export default function AddressStep({ data, setData, errors }) {
                     error={errors.province}
                     required
                     disabled={loadingProvinces}
-                    options={provinces.map((p) => ({ value: p.prov_code, label: p.name }))}
+                    options={provinces.map((p) => ({
+                        value: p.prov_code,
+                        label: p.name,
+                    }))}
                 />
 
                 <SelectInput
@@ -103,7 +140,10 @@ export default function AddressStep({ data, setData, errors }) {
                     error={errors.city_municipality}
                     required
                     disabled={!provinceCode || loadingCities}
-                    options={cities.map((c) => ({ value: c.mun_code, label: c.name }))}
+                    options={cities.map((c) => ({
+                        value: c.mun_code,
+                        label: c.name,
+                    }))}
                 />
 
                 <SelectInput
@@ -114,7 +154,10 @@ export default function AddressStep({ data, setData, errors }) {
                     error={errors.barangay}
                     required
                     disabled={!cityCode || loadingBarangays}
-                    options={barangays.map((b) => ({ value: b.name, label: b.name }))}
+                    options={barangays.map((b) => ({
+                        value: b.name,
+                        label: b.name,
+                    }))}
                 />
 
                 <SelectInput

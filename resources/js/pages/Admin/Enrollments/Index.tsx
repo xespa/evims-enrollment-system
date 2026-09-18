@@ -7,6 +7,17 @@ const STATUS_STYLES = {
     REJECTED: 'bg-red-100 text-red-800',
 };
 
+const DOCUMENT_PATH_KEYS = [
+    'form_138_path',
+    'birth_certificate_path',
+    'good_moral_path',
+];
+
+function countMissingDocuments(enrollment) {
+    const verification = enrollment.office_verification;
+    return DOCUMENT_PATH_KEYS.filter((key) => !verification?.[key]).length;
+}
+
 export default function Index({ enrollments, gradeLevels, filters }) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
@@ -120,54 +131,75 @@ export default function Index({ enrollments, gradeLevels, filters }) {
                                         Status
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                        Documents
+                                    </th>
+                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
                                         Action
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#1F2A24]/10">
-                                {enrollments.data.map((enrollment) => (
-                                    <tr
-                                        key={enrollment.id}
-                                        className="hover:bg-[#2F6F4E]/5"
-                                    >
-                                        <td className="px-4 py-3 text-[#1F2A24]">
-                                            {enrollment.student.last_name},{' '}
-                                            {enrollment.student.first_name}
-                                        </td>
-                                        <td className="px-4 py-3 text-[#1F2A24]/70">
-                                            {enrollment.grade_level.name}
-                                        </td>
-                                        <td className="px-4 py-3 text-[#1F2A24]/70">
-                                            {enrollment.school_year}
-                                        </td>
-                                        <td className="px-4 py-3 text-[#1F2A24]/70">
-                                            {enrollment.date_of_application}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span
-                                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                                            >
-                                                {enrollment.enrollment_status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <Link
-                                                href={route(
-                                                    'admin.enrollments.show',
-                                                    enrollment.id,
+                                {enrollments.data.map((enrollment) => {
+                                    const missingCount =
+                                        countMissingDocuments(enrollment);
+
+                                    return (
+                                        <tr
+                                            key={enrollment.id}
+                                            className="hover:bg-[#2F6F4E]/5"
+                                        >
+                                            <td className="px-4 py-3 text-[#1F2A24]">
+                                                {enrollment.student.last_name},{' '}
+                                                {enrollment.student.first_name}
+                                            </td>
+                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                                {enrollment.grade_level.name}
+                                            </td>
+                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                                {enrollment.school_year}
+                                            </td>
+                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                                {enrollment.date_of_application}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span
+                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                                                >
+                                                    {
+                                                        enrollment.enrollment_status
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {missingCount > 0 ? (
+                                                    <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold text-[#a4670f]">
+                                                        {missingCount} missing
+                                                    </span>
+                                                ) : (
+                                                    <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                                        Complete
+                                                    </span>
                                                 )}
-                                                className="font-medium text-[#2F6F4E] hover:underline"
-                                            >
-                                                View
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Link
+                                                    href={route(
+                                                        'admin.enrollments.show',
+                                                        enrollment.id,
+                                                    )}
+                                                    className="font-medium text-[#2F6F4E] hover:underline"
+                                                >
+                                                    View
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
 
                                 {enrollments.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={6}
+                                            colSpan={7}
                                             className="px-4 py-8 text-center text-[#1F2A24]/40"
                                         >
                                             No applications found.

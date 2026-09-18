@@ -77,6 +77,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
     Route::patch('/admissionments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
     Route::patch('/admissionments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
+    Route::post('/admissionments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
+        ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
+        ->name('enrollments.documents.remind');
     Route::post('/admissionments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
 
     Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');

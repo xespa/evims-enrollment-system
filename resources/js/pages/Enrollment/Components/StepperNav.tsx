@@ -5,13 +5,14 @@ const STEP_LABELS = [
     'Academic History',
     'Vital Info',
     'Subjects',
+    'Documents',
     'Billing',
     'Review',
 ];
 
 export default function StepperNav({ currentStep }) {
     return (
-        <div className="mb-8 overflow-x-auto">
+        <div className="mb-8 flex justify-center overflow-x-auto">
             <ol className="flex min-w-max items-center">
                 {STEP_LABELS.map((label, index) => {
                     const stepNumber = index + 1;
@@ -26,18 +27,22 @@ export default function StepperNav({ currentStep }) {
                                         isCompleted
                                             ? 'bg-[#2F6F4E] text-[#FBF8F2]'
                                             : isActive
-                                            ? 'bg-[#E8A33D] text-[#1F2A24]'
-                                            : 'bg-[#1F2A24]/10 text-[#1F2A24]/50'
+                                              ? 'bg-[#E8A33D] text-[#1F2A24]'
+                                              : 'bg-[#1F2A24]/10 text-[#1F2A24]/50'
                                     }`}
                                 >
                                     {isCompleted ? '✓' : stepNumber}
                                 </div>
-                                <span className={`mt-1 text-xs whitespace-nowrap ${isActive ? 'font-semibold text-[#2F6F4E]' : 'text-[#1F2A24]/50'}`}>
+                                <span
+                                    className={`mt-1 text-xs whitespace-nowrap ${isActive ? 'font-semibold text-[#2F6F4E]' : 'text-[#1F2A24]/50'}`}
+                                >
                                     {label}
                                 </span>
                             </div>
                             {stepNumber < STEP_LABELS.length && (
-                                <div className={`mx-2 h-0.5 w-8 ${isCompleted ? 'bg-[#2F6F4E]' : 'bg-[#1F2A24]/10'}`} />
+                                <div
+                                    className={`mx-2 h-0.5 w-8 ${isCompleted ? 'bg-[#2F6F4E]' : 'bg-[#1F2A24]/10'}`}
+                                />
                             )}
                         </li>
                     );

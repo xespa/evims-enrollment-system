@@ -8,15 +8,40 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Installment;
 use App\Models\Payment;
+use App\Notifications\DocumentReminder;
+use App\Notifications\EnrollmentStatusChanged;
+use App\Notifications\PaymentReceived;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class EnrollmentManagementController extends Controller
 {
+    private const DOCUMENT_LABELS = [
+        'form_138_path' => 'Form 138 (Report Card)',
+        'birth_certificate_path' => 'PSA Birth Certificate',
+        'good_moral_path' => 'Good Moral Certificate',
+    ];
+
+    private const DOCUMENT_TYPES = [
+        'form_138' => 'form_138_path',
+        'birth_certificate' => 'birth_certificate_path',
+        'good_moral' => 'good_moral_path',
+    ];
+
+    private const REMINDER_REASONS = [
+        'NOT_SUBMITTED' => 'This document has not been submitted yet.',
+        'BLURRY' => 'The uploaded image is blurry or hard to read.',
+        'WRONG_DOCUMENT' => 'The wrong document was uploaded.',
+        'INCOMPLETE' => 'The document appears incomplete or is missing pages.',
+        'EXPIRED' => 'The document is outdated and a current copy is needed.',
+        'OTHER' => null,
+    ];
+
     public function index(Request $request)
     {
-        $query = Enrollment::with(['student', 'gradeLevel'])
+        $query = Enrollment::with(['student', 'gradeLevel', 'officeVerification'])
             ->latest();
 
         if ($request->filled('search')) {
@@ -77,10 +102,13 @@ class EnrollmentManagementController extends Controller
 
         $enrollment->update($validated);
 
-        if ($statusChanged
-            && in_array($validated['enrollment_status'], ['APPROVED', 'REJECTED'])
-            && $enrollment->email) {
-            Mail::to($enrollment->email)->send(new EnrollmentStatusUpdated($enrollment));
+        if ($statusChanged && in_array($validated['enrollment_status'], ['APPROVED', 'REJECTED'])) {
+            if ($enrollment->email) {
+                Mail::to($enrollment->email)->send(new EnrollmentStatusUpdated($enrollment));
+            }
+
+            $enrollment->loadMissing('student', 'enrolleeUser');
+            $enrollment->enrolleeUser?->notify(new EnrollmentStatusChanged($enrollment));
         }
 
         return back()->with('success', 'Enrollment status updated.');
@@ -94,13 +122,35 @@ class EnrollmentManagementController extends Controller
             'has_good_moral_certificate' => ['boolean'],
         ]);
 
-        $enrollment->officeVerification()->update([
+        $enrollment->officeVerification()->updateOrCreate([], [
             ...$validated,
             'verified_by' => $request->user()->id,
             'verified_at' => now(),
         ]);
 
         return back()->with('success', 'Document verification updated.');
+    }
+
+    public function remindDocument(Request $request, Enrollment $enrollment, string $type)
+    {
+        $validated = $request->validate([
+            'reason' => ['required', Rule::in(array_keys(self::REMINDER_REASONS))],
+            'note' => ['nullable', 'string', 'max:500', 'required_if:reason,OTHER'],
+        ]);
+
+        $enrollment->loadMissing('student', 'enrolleeUser');
+
+        if (! $enrollment->enrolleeUser) {
+            return back()->withErrors(['reminder' => 'This application has no linked parent portal account to notify.']);
+        }
+
+        $documentLabel = self::DOCUMENT_LABELS[self::DOCUMENT_TYPES[$type]];
+        $reasonText = self::REMINDER_REASONS[$validated['reason']] ?? $validated['note'];
+        $note = $validated['reason'] === 'OTHER' ? null : ($validated['note'] ?? null);
+
+        $enrollment->enrolleeUser->notify(new DocumentReminder($enrollment, $documentLabel, $reasonText, $note));
+
+        return back()->with('success', "Reminder sent about the {$documentLabel}.");
     }
 
     public function recordCashPayment(Request $request, Enrollment $enrollment)
@@ -118,7 +168,7 @@ class EnrollmentManagementController extends Controller
             return back()->withErrors(['amount' => "Amount exceeds remaining balance of ₱{$remaining} for this installment."]);
         }
 
-        Payment::create([
+        $payment = Payment::create([
             'installment_id' => $installment->id,
             'enrollment_id' => $enrollment->id,
             'amount' => $validated['amount'],
@@ -129,6 +179,10 @@ class EnrollmentManagementController extends Controller
         ]);
 
         $installment->refreshStatus();
+
+        $enrollment->loadMissing('student', 'enrolleeUser');
+        $payment->setRelation('enrollment', $enrollment);
+        $enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
 
         return back()->with('success', 'Cash payment recorded.');
     }

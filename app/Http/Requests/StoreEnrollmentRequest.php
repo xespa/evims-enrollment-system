@@ -41,7 +41,14 @@ class StoreEnrollmentRequest extends FormRequest
 
         $schoolYearRules = ['required', 'string', 'max:9'];
         if ($existingStudentId) {
-            $schoolYearRules[] = Rule::unique('enrollments', 'school_year')->where('student_id', $existingStudentId);
+            // Only an active (pending/approved, not cancelled) application for the
+            // same school year counts as a duplicate — a rejected or cancelled one
+            // shouldn't stop the family from applying again for that same year.
+            $schoolYearRules[] = Rule::unique('enrollments', 'school_year')->where(function ($query) use ($existingStudentId) {
+                return $query->where('student_id', $existingStudentId)
+                    ->where('enrollment_status', '!=', 'REJECTED')
+                    ->whereNull('cancelled_at');
+            });
         }
 
         return [
@@ -114,6 +121,11 @@ class StoreEnrollmentRequest extends FormRequest
             'payment_option' => ['required', 'string'],
             'payment_channel' => ['required', 'string'],
             'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+
+            // Documents
+            'form_138' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'birth_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'good_moral_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
     }
 }

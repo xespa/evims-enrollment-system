@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Portal\AuthController;
 use App\Http\Controllers\Portal\DashboardController;
+use App\Http\Controllers\Portal\NotificationController;
+use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\Portal\VerificationController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Portal\ProfileController;
-
 
 Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware('guest.enrollee')->group(function () {
@@ -28,9 +28,16 @@ Route::prefix('portal')->name('portal.')->group(function () {
 
         Route::post('profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update'); // ← must be here, inside auth:enrollee
 
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
         Route::middleware('verified:portal.verification.notice')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::post('enrollments/{enrollment}/cancel', [DashboardController::class, 'cancel'])->name('enrollments.cancel');
+            Route::post('enrollments/{enrollment}/documents/{type}', [DashboardController::class, 'uploadDocument'])
+                ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
+                ->name('documents.upload');
         });
     });
 });

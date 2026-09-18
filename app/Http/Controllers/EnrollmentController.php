@@ -7,10 +7,9 @@ use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
-
 
 class EnrollmentController extends Controller
 {
@@ -55,11 +54,11 @@ class EnrollmentController extends Controller
             // logged-in account's own existing student (covers NO_LRN cases).
             $existingStudent = null;
 
-            if (!empty($validated['lrn'])) {
+            if (! empty($validated['lrn'])) {
                 $existingStudent = Student::where('lrn', $validated['lrn'])->first();
             }
 
-            if (!$existingStudent && $enrollee) {
+            if (! $existingStudent && $enrollee) {
                 $linkedStudentId = $enrollee->enrollments()->value('student_id');
                 if ($linkedStudentId) {
                     $existingStudent = Student::find($linkedStudentId);
@@ -72,7 +71,7 @@ class EnrollmentController extends Controller
             $isOwner = $existingStudent && $enrollee
                 && $enrollee->enrollments()->where('student_id', $existingStudent->id)->exists();
 
-            if ($existingStudent && ($isOwner || !$enrollee)) {
+            if ($existingStudent && ($isOwner || ! $enrollee)) {
                 // Owner editing their own record, OR a fresh guest match with no
                 // conflicting account — safe to sync identity fields.
             }
@@ -165,8 +164,43 @@ class EnrollmentController extends Controller
                 'previous_school_address' => $validated['previous_school_address'] ?? null,
             ]);
 
-            // ...vitalInformation, scanned_contract, billingContract, officeVerification
-            // creation stays here exactly as in your current file
+            $enrollment->vitalInformation()->create([
+                'has_attended_summer_school' => $validated['has_attended_summer_school'] ?? false,
+                'has_emotional_mental_physical_difficulties' => $validated['has_emotional_mental_physical_difficulties'] ?? false,
+                'has_learning_difficulties' => $validated['has_learning_difficulties'] ?? false,
+                'has_extended_absences' => $validated['has_extended_absences'] ?? false,
+                'shows_special_abilities_interests' => $validated['shows_special_abilities_interests'] ?? false,
+                'has_been_expelled' => $validated['has_been_expelled'] ?? false,
+                'has_been_suspended' => $validated['has_been_suspended'] ?? false,
+                'has_repeated_a_grade' => $validated['has_repeated_a_grade'] ?? false,
+                'history_particulars' => $validated['history_particulars'] ?? null,
+                'special_health_problems' => $validated['special_health_problems'] ?? null,
+            ]);
+
+            $gradeLevel = GradeLevel::findOrFail($validated['grade_level_id']);
+
+            $billingContract = $enrollment->billingContract()->create([
+                'payment_option' => $validated['payment_option'],
+                'payment_channel' => $validated['payment_channel'],
+                'total_fee' => $gradeLevel->tuition_fee,
+                'scanned_contract_url' => $request->hasFile('scanned_contract')
+                    ? $request->file('scanned_contract')->store('contracts', 'public')
+                    : null,
+            ]);
+
+            $billingContract->generateInstallments();
+
+            $enrollment->officeVerification()->create([
+                'form_138_path' => $request->hasFile('form_138')
+                    ? $request->file('form_138')->store('documents', 'public')
+                    : null,
+                'birth_certificate_path' => $request->hasFile('birth_certificate')
+                    ? $request->file('birth_certificate')->store('documents', 'public')
+                    : null,
+                'good_moral_path' => $request->hasFile('good_moral_certificate')
+                    ? $request->file('good_moral_certificate')->store('documents', 'public')
+                    : null,
+            ]);
 
             return $enrollment;
         });

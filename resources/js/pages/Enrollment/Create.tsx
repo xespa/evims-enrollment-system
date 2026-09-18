@@ -7,48 +7,99 @@ import ParentInfoStep from './Steps/ParentInfoStep';
 import AcademicHistoryStep from './Steps/AcademicHistoryStep';
 import VitalInfoStep from './Steps/VitalInfoStep';
 import SubjectsStep from './Steps/SubjectsStep';
+import DocumentsStep from './Steps/DocumentsStep';
 import BillingStep from './Steps/BillingStep';
 import ReviewStep from './Steps/ReviewStep';
 
 // Fields required to proceed past each step (client-side gatekeeping only —
 // the server re-validates everything again in StoreEnrollmentRequest).
 const STEP_REQUIRED_FIELDS = {
-    1: ['student_type', 'grade_level_id', 'last_name', 'first_name', 'date_of_birth', 'sex', 'school_year', 'date_of_application', 'age', 'session_time_preference', 'email'],
+    1: [
+        'student_type',
+        'grade_level_id',
+        'last_name',
+        'first_name',
+        'date_of_birth',
+        'sex',
+        'school_year',
+        'date_of_application',
+        'age',
+        'session_time_preference',
+        'email',
+    ],
     2: ['barangay', 'city_municipality', 'province', 'country'],
     3: [],
     4: [],
     5: [],
     6: ['subject_ids'],
-    7: ['payment_option', 'payment_channel'],
-    8: [],
+    7: [],
+    8: ['payment_option', 'payment_channel'],
+    9: [],
 };
 
 const FIELD_TO_STEP = {
-    student_type: 1, grade_level_id: 1, lrn: 1, psa_birth_cert_no: 1,
-    last_name: 1, first_name: 1, middle_name: 1, extension_name: 1,
-    date_of_birth: 1, age: 1, sex: 1, school_year: 1,
-    date_of_application: 1, session_time_preference: 1, email: 1,
+    student_type: 1,
+    grade_level_id: 1,
+    lrn: 1,
+    psa_birth_cert_no: 1,
+    last_name: 1,
+    first_name: 1,
+    middle_name: 1,
+    extension_name: 1,
+    date_of_birth: 1,
+    age: 1,
+    sex: 1,
+    school_year: 1,
+    date_of_application: 1,
+    session_time_preference: 1,
+    email: 1,
 
-    house_number_street: 2, barangay: 2, city_municipality: 2,
-    province: 2, country: 2, zip_code: 2,
+    house_number_street: 2,
+    barangay: 2,
+    city_municipality: 2,
+    province: 2,
+    country: 2,
+    zip_code: 2,
 
-    father_last_name: 3, father_first_name: 3, father_middle_name: 3,
-    father_occupation: 3, father_name_of_office: 3, father_mobile_no: 3,
-    mother_maiden_last_name: 3, mother_first_name: 3, mother_middle_name: 3,
-    mother_occupation: 3, mother_name_of_office: 3, mother_mobile_no: 3,
+    father_last_name: 3,
+    father_first_name: 3,
+    father_middle_name: 3,
+    father_occupation: 3,
+    father_name_of_office: 3,
+    father_mobile_no: 3,
+    mother_maiden_last_name: 3,
+    mother_first_name: 3,
+    mother_middle_name: 3,
+    mother_occupation: 3,
+    mother_name_of_office: 3,
+    mother_mobile_no: 3,
 
-    last_grade_level_completed: 4, last_school_year_completed: 4,
-    previous_school_name: 4, previous_school_id: 4, previous_school_address: 4,
+    last_grade_level_completed: 4,
+    last_school_year_completed: 4,
+    previous_school_name: 4,
+    previous_school_id: 4,
+    previous_school_address: 4,
 
-    has_attended_summer_school: 5, has_emotional_mental_physical_difficulties: 5,
-    has_learning_difficulties: 5, has_extended_absences: 5,
-    shows_special_abilities_interests: 5, has_been_expelled: 5,
-    has_been_suspended: 5, has_repeated_a_grade: 5,
-    history_particulars: 5, special_health_problems: 5,
+    has_attended_summer_school: 5,
+    has_emotional_mental_physical_difficulties: 5,
+    has_learning_difficulties: 5,
+    has_extended_absences: 5,
+    shows_special_abilities_interests: 5,
+    has_been_expelled: 5,
+    has_been_suspended: 5,
+    has_repeated_a_grade: 5,
+    history_particulars: 5,
+    special_health_problems: 5,
 
     subject_ids: 6,
 
-    payment_option: 7, payment_channel: 7, scanned_contract: 7,
+    form_138: 7,
+    birth_certificate: 7,
+    good_moral_certificate: 7,
+
+    payment_option: 8,
+    payment_channel: 8,
+    scanned_contract: 8,
 };
 
 function getDefaultSchoolYear() {
@@ -69,7 +120,8 @@ function calculateAge(dateOfBirth) {
     let age = today.getFullYear() - dob.getFullYear();
     const hasHadBirthdayThisYear =
         today.getMonth() > dob.getMonth() ||
-        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+        (today.getMonth() === dob.getMonth() &&
+            today.getDate() >= dob.getDate());
 
     if (!hasHadBirthdayThisYear) age -= 1;
 
@@ -92,7 +144,9 @@ export default function Create({ gradeLevels, previousApplication }) {
         middle_name: previousApplication?.middle_name ?? '',
         extension_name: previousApplication?.extension_name ?? '',
         date_of_birth: previousApplication?.date_of_birth ?? '',
-        age: previousApplication?.date_of_birth ? calculateAge(previousApplication.date_of_birth) : '',
+        age: previousApplication?.date_of_birth
+            ? calculateAge(previousApplication.date_of_birth)
+            : '',
         sex: previousApplication?.sex ?? '',
         session_time_preference: '',
         email: enrollee?.email ?? '',
@@ -108,14 +162,25 @@ export default function Create({ gradeLevels, previousApplication }) {
         zip_code: '',
 
         // Parents
-        father_last_name: '', father_first_name: '', father_middle_name: '',
-        father_occupation: '', father_name_of_office: '', father_mobile_no: '',
-        mother_maiden_last_name: '', mother_first_name: '', mother_middle_name: '',
-        mother_occupation: '', mother_name_of_office: '', mother_mobile_no: '',
+        father_last_name: '',
+        father_first_name: '',
+        father_middle_name: '',
+        father_occupation: '',
+        father_name_of_office: '',
+        father_mobile_no: '',
+        mother_maiden_last_name: '',
+        mother_first_name: '',
+        mother_middle_name: '',
+        mother_occupation: '',
+        mother_name_of_office: '',
+        mother_mobile_no: '',
 
         // Academic history
-        last_grade_level_completed: '', last_school_year_completed: '',
-        previous_school_name: '', previous_school_id: '', previous_school_address: '',
+        last_grade_level_completed: '',
+        last_school_year_completed: '',
+        previous_school_name: '',
+        previous_school_id: '',
+        previous_school_address: '',
 
         // Vital info
         has_attended_summer_school: false,
@@ -132,13 +197,18 @@ export default function Create({ gradeLevels, previousApplication }) {
         // Subjects
         subject_ids: [],
 
+        // Documents
+        form_138: null,
+        birth_certificate: null,
+        good_moral_certificate: null,
+
         // Billing
         payment_option: '',
         payment_channel: '',
         scanned_contract: null,
     });
 
-    const totalSteps = 8;
+    const totalSteps = 9;
 
     const isStepValid = () => {
         const required = STEP_REQUIRED_FIELDS[step];
@@ -168,7 +238,9 @@ export default function Create({ gradeLevels, previousApplication }) {
             onError: (formErrors) => {
                 const errorFields = Object.keys(formErrors);
                 if (errorFields.length > 0) {
-                    const stepsWithErrors = errorFields.map((f) => FIELD_TO_STEP[f] ?? totalSteps);
+                    const stepsWithErrors = errorFields.map(
+                        (f) => FIELD_TO_STEP[f] ?? totalSteps,
+                    );
                     const earliestStep = Math.min(...stepsWithErrors);
                     setStep(earliestStep);
                 }
@@ -184,7 +256,7 @@ export default function Create({ gradeLevels, previousApplication }) {
             <Head title="Enrollment Application" />
 
             <div className="min-h-screen bg-[#FBF8F2] px-4 py-12">
-                <div className="mx-auto max-w-3xl">
+                <div className="mx-auto max-w-5xl">
                     <div className="mb-6 text-center">
                         <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
                             School Year {data.school_year}
@@ -199,9 +271,11 @@ export default function Create({ gradeLevels, previousApplication }) {
 
                     {previousApplication && step === 1 && (
                         <div className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
-                            We've pre-filled this from your existing application for{' '}
+                            We've pre-filled this from your existing application
+                            for{' '}
                             <span className="font-semibold">
-                                {previousApplication.first_name} {previousApplication.last_name}
+                                {previousApplication.first_name}{' '}
+                                {previousApplication.last_name}
                             </span>
                             . Feel free to update anything that's changed.
                         </div>
@@ -209,7 +283,8 @@ export default function Create({ gradeLevels, previousApplication }) {
 
                     {Object.keys(errors).length > 0 && (
                         <div className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]">
-                            Please fix the highlighted errors below before submitting.
+                            Please fix the highlighted errors below before
+                            submitting.
                         </div>
                     )}
 
@@ -225,8 +300,9 @@ export default function Create({ gradeLevels, previousApplication }) {
                         {step === 4 && <AcademicHistoryStep {...stepProps} />}
                         {step === 5 && <VitalInfoStep {...stepProps} />}
                         {step === 6 && <SubjectsStep {...stepProps} />}
-                        {step === 7 && <BillingStep {...stepProps} />}
-                        {step === 8 && <ReviewStep {...stepProps} />}
+                        {step === 7 && <DocumentsStep {...stepProps} />}
+                        {step === 8 && <BillingStep {...stepProps} />}
+                        {step === 9 && <ReviewStep {...stepProps} />}
 
                         <div className="mt-6 flex justify-between border-t border-[#1F2A24]/10 pt-5">
                             <button
@@ -252,7 +328,9 @@ export default function Create({ gradeLevels, previousApplication }) {
                                     disabled={processing}
                                     className="rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-sm transition-colors hover:bg-[#d6922e] disabled:opacity-50"
                                 >
-                                    {processing ? 'Submitting...' : 'Submit Application'}
+                                    {processing
+                                        ? 'Submitting...'
+                                        : 'Submit Application'}
                                 </button>
                             )}
                         </div>

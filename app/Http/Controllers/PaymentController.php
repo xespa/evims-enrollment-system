@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Enrollment;
 use App\Models\Installment;
 use App\Models\Payment;
+use App\Notifications\PaymentReceived;
 use App\Services\PayMongoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -151,6 +152,9 @@ class PaymentController extends Controller
             ]);
 
             $payment->installment->refreshStatus();
+
+            $payment->loadMissing('enrollment.student', 'enrollment.enrolleeUser');
+            $payment->enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
         }
 
         return response()->json(['status' => 'ok'], 200);
@@ -207,6 +211,9 @@ class PaymentController extends Controller
         ]);
 
         $payment->installment->refreshStatus();
+
+        $payment->loadMissing('enrollment.student', 'enrollment.enrolleeUser');
+        $payment->enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
 
         return redirect(URL::signedRoute('payments.show', $payment->enrollment_id))
             ->with('success', 'Payment successful! (Simulated)');

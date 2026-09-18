@@ -36,19 +36,19 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $enrollee = Auth::guard('enrollee')->user();
+
         return [
             ...parent::share($request),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
             ],
             'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
-            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'auth' => [
                 'user' => $request->user(),
-                'enrollee' => Auth::guard('enrollee')->user(),
+                'enrollee' => $enrollee,
+                'unreadNotificationsCount' => $enrollee ? fn () => $enrollee->unreadNotifications()->count() : 0,
             ],
         ];
     }

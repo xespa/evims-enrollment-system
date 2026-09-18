@@ -209,12 +209,185 @@ const STATUS_STYLES = {
     REJECTED: 'bg-red-100 text-red-800',
 };
 
+const DOCUMENTS = [
+    {
+        type: 'form_138',
+        label: 'Form 138',
+        verifiedKey: 'has_form_138',
+        pathKey: 'form_138_path',
+    },
+    {
+        type: 'birth_certificate',
+        label: 'PSA Birth Certificate',
+        verifiedKey: 'has_birth_certificate',
+        pathKey: 'birth_certificate_path',
+    },
+    {
+        type: 'good_moral',
+        label: 'Good Moral Certificate',
+        verifiedKey: 'has_good_moral_certificate',
+        pathKey: 'good_moral_path',
+    },
+];
+
+const REMINDER_REASONS = [
+    { value: 'NOT_SUBMITTED', label: 'Not submitted yet' },
+    { value: 'BLURRY', label: 'Image is blurry / hard to read' },
+    { value: 'WRONG_DOCUMENT', label: 'Wrong document uploaded' },
+    { value: 'INCOMPLETE', label: 'Incomplete / missing pages' },
+    { value: 'EXPIRED', label: 'Outdated / expired document' },
+    { value: 'OTHER', label: 'Other (add a note)' },
+];
+
+function DocumentRow({
+    enrollmentId,
+    doc,
+    verification,
+    hasEnrollee,
+    onToggleVerification,
+}) {
+    const [open, setOpen] = useState(false);
+    const [showNote, setShowNote] = useState(false);
+    const hasFile = !!verification?.[doc.pathKey];
+    const { data, setData, post, processing, errors, reset } = useForm({
+        reason: hasFile ? 'BLURRY' : 'NOT_SUBMITTED',
+        note: '',
+    });
+
+    const toggleOpen = () => {
+        setOpen((o) => !o);
+        setShowNote(false);
+        reset();
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+        post(
+            route('admin.enrollments.documents.remind', [
+                enrollmentId,
+                doc.type,
+            ]),
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setOpen(false);
+                    reset();
+                },
+            },
+        );
+    };
+
+    return (
+        <div className="border-b border-[#1F2A24]/10 py-1.5 last:border-0">
+            <div className="flex items-center justify-between gap-2">
+                <CheckboxField
+                    label={doc.label}
+                    checked={verification?.[doc.verifiedKey]}
+                    onChange={() =>
+                        onToggleVerification(
+                            doc.verifiedKey,
+                            verification?.[doc.verifiedKey],
+                        )
+                    }
+                />
+                {hasEnrollee && (
+                    <button
+                        type="button"
+                        onClick={toggleOpen}
+                        className="shrink-0 text-xs font-medium text-[#2F6F4E] hover:underline"
+                    >
+                        {open ? 'Cancel' : 'Remind'}
+                    </button>
+                )}
+            </div>
+
+            {verification?.[doc.pathKey] ? (
+                <a
+                    href={`/storage/${verification[doc.pathKey]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-6 inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
+                >
+                    View uploaded file →
+                </a>
+            ) : (
+                <p className="ml-6 text-xs text-[#1F2A24]/40">
+                    No file uploaded yet
+                </p>
+            )}
+
+            {open && (
+                <form
+                    onSubmit={submit}
+                    className="mt-2 space-y-2 rounded-lg bg-[#E8A33D]/10 p-3"
+                >
+                    <select
+                        value={data.reason}
+                        onChange={(e) => setData('reason', e.target.value)}
+                        className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                    >
+                        {REMINDER_REASONS.map((reason) => (
+                            <option key={reason.value} value={reason.value}>
+                                {reason.label}
+                            </option>
+                        ))}
+                    </select>
+
+                    {(data.reason === 'OTHER' || showNote) && (
+                        <textarea
+                            value={data.note}
+                            onChange={(e) => setData('note', e.target.value)}
+                            placeholder={
+                                data.reason === 'OTHER'
+                                    ? 'Describe the issue...'
+                                    : 'Optional note to include...'
+                            }
+                            rows={2}
+                            className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                        />
+                    )}
+
+                    {data.reason !== 'OTHER' && !showNote && (
+                        <button
+                            type="button"
+                            onClick={() => setShowNote(true)}
+                            className="text-[11px] font-medium text-[#2F6F4E] hover:underline"
+                        >
+                            + Add a note
+                        </button>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="rounded-full bg-[#E8A33D] px-3 py-1 text-xs font-semibold text-[#1F2A24] transition-colors hover:bg-[#d6922e] disabled:opacity-50"
+                        >
+                            Send
+                        </button>
+                        {(errors.reason || errors.note || errors.reminder) && (
+                            <span className="text-xs text-red-600">
+                                {errors.reason ||
+                                    errors.note ||
+                                    errors.reminder}
+                            </span>
+                        )}
+                    </div>
+                </form>
+            )}
+        </div>
+    );
+}
+
 export default function Show({ enrollment }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
 
     const student = enrollment.student;
     const verification = enrollment.office_verification;
+    const missingDocuments = DOCUMENTS.filter(
+        (doc) => !verification?.[doc.pathKey],
+    );
 
     const changeStatus = (newStatus) => {
         if (!confirm(`Set status to ${newStatus}?`)) return;
@@ -467,41 +640,36 @@ export default function Show({ enrollment }) {
 
                         {/* Document verification checklist */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                                Document Verification
-                            </h2>
-                            <CheckboxField
-                                label="Form 138 submitted"
-                                checked={verification?.has_form_138}
-                                onChange={() =>
-                                    toggleVerification(
-                                        'has_form_138',
-                                        verification?.has_form_138,
-                                    )
-                                }
-                            />
-                            <CheckboxField
-                                label="Birth Certificate submitted"
-                                checked={verification?.has_birth_certificate}
-                                onChange={() =>
-                                    toggleVerification(
-                                        'has_birth_certificate',
-                                        verification?.has_birth_certificate,
-                                    )
-                                }
-                            />
-                            <CheckboxField
-                                label="Good Moral Certificate submitted"
-                                checked={
-                                    verification?.has_good_moral_certificate
-                                }
-                                onChange={() =>
-                                    toggleVerification(
-                                        'has_good_moral_certificate',
-                                        verification?.has_good_moral_certificate,
-                                    )
-                                }
-                            />
+                            <div className="mb-2 flex items-center justify-between">
+                                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                    Document Verification
+                                </h2>
+                                {missingDocuments.length > 0 && (
+                                    <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#a4670f]">
+                                        {missingDocuments.length} missing
+                                    </span>
+                                )}
+                            </div>
+
+                            {missingDocuments.length > 0 &&
+                                !enrollment.enrollee_user_id && (
+                                    <p className="mb-3 text-xs text-[#1F2A24]/40">
+                                        No linked parent portal account —
+                                        reminders can't be sent for this
+                                        application.
+                                    </p>
+                                )}
+
+                            {DOCUMENTS.map((doc) => (
+                                <DocumentRow
+                                    key={doc.verifiedKey}
+                                    enrollmentId={enrollment.id}
+                                    doc={doc}
+                                    verification={verification}
+                                    hasEnrollee={!!enrollment.enrollee_user_id}
+                                    onToggleVerification={toggleVerification}
+                                />
+                            ))}
                             <PaymentsSection enrollment={enrollment} />
                         </div>
                     </div>

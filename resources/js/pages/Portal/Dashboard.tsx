@@ -14,11 +14,26 @@ const SESSION_LABELS = {
     SCHOOL_SERVICE: 'School Service',
 };
 
-const DOCUMENT_LABELS = {
-    has_form_138: 'Form 138 (Report Card)',
-    has_birth_certificate: 'PSA Birth Certificate',
-    has_good_moral_certificate: 'Good Moral Certificate',
-};
+const DOCUMENTS = [
+    {
+        type: 'form_138',
+        label: 'Form 138 (Report Card)',
+        verifiedKey: 'has_form_138',
+        pathKey: 'form_138_path',
+    },
+    {
+        type: 'birth_certificate',
+        label: 'PSA Birth Certificate',
+        verifiedKey: 'has_birth_certificate',
+        pathKey: 'birth_certificate_path',
+    },
+    {
+        type: 'good_moral',
+        label: 'Good Moral Certificate',
+        verifiedKey: 'has_good_moral_certificate',
+        pathKey: 'good_moral_path',
+    },
+];
 
 const PAYMENT_STATUS_STYLES = {
     COMPLETED: 'bg-green-100 text-green-800',
@@ -52,7 +67,11 @@ export default function Dashboard({ enrollments }) {
 
     const cancel = (enrollmentId) => {
         if (!confirm('Cancel this application?')) return;
-        router.post(route('portal.enrollments.cancel', enrollmentId), {}, { preserveScroll: true });
+        router.post(
+            route('portal.enrollments.cancel', enrollmentId),
+            {},
+            { preserveScroll: true },
+        );
     };
 
     const logout = () => {
@@ -75,26 +94,59 @@ export default function Dashboard({ enrollments }) {
         );
     };
 
+    const [uploadingDoc, setUploadingDoc] = useState(null);
+
+    const handleDocumentUpload = (enrollmentId, type) => (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const key = `${enrollmentId}:${type}`;
+        setUploadingDoc(key);
+        router.post(
+            route('portal.documents.upload', {
+                enrollment: enrollmentId,
+                type,
+            }),
+            { file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onFinish: () => setUploadingDoc(null),
+            },
+        );
+    };
+
     // ---- Aggregate "social signal"-style metrics across all enrollments ----
     const activeEnrollments = enrollments.filter((e) => !e.cancelled_at);
-    const approvedCount = activeEnrollments.filter((e) => e.enrollment_status === 'APPROVED').length;
+    const approvedCount = activeEnrollments.filter(
+        (e) => e.enrollment_status === 'APPROVED',
+    ).length;
     const outstandingBalance = activeEnrollments.reduce(
-        (sum, e) => sum + (e.remaining_balance && e.remaining_balance > 0 ? e.remaining_balance : 0),
+        (sum, e) =>
+            sum +
+            (e.remaining_balance && e.remaining_balance > 0
+                ? e.remaining_balance
+                : 0),
         0,
     );
 
     // ---- Flatten every payment, across every enrollment, for the Payments tab ----
     const allTransactions = enrollments
         .flatMap((enrollment) =>
-            (enrollment.billing_contract?.installments ?? []).flatMap((installment) =>
-                installment.payments.map((payment) => ({
-                    ...payment,
-                    installment_number: installment.installment_number,
-                    student_name: `${enrollment.student.first_name} ${enrollment.student.last_name}`,
-                })),
+            (enrollment.billing_contract?.installments ?? []).flatMap(
+                (installment) =>
+                    installment.payments.map((payment) => ({
+                        ...payment,
+                        installment_number: installment.installment_number,
+                        student_name: `${enrollment.student.first_name} ${enrollment.student.last_name}`,
+                    })),
             ),
         )
-        .sort((a, b) => new Date(b.paid_at ?? b.created_at) - new Date(a.paid_at ?? a.created_at));
+        .sort(
+            (a, b) =>
+                new Date(b.paid_at ?? b.created_at) -
+                new Date(a.paid_at ?? a.created_at),
+        );
 
     return (
         <div className="mx-auto max-w-5xl px-4 pb-16">
@@ -141,7 +193,9 @@ export default function Dashboard({ enrollments }) {
                     </div>
                     <div className="pb-1 text-center sm:text-left">
                         <div className="flex items-center justify-center gap-2 sm:justify-start">
-                            <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">{enrollee?.name}</h1>
+                            <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">
+                                {enrollee?.name}
+                            </h1>
                             {enrollee?.email_verified_at && (
                                 <span
                                     title="Verified email"
@@ -151,8 +205,12 @@ export default function Dashboard({ enrollments }) {
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm text-[#1F2A24]/60">{enrollee?.email}</p>
-                        <p className="text-sm text-[#1F2A24]/50">Student Account</p>
+                        <p className="text-sm text-[#1F2A24]/60">
+                            {enrollee?.email}
+                        </p>
+                        <p className="text-sm text-[#1F2A24]/50">
+                            Student Account
+                        </p>
                     </div>
                 </div>
 
@@ -181,18 +239,26 @@ export default function Dashboard({ enrollments }) {
             {/* ---------------- Key metrics ("social signals") ---------------- */}
             <div className="mt-6 grid grid-cols-3 divide-x divide-[#1F2A24]/10 rounded-lg border border-[#1F2A24]/10 bg-white shadow-sm">
                 <div className="px-4 py-4 text-center">
-                    <p className="text-xl font-semibold text-[#1F2A24]">{activeEnrollments.length}</p>
+                    <p className="text-xl font-semibold text-[#1F2A24]">
+                        {activeEnrollments.length}
+                    </p>
                     <p className="text-xs text-[#1F2A24]/50">Applications</p>
                 </div>
                 <div className="px-4 py-4 text-center">
-                    <p className="text-xl font-semibold text-[#1F2A24]">{approvedCount}</p>
+                    <p className="text-xl font-semibold text-[#1F2A24]">
+                        {approvedCount}
+                    </p>
                     <p className="text-xs text-[#1F2A24]/50">Approved</p>
                 </div>
                 <div className="px-4 py-4 text-center">
-                    <p className={`text-xl font-semibold ${outstandingBalance > 0 ? 'text-[#C6473B]' : 'text-[#1F2A24]'}`}>
+                    <p
+                        className={`text-xl font-semibold ${outstandingBalance > 0 ? 'text-[#C6473B]' : 'text-[#1F2A24]'}`}
+                    >
                         {formatCurrency(outstandingBalance)}
                     </p>
-                    <p className="text-xs text-[#1F2A24]/50">Outstanding Balance</p>
+                    <p className="text-xs text-[#1F2A24]/50">
+                        Outstanding Balance
+                    </p>
                 </div>
             </div>
 
@@ -226,23 +292,33 @@ export default function Dashboard({ enrollments }) {
                         )}
 
                         {enrollments.map((enrollment) => {
-                            const isApproved = enrollment.enrollment_status === 'APPROVED';
-                            const hasBalance = enrollment.remaining_balance !== null;
-                            const isFullyPaid = hasBalance && enrollment.remaining_balance <= 0;
+                            const isApproved =
+                                enrollment.enrollment_status === 'APPROVED';
+                            const hasBalance =
+                                enrollment.remaining_balance !== null;
+                            const isFullyPaid =
+                                hasBalance && enrollment.remaining_balance <= 0;
 
                             return (
-                                <div key={enrollment.id} className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm">
+                                <div
+                                    key={enrollment.id}
+                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
+                                >
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="font-medium text-[#1F2A24]">
-                                                {enrollment.student.first_name} {enrollment.student.last_name}
+                                                {enrollment.student.first_name}{' '}
+                                                {enrollment.student.last_name}
                                             </p>
                                             <p className="text-sm text-[#1F2A24]/60">
-                                                {enrollment.grade_level.name} · SY {enrollment.school_year}
+                                                {enrollment.grade_level.name} ·
+                                                SY {enrollment.school_year}
                                             </p>
                                         </div>
                                         {enrollment.cancelled_at ? (
-                                            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">CANCELLED</span>
+                                            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                                                CANCELLED
+                                            </span>
                                         ) : (
                                             <span
                                                 className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
@@ -254,76 +330,113 @@ export default function Dashboard({ enrollments }) {
 
                                     <div className="mt-4 grid grid-cols-1 gap-3 border-t border-[#1F2A24]/10 pt-4 sm:grid-cols-3">
                                         <div>
-                                            <p className="text-xs text-[#1F2A24]/50">Grade Level</p>
-                                            <p className="text-sm text-[#1F2A24]">{enrollment.grade_level.name}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-[#1F2A24]/50">Session Time Preference</p>
+                                            <p className="text-xs text-[#1F2A24]/50">
+                                                Grade Level
+                                            </p>
                                             <p className="text-sm text-[#1F2A24]">
-                                                {SESSION_LABELS[enrollment.session_time_preference] ?? enrollment.session_time_preference}
+                                                {enrollment.grade_level.name}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-[#1F2A24]/50">LRN</p>
+                                            <p className="text-xs text-[#1F2A24]/50">
+                                                Session Time Preference
+                                            </p>
                                             <p className="text-sm text-[#1F2A24]">
-                                                {enrollment.student.lrn ?? <span className="text-[#1F2A24]/40 italic">Not yet assigned</span>}
+                                                {SESSION_LABELS[
+                                                    enrollment
+                                                        .session_time_preference
+                                                ] ??
+                                                    enrollment.session_time_preference}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-[#1F2A24]/50">
+                                                LRN
+                                            </p>
+                                            <p className="text-sm text-[#1F2A24]">
+                                                {enrollment.student.lrn ?? (
+                                                    <span className="text-[#1F2A24]/40 italic">
+                                                        Not yet assigned
+                                                    </span>
+                                                )}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="mt-4 border-t border-[#1F2A24]/10 pt-4">
-                                        {!isApproved && !enrollment.cancelled_at && (
-                                            <p className="text-sm text-[#1F2A24]/50">
-                                                Tuition payment will be available here once your application is approved.
-                                            </p>
-                                        )}
+                                        {!isApproved &&
+                                            !enrollment.cancelled_at && (
+                                                <p className="text-sm text-[#1F2A24]/50">
+                                                    Tuition payment will be
+                                                    available here once your
+                                                    application is approved.
+                                                </p>
+                                            )}
 
-                                        {isApproved && hasBalance && !isFullyPaid && (
-                                            <div className="flex flex-col gap-3 rounded-md bg-[#2F6F4E]/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                                                <div>
-                                                    <p className="text-sm font-medium text-[#1F2A24]">
-                                                        🎉 You're approved! You can now pay your tuition.
-                                                    </p>
-                                                    <p className="text-sm text-[#1F2A24]/70">
-                                                        Remaining balance:{' '}
-                                                        <span className="font-semibold text-[#2F6F4E]">
-                                                            {formatCurrency(enrollment.remaining_balance)}
-                                                        </span>{' '}
-                                                        of {formatCurrency(enrollment.total_billed)}
-                                                    </p>
+                                        {isApproved &&
+                                            hasBalance &&
+                                            !isFullyPaid && (
+                                                <div className="flex flex-col gap-3 rounded-md bg-[#2F6F4E]/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-[#1F2A24]">
+                                                            🎉 You're approved!
+                                                            You can now pay your
+                                                            tuition.
+                                                        </p>
+                                                        <p className="text-sm text-[#1F2A24]/70">
+                                                            Remaining balance:{' '}
+                                                            <span className="font-semibold text-[#2F6F4E]">
+                                                                {formatCurrency(
+                                                                    enrollment.remaining_balance,
+                                                                )}
+                                                            </span>{' '}
+                                                            of{' '}
+                                                            {formatCurrency(
+                                                                enrollment.total_billed,
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <Link
+                                                        href={
+                                                            enrollment.payment_url
+                                                        }
+                                                        className="rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                                    >
+                                                        Pay Tuition
+                                                    </Link>
                                                 </div>
-                                                <Link
-                                                    href={enrollment.payment_url}
-                                                    className="whitespace-nowrap rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
-                                                >
-                                                    Pay Tuition
-                                                </Link>
-                                            </div>
-                                        )}
+                                            )}
 
                                         {isApproved && isFullyPaid && (
                                             <div className="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
-                                                ✓ Fully paid — no outstanding balance.
+                                                ✓ Fully paid — no outstanding
+                                                balance.
                                             </div>
                                         )}
 
                                         {isApproved && !hasBalance && (
                                             <p className="text-sm text-[#1F2A24]/50">
-                                                Billing details aren't set up yet for this enrollment. Please check back soon.
+                                                Billing details aren't set up
+                                                yet for this enrollment. Please
+                                                check back soon.
                                             </p>
                                         )}
                                     </div>
 
-                                    {!enrollment.cancelled_at && enrollment.enrollment_status === 'PENDING' && (
-                                        <div className="mt-4 border-t border-[#1F2A24]/10 pt-4 text-right">
-                                            <button
-                                                onClick={() => cancel(enrollment.id)}
-                                                className="text-sm text-red-600 hover:underline"
-                                            >
-                                                Cancel Application
-                                            </button>
-                                        </div>
-                                    )}
+                                    {!enrollment.cancelled_at &&
+                                        enrollment.enrollment_status ===
+                                            'PENDING' && (
+                                            <div className="mt-4 border-t border-[#1F2A24]/10 pt-4 text-right">
+                                                <button
+                                                    onClick={() =>
+                                                        cancel(enrollment.id)
+                                                    }
+                                                    className="text-sm text-red-600 hover:underline"
+                                                >
+                                                    Cancel Application
+                                                </button>
+                                            </div>
+                                        )}
                                 </div>
                             );
                         })}
@@ -333,18 +446,32 @@ export default function Dashboard({ enrollments }) {
                 {activeTab === 'Payments' && (
                     <div className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm">
                         {allTransactions.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-[#1F2A24]/50">No transactions yet.</p>
+                            <p className="py-8 text-center text-sm text-[#1F2A24]/50">
+                                No transactions yet.
+                            </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm">
                                     <thead>
                                         <tr className="text-xs text-[#1F2A24]/50">
-                                            <th className="pb-2 font-medium">Date</th>
-                                            <th className="pb-2 font-medium">Student</th>
-                                            <th className="pb-2 font-medium">Installment</th>
-                                            <th className="pb-2 font-medium">Method</th>
-                                            <th className="pb-2 font-medium">Amount</th>
-                                            <th className="pb-2 font-medium">Status</th>
+                                            <th className="pb-2 font-medium">
+                                                Date
+                                            </th>
+                                            <th className="pb-2 font-medium">
+                                                Student
+                                            </th>
+                                            <th className="pb-2 font-medium">
+                                                Installment
+                                            </th>
+                                            <th className="pb-2 font-medium">
+                                                Method
+                                            </th>
+                                            <th className="pb-2 font-medium">
+                                                Amount
+                                            </th>
+                                            <th className="pb-2 font-medium">
+                                                Status
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#1F2A24]/5">
@@ -352,21 +479,42 @@ export default function Dashboard({ enrollments }) {
                                             <tr key={payment.id}>
                                                 <td className="py-2 text-[#1F2A24]/80">
                                                     {payment.paid_at
-                                                        ? new Date(payment.paid_at).toLocaleDateString('en-PH', {
-                                                              year: 'numeric',
-                                                              month: 'short',
-                                                              day: 'numeric',
-                                                          })
+                                                        ? new Date(
+                                                              payment.paid_at,
+                                                          ).toLocaleDateString(
+                                                              'en-PH',
+                                                              {
+                                                                  year: 'numeric',
+                                                                  month: 'short',
+                                                                  day: 'numeric',
+                                                              },
+                                                          )
                                                         : '—'}
                                                 </td>
-                                                <td className="py-2 text-[#1F2A24]/80">{payment.student_name}</td>
-                                                <td className="py-2 text-[#1F2A24]/80">#{payment.installment_number}</td>
-                                                <td className="py-2 text-[#1F2A24]/80">{METHOD_LABELS[payment.method] ?? payment.method}</td>
-                                                <td className="py-2 font-medium text-[#1F2A24]">{formatCurrency(payment.amount)}</td>
+                                                <td className="py-2 text-[#1F2A24]/80">
+                                                    {payment.student_name}
+                                                </td>
+                                                <td className="py-2 text-[#1F2A24]/80">
+                                                    #
+                                                    {payment.installment_number}
+                                                </td>
+                                                <td className="py-2 text-[#1F2A24]/80">
+                                                    {METHOD_LABELS[
+                                                        payment.method
+                                                    ] ?? payment.method}
+                                                </td>
+                                                <td className="py-2 font-medium text-[#1F2A24]">
+                                                    {formatCurrency(
+                                                        payment.amount,
+                                                    )}
+                                                </td>
                                                 <td className="py-2">
                                                     <span
                                                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                            PAYMENT_STATUS_STYLES[payment.status] ?? 'bg-gray-100 text-gray-600'
+                                                            PAYMENT_STATUS_STYLES[
+                                                                payment.status
+                                                            ] ??
+                                                            'bg-gray-100 text-gray-600'
                                                         }`}
                                                     >
                                                         {payment.status}
@@ -390,28 +538,93 @@ export default function Dashboard({ enrollments }) {
                         )}
                         {enrollments.map((enrollment) => {
                             const verification = enrollment.office_verification;
+                            const isApproved =
+                                enrollment.enrollment_status === 'APPROVED';
+
                             return (
-                                <div key={enrollment.id} className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm">
+                                <div
+                                    key={enrollment.id}
+                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
+                                >
                                     <p className="mb-3 text-sm font-medium text-[#1F2A24]">
-                                        {enrollment.student.first_name} {enrollment.student.last_name}
+                                        {enrollment.student.first_name}{' '}
+                                        {enrollment.student.last_name}
                                         <span className="ml-2 text-xs font-normal text-[#1F2A24]/50">
-                                            {enrollment.grade_level.name} · SY {enrollment.school_year}
+                                            {enrollment.grade_level.name} · SY{' '}
+                                            {enrollment.school_year}
                                         </span>
                                     </p>
-                                    {verification ? (
-                                        <ul className="space-y-1">
-                                            {Object.entries(DOCUMENT_LABELS).map(([key, label]) => (
-                                                <li key={key} className="flex items-center gap-2 text-sm">
-                                                    <span className={verification[key] ? 'text-green-600' : 'text-gray-300'}>
-                                                        {verification[key] ? '✓' : '○'}
-                                                    </span>
-                                                    <span className={verification[key] ? 'text-[#1F2A24]' : 'text-[#1F2A24]/40'}>{label}</span>
+
+                                    <ul className="space-y-3">
+                                        {DOCUMENTS.map((doc) => {
+                                            const isVerified =
+                                                verification?.[doc.verifiedKey];
+                                            const path =
+                                                verification?.[doc.pathKey];
+                                            const key = `${enrollment.id}:${doc.type}`;
+
+                                            return (
+                                                <li
+                                                    key={doc.type}
+                                                    className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1F2A24]/5 pb-3 last:border-0 last:pb-0"
+                                                >
+                                                    <div>
+                                                        <p className="text-sm text-[#1F2A24]">
+                                                            {doc.label}
+                                                        </p>
+                                                        <p
+                                                            className={`text-xs ${isVerified ? 'text-green-600' : path ? 'text-[#E8A33D]' : 'text-[#1F2A24]/40'}`}
+                                                        >
+                                                            {isVerified
+                                                                ? 'Verified'
+                                                                : path
+                                                                  ? 'Pending review'
+                                                                  : 'Not uploaded yet'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        {path && (
+                                                            <a
+                                                                href={`/storage/${path}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs font-medium text-[#2F6F4E] hover:underline"
+                                                            >
+                                                                View
+                                                            </a>
+                                                        )}
+                                                        {isApproved ? (
+                                                            <span className="text-xs text-[#1F2A24]/40">
+                                                                Locked
+                                                            </span>
+                                                        ) : (
+                                                            <label className="cursor-pointer rounded-full border border-[#1F2A24]/15 px-3 py-1 text-xs font-semibold text-[#1F2A24]/70 hover:bg-[#1F2A24]/5">
+                                                                {uploadingDoc ===
+                                                                key
+                                                                    ? 'Uploading...'
+                                                                    : path
+                                                                      ? 'Replace'
+                                                                      : 'Upload'}
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                                    className="hidden"
+                                                                    disabled={
+                                                                        uploadingDoc ===
+                                                                        key
+                                                                    }
+                                                                    onChange={handleDocumentUpload(
+                                                                        enrollment.id,
+                                                                        doc.type,
+                                                                    )}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
                                                 </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-[#1F2A24]/40">Not yet reviewed by the registrar.</p>
-                                    )}
+                                            );
+                                        })}
+                                    </ul>
                                 </div>
                             );
                         })}
