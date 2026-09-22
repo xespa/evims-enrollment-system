@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class BillingContract extends Model
 {
-    protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee', 'scanned_contract_url'];
+    protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee'];
 
     protected $casts = [
         'total_fee' => 'decimal:2',

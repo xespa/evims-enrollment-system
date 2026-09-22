@@ -424,10 +424,10 @@ export default function Show({ enrollment }) {
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <Link
-                        href={route('admin.enrollments.index')}
+                        href={route('admin.students.index')}
                         className="mb-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline"
                     >
-                        ← Back to list
+                        ← Back to students
                     </Link>
 
                     {flashSuccess && (
@@ -538,6 +538,10 @@ export default function Show({ enrollment }) {
                                 label="Zip Code"
                                 value={student.address?.zip_code}
                             />
+                            <InfoRow
+                                label="Country"
+                                value={student.address?.country}
+                            />
                         </div>
 
                         {/* Parents */}
@@ -625,17 +629,6 @@ export default function Show({ enrollment }) {
                                     enrollment.billing_contract?.payment_option
                                 }
                             />
-                            {enrollment.billing_contract
-                                ?.scanned_contract_url && (
-                                <a
-                                    href={`/storage/${enrollment.billing_contract.scanned_contract_url}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="mt-2 inline-block text-sm font-medium text-[#2F6F4E] hover:underline"
-                                >
-                                    View Scanned Contract →
-                                </a>
-                            )}
                         </div>
 
                         {/* Document verification checklist */}

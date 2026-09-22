@@ -17,6 +17,7 @@ Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
     Route::get('provinces', [PhAddressController::class, 'provinces'])->name('provinces');
     Route::get('cities/{provinceCode}', [PhAddressController::class, 'cities'])->name('cities');
     Route::get('barangays/{munCode}', [PhAddressController::class, 'barangays'])->name('barangays');
+    Route::get('zip-codes', [PhAddressController::class, 'zipCodes'])->name('zip-codes');
 });
 
 Route::get('/', function () {
@@ -72,8 +73,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+    Route::patch('/students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.assignLrn');
 
-    Route::get('/admissionments', [EnrollmentManagementController::class, 'index'])->name('enrollments.index');
     Route::get('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
     Route::patch('/admissionments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
     Route::patch('/admissionments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');

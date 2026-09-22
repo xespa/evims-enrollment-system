@@ -1,16 +1,137 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Index({ students, filters }) {
+const STATUS_STYLES = {
+    PENDING: 'bg-yellow-100 text-yellow-800',
+    APPROVED: 'bg-green-100 text-green-800',
+    REJECTED: 'bg-red-100 text-red-800',
+};
+
+const DOCUMENT_PATH_KEYS = [
+    'form_138_path',
+    'birth_certificate_path',
+    'good_moral_path',
+];
+
+const LRN_PREFIX = '452501';
+
+function countMissingDocuments(enrollment) {
+    const verification = enrollment?.office_verification;
+    return DOCUMENT_PATH_KEYS.filter((key) => !verification?.[key]).length;
+}
+
+function generateLrn() {
+    let suffix = '';
+    for (let i = 0; i < 8; i++) {
+        suffix += Math.floor(Math.random() * 10);
+    }
+    return `${LRN_PREFIX}${suffix}`;
+}
+
+function AssignLrnCell({ studentId }) {
+    const [open, setOpen] = useState(false);
+    const { data, setData, patch, processing, errors, reset } = useForm({
+        lrn: '',
+    });
+
+    const toggleOpen = () => {
+        setOpen((o) => !o);
+        reset();
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+        patch(route('admin.students.assignLrn', studentId), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                setOpen(false);
+                reset();
+            },
+        });
+    };
+
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={toggleOpen}
+                className="text-xs font-medium text-[#2F6F4E] hover:underline"
+            >
+                Assign LRN
+            </button>
+        );
+    }
+
+    return (
+        <form onSubmit={submit} className="min-w-[160px] space-y-1.5">
+            <input
+                type="text"
+                inputMode="numeric"
+                maxLength={14}
+                placeholder="452501XXXXXXXX"
+                value={data.lrn}
+                onChange={(e) =>
+                    setData(
+                        'lrn',
+                        e.target.value.replace(/\D/g, '').slice(0, 14),
+                    )
+                }
+                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+            />
+            <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setData('lrn', generateLrn())}
+                    className="text-[11px] font-medium text-[#2F6F4E] hover:underline"
+                >
+                    Generate
+                </button>
+                <button
+                    type="submit"
+                    disabled={processing}
+                    className="rounded-full bg-[#2F6F4E] px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                >
+                    Save
+                </button>
+                <button
+                    type="button"
+                    onClick={toggleOpen}
+                    className="text-[11px] text-[#1F2A24]/40 hover:text-[#1F2A24]/70"
+                >
+                    Cancel
+                </button>
+            </div>
+            {errors.lrn && (
+                <p className="text-[11px] text-red-600">{errors.lrn}</p>
+            )}
+        </form>
+    );
+}
+
+export default function Index({ students, gradeLevels, schoolYears, filters }) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const [schoolYear, setSchoolYear] = useState(filters.school_year ?? '');
+    const [gradeLevelId, setGradeLevelId] = useState(
+        filters.grade_level_id ?? '',
+    );
+
+    const applyFilters = (overrides = {}) => {
+        router.get(
+            route('admin.students.index'),
+            {
+                search,
+                school_year: schoolYear,
+                grade_level_id: gradeLevelId,
+                ...overrides,
+            },
+            { preserveState: true, replace: true },
+        );
+    };
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        router.get(
-            route('admin.students.index'),
-            { search },
-            { preserveState: true, replace: true },
-        );
+        applyFilters();
     };
 
     return (
@@ -38,6 +159,43 @@ export default function Index({ students, filters }) {
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                             />
+
+                            <select
+                                value={schoolYear}
+                                onChange={(e) => {
+                                    setSchoolYear(e.target.value);
+                                    applyFilters({
+                                        school_year: e.target.value,
+                                    });
+                                }}
+                                className="rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                            >
+                                <option value="">All School Years</option>
+                                {schoolYears.map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={gradeLevelId}
+                                onChange={(e) => {
+                                    setGradeLevelId(e.target.value);
+                                    applyFilters({
+                                        grade_level_id: e.target.value,
+                                    });
+                                }}
+                                className="rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                            >
+                                <option value="">All Grade Levels</option>
+                                {gradeLevels.map((g) => (
+                                    <option key={g.id} value={g.id}>
+                                        {g.name}
+                                    </option>
+                                ))}
+                            </select>
+
                             <button
                                 type="submit"
                                 className="rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
@@ -65,7 +223,10 @@ export default function Index({ students, filters }) {
                                         School Year
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
-                                        Contact No.
+                                        Status
+                                    </th>
+                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                        Documents
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
                                         Action
@@ -76,11 +237,8 @@ export default function Index({ students, filters }) {
                                 {students.data.map((student) => {
                                     const enrollment =
                                         student.latest_enrollment;
-                                    const contact =
-                                        student.parent_profile
-                                            ?.father_mobile_no ||
-                                        student.parent_profile
-                                            ?.mother_mobile_no;
+                                    const missingCount =
+                                        countMissingDocuments(enrollment);
 
                                     return (
                                         <tr
@@ -92,7 +250,13 @@ export default function Index({ students, filters }) {
                                                 {student.first_name}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {student.lrn || '—'}
+                                                {student.lrn || (
+                                                    <AssignLrnCell
+                                                        studentId={
+                                                            student.id
+                                                        }
+                                                    />
+                                                )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {enrollment?.grade_level
@@ -101,8 +265,38 @@ export default function Index({ students, filters }) {
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {enrollment?.school_year || '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {contact || '—'}
+                                            <td className="px-4 py-3">
+                                                {enrollment ? (
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                                                    >
+                                                        {
+                                                            enrollment.enrollment_status
+                                                        }
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[#1F2A24]/30">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {enrollment ? (
+                                                    missingCount > 0 ? (
+                                                        <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold text-[#a4670f]">
+                                                            {missingCount}{' '}
+                                                            missing
+                                                        </span>
+                                                    ) : (
+                                                        <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                                            Complete
+                                                        </span>
+                                                    )
+                                                ) : (
+                                                    <span className="text-[#1F2A24]/30">
+                                                        —
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {enrollment ? (
@@ -128,7 +322,7 @@ export default function Index({ students, filters }) {
                                 {students.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={6}
+                                            colSpan={7}
                                             className="px-4 py-8 text-center text-[#1F2A24]/40"
                                         >
                                             No students found.

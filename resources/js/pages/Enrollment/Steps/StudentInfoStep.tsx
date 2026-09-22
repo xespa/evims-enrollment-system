@@ -28,6 +28,17 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
         }));
     };
 
+    const handleGradeLevelChange = (name, value) => {
+        const selected = gradeLevels.find((g) => String(g.id) === String(value));
+        const isKinder = selected?.name === 'Kinder';
+
+        setData((prevData) => ({
+            ...prevData,
+            grade_level_id: value,
+            student_type: isKinder ? 'NO_LRN' : prevData.student_type,
+        }));
+    };
+
     return (
         <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Information</h2>
@@ -50,7 +61,7 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     label="Grade Level Applying For"
                     name="grade_level_id"
                     value={data.grade_level_id}
-                    onChange={setData}
+                    onChange={handleGradeLevelChange}
                     error={errors.grade_level_id}
                     required
                     options={gradeOptions}
@@ -69,7 +80,7 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
             )}
 
             <TextInput
-                label="PSA Birth Certificate No."
+                label="PSA Birth Certificate No./BReN"
                 name="psa_birth_cert_no"
                 value={data.psa_birth_cert_no}
                 onChange={setData}

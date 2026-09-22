@@ -68,7 +68,7 @@ class StoreEnrollmentRequest extends FormRequest
             'grade_level_id' => ['required', 'exists:grade_levels,id'],
             'school_year' => $schoolYearRules,
             'date_of_application' => ['required', 'date'],
-            'age' => ['required', 'integer', 'min:2', 'max:25'],
+            'age' => ['required', 'integer', 'min:2'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],
             'email' => ['required', 'email', 'max:255'],
 
@@ -76,7 +76,9 @@ class StoreEnrollmentRequest extends FormRequest
             'house_number_street' => ['nullable', 'string', 'max:255'],
             'barangay' => ['required', 'string', 'max:255'],
             'city_municipality' => ['required', 'string', 'max:255'],
+            'city_code' => ['nullable', 'string', 'max:10'],
             'province' => ['required', 'string', 'max:255'],
+            'province_code' => ['nullable', 'string', 'max:10'],
             'country' => ['required', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:10'],
 
@@ -120,7 +122,6 @@ class StoreEnrollmentRequest extends FormRequest
             // Billing
             'payment_option' => ['required', 'string'],
             'payment_channel' => ['required', 'string'],
-            'scanned_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
             // Documents
             'form_138' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],

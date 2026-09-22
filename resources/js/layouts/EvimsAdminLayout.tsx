@@ -3,7 +3,6 @@ import {
     Banknote,
     Calendar,
     ChevronUp,
-    ClipboardList,
     LayoutDashboard,
     LogOut,
     PanelLeftClose,
@@ -15,11 +14,6 @@ import { useEffect, useRef, useState } from 'react';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
-    {
-        label: 'Enrollment Applications',
-        route: 'admin.enrollments.index',
-        icon: ClipboardList,
-    },
     { label: 'Students', route: 'admin.students.index', icon: Users },
     { label: 'Events', route: 'admin.events.index', icon: Calendar },
     { label: 'Tuition Fees', route: 'admin.gradeLevels.index', icon: Banknote },

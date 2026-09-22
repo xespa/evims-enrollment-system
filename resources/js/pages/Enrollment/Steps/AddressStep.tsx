@@ -7,55 +7,38 @@ export default function AddressStep({ data, setData, errors }) {
     const [cities, setCities] = useState([]);
     const [barangays, setBarangays] = useState([]);
 
-    const [provinceCode, setProvinceCode] = useState('');
-    const [cityCode, setCityCode] = useState('');
+    // Seeded straight from the form data (not re-derived by matching names
+    // after a fresh fetch) so a selection already made survives navigating
+    // away to a later step and back — this component unmounts/remounts on
+    // every step change, but `data` lives in the parent and never resets.
+    const [provinceCode, setProvinceCode] = useState(data.province_code ?? '');
+    const [cityCode, setCityCode] = useState(data.city_code ?? '');
+    const [zipCodeOptions, setZipCodeOptions] = useState([]);
 
     const [loadingProvinces, setLoadingProvinces] = useState(true);
     const [loadingCities, setLoadingCities] = useState(false);
     const [loadingBarangays, setLoadingBarangays] = useState(false);
 
-    // Load provinces, then restore the previously selected province (if this
-    // step was already filled in and the user came back to it) so it doesn't
-    // look like the selection was lost.
+    // Always load the full province list, purely for the dropdown's options
+    // (labels) — the selected value itself already comes from `data` above.
     useEffect(() => {
         fetch('/api/ph-address/provinces')
             .then((res) => res.json())
-            .then((json) => {
-                const list = Array.isArray(json) ? json : [];
-                setProvinces(list);
-
-                if (data.province) {
-                    const match = list.find((p) => p.name === data.province);
-                    if (match) setProvinceCode(match.prov_code);
-                }
-            })
+            .then((json) => setProvinces(Array.isArray(json) ? json : []))
             .catch(() => setProvinces([]))
             .finally(() => setLoadingProvinces(false));
-        // Only ever run once on mount — restoration reads `data` at that point.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Whenever the province code is known (picked by the user, or restored
-    // above), load its cities and restore the previously selected city.
+    // from `data.province_code` on mount), load its cities.
     useEffect(() => {
         if (!provinceCode) return;
 
         setLoadingCities(true);
         fetch(`/api/ph-address/cities/${provinceCode}`)
             .then((res) => res.json())
-            .then((json) => {
-                const list = Array.isArray(json) ? json : [];
-                setCities(list);
-
-                if (data.city_municipality) {
-                    const match = list.find(
-                        (c) => c.name === data.city_municipality,
-                    );
-                    if (match) setCityCode(match.mun_code);
-                }
-            })
+            .then((json) => setCities(Array.isArray(json) ? json : []))
             .finally(() => setLoadingCities(false));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [provinceCode]);
 
     // Whenever the city code is known, load its barangays so the barangay
@@ -70,6 +53,33 @@ export default function AddressStep({ data, setData, errors }) {
             .finally(() => setLoadingBarangays(false));
     }, [cityCode]);
 
+    // Whenever the city code is known, suggest zip code(s) for it. Coverage
+    // is partial, so no match just leaves the plain text field for manual
+    // entry — this never overwrites a zip code the user already has.
+    useEffect(() => {
+        if (!cityCode || !data.city_municipality) {
+            setZipCodeOptions([]);
+            return;
+        }
+
+        const params = new URLSearchParams({
+            province: data.province,
+            city: data.city_municipality,
+        });
+
+        fetch(`/api/ph-address/zip-codes?${params}`)
+            .then((res) => res.json())
+            .then((json) => {
+                const list = Array.isArray(json) ? json : [];
+                setZipCodeOptions(list);
+                if (list.length === 1 && !data.zip_code) {
+                    setData((prev) => ({ ...prev, zip_code: list[0] }));
+                }
+            })
+            .catch(() => setZipCodeOptions([]));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cityCode]);
+
     const handleProvinceChange = (name, value) => {
         const selected = provinces.find((p) => p.prov_code === value);
 
@@ -77,12 +87,16 @@ export default function AddressStep({ data, setData, errors }) {
         setCities([]);
         setBarangays([]);
         setCityCode('');
+        setZipCodeOptions([]);
 
         setData((prev) => ({
             ...prev,
             province: selected ? selected.name : '',
+            province_code: value,
             city_municipality: '',
+            city_code: '',
             barangay: '',
+            zip_code: '',
         }));
     };
 
@@ -91,11 +105,14 @@ export default function AddressStep({ data, setData, errors }) {
 
         setCityCode(value);
         setBarangays([]);
+        setZipCodeOptions([]);
 
         setData((prev) => ({
             ...prev,
             city_municipality: selected ? selected.name : '',
+            city_code: value,
             barangay: '',
+            zip_code: '',
         }));
     };
 
@@ -170,13 +187,27 @@ export default function AddressStep({ data, setData, errors }) {
                     options={[{ value: 'Philippines', label: 'Philippines' }]}
                 />
 
-                <TextInput
-                    label="Zip Code"
-                    name="zip_code"
-                    value={data.zip_code}
-                    onChange={setData}
-                    error={errors.zip_code}
-                />
+                {zipCodeOptions.length > 1 ? (
+                    <SelectInput
+                        label="Zip Code"
+                        name="zip_code"
+                        value={data.zip_code}
+                        onChange={setData}
+                        error={errors.zip_code}
+                        options={zipCodeOptions.map((zip) => ({
+                            value: zip,
+                            label: zip,
+                        }))}
+                    />
+                ) : (
+                    <TextInput
+                        label="Zip Code"
+                        name="zip_code"
+                        value={data.zip_code}
+                        onChange={setData}
+                        error={errors.zip_code}
+                    />
+                )}
             </div>
         </div>
     );

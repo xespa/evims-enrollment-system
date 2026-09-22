@@ -85,10 +85,6 @@ export default function ReviewStep({ data, gradeLevels }) {
                     Billing
                 </h3>
                 <ReviewRow label="Payment Option" value={data.payment_option} />
-                <ReviewRow
-                    label="Contract File"
-                    value={data.scanned_contract?.name}
-                />
             </div>
         </div>
     );

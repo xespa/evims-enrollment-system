@@ -99,7 +99,6 @@ const FIELD_TO_STEP = {
 
     payment_option: 8,
     payment_channel: 8,
-    scanned_contract: 8,
 };
 
 function getDefaultSchoolYear() {
@@ -130,6 +129,10 @@ function calculateAge(dateOfBirth) {
 
 export default function Create({ gradeLevels, previousApplication }) {
     const [step, setStep] = useState(1);
+    // Tracks the furthest step ever reached, separate from the current one —
+    // so stepping back to review/edit an earlier step doesn't grey out the
+    // later steps you've already filled in on the stepper nav.
+    const [maxStepReached, setMaxStepReached] = useState(1);
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
 
@@ -157,7 +160,9 @@ export default function Create({ gradeLevels, previousApplication }) {
         house_number_street: '',
         barangay: '',
         city_municipality: '',
+        city_code: '',
         province: '',
+        province_code: '',
         country: 'Philippines',
         zip_code: '',
 
@@ -205,7 +210,6 @@ export default function Create({ gradeLevels, previousApplication }) {
         // Billing
         payment_option: '',
         payment_channel: '',
-        scanned_contract: null,
     });
 
     const totalSteps = 9;
@@ -221,12 +225,22 @@ export default function Create({ gradeLevels, previousApplication }) {
 
     const goNext = () => {
         if (!isStepValid()) return;
-        setStep((s) => Math.min(s + 1, totalSteps));
+        setStep((s) => {
+            const next = Math.min(s + 1, totalSteps);
+            setMaxStepReached((m) => Math.max(m, next));
+            return next;
+        });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const goBack = () => {
         setStep((s) => Math.max(s - 1, 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const goToStep = (stepNumber) => {
+        setStep(stepNumber);
+        setMaxStepReached((m) => Math.max(m, stepNumber));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -288,7 +302,11 @@ export default function Create({ gradeLevels, previousApplication }) {
                         </div>
                     )}
 
-                    <StepperNav currentStep={step} />
+                    <StepperNav
+                        currentStep={step}
+                        maxStepReached={maxStepReached}
+                        onStepClick={goToStep}
+                    />
 
                     <form
                         onSubmit={handleSubmit}

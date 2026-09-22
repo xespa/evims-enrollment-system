@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Address;
 use App\Models\BillingContract;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
@@ -31,7 +32,9 @@ function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): 
 
         'barangay' => 'Balud',
         'city_municipality' => 'Borongan City',
+        'city_code' => '0826-01',
         'province' => 'Eastern Samar',
+        'province_code' => '0826',
         'country' => 'Philippines',
         'zip_code' => '6800',
 
@@ -52,7 +55,6 @@ test('submitting the admission form creates the full enrollment record set', fun
         'form_138' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
         'birth_certificate' => UploadedFile::fake()->image('birth.jpg'),
         'good_moral_certificate' => UploadedFile::fake()->create('good-moral.pdf', 200, 'application/pdf'),
-        'scanned_contract' => UploadedFile::fake()->create('contract.pdf', 200, 'application/pdf'),
     ]);
 
     $response = $this->post(route('enrollment.store'), $payload);
@@ -64,12 +66,18 @@ test('submitting the admission form creates the full enrollment record set', fun
     // Vital information is now actually created (previously a no-op placeholder).
     expect(VitalInformation::where('enrollment_id', $enrollment->id)->exists())->toBeTrue();
 
+    // The PSGC codes picked in the address dropdowns are saved alongside the
+    // readable names, not just discarded after validation.
+    $address = Address::where('student_id', $enrollment->student_id)->first();
+    expect($address)->not->toBeNull();
+    expect($address->province_code)->toBe('0826');
+    expect($address->city_code)->toBe('0826-01');
+
     // Billing contract + installment schedule are now actually created.
     $billingContract = BillingContract::where('enrollment_id', $enrollment->id)->first();
     expect($billingContract)->not->toBeNull();
     expect((float) $billingContract->total_fee)->toBe(30000.0);
     expect($billingContract->installments()->count())->toBeGreaterThan(0);
-    Storage::disk('public')->assertExists($billingContract->scanned_contract_url);
 
     // Office verification row + the three uploaded documents now exist.
     $verification = OfficeVerification::where('enrollment_id', $enrollment->id)->first();
@@ -107,7 +115,7 @@ test('documents are optional at submission', function () {
     expect($verification->good_moral_path)->toBeNull();
 
     $billingContract = BillingContract::where('enrollment_id', $enrollment->id)->first();
-    expect($billingContract->scanned_contract_url)->toBeNull();
+    expect($billingContract)->not->toBeNull();
 });
 
 test('document uploads are validated for file type', function () {

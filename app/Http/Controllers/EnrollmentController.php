@@ -111,7 +111,9 @@ class EnrollmentController extends Controller
                 'house_number_street' => $validated['house_number_street'] ?? null,
                 'barangay' => $validated['barangay'],
                 'city_municipality' => $validated['city_municipality'],
+                'city_code' => $validated['city_code'] ?? null,
                 'province' => $validated['province'],
+                'province_code' => $validated['province_code'] ?? null,
                 'country' => $validated['country'],
                 'zip_code' => $validated['zip_code'] ?? null,
             ]);
@@ -183,9 +185,6 @@ class EnrollmentController extends Controller
                 'payment_option' => $validated['payment_option'],
                 'payment_channel' => $validated['payment_channel'],
                 'total_fee' => $gradeLevel->tuition_fee,
-                'scanned_contract_url' => $request->hasFile('scanned_contract')
-                    ? $request->file('scanned_contract')->store('contracts', 'public')
-                    : null,
             ]);
 
             $billingContract->generateInstallments();
