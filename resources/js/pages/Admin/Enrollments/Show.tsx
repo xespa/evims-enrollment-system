@@ -396,6 +396,17 @@ export default function Show({ enrollment }) {
         });
     };
 
+    const deleteApplication = () => {
+        if (
+            !confirm(
+                `Permanently delete this application for ${student.first_name} ${student.last_name}? This cannot be undone — all of its documents, billing, and payment records will be deleted too. The student's own profile will NOT be deleted.`,
+            )
+        ) {
+            return;
+        }
+        router.delete(route('admin.enrollments.destroy', enrollment.id));
+    };
+
     const toggleVerification = (field, currentValue) => {
         router.patch(
             route('admin.enrollments.updateVerification', enrollment.id),
@@ -476,6 +487,13 @@ export default function Show({ enrollment }) {
                             className="rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 disabled:opacity-40"
                         >
                             Reset to Pending
+                        </button>
+
+                        <button
+                            onClick={deleteApplication}
+                            className="ml-auto rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
+                        >
+                            Delete Application
                         </button>
                     </div>
 

@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -8,8 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/utils';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -18,65 +15,35 @@ type Props = {
     canResetPassword: boolean;
 };
 
-type Portal = 'staff' | 'admin';
-
 export default function Login({ status, canResetPassword }: Props) {
-    const [portal, setPortal] = useState<Portal>('staff');
-
-    const portalCopy: Record<Portal, { heading: string; description: string }> = {
-        staff: {
-            heading: 'Parent / Staff Login',
-            description: 'Log in to manage enrollment and payments.',
-        },
-        admin: {
-            heading: 'Administrator Login',
-            description: 'Log in to access the admin dashboard.',
-        },
-    };
-
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Admin Log In" />
 
-            <div
-                className="mb-6 inline-flex w-full gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800"
-                role="tablist"
-                aria-label="Choose login type"
-            >
-                {(['staff', 'admin'] as Portal[]).map((option) => (
-                    <button
-                        key={option}
-                        type="button"
-                        role="tab"
-                        aria-selected={portal === option}
-                        onClick={() => setPortal(option)}
-                        className={cn(
-                            'flex-1 rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors',
-                            portal === option
-                                ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                                : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
-                        )}
-                    >
-                        {option === 'staff' ? 'Parent / Staff' : 'Admin'}
-                    </button>
-                ))}
+            <div className="mb-5">
+                <h2 className="text-base font-semibold text-[#1F2A24]">
+                    Administrator Login
+                </h2>
+                <p className="mt-0.5 text-sm text-[#1F2A24]/60">
+                    Log in to access the admin dashboard.
+                </p>
             </div>
-
-            <p className="mb-4 text-sm text-muted-foreground">
-                {portalCopy[portal].description}
-            </p>
 
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
-                transform={(data) => ({ ...data, portal })}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-5"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        <div className="grid gap-5">
+                            <div>
+                                <Label
+                                    htmlFor="email"
+                                    className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80"
+                                >
+                                    Email address
+                                </Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -86,18 +53,24 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
+                                    className="border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                            <div>
+                                <div className="mb-1.5 flex items-center">
+                                    <Label
+                                        htmlFor="password"
+                                        className="text-sm font-medium text-[#1F2A24]/80"
+                                    >
+                                        Password
+                                    </Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
+                                            className="ml-auto text-sm text-[#2F6F4E] hover:text-[#25573E]"
+                                            tabIndex={4}
                                         >
                                             Forgot your password?
                                         </TextLink>
@@ -110,6 +83,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Password"
+                                    className="border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30"
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -120,33 +94,28 @@ export default function Login({ status, canResetPassword }: Props) {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember" className="text-sm text-[#1F2A24]/80">
+                                    Remember me
+                                </Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
+                                className="w-full rounded-full bg-[#2F6F4E] py-5 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                tabIndex={5}
                                 disabled={processing}
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
-                                Log in as {portal === 'admin' ? 'Admin' : 'Parent/Staff'}
+                                Log In
                             </Button>
-                        </div>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Sign up
-                            </TextLink>
                         </div>
                     </>
                 )}
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mt-4 text-center text-sm font-medium text-[#2F6F4E]">
                     {status}
                 </div>
             )}
@@ -155,6 +124,6 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Welcome Back',
+    description: 'Log in to continue to your account',
 };

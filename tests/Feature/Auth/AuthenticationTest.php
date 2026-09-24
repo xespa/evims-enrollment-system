@@ -10,16 +10,28 @@ test('login screen can be rendered', function () {
     $response->assertOk();
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('admins can authenticate using the login screen', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
 
     $response = $this->post(route('login.store'), [
-        'email' => $user->email,
+        'email' => $admin->email,
         'password' => 'password',
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('admin.dashboard', absolute: false));
+});
+
+test('non-admin users cannot authenticate using the login screen', function () {
+    $staff = User::factory()->create(['role' => 'STAFF']);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $staff->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+    $response->assertSessionHasErrors('email');
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

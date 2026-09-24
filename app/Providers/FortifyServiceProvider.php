@@ -5,20 +5,20 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Models\User;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-use Illuminate\Auth\Events\Login;
-use Illuminate\Support\Facades\Event;
-
 
 Event::listen(Login::class, function (Login $event) {
     // only needed if STAFF and ADMIN shouldn't share a landing page
@@ -33,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         //
         $this->app->singleton(
-            \Laravel\Fortify\Contracts\LoginResponse::class,
+            LoginResponse::class,
             \App\Http\Responses\LoginResponse::class
         );
     }
@@ -55,6 +55,9 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        // This login screen is admin-only — staff accounts have no portal of
+        // their own to sign in to, so they're rejected here rather than let
+        // through with nowhere to go.
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', $request->email)->first();
 
@@ -62,14 +65,9 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $portal = $request->input('portal', 'staff');
-            $wantsAdminPortal = $portal === 'admin';
-
-            if ($wantsAdminPortal !== $user->isAdmin()) {
+            if (! $user->isAdmin()) {
                 throw ValidationException::withMessages([
-                    Fortify::username() => $wantsAdminPortal
-                        ? 'This account does not have admin access. Please use the parent/staff login instead.'
-                        : 'This is an admin account. Please switch to the admin login.',
+                    Fortify::username() => 'This account does not have admin access.',
                 ]);
             }
 

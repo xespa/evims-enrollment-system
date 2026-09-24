@@ -1,6 +1,9 @@
+import { Check, X } from 'lucide-react';
+
 export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
     const selectedGrade = gradeLevels.find((g) => String(g.id) === String(data.grade_level_id));
     const subjects = selectedGrade?.subjects ?? [];
+    const selectedIds = data.subject_ids ?? [];
 
     const toggleSubject = (subjectId) => {
         const current = data.subject_ids ?? [];
@@ -12,6 +15,9 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
     const selectAll = () => setData('subject_ids', subjects.map((s) => s.id));
     const clearAll = () => setData('subject_ids', []);
 
+    const allSelected = subjects.length > 0 && subjects.every((s) => selectedIds.includes(s.id));
+    const noneSelected = selectedIds.length === 0;
+
     return (
         <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-1">Subjects</h2>
@@ -21,9 +27,28 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
             </p>
 
             {subjects.length > 0 && (
-                <div className="mb-3 flex gap-3 text-sm">
-                    <button type="button" onClick={selectAll} className="text-blue-600 hover:underline">Select all</button>
-                    <button type="button" onClick={clearAll} className="text-gray-500 hover:underline">Clear</button>
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={selectAll}
+                        disabled={allSelected}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
+                    >
+                        <Check className="h-3.5 w-3.5" />
+                        Select all
+                    </button>
+                    <button
+                        type="button"
+                        onClick={clearAll}
+                        disabled={noneSelected}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                        Clear
+                    </button>
+                    <span className="ml-1 text-xs text-gray-400">
+                        {selectedIds.length} of {subjects.length} selected
+                    </span>
                 </div>
             )}
 
@@ -32,7 +57,7 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                     <label key={subject.id} className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
                         <input
                             type="checkbox"
-                            checked={(data.subject_ids ?? []).includes(subject.id)}
+                            checked={selectedIds.includes(subject.id)}
                             onChange={() => toggleSubject(subject.id)}
                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEnrollmentRequest;
-use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
@@ -47,11 +46,27 @@ class EnrollmentController extends Controller
     {
         $validated = $request->validated();
 
+        // Everything is filled in and valid — only an account stands between
+        // this and actually submitting. Send them to create one (or log in),
+        // then bring them straight back here to finish once they have.
+        if (! Auth::guard('enrollee')->check()) {
+            // redirect()->guest() only captures the current URL as "intended"
+            // for GET requests (for POST it falls back to the Referer header,
+            // which isn't reliable) — set it explicitly instead, so it's the
+            // admission page regardless of method or browser referrer policy.
+            session(['url.intended' => route('enrollment.create')]);
+
+            return redirect()->route('portal.register', [
+                'name' => trim("{$validated['first_name']} {$validated['last_name']}"),
+                'email' => $validated['email'],
+            ]);
+        }
+
         $enrollment = DB::transaction(function () use ($validated, $request) {
             $enrollee = Auth::guard('enrollee')->user();
 
-            // Find by LRN first (works for guests too), falling back to the
-            // logged-in account's own existing student (covers NO_LRN cases).
+            // Find by LRN first, falling back to the logged-in account's own
+            // existing student (covers NO_LRN cases).
             $existingStudent = null;
 
             if (! empty($validated['lrn'])) {
@@ -65,16 +80,11 @@ class EnrollmentController extends Controller
                 }
             }
 
-            // Only allow overwriting identity fields if the submitter is logged in
-            // AND is actually the account linked to this student — otherwise a guest
-            // typing in someone else's LRN could silently edit that student's identity.
-            $isOwner = $existingStudent && $enrollee
+            // Only allow overwriting identity fields if the logged-in account is
+            // actually the one linked to this student — otherwise someone typing
+            // in a different family's LRN could silently edit that student's identity.
+            $isOwner = $existingStudent
                 && $enrollee->enrollments()->where('student_id', $existingStudent->id)->exists();
-
-            if ($existingStudent && ($isOwner || ! $enrollee)) {
-                // Owner editing their own record, OR a fresh guest match with no
-                // conflicting account — safe to sync identity fields.
-            }
 
             if ($existingStudent) {
                 $student = $existingStudent;
@@ -91,9 +101,9 @@ class EnrollmentController extends Controller
                         'sex' => $validated['sex'],
                     ]);
                 }
-                // If matched by LRN but not the verified owner (e.g. guest, or a
-                // different logged-in account), we deliberately keep the existing
-                // identity fields as-is rather than trusting the new submission.
+                // Matched by LRN but this account isn't the verified owner — we
+                // deliberately keep the existing identity fields as-is rather
+                // than trusting the new submission.
             } else {
                 $student = Student::create([
                     'lrn' => $validated['lrn'] ?? null,
@@ -144,17 +154,9 @@ class EnrollmentController extends Controller
                 'enrollment_status' => 'PENDING',
             ]);
 
-            if ($enrollee) {
-                $enrollment->update(['enrollee_user_id' => $enrollee->id]);
-            } else {
-                $verifiedAccount = EnrolleeUser::where('email', $validated['email'])
-                    ->whereNotNull('email_verified_at')
-                    ->first();
-
-                if ($verifiedAccount) {
-                    $enrollment->update(['enrollee_user_id' => $verifiedAccount->id]);
-                }
-            }
+            // Submitting is now gated on being logged in (see the check above),
+            // so $enrollee is always present here.
+            $enrollment->update(['enrollee_user_id' => $enrollee->id]);
 
             $enrollment->subjects()->sync($validated['subject_ids']);
 

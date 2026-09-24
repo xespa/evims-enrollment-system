@@ -150,4 +150,21 @@ class EnrollmentManagementController extends Controller
 
         return back()->with('success', 'Cash payment recorded.');
     }
+
+    public function destroy(Enrollment $enrollment)
+    {
+        $enrollment->loadMissing('student');
+        $studentName = trim("{$enrollment->student->first_name} {$enrollment->student->last_name}");
+
+        // Deletes the enrollment row only — the student, parent profile, and
+        // address stay intact. Everything specific to this one application
+        // (academic history, vital info, billing/installments/payments,
+        // office verification, subject picks) cascades away with it at the
+        // database level.
+        $enrollment->delete();
+
+        return redirect()
+            ->route('admin.students.index')
+            ->with('success', "Application for {$studentName} was permanently deleted.");
+    }
 }

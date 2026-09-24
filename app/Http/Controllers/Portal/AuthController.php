@@ -36,7 +36,10 @@ class AuthController extends Controller
 
         $enrollee->sendEmailVerificationNotification();
 
-        return redirect()->route('portal.verification.notice');
+        // If they were redirected here mid-application (see EnrollmentController::store),
+        // this sends them straight back to finish submitting instead of stranding
+        // them on the verification notice.
+        return redirect()->intended(route('portal.verification.notice'));
     }
 
     public function showLogin(): Response

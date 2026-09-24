@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 const STATUS_STYLES = {
@@ -110,6 +110,9 @@ function AssignLrnCell({ studentId }) {
 }
 
 export default function Index({ students, gradeLevels, schoolYears, filters }) {
+    const { props } = usePage();
+    const flashSuccess = props.flash?.success;
+
     const [search, setSearch] = useState(filters.search ?? '');
     const [schoolYear, setSchoolYear] = useState(filters.school_year ?? '');
     const [gradeLevelId, setGradeLevelId] = useState(
@@ -145,6 +148,12 @@ export default function Index({ students, gradeLevels, schoolYears, filters }) {
                             Students
                         </h1>
                     </div>
+
+                    {flashSuccess && (
+                        <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                            {flashSuccess}
+                        </div>
+                    )}
 
                     {/* Search */}
                     <div className="mb-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">

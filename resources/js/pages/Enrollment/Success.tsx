@@ -1,11 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
 export default function Success({ enrollment }) {
-    const registerUrl = route('portal.register', {
-        name: enrollment.applicant_name,
-        email: enrollment.email,
-    });
-
     return (
         <>
             <Head title="Application Submitted" />
@@ -27,10 +22,10 @@ export default function Success({ enrollment }) {
                     </p>
 
                     <Link
-                        href={registerUrl}
+                        href={route('portal.dashboard')}
                         className="mt-6 block w-full rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
                     >
-                        Create an Account to Track Status
+                        Go to Your Dashboard
                     </Link>
 
                     <Link href="/" className="mt-4 block text-sm font-medium text-[#2F6F4E] hover:underline">

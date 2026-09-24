@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Head, usePage } from '@inertiajs/react';
 import StepperNav from './Components/StepperNav';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -101,6 +101,45 @@ const FIELD_TO_STEP = {
     payment_channel: 8,
 };
 
+// Persists in-progress answers to this browser so navigating away (home,
+// another page, a closed tab) and coming back doesn't lose what was already
+// filled in. File inputs can't be serialized to localStorage, so uploaded
+// files are intentionally left out — those need to be reselected.
+const DRAFT_STORAGE_KEY = 'evims:enrollment-draft';
+const DRAFT_FILE_FIELDS = ['form_138', 'birth_certificate', 'good_moral_certificate'];
+
+function loadDraft() {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveDraft(draft) {
+    if (typeof window === 'undefined') return;
+
+    try {
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+        // Storage full, disabled, or unavailable (private browsing) — the
+        // form still works, it just won't survive navigating away.
+    }
+}
+
+function clearDraft() {
+    if (typeof window === 'undefined') return;
+
+    try {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+        // Nothing to do if storage isn't available.
+    }
+}
+
 function getDefaultSchoolYear() {
     const now = new Date();
     const month = now.getMonth() + 1; // 1–12
@@ -128,15 +167,20 @@ function calculateAge(dateOfBirth) {
 }
 
 export default function Create({ gradeLevels, previousApplication }) {
-    const [step, setStep] = useState(1);
+    const [draft] = useState(() => loadDraft());
+    const restoredFromDraft = !!draft;
+
+    const [step, setStep] = useState(draft?.step ?? 1);
     // Tracks the furthest step ever reached, separate from the current one —
     // so stepping back to review/edit an earlier step doesn't grey out the
     // later steps you've already filled in on the stepper nav.
-    const [maxStepReached, setMaxStepReached] = useState(1);
+    const [maxStepReached, setMaxStepReached] = useState(
+        draft?.maxStepReached ?? 1,
+    );
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
 
-    const { data, setData, post, processing, errors } = useForm({
+    const defaultFormData = {
         // Student
         student_type: previousApplication?.student_type ?? '',
         grade_level_id: previousApplication?.grade_level_id ?? '',
@@ -210,9 +254,23 @@ export default function Create({ gradeLevels, previousApplication }) {
         // Billing
         payment_option: '',
         payment_channel: '',
+    };
+
+    const { data, setData, post, processing, errors } = useForm({
+        ...defaultFormData,
+        ...draft?.data,
     });
 
     const totalSteps = 9;
+
+    // Keep the browser's copy of the in-progress application up to date —
+    // this is what lets the form survive a trip to another page and back.
+    useEffect(() => {
+        const persistable = { ...data };
+        DRAFT_FILE_FIELDS.forEach((field) => delete persistable[field]);
+
+        saveDraft({ data: persistable, step, maxStepReached });
+    }, [data, step, maxStepReached]);
 
     const isStepValid = () => {
         const required = STEP_REQUIRED_FIELDS[step];
@@ -249,6 +307,15 @@ export default function Create({ gradeLevels, previousApplication }) {
 
         post(route('enrollment.store'), {
             forceFormData: true,
+            onSuccess: (page) => {
+                // A guest without an account gets redirected to register
+                // instead of the success page — that's not a real
+                // submission yet, so the draft must survive it. Only clear
+                // once we've actually landed on the success page.
+                if (page.component === 'Enrollment/Success') {
+                    clearDraft();
+                }
+            },
             onError: (formErrors) => {
                 const errorFields = Object.keys(formErrors);
                 if (errorFields.length > 0) {
@@ -283,16 +350,25 @@ export default function Create({ gradeLevels, previousApplication }) {
                         </p>
                     </div>
 
-                    {previousApplication && step === 1 && (
+                    {restoredFromDraft ? (
                         <div className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
-                            We've pre-filled this from your existing application
-                            for{' '}
-                            <span className="font-semibold">
-                                {previousApplication.first_name}{' '}
-                                {previousApplication.last_name}
-                            </span>
-                            . Feel free to update anything that's changed.
+                            Welcome back — we've restored your in-progress
+                            application right where you left off. Any files
+                            you'd already selected will need to be reattached.
                         </div>
+                    ) : (
+                        previousApplication &&
+                        step === 1 && (
+                            <div className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
+                                We've pre-filled this from your existing
+                                application for{' '}
+                                <span className="font-semibold">
+                                    {previousApplication.first_name}{' '}
+                                    {previousApplication.last_name}
+                                </span>
+                                . Feel free to update anything that's changed.
+                            </div>
+                        )
                     )}
 
                     {Object.keys(errors).length > 0 && (
