@@ -49,6 +49,10 @@ Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollm
 Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::get('/admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
 
+Route::post('/admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])
+    ->middleware('auth:enrollee')
+    ->name('enrollment.verifyLrn');
+
 Route::middleware('signed')->group(function () {
     Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
     Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');

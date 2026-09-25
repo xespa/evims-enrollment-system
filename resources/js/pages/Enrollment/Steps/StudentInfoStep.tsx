@@ -1,6 +1,21 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 
+// Offers one school year back through two years ahead of the current one —
+// enough room for late enrollees and early applications, without listing
+// every year that's ever existed.
+function generateSchoolYearOptions() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const currentStart = month >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+
+    const years = [];
+    for (let start = currentStart - 1; start <= currentStart + 2; start++) {
+        years.push(`${start}-${start + 1}`);
+    }
+    return years.map((y) => ({ value: y, label: y }));
+}
+
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return '';
 
@@ -19,6 +34,7 @@ function calculateAge(dateOfBirth) {
 
 export default function StudentInfoStep({ data, setData, errors, gradeLevels }) {
     const gradeOptions = gradeLevels.map((g) => ({ value: g.id, label: g.name }));
+    const schoolYearOptions = generateSchoolYearOptions();
 
     const handleDateOfBirthChange = (name, value) => {
         setData((prevData) => ({
@@ -124,7 +140,15 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
             </div>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-                <TextInput label="School Year" name="school_year" value={data.school_year} onChange={setData} error={errors.school_year} placeholder="2026-2027" required />
+                <SelectInput
+                    label="School Year"
+                    name="school_year"
+                    value={data.school_year}
+                    onChange={setData}
+                    error={errors.school_year}
+                    required
+                    options={schoolYearOptions}
+                />
                 <TextInput label="Date of Application" name="date_of_application" type="date" value={data.date_of_application} onChange={setData} error={errors.date_of_application} required />
             </div>
 

@@ -109,7 +109,7 @@ function AssignLrnCell({ studentId }) {
     );
 }
 
-export default function Index({ students, gradeLevels, schoolYears, filters }) {
+export default function Index({ applications, gradeLevels, schoolYears, filters }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
 
@@ -243,15 +243,14 @@ export default function Index({ students, gradeLevels, schoolYears, filters }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#1F2A24]/10">
-                                {students.data.map((student) => {
-                                    const enrollment =
-                                        student.latest_enrollment;
+                                {applications.data.map((enrollment) => {
+                                    const student = enrollment.student;
                                     const missingCount =
                                         countMissingDocuments(enrollment);
 
                                     return (
                                         <tr
-                                            key={student.id}
+                                            key={enrollment.id}
                                             className="hover:bg-[#2F6F4E]/5"
                                         >
                                             <td className="px-4 py-3 text-[#1F2A24]">
@@ -268,73 +267,54 @@ export default function Index({ students, gradeLevels, schoolYears, filters }) {
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {enrollment?.grade_level
+                                                {enrollment.grade_level
                                                     ?.name || '—'}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {enrollment?.school_year || '—'}
+                                                {enrollment.school_year}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {enrollment ? (
-                                                    <span
-                                                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                                                    >
-                                                        {
-                                                            enrollment.enrollment_status
-                                                        }
+                                                <span
+                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                                                >
+                                                    {
+                                                        enrollment.enrollment_status
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {missingCount > 0 ? (
+                                                    <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold text-[#a4670f]">
+                                                        {missingCount} missing
                                                     </span>
                                                 ) : (
-                                                    <span className="text-[#1F2A24]/30">
-                                                        —
+                                                    <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                                        Complete
                                                     </span>
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {enrollment ? (
-                                                    missingCount > 0 ? (
-                                                        <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold text-[#a4670f]">
-                                                            {missingCount}{' '}
-                                                            missing
-                                                        </span>
-                                                    ) : (
-                                                        <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
-                                                            Complete
-                                                        </span>
-                                                    )
-                                                ) : (
-                                                    <span className="text-[#1F2A24]/30">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {enrollment ? (
-                                                    <Link
-                                                        href={route(
-                                                            'admin.enrollments.show',
-                                                            enrollment.id,
-                                                        )}
-                                                        className="font-medium text-[#2F6F4E] hover:underline"
-                                                    >
-                                                        View
-                                                    </Link>
-                                                ) : (
-                                                    <span className="text-[#1F2A24]/30">
-                                                        —
-                                                    </span>
-                                                )}
+                                                <Link
+                                                    href={route(
+                                                        'admin.enrollments.show',
+                                                        enrollment.id,
+                                                    )}
+                                                    className="font-medium text-[#2F6F4E] hover:underline"
+                                                >
+                                                    View
+                                                </Link>
                                             </td>
                                         </tr>
                                     );
                                 })}
 
-                                {students.data.length === 0 && (
+                                {applications.data.length === 0 && (
                                     <tr>
                                         <td
                                             colSpan={7}
                                             className="px-4 py-8 text-center text-[#1F2A24]/40"
                                         >
-                                            No students found.
+                                            No applications found.
                                         </td>
                                     </tr>
                                 )}
@@ -344,7 +324,7 @@ export default function Index({ students, gradeLevels, schoolYears, filters }) {
 
                     {/* Pagination */}
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {students.links.map((link, i) => (
+                        {applications.links.map((link, i) => (
                             <Link
                                 key={i}
                                 href={link.url ?? '#'}

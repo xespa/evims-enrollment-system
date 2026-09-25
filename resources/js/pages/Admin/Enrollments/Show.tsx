@@ -615,6 +615,41 @@ export default function Show({ enrollment }) {
                             </p>
                         </div>
 
+                        {/* Academic history */}
+                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                Academic History
+                            </h2>
+                            <InfoRow
+                                label="Last Grade Level Completed"
+                                value={
+                                    enrollment.academic_history
+                                        ?.last_grade_level_completed
+                                }
+                            />
+                            <InfoRow
+                                label="Last School Year Completed"
+                                value={
+                                    enrollment.academic_history
+                                        ?.last_school_year_completed
+                                }
+                            />
+                            <InfoRow
+                                label="Previous School Name"
+                                value={
+                                    enrollment.academic_history
+                                        ?.previous_school_name
+                                }
+                            />
+                            <InfoRow
+                                label="Previous School Address"
+                                value={
+                                    enrollment.academic_history
+                                        ?.previous_school_address
+                                }
+                            />
+                        </div>
+
                         {/* Vital info */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
                             <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">

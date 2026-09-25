@@ -20,32 +20,39 @@ class StudentController extends Controller
             ? $request->string('school_year')->toString()
             : $latestSchoolYear;
 
-        $query = Student::with(['latestEnrollment.gradeLevel', 'latestEnrollment.officeVerification'])
-            ->orderBy('last_name')
-            ->orderBy('first_name');
+        // Driven from Enrollment rather than Student so each application is
+        // its own row — a returning student's earlier application (e.g. last
+        // year's Kinder entry) stays visible when the School Year filter is
+        // switched back, instead of always collapsing to their latest one.
+        $query = Enrollment::query()
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->with(['student', 'gradeLevel', 'officeVerification'])
+            ->select('enrollments.*')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->orderByDesc('enrollments.school_year');
 
         if ($request->filled('search')) {
             $search = $request->string('search');
             $query->where(function ($q) use ($search) {
-                $q->where('last_name', 'like', "%{$search}%")
-                    ->orWhere('first_name', 'like', "%{$search}%")
-                    ->orWhere('lrn', 'like', "%{$search}%");
+                $q->where('students.last_name', 'like', "%{$search}%")
+                    ->orWhere('students.first_name', 'like', "%{$search}%")
+                    ->orWhere('students.lrn', 'like', "%{$search}%");
             });
         }
 
         if (filled($schoolYear)) {
-            $query->whereHas('latestEnrollment', fn ($q) => $q->where('school_year', $schoolYear));
+            $query->where('enrollments.school_year', $schoolYear);
         }
 
         if ($request->filled('grade_level_id')) {
-            $gradeLevelId = $request->integer('grade_level_id');
-            $query->whereHas('latestEnrollment', fn ($q) => $q->where('grade_level_id', $gradeLevelId));
+            $query->where('enrollments.grade_level_id', $request->integer('grade_level_id'));
         }
 
-        $students = $query->paginate(15)->withQueryString();
+        $applications = $query->paginate(15)->withQueryString();
 
         return Inertia::render('Admin/Students/Index', [
-            'students' => $students,
+            'applications' => $applications,
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'schoolYears' => Enrollment::query()
                 ->select('school_year')
