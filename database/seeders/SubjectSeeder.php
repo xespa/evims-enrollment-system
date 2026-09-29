@@ -28,7 +28,9 @@ class SubjectSeeder extends Seeder
         ];
 
         $map = [
-            'Kinder' => $kinderSubjects,
+            'Nursery' => $kinderSubjects,
+            'Pre-K 1' => $kinderSubjects,
+            'Pre-K 2' => $kinderSubjects,
             'Grade 1' => $gradeSchoolSubjects,
             'Grade 2' => $gradeSchoolSubjects,
             'Grade 3' => $gradeSchoolSubjects,

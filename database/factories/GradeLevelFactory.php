@@ -16,10 +16,10 @@ class GradeLevelFactory extends Factory
     {
         return [
             'name' => fake()->unique()->randomElement([
-                'Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+                'Nursery', 'Pre-K 1', 'Pre-K 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
                 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
             ]),
-            'level_order' => fake()->unique()->numberBetween(0, 10),
+            'level_order' => fake()->unique()->numberBetween(0, 12),
             'registration_fee' => 1725,
             'miscellaneous_fee' => fake()->randomElement([5175, 6125, 6325]),
             'monthly_tuition' => fake()->randomElement([1380, 1725, 2070]),

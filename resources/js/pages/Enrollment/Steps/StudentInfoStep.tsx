@@ -1,6 +1,13 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 
+// Pre-Elementary levels (no LRN yet), with the age each one is for.
+const PRE_ELEMENTARY_AGES = {
+    Nursery: 3,
+    'Pre-K 1': 4,
+    'Pre-K 2': 5,
+};
+
 // Offers one school year back through two years ahead of the current one —
 // enough room for late enrollees and early applications, without listing
 // every year that's ever existed.
@@ -25,15 +32,27 @@ function calculateAge(dateOfBirth) {
     let age = today.getFullYear() - dob.getFullYear();
     const hasHadBirthdayThisYear =
         today.getMonth() > dob.getMonth() ||
-        (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+        (today.getMonth() === dob.getMonth() &&
+            today.getDate() >= dob.getDate());
 
     if (!hasHadBirthdayThisYear) age -= 1;
 
     return age >= 0 ? age : '';
 }
 
-export default function StudentInfoStep({ data, setData, errors, gradeLevels }) {
-    const gradeOptions = gradeLevels.map((g) => ({ value: g.id, label: g.name }));
+export default function StudentInfoStep({
+    data,
+    setData,
+    errors,
+    gradeLevels,
+}) {
+    const gradeOptions = gradeLevels.map((g) => ({
+        value: g.id,
+        label:
+            g.name in PRE_ELEMENTARY_AGES
+                ? `${g.name} (Age ${PRE_ELEMENTARY_AGES[g.name]})`
+                : g.name,
+    }));
     const schoolYearOptions = generateSchoolYearOptions();
 
     const handleDateOfBirthChange = (name, value) => {
@@ -45,19 +64,23 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
     };
 
     const handleGradeLevelChange = (name, value) => {
-        const selected = gradeLevels.find((g) => String(g.id) === String(value));
-        const isKinder = selected?.name === 'Kinder';
+        const selected = gradeLevels.find(
+            (g) => String(g.id) === String(value),
+        );
+        const isPreElementary = selected?.name in PRE_ELEMENTARY_AGES;
 
         setData((prevData) => ({
             ...prevData,
             grade_level_id: value,
-            student_type: isKinder ? 'NO_LRN' : prevData.student_type,
+            student_type: isPreElementary ? 'NO_LRN' : prevData.student_type,
         }));
     };
 
     return (
         <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Information</h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                Student Information
+            </h2>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <SelectInput
@@ -104,9 +127,29 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
             />
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-                <TextInput label="Last Name" name="last_name" value={data.last_name} onChange={setData} error={errors.last_name} required />
-                <TextInput label="First Name" name="first_name" value={data.first_name} onChange={setData} error={errors.first_name} required />
-                <TextInput label="Middle Name" name="middle_name" value={data.middle_name} onChange={setData} error={errors.middle_name} />
+                <TextInput
+                    label="Last Name"
+                    name="last_name"
+                    value={data.last_name}
+                    onChange={setData}
+                    error={errors.last_name}
+                    required
+                />
+                <TextInput
+                    label="First Name"
+                    name="first_name"
+                    value={data.first_name}
+                    onChange={setData}
+                    error={errors.first_name}
+                    required
+                />
+                <TextInput
+                    label="Middle Name"
+                    name="middle_name"
+                    value={data.middle_name}
+                    onChange={setData}
+                    error={errors.middle_name}
+                />
                 <SelectInput
                     label="Extension Name"
                     name="extension_name"
@@ -126,8 +169,24 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
             </div>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
-                <TextInput label="Date of Birth" name="date_of_birth" type="date" value={data.date_of_birth} onChange={handleDateOfBirthChange} error={errors.date_of_birth} required />
-                <TextInput label="Age" name="age" type="number" value={data.age} onChange={setData} error={errors.age} required />
+                <TextInput
+                    label="Date of Birth"
+                    name="date_of_birth"
+                    type="date"
+                    value={data.date_of_birth}
+                    onChange={handleDateOfBirthChange}
+                    error={errors.date_of_birth}
+                    required
+                />
+                <TextInput
+                    label="Age"
+                    name="age"
+                    type="number"
+                    value={data.age}
+                    onChange={setData}
+                    error={errors.age}
+                    required
+                />
                 <SelectInput
                     label="Sex"
                     name="sex"
@@ -135,7 +194,10 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     onChange={setData}
                     error={errors.sex}
                     required
-                    options={[{ value: 'MALE', label: 'Male' }, { value: 'FEMALE', label: 'Female' }]}
+                    options={[
+                        { value: 'MALE', label: 'Male' },
+                        { value: 'FEMALE', label: 'Female' },
+                    ]}
                 />
             </div>
 
@@ -149,7 +211,15 @@ export default function StudentInfoStep({ data, setData, errors, gradeLevels }) 
                     required
                     options={schoolYearOptions}
                 />
-                <TextInput label="Date of Application" name="date_of_application" type="date" value={data.date_of_application} onChange={setData} error={errors.date_of_application} required />
+                <TextInput
+                    label="Date of Application"
+                    name="date_of_application"
+                    type="date"
+                    value={data.date_of_application}
+                    onChange={setData}
+                    error={errors.date_of_application}
+                    required
+                />
             </div>
 
             <TextInput

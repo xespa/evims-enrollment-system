@@ -34,17 +34,41 @@ const VALUES = [
 ];
 
 const FACILITIES = [
-    { year: '', title: 'Prepared Environments', copy: 'Carefully designed classrooms that promote independence and self-directed learning with authentic Montessori materials.' },
-    { year: '', title: 'Sports & Recreation', copy: 'Outdoor playground, sports facilities, and covered courts for physical development and recreational activities.' },
-    { year: '', title: 'Library & Learning Center', copy: 'Extensive collection of books and educational resources to support research and independent learning.' },
-    { year: '', title: 'Science Laboratory', copy: 'Hands-on science exploration with age-appropriate equipment and materials for experiential learning.' },
-    { year: '', title: 'Arts & Crafts Studio', copy: 'Creative spaces for artistic expression, including visual arts, music, and performing arts activities.' },
-    { year: '', title: 'Dining Hall & Kitchen', copy: 'Nutritious meal preparation and communal dining spaces that promote healthy eating habits and social interaction.' },
+    {
+        year: '',
+        title: 'Prepared Environments',
+        copy: 'Carefully designed classrooms that promote independence and self-directed learning with authentic Montessori materials.',
+    },
+    {
+        year: '',
+        title: 'Sports & Recreation',
+        copy: 'Outdoor playground, sports facilities, and covered courts for physical development and recreational activities.',
+    },
+    {
+        year: '',
+        title: 'Library & Learning Center',
+        copy: 'Extensive collection of books and educational resources to support research and independent learning.',
+    },
+    {
+        year: '',
+        title: 'Science Laboratory',
+        copy: 'Hands-on science exploration with age-appropriate equipment and materials for experiential learning.',
+    },
+    {
+        year: '',
+        title: 'Arts & Crafts Studio',
+        copy: 'Creative spaces for artistic expression, including visual arts, music, and performing arts activities.',
+    },
+    {
+        year: '',
+        title: 'Dining Hall & Kitchen',
+        copy: 'Nutritious meal preparation and communal dining spaces that promote healthy eating habits and social interaction.',
+    },
 ];
 
 const STATS = [
     { value: '16', label: 'Years serving the community' },
-    { value: '11', label: 'Grade levels, Kinder–10' },
+    { value: '13', label: 'Grade levels, Nursery–10' },
     { value: '3', label: 'Session options for families' },
 ];
 
@@ -65,54 +89,97 @@ export default function About() {
                     </h1>
 
                     <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Eastern Visayas International Montessori School was founded in 2010 with a vision to bring authentic Montessori education to the children of Eastern Visayas. What started as a small dream has grown into a thriving educational community that serves families across the region.
-
-                        Our founder, inspired by Dr. Maria Montessori's revolutionary approach to child development, believed that every child deserves an environment where they can learn at their own pace, develop independence, and cultivate a lifelong love of learning. Today, we continue this mission with the same passion and dedication.
-
-                        Located in the heart of Eastern Visayas, our school has become a beacon of progressive education, combining traditional Montessori principles with modern educational innovations to prepare our students for success in the 21st century.
+                        Eastern Visayas International Montessori School was
+                        founded in 2010 with a vision to bring authentic
+                        Montessori education to the children of Eastern Visayas.
+                        What started as a small dream has grown into a thriving
+                        educational community that serves families across the
+                        region. Our founder, inspired by Dr. Maria Montessori's
+                        revolutionary approach to child development, believed
+                        that every child deserves an environment where they can
+                        learn at their own pace, develop independence, and
+                        cultivate a lifelong love of learning. Today, we
+                        continue this mission with the same passion and
+                        dedication. Located in the heart of Eastern Visayas, our
+                        school has become a beacon of progressive education,
+                        combining traditional Montessori principles with modern
+                        educational innovations to prepare our students for
+                        success in the 21st century.
                     </p>
 
                     <dl className="mt-12 grid max-w-2xl grid-cols-3 gap-6 border-t border-[#1F2A24]/10 pt-6">
                         {STATS.map((stat) => (
                             <div key={stat.label}>
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">{stat.value}</dt>
-                                <dd className="text-xs text-[#1F2A24]/60">{stat.label}</dd>
+                                <dt className="text-2xl font-semibold text-[#1F2A24]">
+                                    {stat.value}
+                                </dt>
+                                <dd className="text-xs text-[#1F2A24]/60">
+                                    {stat.label}
+                                </dd>
                             </div>
                         ))}
                     </dl>
                 </div>
             </section>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white gap-10">
+            <section className="gap-10 border-y border-[#1F2A24]/10 bg-white">
                 <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-5 py-16 lg:grid-cols-2 lg:gap-10">
                     <div className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Our Mission</p>
+                        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                            Our Mission
+                        </p>
                         <p className="mt-3 font-serif text-xl leading-snug text-[#1F2A24]">
-                            Eastern Visayas International Montessori School, Inc. is committed to the development of the whole childwhich enables him to reach his greatest potential.
-                            We encourage personal responsibility and allow freedom of choice as we offer guidance in setting individual goals.
-                            It is our mission to inspire academic excellence and nurture curiosity, creativity and imagination within an environment filled with warmth kindness and respect.
+                            Eastern Visayas International Montessori School,
+                            Inc. is committed to the development of the whole
+                            childwhich enables him to reach his greatest
+                            potential. We encourage personal responsibility and
+                            allow freedom of choice as we offer guidance in
+                            setting individual goals. It is our mission to
+                            inspire academic excellence and nurture curiosity,
+                            creativity and imagination within an environment
+                            filled with warmth kindness and respect.
                         </p>
                     </div>
                     <div className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                        <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">Our Vision</p>
+                        <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">
+                            Our Vision
+                        </p>
                         <p className="mt-3 font-serif text-xl leading-snug text-[#1F2A24]">
-                            Our school's vision is to provide the best education in an open environment and to assist children on their individual paths to development.
-                            It is also our vision to help them acquire essential knowledge, good character and attitude, with a strong foundation of basic faith in God.
+                            Our school's vision is to provide the best education
+                            in an open environment and to assist children on
+                            their individual paths to development. It is also
+                            our vision to help them acquire essential knowledge,
+                            good character and attitude, with a strong
+                            foundation of basic faith in God.
                         </p>
                     </div>
                 </div>
             </section>
 
             <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">What Drives Us Forward</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">The fundamental principles that guide our actions and shape our community</h2>
+                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                    What Drives Us Forward
+                </p>
+                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    The fundamental principles that guide our actions and shape
+                    our community
+                </h2>
 
                 <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
                     {VALUES.map((item) => (
-                        <div key={item.mark} className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6">
-                            <p className="font-serif text-3xl font-semibold text-[#E8A33D]">{item.mark}</p>
-                            <h3 className="mt-2 font-serif text-lg font-semibold text-[#1F2A24]">{item.title}</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{item.copy}</p>
+                        <div
+                            key={item.mark}
+                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
+                        >
+                            <p className="font-serif text-3xl font-semibold text-[#E8A33D]">
+                                {item.mark}
+                            </p>
+                            <h3 className="mt-2 font-serif text-lg font-semibold text-[#1F2A24]">
+                                {item.title}
+                            </h3>
+                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                                {item.copy}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -120,15 +187,28 @@ export default function About() {
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
                 <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Our story</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Growing with the community</h2>
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                        Our story
+                    </p>
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                        Growing with the community
+                    </h2>
 
                     <ol className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {FACILITIES.map((item) => (
-                            <li key={item.year} className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]">
-                                <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">{item.year}</p>
-                                <h3 className="mt-3 font-serif text-lg font-semibold">{item.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">{item.copy}</p>
+                            <li
+                                key={item.year}
+                                className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]"
+                            >
+                                <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">
+                                    {item.year}
+                                </p>
+                                <h3 className="mt-3 font-serif text-lg font-semibold">
+                                    {item.title}
+                                </h3>
+                                <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">
+                                    {item.copy}
+                                </p>
                             </li>
                         ))}
                     </ol>
@@ -142,8 +222,9 @@ export default function About() {
                             Come see EVIMS for yourself.
                         </h2>
                         <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Have questions before you apply? Our registrar's office is happy
-                            to walk you through grade levels, sessions, and tuition options.
+                            Have questions before you apply? Our registrar's
+                            office is happy to walk you through grade levels,
+                            sessions, and tuition options.
                         </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-3">

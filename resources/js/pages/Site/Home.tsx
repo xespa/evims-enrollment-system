@@ -2,9 +2,9 @@ import { Head, Link } from '@inertiajs/react';
 
 const HIGHLIGHTS = [
     {
-        label: 'Kinder – Grade 10',
+        label: 'Nursery – Grade 10',
         title: 'One campus, every stage',
-        copy: 'A single continuous track from Kinder through Grade 10, so families never have to switch schools mid-journey.',
+        copy: 'A single continuous track from Nursery through Grade 10, so families never have to switch schools mid-journey.',
     },
     {
         label: 'Morning · Afternoon · Service',
@@ -19,10 +19,26 @@ const HIGHLIGHTS = [
 ];
 
 const STEPS = [
-    { mark: 'Step 1', title: 'Submit your application', copy: 'Complete the online enrollment form with student, parent, and academic details.' },
-    { mark: 'Step 2', title: 'Choose subjects & session', copy: 'Pick your grade-level subjects and the session time that fits your household.' },
-    { mark: 'Step 3', title: 'Settle your tuition plan', copy: 'Select a payment option and confirm your first installment, in person or via GCash.' },
-    { mark: 'Step 4', title: 'Get confirmed', copy: "Our registrar reviews your documents and confirms your child's slot for the school year." },
+    {
+        mark: 'Step 1',
+        title: 'Submit your application',
+        copy: 'Complete the online enrollment form with student, parent, and academic details.',
+    },
+    {
+        mark: 'Step 2',
+        title: 'Choose subjects & session',
+        copy: 'Pick your grade-level subjects and the session time that fits your household.',
+    },
+    {
+        mark: 'Step 3',
+        title: 'Settle your tuition plan',
+        copy: 'Select a payment option and confirm your first installment, in person or via GCash.',
+    },
+    {
+        mark: 'Step 4',
+        title: 'Get confirmed',
+        copy: "Our registrar reviews your documents and confirms your child's slot for the school year.",
+    },
 ];
 
 export default function Home({ gradeLevels }) {
@@ -30,7 +46,9 @@ export default function Home({ gradeLevels }) {
         gradeLevels && gradeLevels.length > 0
             ? gradeLevels
             : [
-                  { id: 'kinder', name: 'Kinder' },
+                  { id: 'nursery', name: 'Nursery' },
+                  { id: 'pre-k-1', name: 'Pre-K 1' },
+                  { id: 'pre-k-2', name: 'Pre-K 2' },
                   { id: 'g1', name: 'Grade 1' },
                   { id: 'g2', name: 'Grade 2' },
                   { id: 'g3', name: 'Grade 3' },
@@ -56,13 +74,20 @@ export default function Home({ gradeLevels }) {
 
                         <h1 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl lg:text-6xl">
                             Be Part of Something
-                            <span className="block text-[#2F6F4E]">Exceptional</span>
+                            <span className="block text-[#2F6F4E]">
+                                Exceptional
+                            </span>
                         </h1>
 
                         <p className="mt-6 max-w-xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                            At <span className="font-bold">Eastern Visayas International Montessori School Inc.</span>,
-                            we cultivate excellence through innovative education,
-                            dedicated teaching, and a thriving community of learners and leaders.
+                            At{' '}
+                            <span className="font-bold">
+                                Eastern Visayas International Montessori School
+                                Inc.
+                            </span>
+                            , we cultivate excellence through innovative
+                            education, dedicated teaching, and a thriving
+                            community of learners and leaders.
                         </p>
 
                         <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -82,16 +107,28 @@ export default function Home({ gradeLevels }) {
 
                         <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-[#1F2A24]/10 pt-6">
                             <div>
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">11</dt>
-                                <dd className="text-xs text-[#1F2A24]/60">Grade levels, Kinder–10</dd>
+                                <dt className="text-2xl font-semibold text-[#1F2A24]">
+                                    13
+                                </dt>
+                                <dd className="text-xs text-[#1F2A24]/60">
+                                    Grade levels, Nursery–10
+                                </dd>
                             </div>
                             <div>
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">3</dt>
-                                <dd className="text-xs text-[#1F2A24]/60">Session options</dd>
+                                <dt className="text-2xl font-semibold text-[#1F2A24]">
+                                    3
+                                </dt>
+                                <dd className="text-xs text-[#1F2A24]/60">
+                                    Session options
+                                </dd>
                             </div>
                             <div>
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">2</dt>
-                                <dd className="text-xs text-[#1F2A24]/60">Ways to pay tuition</dd>
+                                <dt className="text-2xl font-semibold text-[#1F2A24]">
+                                    2
+                                </dt>
+                                <dd className="text-xs text-[#1F2A24]/60">
+                                    Ways to pay tuition
+                                </dd>
                             </div>
                         </dl>
                     </div>
@@ -119,13 +156,24 @@ export default function Home({ gradeLevels }) {
 
             <section className="border-y border-[#1F2A24]/10 bg-white">
                 <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Why families choose EVIMS</p>
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                        Why families choose EVIMS
+                    </p>
                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                         {HIGHLIGHTS.map((item) => (
-                            <div key={item.title} className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                                <p className="text-xs font-semibold text-[#E8A33D] uppercase">{item.label}</p>
-                                <h3 className="mt-2 font-serif text-xl font-semibold text-[#1F2A24]">{item.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{item.copy}</p>
+                            <div
+                                key={item.title}
+                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
+                            >
+                                <p className="text-xs font-semibold text-[#E8A33D] uppercase">
+                                    {item.label}
+                                </p>
+                                <h3 className="mt-2 font-serif text-xl font-semibold text-[#1F2A24]">
+                                    {item.title}
+                                </h3>
+                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                                    {item.copy}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -135,20 +183,36 @@ export default function Home({ gradeLevels }) {
             <section className="mx-auto max-w-7xl px-5 py-16">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">How enrollment works</p>
-                        <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Four steps, start to finish</h2>
+                        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                            How enrollment works
+                        </p>
+                        <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                            Four steps, start to finish
+                        </h2>
                     </div>
-                    <Link href="/admission" className="text-sm font-semibold text-[#2F6F4E] hover:underline">
+                    <Link
+                        href="/admission"
+                        className="text-sm font-semibold text-[#2F6F4E] hover:underline"
+                    >
                         Full admission guide →
                     </Link>
                 </div>
 
                 <ol className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {STEPS.map((step) => (
-                        <li key={step.mark} className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]">
-                            <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">{step.mark}</p>
-                            <h3 className="mt-3 font-serif text-lg font-semibold">{step.title}</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">{step.copy}</p>
+                        <li
+                            key={step.mark}
+                            className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]"
+                        >
+                            <p className="text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">
+                                {step.mark}
+                            </p>
+                            <h3 className="mt-3 font-serif text-lg font-semibold">
+                                {step.title}
+                            </h3>
+                            <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">
+                                {step.copy}
+                            </p>
                         </li>
                     ))}
                 </ol>
@@ -161,8 +225,8 @@ export default function Home({ gradeLevels }) {
                             Ready to reserve your child's seat?
                         </h2>
                         <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Applications for School Year 2026–2027 are open for new, returning,
-                            and transferee students.
+                            Applications for School Year 2026–2027 are open for
+                            new, returning, and transferee students.
                         </p>
                     </div>
                     <Link
