@@ -20,8 +20,8 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
 
     return (
         <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Subjects</h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-1">Subjects</h2>
+            <p className="text-sm text-[#1F2A24]/70 mb-4">
                 Showing subjects for <span className="font-medium">{selectedGrade?.name ?? '—'}</span>.
                 {!selectedGrade && ' Please go back and select a grade level first.'}
             </p>
@@ -32,7 +32,7 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                         type="button"
                         onClick={selectAll}
                         disabled={allSelected}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-3 py-1.5 text-sm font-medium text-[#2F6F4E] transition-colors hover:border-[#2F6F4E]/40 hover:bg-[#2F6F4E]/10 disabled:cursor-not-allowed disabled:border-[#1F2A24]/10 disabled:bg-[#1F2A24]/[0.03] disabled:text-[#1F2A24]/45"
                     >
                         <Check className="h-3.5 w-3.5" />
                         Select all
@@ -41,32 +41,53 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                         type="button"
                         onClick={clearAll}
                         disabled={noneSelected}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] px-3 py-1.5 text-sm font-medium text-[#1F2A24]/75 transition-colors hover:border-[#1F2A24]/25 hover:bg-[#1F2A24]/10 disabled:cursor-not-allowed disabled:text-[#1F2A24]/40"
                     >
                         <X className="h-3.5 w-3.5" />
                         Clear
                     </button>
-                    <span className="ml-1 text-xs text-gray-400">
+                    <span className="ml-1 text-xs text-[#1F2A24]/70" aria-live="polite">
                         {selectedIds.length} of {subjects.length} selected
                     </span>
                 </div>
             )}
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {subjects.map((subject) => (
-                    <label key={subject.id} className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
-                        <input
-                            type="checkbox"
-                            checked={selectedIds.includes(subject.id)}
-                            onChange={() => toggleSubject(subject.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">{subject.name}</span>
-                    </label>
-                ))}
-            </div>
+            <fieldset
+                aria-describedby={errors.subject_ids ? 'subject_ids-error' : undefined}
+                className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+            >
+                <legend className="sr-only">
+                    Subjects for {selectedGrade?.name ?? 'the selected grade'}
+                </legend>
+                {subjects.map((subject) => {
+                    const isChecked = selectedIds.includes(subject.id);
 
-            {errors.subject_ids && <p className="mt-2 text-sm text-red-600">{errors.subject_ids}</p>}
+                    return (
+                        <label
+                            key={subject.id}
+                            className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
+                                isChecked
+                                    ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
+                                    : 'border-[#1F2A24]/10 hover:bg-[#1F2A24]/[0.03]'
+                            }`}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleSubject(subject.id)}
+                                className="h-4 w-4 shrink-0 rounded border-[#1F2A24]/15 text-[#2F6F4E] accent-[#2F6F4E] focus:ring-[#2F6F4E]/30"
+                            />
+                            <span className="text-sm text-[#1F2A24]/80">{subject.name}</span>
+                        </label>
+                    );
+                })}
+            </fieldset>
+
+            {errors.subject_ids && (
+                <p id="subject_ids-error" className="mt-2 text-sm text-[#C6473B]">
+                    {errors.subject_ids}
+                </p>
+            )}
         </div>
     );
 }

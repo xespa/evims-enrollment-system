@@ -288,7 +288,7 @@ export default function HealthServices() {
                                 <dt className="text-2xl font-semibold text-[#1F2A24]">
                                     {stat.value}
                                 </dt>
-                                <dd className="text-xs text-[#1F2A24]/60">
+                                <dd className="text-xs text-[#1F2A24]/70">
                                     {stat.label}
                                 </dd>
                             </div>
@@ -482,7 +482,7 @@ export default function HealthServices() {
                                         <p className="font-serif text-base font-semibold text-[#1F2A24]">
                                             {testimonial.name}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-[#1F2A24]/70">
                                             {testimonial.relation}
                                         </p>
                                     </div>

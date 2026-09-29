@@ -1,13 +1,13 @@
 function CheckboxRow({ label, name, checked, onChange }) {
     return (
-        <label className="flex items-start gap-2 py-1.5 cursor-pointer">
+        <label className="-mx-2 flex min-h-10 cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-[#1F2A24]/[0.03]">
             <input
                 type="checkbox"
                 checked={!!checked}
                 onChange={(e) => onChange(name, e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#1F2A24]/15 text-[#2F6F4E] accent-[#2F6F4E] focus:ring-[#2F6F4E]/30"
             />
-            <span className="text-sm text-gray-700">{label}</span>
+            <span className="text-sm text-[#1F2A24]/80">{label}</span>
         </label>
     );
 }
@@ -28,41 +28,46 @@ export default function VitalInfoStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Vital Information</h2>
-            <p className="text-sm text-gray-500 mb-4">Please check all that apply to the student.</p>
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-1">Vital Information</h2>
+            <p className="text-sm text-[#1F2A24]/70 mb-4">Please check all that apply to the student.</p>
 
-            <div className="rounded-md border border-gray-200 p-4">
+            <fieldset className="rounded-xl border border-[#1F2A24]/10 p-4">
+                <legend className="sr-only">Student history checklist</legend>
                 {checklist.map(([name, label]) => (
                     <CheckboxRow key={name} label={label} name={name} checked={data[name]} onChange={setData} />
                 ))}
-            </div>
+            </fieldset>
 
             {anyChecked && (
                 <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Please provide details for any items checked above <span className="text-red-500">*</span>
+                    <label htmlFor="history_particulars" className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80">
+                        Please provide details for any items checked above <span className="text-[#C6473B]" aria-hidden="true">*</span>
                     </label>
                     <textarea
+                        id="history_particulars"
                         rows={3}
+                        aria-required="true"
+                        aria-invalid={errors.history_particulars ? true : undefined}
+                        aria-describedby={errors.history_particulars ? 'history_particulars-error' : undefined}
                         value={data.history_particulars ?? ''}
                         onChange={(e) => setData('history_particulars', e.target.value)}
-                        className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                            errors.history_particulars ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] shadow-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
+                            errors.history_particulars ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
                         }`}
                     />
-                    {errors.history_particulars && <p className="mt-1 text-sm text-red-600">{errors.history_particulars}</p>}
+                    {errors.history_particulars && <p id="history_particulars-error" className="mt-1 text-sm text-[#C6473B]">{errors.history_particulars}</p>}
                 </div>
             )}
 
             <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Special Health Problems / Allergies / Conditions</label>
+                <label htmlFor="special_health_problems" className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80">Special Health Problems / Allergies / Conditions</label>
                 <textarea
+                    id="special_health_problems"
                     rows={3}
                     value={data.special_health_problems ?? ''}
                     onChange={(e) => setData('special_health_problems', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     placeholder="e.g. Asthma, peanut allergy, none"
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] placeholder-[#1F2A24]/40 shadow-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                 />
             </div>
         </div>

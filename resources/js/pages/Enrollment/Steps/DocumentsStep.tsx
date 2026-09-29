@@ -1,3 +1,5 @@
+import { FileCheck2 } from 'lucide-react';
+
 const DOCUMENTS = [
     { field: 'form_138', label: 'Form 138 (Report Card)' },
     { field: 'birth_certificate', label: 'PSA Birth Certificate' },
@@ -11,38 +13,60 @@ export default function DocumentsStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="mb-1 text-lg font-semibold text-gray-900">
+            <h2 className="mb-1 font-serif text-xl font-semibold text-[#1F2A24]">
                 Supporting Documents
             </h2>
-            <p className="mb-4 text-sm text-gray-500">
+            <p className="mb-4 text-sm text-[#1F2A24]/70">
                 Optional for now — if you don't have a scanned copy yet, you can
                 upload or replace these later from your parent portal any time
                 before your application is approved.
             </p>
 
-            {DOCUMENTS.map((doc) => (
-                <div key={doc.field} className="mb-4">
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                        {doc.label} (PDF or image, max 10MB)
-                    </label>
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFile(doc.field)}
-                        className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                    {data[doc.field] && (
-                        <p className="mt-1 text-xs text-gray-500">
-                            Selected: {data[doc.field].name}
+            {DOCUMENTS.map((doc) => {
+                const hintId = `${doc.field}-hint`;
+                const errorId = `${doc.field}-error`;
+
+                return (
+                    <div
+                        key={doc.field}
+                        className="mb-3 rounded-xl border border-[#1F2A24]/10 p-4"
+                    >
+                        <label
+                            htmlFor={doc.field}
+                            className="block text-sm font-medium text-[#1F2A24]/80"
+                        >
+                            {doc.label}
+                        </label>
+                        <p id={hintId} className="mb-2 text-xs text-[#1F2A24]/65">
+                            PDF, JPG, or PNG · max 10MB
                         </p>
-                    )}
-                    {errors[doc.field] && (
-                        <p className="mt-1 text-sm text-red-600">
-                            {errors[doc.field]}
-                        </p>
-                    )}
-                </div>
-            ))}
+                        <input
+                            id={doc.field}
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleFile(doc.field)}
+                            aria-invalid={errors[doc.field] ? true : undefined}
+                            aria-describedby={
+                                errors[doc.field] ? `${hintId} ${errorId}` : hintId
+                            }
+                            className="block w-full text-sm text-[#1F2A24]/75 file:mr-4 file:min-h-10 file:rounded-full file:border-0 file:bg-[#2F6F4E]/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#2F6F4E] hover:file:bg-[#2F6F4E]/15"
+                        />
+                        {data[doc.field] && (
+                            <p className="mt-2 flex items-center gap-1.5 text-xs text-[#2F6F4E]">
+                                <FileCheck2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                <span className="truncate">
+                                    Selected: {data[doc.field].name}
+                                </span>
+                            </p>
+                        )}
+                        {errors[doc.field] && (
+                            <p id={errorId} className="mt-1 text-sm text-[#C6473B]">
+                                {errors[doc.field]}
+                            </p>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }

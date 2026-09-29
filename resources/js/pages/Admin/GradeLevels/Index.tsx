@@ -67,7 +67,7 @@ export default function Index({ gradeLevels }) {
                         <h1 className="mb-1 font-serif text-2xl font-semibold text-[#1F2A24]">
                             Grade Levels
                         </h1>
-                        <p className="mb-6 text-sm text-[#1F2A24]/60">
+                        <p className="mb-6 text-sm text-[#1F2A24]/70">
                             Set the school fees and manage the subjects offered
                             per grade level. The total (one-time fees + books +{' '}
                             {BILLABLE_MONTHS} months of monthly fees) is what
@@ -75,7 +75,7 @@ export default function Index({ gradeLevels }) {
                         </p>
 
                         {props.flash?.success && (
-                            <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                            <div role="status" className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
                                 {props.flash.success}
                             </div>
                         )}
@@ -132,7 +132,7 @@ export default function Index({ gradeLevels }) {
                                                         key={field.name}
                                                         className="block"
                                                     >
-                                                        <span className="mb-1 block text-xs text-[#1F2A24]/60">
+                                                        <span className="mb-1 block text-xs text-[#1F2A24]/70">
                                                             {field.label} (₱)
                                                         </span>
                                                         <input
@@ -178,7 +178,7 @@ export default function Index({ gradeLevels }) {
                                                     <button
                                                         type="button"
                                                         onClick={cancelEditing}
-                                                        className="text-xs text-[#1F2A24]/60 hover:underline"
+                                                        className="text-xs text-[#1F2A24]/70 hover:underline"
                                                     >
                                                         Cancel
                                                     </button>

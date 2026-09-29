@@ -24,7 +24,7 @@ export default function Login({ status, canResetPassword }: Props) {
                 <h2 className="text-base font-semibold text-[#1F2A24]">
                     Administrator Login
                 </h2>
-                <p className="mt-0.5 text-sm text-[#1F2A24]/60">
+                <p className="mt-0.5 text-sm text-[#1F2A24]/70">
                     Log in to access the admin dashboard.
                 </p>
             </div>

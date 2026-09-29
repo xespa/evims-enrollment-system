@@ -55,15 +55,15 @@ export default function Events({ events = [] }) {
                     <dl className="mt-12 grid max-w-2xl grid-cols-3 gap-6 border-t border-[#1F2A24]/10 pt-6">
                         <div>
                             <dt className="text-2xl font-semibold text-[#1F2A24]">{events.length}</dt>
-                            <dd className="text-xs text-[#1F2A24]/60">Upcoming events</dd>
+                            <dd className="text-xs text-[#1F2A24]/70">Upcoming events</dd>
                         </div>
                         <div>
                             <dt className="text-2xl font-semibold text-[#1F2A24]">4</dt>
-                            <dd className="text-xs text-[#1F2A24]/60">Quarterly recognition days</dd>
+                            <dd className="text-xs text-[#1F2A24]/70">Quarterly recognition days</dd>
                         </div>
                         <div>
                             <dt className="text-2xl font-semibold text-[#1F2A24]">11</dt>
-                            <dd className="text-xs text-[#1F2A24]/60">Grade levels involved</dd>
+                            <dd className="text-xs text-[#1F2A24]/70">Grade levels involved</dd>
                         </div>
                     </dl>
                 </div>
@@ -78,7 +78,7 @@ export default function Events({ events = [] }) {
                     </div>
 
                     {events.length === 0 ? (
-                        <p className="mt-10 rounded-2xl border border-dashed border-[#1F2A24]/15 p-8 text-center text-sm text-[#1F2A24]/50">
+                        <p className="mt-10 rounded-2xl border border-dashed border-[#1F2A24]/15 p-8 text-center text-sm text-[#1F2A24]/65">
                             No events posted yet — check back soon!
                         </p>
                     ) : (
@@ -122,11 +122,11 @@ export default function Events({ events = [] }) {
                                                     {event.title}
                                                 </h3>
                                                 {(event.start_time || event.end_time) && (
-                                                    <p className="mt-1 text-xs text-[#1F2A24]/60">
+                                                    <p className="mt-1 text-xs text-[#1F2A24]/70">
                                                         {event.start_time}{event.end_time ? ` – ${event.end_time}` : ''}
                                                     </p>
                                                 )}
-                                                {event.location && <p className="text-xs text-[#1F2A24]/60">{event.location}</p>}
+                                                {event.location && <p className="text-xs text-[#1F2A24]/70">{event.location}</p>}
                                             </div>
                                         </div>
                                     </div>
@@ -144,7 +144,7 @@ export default function Events({ events = [] }) {
                 <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
                     {ANNUAL_HIGHLIGHTS.map((item) => (
                         <div key={item.title} className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                            <p className="text-xs font-semibold text-[#E8A33D] uppercase">{item.label}</p>
+                            <p className="text-xs font-semibold text-[#a4670f] uppercase">{item.label}</p>
                             <h3 className="mt-2 font-serif text-xl font-semibold text-[#1F2A24]">{item.title}</h3>
                             <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{item.copy}</p>
                         </div>

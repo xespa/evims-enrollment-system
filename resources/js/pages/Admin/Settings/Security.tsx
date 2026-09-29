@@ -35,7 +35,7 @@ export default function Security({ passwordRules }) {
 
             <AdminSettingsShell>
                 {props.flash?.success && (
-                    <div className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                    <div role="status" className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
                         {props.flash.success}
                     </div>
                 )}
@@ -44,7 +44,7 @@ export default function Security({ passwordRules }) {
                     <h2 className="font-serif text-lg font-semibold text-[#1F2A24]">
                         Update password
                     </h2>
-                    <p className="mt-1 text-sm text-[#1F2A24]/60">
+                    <p className="mt-1 text-sm text-[#1F2A24]/70">
                         Ensure your account is using a long, random password to
                         stay secure
                     </p>

@@ -56,7 +56,7 @@ function AssignLrnCell({ studentId }) {
             <button
                 type="button"
                 onClick={toggleOpen}
-                className="text-xs font-medium text-[#2F6F4E] hover:underline"
+                className="min-h-9 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
             >
                 Assign LRN
             </button>
@@ -69,6 +69,9 @@ function AssignLrnCell({ studentId }) {
                 type="text"
                 inputMode="numeric"
                 maxLength={14}
+                autoFocus
+                aria-label="Learner Reference Number (14 digits)"
+                aria-invalid={errors.lrn ? true : undefined}
                 placeholder="452501XXXXXXXX"
                 value={data.lrn}
                 onChange={(e) =>
@@ -77,33 +80,35 @@ function AssignLrnCell({ studentId }) {
                         e.target.value.replace(/\D/g, '').slice(0, 14),
                     )
                 }
-                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                className="min-h-9 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-xs text-[#1F2A24] tabular-nums focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
             />
             <div className="flex items-center gap-2">
                 <button
                     type="button"
                     onClick={() => setData('lrn', generateLrn())}
-                    className="text-[11px] font-medium text-[#2F6F4E] hover:underline"
+                    className="min-h-8 rounded-full px-1.5 text-xs font-medium text-[#2F6F4E] hover:underline"
                 >
                     Generate
                 </button>
                 <button
                     type="submit"
                     disabled={processing}
-                    className="rounded-full bg-[#2F6F4E] px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                    className="min-h-8 rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
                 >
-                    Save
+                    {processing ? 'Saving…' : 'Save'}
                 </button>
                 <button
                     type="button"
                     onClick={toggleOpen}
-                    className="text-[11px] text-[#1F2A24]/40 hover:text-[#1F2A24]/70"
+                    className="min-h-8 rounded-full px-1.5 text-xs text-[#1F2A24]/70 hover:text-[#1F2A24]"
                 >
                     Cancel
                 </button>
             </div>
             {errors.lrn && (
-                <p className="text-[11px] text-red-600">{errors.lrn}</p>
+                <p role="alert" className="text-xs text-[#C6473B]">
+                    {errors.lrn}
+                </p>
             )}
         </form>
     );
@@ -150,7 +155,10 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                     </div>
 
                     {flashSuccess && (
-                        <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                        <div
+                            role="status"
+                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        >
                             {flashSuccess}
                         </div>
                     )}
@@ -159,17 +167,20 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                     <div className="mb-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                         <form
                             onSubmit={handleSearchSubmit}
+                            role="search"
                             className="flex flex-wrap gap-3"
                         >
                             <input
-                                type="text"
+                                type="search"
+                                aria-label="Search students by name or LRN"
                                 placeholder="Search by name or LRN..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="min-h-10 min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                             />
 
                             <select
+                                aria-label="Filter by school year"
                                 value={schoolYear}
                                 onChange={(e) => {
                                     setSchoolYear(e.target.value);
@@ -177,7 +188,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                         school_year: e.target.value,
                                     });
                                 }}
-                                className="rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                             >
                                 <option value="">All School Years</option>
                                 {schoolYears.map((year) => (
@@ -188,6 +199,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                             </select>
 
                             <select
+                                aria-label="Filter by grade level"
                                 value={gradeLevelId}
                                 onChange={(e) => {
                                     setGradeLevelId(e.target.value);
@@ -195,7 +207,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                         grade_level_id: e.target.value,
                                     });
                                 }}
-                                className="rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                             >
                                 <option value="">All Grade Levels</option>
                                 {gradeLevels.map((g) => (
@@ -207,7 +219,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
 
                             <button
                                 type="submit"
-                                className="rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                                className="min-h-10 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
                             >
                                 Search
                             </button>
@@ -312,7 +324,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                     <tr>
                                         <td
                                             colSpan={7}
-                                            className="px-4 py-8 text-center text-[#1F2A24]/40"
+                                            className="px-4 py-8 text-center text-[#1F2A24]/65"
                                         >
                                             No applications found.
                                         </td>

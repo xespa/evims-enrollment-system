@@ -142,7 +142,7 @@ function ContactChannels() {
                                 {channel.primary}
                             </p>
                             <p className="mt-1 text-sm text-[#1F2A24]/70">{channel.detail}</p>
-                            <p className="text-sm text-[#1F2A24]/50">{channel.note}</p>
+                            <p className="text-sm text-[#1F2A24]/65">{channel.note}</p>
                         </>
                     );
 

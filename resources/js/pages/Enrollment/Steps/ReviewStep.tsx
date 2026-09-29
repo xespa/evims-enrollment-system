@@ -6,9 +6,9 @@ import {
 
 function ReviewRow({ label, value }) {
     return (
-        <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-            <span className="text-gray-500">{label}</span>
-            <span className="font-medium text-gray-800">{value || '—'}</span>
+        <div className="flex justify-between border-b border-[#1F2A24]/10 py-1.5 text-sm">
+            <span className="text-[#1F2A24]/70">{label}</span>
+            <span className="font-medium text-[#1F2A24]">{value || '—'}</span>
         </div>
     );
 }
@@ -39,15 +39,15 @@ export default function ReviewStep({ data, gradeLevels }) {
 
     return (
         <div>
-            <h2 className="mb-1 text-lg font-semibold text-gray-900">
+            <h2 className="mb-1 font-serif text-xl font-semibold text-[#1F2A24]">
                 Review Your Application
             </h2>
-            <p className="mb-4 text-sm text-gray-500">
+            <p className="mb-4 text-sm text-[#1F2A24]/70">
                 Please check everything before submitting.
             </p>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-gray-600">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Student
                 </h3>
                 <ReviewRow
@@ -65,7 +65,7 @@ export default function ReviewStep({ data, gradeLevels }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-gray-600">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Address
                 </h3>
                 <ReviewRow label="Barangay" value={data.barangay} />
@@ -77,14 +77,14 @@ export default function ReviewStep({ data, gradeLevels }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-gray-600">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Subjects
                 </h3>
                 <ReviewRow label="Enrolled in" value={subjectNames} />
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-gray-600">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Documents
                 </h3>
                 <ReviewRow label="Form 138" value={data.form_138?.name} />
@@ -99,7 +99,7 @@ export default function ReviewStep({ data, gradeLevels }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-gray-600">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Billing
                 </h3>
                 <ReviewRow
@@ -116,10 +116,10 @@ export default function ReviewStep({ data, gradeLevels }) {
                     }
                 />
                 <div className="flex justify-between py-2 text-sm">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-[#1F2A24]">
                         Total Amount to Pay
                     </span>
-                    <span className="text-base font-bold text-blue-700">
+                    <span className="text-base font-bold text-[#2F6F4E]">
                         {selectedGrade
                             ? formatCurrency(selectedGrade.tuition_fee)
                             : '—'}

@@ -29,7 +29,7 @@ export default function AuthSimpleLayout({
                         </h1>
                     )}
                     {description && (
-                        <p className="mt-1 text-sm text-[#1F2A24]/60">
+                        <p className="mt-1 text-sm text-[#1F2A24]/70">
                             {description}
                         </p>
                     )}

@@ -19,11 +19,11 @@ function formatCurrency(value) {
 function StatCard({ label, value, sub }) {
     return (
         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-            <p className="text-sm text-[#1F2A24]/60">{label}</p>
+            <p className="text-sm text-[#1F2A24]/70">{label}</p>
             <p className="mt-1 font-serif text-2xl font-semibold text-[#1F2A24]">
                 {value}
             </p>
-            {sub && <p className="mt-1 text-xs text-[#1F2A24]/40">{sub}</p>}
+            {sub && <p className="mt-1 text-xs text-[#1F2A24]/65">{sub}</p>}
         </div>
     );
 }
@@ -155,7 +155,7 @@ export default function Dashboard({
                                     </div>
                                 ))}
                                 {stats.paymentMethodBreakdown.length === 0 && (
-                                    <p className="text-xs text-[#1F2A24]/40">
+                                    <p className="text-xs text-[#1F2A24]/65">
                                         No payments recorded yet.
                                     </p>
                                 )}
@@ -180,7 +180,7 @@ export default function Dashboard({
                                                 {enrollment.student.last_name},{' '}
                                                 {enrollment.student.first_name}
                                             </p>
-                                            <p className="text-xs text-[#1F2A24]/60">
+                                            <p className="text-xs text-[#1F2A24]/70">
                                                 {enrollment.grade_level.name}
                                             </p>
                                         </div>
@@ -192,7 +192,7 @@ export default function Dashboard({
                                     </div>
                                 ))}
                                 {recentEnrollments.length === 0 && (
-                                    <p className="py-2 text-xs text-[#1F2A24]/40">
+                                    <p className="py-2 text-xs text-[#1F2A24]/65">
                                         No enrollments yet.
                                     </p>
                                 )}
@@ -222,7 +222,7 @@ export default function Dashboard({
                                                         .first_name
                                                 }
                                             </p>
-                                            <p className="text-xs text-[#1F2A24]/60">
+                                            <p className="text-xs text-[#1F2A24]/70">
                                                 {payment.method} ·{' '}
                                                 {payment.paid_at}
                                             </p>
@@ -233,7 +233,7 @@ export default function Dashboard({
                                     </div>
                                 ))}
                                 {recentPayments.length === 0 && (
-                                    <p className="py-2 text-xs text-[#1F2A24]/40">
+                                    <p className="py-2 text-xs text-[#1F2A24]/65">
                                         No payments yet.
                                     </p>
                                 )}

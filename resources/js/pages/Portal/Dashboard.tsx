@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Camera } from 'lucide-react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { BadgeCheck, Camera, CheckCircle2, Loader2, PartyPopper } from 'lucide-react';
+import { useConfirm } from '@/hooks/use-confirm';
 
 const STATUS_STYLES = {
     PENDING: 'bg-yellow-100 text-yellow-800',
@@ -64,9 +66,18 @@ export default function Dashboard({ enrollments }) {
     const enrollee = props.auth?.enrollee;
     const [activeTab, setActiveTab] = useState('Applications');
     const [uploading, setUploading] = useState(false);
+    const [confirm, confirmDialog] = useConfirm();
 
-    const cancel = (enrollmentId) => {
-        if (!confirm('Cancel this application?')) return;
+    const cancel = async (enrollment) => {
+        const confirmed = await confirm({
+            title: 'Cancel this application?',
+            description: `The application for ${enrollment.student.first_name} ${enrollment.student.last_name} (${enrollment.grade_level.name}, SY ${enrollment.school_year}) will be withdrawn. You can submit a new one later.`,
+            confirmLabel: 'Cancel Application',
+            cancelLabel: 'Keep Application',
+            destructive: true,
+        });
+        if (!confirmed) return;
+        const enrollmentId = enrollment.id;
         router.post(
             route('portal.enrollments.cancel', enrollmentId),
             {},
@@ -116,6 +127,17 @@ export default function Dashboard({ enrollments }) {
         );
     };
 
+    const handleTabKeyDown = (event: ReactKeyboardEvent) => {
+        const offsets: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
+        if (!(event.key in offsets)) return;
+        event.preventDefault();
+        const nextIndex =
+            (TABS.indexOf(activeTab) + offsets[event.key] + TABS.length) %
+            TABS.length;
+        setActiveTab(TABS[nextIndex]);
+        document.getElementById(`portal-tab-${TABS[nextIndex]}`)?.focus();
+    };
+
     // ---- Aggregate "social signal"-style metrics across all enrollments ----
     const activeEnrollments = enrollments.filter((e) => !e.cancelled_at);
     const approvedCount = activeEnrollments.filter(
@@ -151,6 +173,7 @@ export default function Dashboard({ enrollments }) {
     return (
         <div className="mx-auto max-w-5xl px-4 pb-16">
             <Head title="My Profile" />
+            {confirmDialog}
 
             {/* ---------------- Header banner ---------------- */}
             <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
@@ -161,12 +184,12 @@ export default function Dashboard({ enrollments }) {
                     <div className="relative h-24 w-24 sm:h-32 sm:w-32">
                         <label
                             htmlFor="profile-photo-input"
-                            className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-full border-4 border-[#FBF8F2] shadow-sm"
+                            className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-full border-4 border-[#FBF8F2] shadow-sm focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-2"
                         >
                             {enrollee?.profile_photo_url ? (
                                 <img
                                     src={enrollee.profile_photo_url}
-                                    alt={enrollee.name}
+                                    alt=""
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
@@ -174,12 +197,27 @@ export default function Dashboard({ enrollments }) {
                                     {initials(enrollee?.name)}
                                 </div>
                             )}
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 text-transparent transition-colors group-hover:bg-black/40 group-hover:text-white">
+                            <span className="sr-only">
+                                Change profile photo
+                            </span>
+                            <div
+                                aria-hidden="true"
+                                className="absolute inset-0 hidden items-center justify-center bg-black/0 text-transparent transition-colors group-hover:bg-black/40 group-hover:text-white sm:flex"
+                            >
                                 <Camera className="h-6 w-6" />
                             </div>
                             {uploading && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-medium text-white">
-                                    Uploading…
+                                <div
+                                    role="status"
+                                    className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"
+                                >
+                                    <Loader2
+                                        className="h-6 w-6 animate-spin"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="sr-only">
+                                        Uploading photo…
+                                    </span>
                                 </div>
                             )}
                         </label>
@@ -188,8 +226,17 @@ export default function Dashboard({ enrollments }) {
                             type="file"
                             accept="image/*"
                             onChange={handlePhotoChange}
-                            className="hidden"
+                            disabled={uploading}
+                            className="sr-only"
                         />
+                        {/* Always-visible camera badge: hover overlays
+                            never appear on touch screens. */}
+                        <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute right-0.5 bottom-0.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FBF8F2] bg-[#2F6F4E] text-white shadow-sm sm:right-1.5 sm:bottom-1.5"
+                        >
+                            <Camera className="h-4 w-4" />
+                        </span>
                     </div>
                     <div className="pb-1 text-center sm:text-left">
                         <div className="flex items-center justify-center gap-2 sm:justify-start">
@@ -199,31 +246,38 @@ export default function Dashboard({ enrollments }) {
                             {enrollee?.email_verified_at && (
                                 <span
                                     title="Verified email"
-                                    className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2F6F4E] text-xs font-bold text-white"
+                                    className="text-[#2F6F4E]"
                                 >
-                                    ✓
+                                    <BadgeCheck
+                                        className="h-5 w-5"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="sr-only">
+                                        Verified email
+                                    </span>
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm text-[#1F2A24]/60">
+                        <p className="text-sm text-[#1F2A24]/70">
                             {enrollee?.email}
                         </p>
-                        <p className="text-sm text-[#1F2A24]/50">
+                        <p className="text-sm text-[#1F2A24]/65">
                             Student Account
                         </p>
                     </div>
                 </div>
 
-                <div className="flex justify-center gap-2 sm:justify-end">
+                <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
                     <Link
                         href={route('enrollment.create')}
-                        className="rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                        className="inline-flex min-h-11 items-center rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                     >
                         + Apply for New Enrollment
                     </Link>
                     <button
+                        type="button"
                         onClick={logout}
-                        className="rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
+                        className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
                     >
                         Log Out
                     </button>
@@ -231,32 +285,35 @@ export default function Dashboard({ enrollments }) {
             </div>
 
             {props.flash?.success && (
-                <div className="mt-6 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div
+                    role="status"
+                    className="mt-6 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                >
                     {props.flash.success}
                 </div>
             )}
 
             {/* ---------------- Key metrics ("social signals") ---------------- */}
             <div className="mt-6 grid grid-cols-3 divide-x divide-[#1F2A24]/10 rounded-lg border border-[#1F2A24]/10 bg-white shadow-sm">
-                <div className="px-4 py-4 text-center">
-                    <p className="text-xl font-semibold text-[#1F2A24]">
+                <div className="px-2 py-4 text-center sm:px-4">
+                    <p className="text-lg font-semibold text-[#1F2A24] tabular-nums sm:text-xl">
                         {activeEnrollments.length}
                     </p>
-                    <p className="text-xs text-[#1F2A24]/50">Applications</p>
+                    <p className="text-xs text-[#1F2A24]/65">Applications</p>
                 </div>
-                <div className="px-4 py-4 text-center">
-                    <p className="text-xl font-semibold text-[#1F2A24]">
+                <div className="px-2 py-4 text-center sm:px-4">
+                    <p className="text-lg font-semibold text-[#1F2A24] tabular-nums sm:text-xl">
                         {approvedCount}
                     </p>
-                    <p className="text-xs text-[#1F2A24]/50">Approved</p>
+                    <p className="text-xs text-[#1F2A24]/65">Approved</p>
                 </div>
-                <div className="px-4 py-4 text-center">
+                <div className="px-2 py-4 text-center sm:px-4">
                     <p
-                        className={`text-xl font-semibold ${outstandingBalance > 0 ? 'text-[#C6473B]' : 'text-[#1F2A24]'}`}
+                        className={`text-base font-semibold break-words tabular-nums sm:text-xl ${outstandingBalance > 0 ? 'text-[#C6473B]' : 'text-[#1F2A24]'}`}
                     >
                         {formatCurrency(outstandingBalance)}
                     </p>
-                    <p className="text-xs text-[#1F2A24]/50">
+                    <p className="text-xs text-[#1F2A24]/65">
                         Outstanding Balance
                     </p>
                 </div>
@@ -264,29 +321,45 @@ export default function Dashboard({ enrollments }) {
 
             {/* ---------------- Tabs ---------------- */}
             <div className="mt-8 border-b border-[#1F2A24]/10">
-                <nav className="-mb-px flex gap-6">
+                <div
+                    role="tablist"
+                    aria-label="Account sections"
+                    className="-mb-px flex gap-6"
+                >
                     {TABS.map((tab) => (
                         <button
                             key={tab}
+                            id={`portal-tab-${tab}`}
+                            type="button"
+                            role="tab"
+                            aria-selected={activeTab === tab}
+                            aria-controls="portal-tabpanel"
+                            tabIndex={activeTab === tab ? 0 : -1}
                             onClick={() => setActiveTab(tab)}
-                            className={`border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
+                            onKeyDown={handleTabKeyDown}
+                            className={`min-h-11 border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                                 activeTab === tab
                                     ? 'border-[#2F6F4E] text-[#2F6F4E]'
-                                    : 'border-transparent text-[#1F2A24]/50 hover:text-[#1F2A24]/80'
+                                    : 'border-transparent text-[#1F2A24]/65 hover:text-[#1F2A24]/80'
                             }`}
                         >
                             {tab}
                         </button>
                     ))}
-                </nav>
+                </div>
             </div>
 
             {/* ---------------- Tab content ---------------- */}
-            <div className="mt-6">
+            <div
+                id="portal-tabpanel"
+                role="tabpanel"
+                aria-labelledby={`portal-tab-${activeTab}`}
+                className="mt-6"
+            >
                 {activeTab === 'Applications' && (
                     <div className="space-y-4">
                         {enrollments.length === 0 && (
-                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/50">
+                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/65">
                                 You don't have any applications yet.
                             </div>
                         )}
@@ -304,13 +377,13 @@ export default function Dashboard({ enrollments }) {
                                     key={enrollment.id}
                                     className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <div>
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div className="min-w-0">
                                             <p className="font-medium text-[#1F2A24]">
                                                 {enrollment.student.first_name}{' '}
                                                 {enrollment.student.last_name}
                                             </p>
-                                            <p className="text-sm text-[#1F2A24]/60">
+                                            <p className="text-sm text-[#1F2A24]/70">
                                                 {enrollment.grade_level.name} ·
                                                 SY {enrollment.school_year}
                                             </p>
@@ -330,7 +403,7 @@ export default function Dashboard({ enrollments }) {
 
                                     <div className="mt-4 grid grid-cols-1 gap-3 border-t border-[#1F2A24]/10 pt-4 sm:grid-cols-3">
                                         <div>
-                                            <p className="text-xs text-[#1F2A24]/50">
+                                            <p className="text-xs text-[#1F2A24]/65">
                                                 Grade Level
                                             </p>
                                             <p className="text-sm text-[#1F2A24]">
@@ -338,7 +411,7 @@ export default function Dashboard({ enrollments }) {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-[#1F2A24]/50">
+                                            <p className="text-xs text-[#1F2A24]/65">
                                                 Session Time Preference
                                             </p>
                                             <p className="text-sm text-[#1F2A24]">
@@ -350,12 +423,12 @@ export default function Dashboard({ enrollments }) {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-[#1F2A24]/50">
+                                            <p className="text-xs text-[#1F2A24]/65">
                                                 LRN
                                             </p>
                                             <p className="text-sm text-[#1F2A24]">
                                                 {enrollment.student.lrn ?? (
-                                                    <span className="text-[#1F2A24]/40 italic">
+                                                    <span className="text-[#1F2A24]/65 italic">
                                                         Not yet assigned
                                                     </span>
                                                 )}
@@ -366,7 +439,7 @@ export default function Dashboard({ enrollments }) {
                                     <div className="mt-4 border-t border-[#1F2A24]/10 pt-4">
                                         {!isApproved &&
                                             !enrollment.cancelled_at && (
-                                                <p className="text-sm text-[#1F2A24]/50">
+                                                <p className="text-sm text-[#1F2A24]/65">
                                                     Tuition payment will be
                                                     available here once your
                                                     application is approved.
@@ -378,8 +451,12 @@ export default function Dashboard({ enrollments }) {
                                             !isFullyPaid && (
                                                 <div className="flex flex-col gap-3 rounded-md bg-[#2F6F4E]/5 p-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div>
-                                                        <p className="text-sm font-medium text-[#1F2A24]">
-                                                            🎉 You're approved!
+                                                        <p className="flex items-center gap-1.5 text-sm font-medium text-[#1F2A24]">
+                                                            <PartyPopper
+                                                                className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                                                aria-hidden="true"
+                                                            />
+                                                            You're approved!
                                                             You can now pay your
                                                             tuition.
                                                         </p>
@@ -400,7 +477,7 @@ export default function Dashboard({ enrollments }) {
                                                         href={
                                                             enrollment.payment_url
                                                         }
-                                                        className="rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                                                     >
                                                         Pay Tuition
                                                     </Link>
@@ -408,14 +485,18 @@ export default function Dashboard({ enrollments }) {
                                             )}
 
                                         {isApproved && isFullyPaid && (
-                                            <div className="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
-                                                ✓ Fully paid — no outstanding
+                                            <div className="flex items-center gap-2 rounded-md bg-[#2F6F4E]/5 p-4 text-sm font-medium text-[#2F6F4E]">
+                                                <CheckCircle2
+                                                    className="h-4 w-4 shrink-0"
+                                                    aria-hidden="true"
+                                                />
+                                                Fully paid — no outstanding
                                                 balance.
                                             </div>
                                         )}
 
                                         {isApproved && !hasBalance && (
-                                            <p className="text-sm text-[#1F2A24]/50">
+                                            <p className="text-sm text-[#1F2A24]/65">
                                                 Billing details aren't set up
                                                 yet for this enrollment. Please
                                                 check back soon.
@@ -428,10 +509,11 @@ export default function Dashboard({ enrollments }) {
                                             'PENDING' && (
                                             <div className="mt-4 border-t border-[#1F2A24]/10 pt-4 text-right">
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
-                                                        cancel(enrollment.id)
+                                                        cancel(enrollment)
                                                     }
-                                                    className="text-sm text-red-600 hover:underline"
+                                                    className="min-h-10 rounded-full px-3 text-sm font-medium text-[#C6473B] transition-colors hover:bg-[#C6473B]/5"
                                                 >
                                                     Cancel Application
                                                 </button>
@@ -446,14 +528,14 @@ export default function Dashboard({ enrollments }) {
                 {activeTab === 'Payments' && (
                     <div className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm">
                         {allTransactions.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-[#1F2A24]/50">
+                            <p className="py-8 text-center text-sm text-[#1F2A24]/65">
                                 No transactions yet.
                             </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm">
                                     <thead>
-                                        <tr className="text-xs text-[#1F2A24]/50">
+                                        <tr className="text-xs text-[#1F2A24]/65">
                                             <th className="pb-2 font-medium">
                                                 Date
                                             </th>
@@ -532,7 +614,7 @@ export default function Dashboard({ enrollments }) {
                 {activeTab === 'Documents' && (
                     <div className="space-y-4">
                         {enrollments.length === 0 && (
-                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/50">
+                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/65">
                                 No applications to show documents for yet.
                             </div>
                         )}
@@ -549,7 +631,7 @@ export default function Dashboard({ enrollments }) {
                                     <p className="mb-3 text-sm font-medium text-[#1F2A24]">
                                         {enrollment.student.first_name}{' '}
                                         {enrollment.student.last_name}
-                                        <span className="ml-2 text-xs font-normal text-[#1F2A24]/50">
+                                        <span className="ml-2 text-xs font-normal text-[#1F2A24]/65">
                                             {enrollment.grade_level.name} · SY{' '}
                                             {enrollment.school_year}
                                         </span>
@@ -573,7 +655,7 @@ export default function Dashboard({ enrollments }) {
                                                             {doc.label}
                                                         </p>
                                                         <p
-                                                            className={`text-xs ${isVerified ? 'text-green-600' : path ? 'text-[#E8A33D]' : 'text-[#1F2A24]/40'}`}
+                                                            className={`text-xs font-medium ${isVerified ? 'text-[#2F6F4E]' : path ? 'text-[#a4670f]' : 'text-[#1F2A24]/65'}`}
                                                         >
                                                             {isVerified
                                                                 ? 'Verified'
@@ -588,27 +670,44 @@ export default function Dashboard({ enrollments }) {
                                                                 href={`/storage/${path}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="text-xs font-medium text-[#2F6F4E] hover:underline"
+                                                                className="inline-flex min-h-9 items-center rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
                                                             >
                                                                 View
+                                                                <span className="sr-only">
+                                                                    {' '}
+                                                                    {doc.label}{' '}
+                                                                    (opens in a
+                                                                    new tab)
+                                                                </span>
                                                             </a>
                                                         )}
                                                         {isApproved ? (
-                                                            <span className="text-xs text-[#1F2A24]/40">
+                                                            <span className="text-xs text-[#1F2A24]/65">
                                                                 Locked
                                                             </span>
                                                         ) : (
-                                                            <label className="cursor-pointer rounded-full border border-[#1F2A24]/15 px-3 py-1 text-xs font-semibold text-[#1F2A24]/70 hover:bg-[#1F2A24]/5">
+                                                            <label className="relative inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-[#1F2A24]/15 px-4 text-xs font-semibold text-[#1F2A24]/80 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-1 hover:bg-[#1F2A24]/5">
+                                                                {uploadingDoc ===
+                                                                    key && (
+                                                                    <Loader2
+                                                                        className="h-3.5 w-3.5 animate-spin"
+                                                                        aria-hidden="true"
+                                                                    />
+                                                                )}
                                                                 {uploadingDoc ===
                                                                 key
                                                                     ? 'Uploading...'
                                                                     : path
                                                                       ? 'Replace'
                                                                       : 'Upload'}
+                                                                <span className="sr-only">
+                                                                    {' '}
+                                                                    {doc.label}
+                                                                </span>
                                                                 <input
                                                                     type="file"
                                                                     accept=".pdf,.jpg,.jpeg,.png"
-                                                                    className="hidden"
+                                                                    className="sr-only"
                                                                     disabled={
                                                                         uploadingDoc ===
                                                                         key

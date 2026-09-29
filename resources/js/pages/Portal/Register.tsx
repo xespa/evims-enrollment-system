@@ -20,7 +20,7 @@ export default function Register({ prefillName = '', prefillEmail = '' }) {
                     <h1 className="mt-3 font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
                         Track Your Application
                     </h1>
-                    <p className="mt-1 text-sm text-[#1F2A24]/60">
+                    <p className="mt-1 text-sm text-[#1F2A24]/70">
                         Create an account to view status updates and manage your enrollment.
                     </p>
                 </div>
@@ -100,7 +100,7 @@ export default function Register({ prefillName = '', prefillEmail = '' }) {
                     </Form>
                 </div>
 
-                <p className="mt-6 text-center text-sm text-[#1F2A24]/60">
+                <p className="mt-6 text-center text-sm text-[#1F2A24]/70">
                     Already have an account?{' '}
                     <TextLink href={route('portal.login')} className="font-medium text-[#2F6F4E] hover:text-[#25573E]">
                         Log in

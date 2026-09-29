@@ -9,13 +9,13 @@ import {
 function FeeRow({ label, detail, amount }) {
     return (
         <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
-            <span className="text-gray-600">
+            <span className="text-[#1F2A24]/75">
                 {label}
                 {detail && (
-                    <span className="ml-1 text-xs text-gray-400">{detail}</span>
+                    <span className="ml-1 text-xs text-[#1F2A24]/65">{detail}</span>
                 )}
             </span>
-            <span className="font-medium text-gray-800 tabular-nums">
+            <span className="font-medium text-[#1F2A24] tabular-nums">
                 {formatCurrency(amount)}
             </span>
         </div>
@@ -30,10 +30,10 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
     if (!selectedGrade) {
         return (
             <div>
-                <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
                     Billing / Tuition Contract
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[#1F2A24]/70">
                     Select a grade level first to see the school fees.
                 </p>
             </div>
@@ -61,16 +61,16 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
 
     return (
         <div>
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+            <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
                 Billing / Tuition Contract
             </h2>
 
-            <div className="mb-4 rounded-md border border-gray-200 bg-white px-4 py-3">
-                <p className="mb-2 text-sm font-semibold text-gray-800">
+            <div className="mb-4 rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3">
+                <p className="mb-2 text-sm font-semibold text-[#1F2A24]">
                     School Fees — {selectedGrade.name}
                 </p>
 
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-[#1F2A24]/10">
                     {oneTimeFees.map((fee) => (
                         <FeeRow
                             key={fee.label}
@@ -88,11 +88,11 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                     ))}
                 </div>
 
-                <div className="mt-2 flex items-baseline justify-between border-t-2 border-gray-200 pt-2">
-                    <span className="text-sm font-semibold text-gray-900">
+                <div className="mt-2 flex items-baseline justify-between border-t-2 border-[#1F2A24]/10 pt-2">
+                    <span className="text-sm font-semibold text-[#1F2A24]">
                         Total Amount to Pay
                     </span>
-                    <span className="text-xl font-bold text-blue-700 tabular-nums">
+                    <span className="text-xl font-bold text-[#2F6F4E] tabular-nums">
                         {formatCurrency(total)}
                     </span>
                 </div>
@@ -116,7 +116,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
             />
 
             {plan && (
-                <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-gray-700">
+                <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
                     {plan.count === 1 ? (
                         <p>
                             You will pay{' '}
@@ -148,7 +148,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                             .
                         </p>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-[#1F2A24]/70">
                         {PAYMENT_OPTIONS[data.payment_option]?.label} plan ·
                         Total of {formatCurrency(total)}, paid at the school
                         counter or via GCash.
@@ -156,20 +156,28 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                 </div>
             )}
 
-            <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                    How will you pay? <span className="text-red-500">*</span>
-                </label>
+            <fieldset
+                className="mb-4"
+                aria-required="true"
+                aria-describedby={errors.payment_channel ? 'payment_channel-error' : undefined}
+            >
+                <legend className="mb-2 block text-sm font-medium text-[#1F2A24]/80">
+                    How will you pay?{' '}
+                    <span className="text-[#C6473B]" aria-hidden="true">*</span>
+                </legend>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <label
-                        className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 ${
+                        className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E]/30 ${
                             data.payment_channel === 'COUNTER'
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300'
+                                ? 'border-[#2F6F4E] bg-[#2F6F4E]/5'
+                                : errors.payment_channel
+                                  ? 'border-[#C6473B] hover:bg-[#1F2A24]/[0.03]'
+                                  : 'border-[#1F2A24]/15 hover:bg-[#1F2A24]/[0.03]'
                         }`}
                     >
                         <input
                             type="radio"
+                            className="h-4 w-4 shrink-0 accent-[#2F6F4E]"
                             name="payment_channel"
                             value="COUNTER"
                             checked={data.payment_channel === 'COUNTER'}
@@ -178,24 +186,27 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                             }
                         />
                         <div>
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-[#1F2A24]">
                                 Pay at School Counter
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#1F2A24]/70">
                                 Cash payment at the registrar's office
                             </p>
                         </div>
                     </label>
 
                     <label
-                        className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 ${
+                        className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E]/30 ${
                             data.payment_channel === 'GCASH'
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300'
+                                ? 'border-[#2F6F4E] bg-[#2F6F4E]/5'
+                                : errors.payment_channel
+                                  ? 'border-[#C6473B] hover:bg-[#1F2A24]/[0.03]'
+                                  : 'border-[#1F2A24]/15 hover:bg-[#1F2A24]/[0.03]'
                         }`}
                     >
                         <input
                             type="radio"
+                            className="h-4 w-4 shrink-0 accent-[#2F6F4E]"
                             name="payment_channel"
                             value="GCASH"
                             checked={data.payment_channel === 'GCASH'}
@@ -204,29 +215,29 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                             }
                         />
                         <div>
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-[#1F2A24]">
                                 Pay via GCash
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#1F2A24]/70">
                                 Online, using the school's GCash account
                             </p>
                         </div>
                     </label>
                 </div>
                 {errors.payment_channel && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p id="payment_channel-error" className="mt-1 text-sm text-[#C6473B]">
                         {errors.payment_channel}
                     </p>
                 )}
-            </div>
+            </fieldset>
 
             {data.payment_channel === 'GCASH' && (
-                <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-center">
-                    <p className="text-sm font-medium text-gray-700">
+                <div className="mb-4 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-4 text-center">
+                    <p className="text-sm font-medium text-[#1F2A24]/80">
                         After you submit this application, you'll receive a
                         secure GCash payment link on the confirmation page.
                     </p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-[#1F2A24]/70">
                         No need to pay right now — just complete your
                         application first.
                     </p>

@@ -140,4 +140,46 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Tailwind v4 resets buttons to the default cursor; restore the pointer
+       so clickable controls read as clickable. */
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    [role='tab'],
+    select:not(:disabled),
+    label[for],
+    input[type='checkbox']:not(:disabled),
+    input[type='radio']:not(:disabled),
+    input[type='file']:not(:disabled),
+    summary {
+        cursor: pointer;
+    }
+
+    /* Brand-colored keyboard focus ring for any element that doesn't style
+       its own (components using focus:outline-none keep their ring). */
+    :focus-visible {
+        outline: 2px solid #2f6f4e;
+        outline-offset: 2px;
+    }
+}
+
+/* Inputs under 16px make iOS Safari zoom the page on focus. Unlayered so it
+   wins over text-sm/text-xs utilities on small screens only. */
+@media (max-width: 639px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='file']),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

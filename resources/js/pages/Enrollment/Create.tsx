@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm, Head, usePage } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
 import StepperNav from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -538,7 +539,34 @@ export default function Create({
         });
     };
 
-    const stepProps = { data, setData, errors, gradeLevels };
+    // Once Next has been blocked, flag each still-empty required field inline
+    // (next to the input, not only in the banner). Recomputed every render,
+    // so each message disappears as soon as its field is filled in.
+    const missingFieldErrors = nextBlockedReason
+        ? Object.fromEntries(
+              getMissingFields().map((field) => {
+                  const label = FIELD_LABELS[field] ?? field;
+                  return [
+                      field,
+                      label.startsWith('at least')
+                          ? `Please select ${label}.`
+                          : `${label} is required.`,
+                  ];
+              }),
+          )
+        : {};
+
+    const stepProps = {
+        data,
+        setData,
+        errors: { ...missingFieldErrors, ...errors },
+        gradeLevels,
+    };
+
+    const fastTrackSelectClass = (field: string) =>
+        `mt-1.5 min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
+            stepProps.errors[field] ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
+        }`;
 
     return (
         <>
@@ -553,13 +581,16 @@ export default function Create({
                         <h1 className="mt-3 font-serif text-3xl font-semibold text-[#1F2A24]">
                             EVIMS Enrollment Application
                         </h1>
-                        <p className="mt-1 text-sm text-[#1F2A24]/60">
+                        <p className="mt-1 text-sm text-[#1F2A24]/70">
                             A few short steps and your child's seat is reserved.
                         </p>
                     </div>
 
                     {restoredFromDraft && (
-                        <div className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
+                        <div
+                            role="status"
+                            className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80"
+                        >
                             Welcome back — we've restored your in-progress
                             application right where you left off. Any files
                             you'd already selected will need to be reattached.
@@ -588,7 +619,10 @@ export default function Create({
 
                                     <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div>
-                                            <label className="block text-sm font-medium text-[#1F2A24]/80">
+                                            <label
+                                                htmlFor="fast-track-school_year"
+                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                            >
                                                 School Year
                                             </label>
                                             <select
@@ -599,7 +633,15 @@ export default function Create({
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="mt-1.5 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                                id="fast-track-school_year"
+                                                aria-invalid={
+                                                    stepProps.errors.school_year
+                                                        ? true
+                                                        : undefined
+                                                }
+                                                className={fastTrackSelectClass(
+                                                    'school_year',
+                                                )}
                                             >
                                                 {generateSchoolYearOptions().map(
                                                     (year) => (
@@ -615,7 +657,10 @@ export default function Create({
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-[#1F2A24]/80">
+                                            <label
+                                                htmlFor="fast-track-grade_level_id"
+                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                            >
                                                 Grade Level
                                             </label>
                                             <select
@@ -626,7 +671,15 @@ export default function Create({
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="mt-1.5 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                                id="fast-track-grade_level_id"
+                                                aria-invalid={
+                                                    stepProps.errors.grade_level_id
+                                                        ? true
+                                                        : undefined
+                                                }
+                                                className={fastTrackSelectClass(
+                                                    'grade_level_id',
+                                                )}
                                             >
                                                 <option value="">
                                                     -- Select --
@@ -640,14 +693,17 @@ export default function Create({
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="mt-1 text-xs text-[#1F2A24]/50">
+                                            <p className="mt-1 text-xs text-[#1F2A24]/65">
                                                 Defaulted to the next grade up
                                                 from last year.
                                             </p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-[#1F2A24]/80">
+                                            <label
+                                                htmlFor="fast-track-session_time_preference"
+                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                            >
                                                 Session Time Preference
                                             </label>
                                             <select
@@ -660,7 +716,15 @@ export default function Create({
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="mt-1.5 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                                id="fast-track-session_time_preference"
+                                                aria-invalid={
+                                                    stepProps.errors.session_time_preference
+                                                        ? true
+                                                        : undefined
+                                                }
+                                                className={fastTrackSelectClass(
+                                                    'session_time_preference',
+                                                )}
                                             >
                                                 <option value="">
                                                     -- Select --
@@ -681,13 +745,19 @@ export default function Create({
                             )}
 
                             {nextBlockedReason && (
-                                <div className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]">
+                                <div
+                                    role="alert"
+                                    className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
+                                >
                                     {nextBlockedReason}
                                 </div>
                             )}
 
                             {Object.keys(errors).length > 0 && (
-                                <div className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]">
+                                <div
+                                    role="alert"
+                                    className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
+                                >
                                     Please fix the highlighted errors below
                                     before submitting.
                                 </div>
@@ -726,7 +796,7 @@ export default function Create({
                                         type="button"
                                         onClick={goBack}
                                         disabled={step === 1}
-                                        className="rounded-full border border-[#1F2A24]/15 px-5 py-2 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 disabled:opacity-40"
+                                        className="min-h-11 rounded-full border border-[#1F2A24]/15 px-5 py-2 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                                     >
                                         Back
                                     </button>
@@ -735,7 +805,7 @@ export default function Create({
                                         <button
                                             type="button"
                                             onClick={goNext}
-                                            className="rounded-full bg-[#2F6F4E] px-6 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                            className="min-h-11 rounded-full bg-[#2F6F4E] px-6 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                                         >
                                             Next
                                         </button>
@@ -743,8 +813,15 @@ export default function Create({
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-sm transition-colors hover:bg-[#d6922e] disabled:opacity-50"
+                                            aria-busy={processing}
+                                            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-sm transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
                                         >
+                                            {processing && (
+                                                <Loader2
+                                                    className="h-4 w-4 animate-spin"
+                                                    aria-hidden="true"
+                                                />
+                                            )}
                                             {processing
                                                 ? 'Submitting...'
                                                 : 'Submit Application'}

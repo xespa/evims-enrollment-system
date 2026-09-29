@@ -1,11 +1,14 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { useConfirm } from '@/hooks/use-confirm';
 
 function InfoRow({ label, value }) {
     return (
-        <div className="flex justify-between border-b border-[#1F2A24]/10 py-2 text-sm">
-            <span className="text-[#1F2A24]/60">{label}</span>
-            <span className="font-medium text-[#1F2A24]">{value || '—'}</span>
+        <div className="flex justify-between gap-4 border-b border-[#1F2A24]/10 py-2 text-sm">
+            <span className="shrink-0 text-[#1F2A24]/70">{label}</span>
+            <span className="min-w-0 text-right font-medium break-words text-[#1F2A24]">
+                {value || '—'}
+            </span>
         </div>
     );
 }
@@ -110,18 +113,18 @@ function PaymentsSection({ enrollment }) {
 
                     return (
                         <div key={installment.id} className="py-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <span className="text-sm font-medium text-[#1F2A24]">
                                         Installment #
                                         {installment.installment_number}
                                     </span>
-                                    <span className="ml-2 text-xs text-[#1F2A24]/60">
+                                    <span className="ml-2 text-xs text-[#1F2A24]/70">
                                         Due {installment.due_date}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm text-[#1F2A24]/70">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="text-sm text-[#1F2A24]/70 tabular-nums">
                                         {formatCurrency(installment.amount_due)}
                                     </span>
                                     <span
@@ -131,10 +134,15 @@ function PaymentsSection({ enrollment }) {
                                     </span>
                                     {installment.status !== 'PAID' && (
                                         <button
+                                            type="button"
                                             onClick={() =>
                                                 openPayForm(installment)
                                             }
-                                            className="text-xs font-medium text-[#2F6F4E] hover:underline"
+                                            aria-expanded={
+                                                payingInstallmentId ===
+                                                installment.id
+                                            }
+                                            className="min-h-9 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
                                         >
                                             Record Cash Payment
                                         </button>
@@ -145,14 +153,24 @@ function PaymentsSection({ enrollment }) {
                             {payingInstallmentId === installment.id && (
                                 <form
                                     onSubmit={submitCashPayment}
-                                    className="mt-2 flex items-center gap-2 rounded-lg bg-[#2F6F4E]/5 p-3"
+                                    className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-[#2F6F4E]/5 p-3"
                                 >
-                                    <span className="text-xs text-[#1F2A24]/60">
-                                        Amount:
-                                    </span>
+                                    <label
+                                        htmlFor={`cash-amount-${installment.id}`}
+                                        className="text-xs text-[#1F2A24]/70"
+                                    >
+                                        Amount (₱)
+                                    </label>
                                     <input
+                                        id={`cash-amount-${installment.id}`}
                                         type="number"
                                         step="0.01"
+                                        min="0"
+                                        inputMode="decimal"
+                                        autoFocus
+                                        aria-invalid={
+                                            errors.amount ? true : undefined
+                                        }
                                         value={data.amount}
                                         onChange={(e) =>
                                             setData('amount', e.target.value)
@@ -162,21 +180,24 @@ function PaymentsSection({ enrollment }) {
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                                        className="min-h-9 rounded-full bg-[#2F6F4E] px-4 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
                                     >
-                                        Confirm
+                                        {processing ? 'Saving…' : 'Confirm'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() =>
                                             setPayingInstallmentId(null)
                                         }
-                                        className="text-xs text-[#1F2A24]/60 hover:underline"
+                                        className="min-h-9 rounded-full px-3 text-xs text-[#1F2A24]/70 hover:bg-[#1F2A24]/5"
                                     >
                                         Cancel
                                     </button>
                                     {errors.amount && (
-                                        <span className="text-xs text-red-600">
+                                        <span
+                                            role="alert"
+                                            className="w-full text-xs text-[#C6473B]"
+                                        >
                                             {errors.amount}
                                         </span>
                                     )}
@@ -184,7 +205,7 @@ function PaymentsSection({ enrollment }) {
                             )}
 
                             {paid > 0 && installment.status !== 'PAID' && (
-                                <p className="mt-1 text-xs text-[#1F2A24]/60">
+                                <p className="mt-1 text-xs text-[#1F2A24]/70">
                                     {formatCurrency(paid)} paid so far,{' '}
                                     {formatCurrency(remaining)} remaining
                                 </p>
@@ -194,7 +215,7 @@ function PaymentsSection({ enrollment }) {
                 })}
 
                 {installments.length === 0 && (
-                    <p className="py-3 text-sm text-[#1F2A24]/40">
+                    <p className="py-3 text-sm text-[#1F2A24]/65">
                         No installment schedule found.
                     </p>
                 )}
@@ -294,7 +315,8 @@ function DocumentRow({
                     <button
                         type="button"
                         onClick={toggleOpen}
-                        className="shrink-0 text-xs font-medium text-[#2F6F4E] hover:underline"
+                        aria-expanded={open}
+                        className="min-h-9 shrink-0 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
                     >
                         {open ? 'Cancel' : 'Remind'}
                     </button>
@@ -309,9 +331,10 @@ function DocumentRow({
                     className="ml-6 inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
                 >
                     View uploaded file →
+                    <span className="sr-only"> (opens in a new tab)</span>
                 </a>
             ) : (
-                <p className="ml-6 text-xs text-[#1F2A24]/40">
+                <p className="ml-6 text-xs text-[#1F2A24]/65">
                     No file uploaded yet
                 </p>
             )}
@@ -321,7 +344,14 @@ function DocumentRow({
                     onSubmit={submit}
                     className="mt-2 space-y-2 rounded-lg bg-[#E8A33D]/10 p-3"
                 >
+                    <label
+                        htmlFor={`remind-reason-${doc.type}`}
+                        className="block text-xs font-medium text-[#1F2A24]/80"
+                    >
+                        Reason for reminder
+                    </label>
                     <select
+                        id={`remind-reason-${doc.type}`}
                         value={data.reason}
                         onChange={(e) => setData('reason', e.target.value)}
                         className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
@@ -335,6 +365,7 @@ function DocumentRow({
 
                     {(data.reason === 'OTHER' || showNote) && (
                         <textarea
+                            aria-label="Note to parent"
                             value={data.note}
                             onChange={(e) => setData('note', e.target.value)}
                             placeholder={
@@ -351,7 +382,7 @@ function DocumentRow({
                         <button
                             type="button"
                             onClick={() => setShowNote(true)}
-                            className="text-[11px] font-medium text-[#2F6F4E] hover:underline"
+                            className="text-xs font-medium text-[#2F6F4E] hover:underline"
                         >
                             + Add a note
                         </button>
@@ -361,12 +392,12 @@ function DocumentRow({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="rounded-full bg-[#E8A33D] px-3 py-1 text-xs font-semibold text-[#1F2A24] transition-colors hover:bg-[#d6922e] disabled:opacity-50"
+                            className="min-h-9 rounded-full bg-[#E8A33D] px-4 py-1 text-xs font-semibold text-[#1F2A24] transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-50"
                         >
-                            Send
+                            {processing ? 'Sending…' : 'Send Reminder'}
                         </button>
                         {(errors.reason || errors.note || errors.reminder) && (
-                            <span className="text-xs text-red-600">
+                            <span role="alert" className="text-xs text-[#C6473B]">
                                 {errors.reason ||
                                     errors.note ||
                                     errors.reminder}
@@ -389,19 +420,48 @@ export default function Show({ enrollment }) {
         (doc) => !verification?.[doc.pathKey],
     );
 
-    const changeStatus = (newStatus) => {
-        if (!confirm(`Set status to ${newStatus}?`)) return;
+    const [confirm, confirmDialog] = useConfirm();
+    const studentName = `${student.first_name} ${student.last_name}`;
+
+    const STATUS_CONFIRMATIONS = {
+        APPROVED: {
+            title: `Approve ${studentName}'s application?`,
+            description:
+                'The parent will be emailed and notified, and tuition payment opens in their portal.',
+            confirmLabel: 'Approve',
+        },
+        REJECTED: {
+            title: `Reject ${studentName}'s application?`,
+            description:
+                'The parent will be emailed and notified that this application was rejected.',
+            confirmLabel: 'Reject',
+            destructive: true,
+        },
+        PENDING: {
+            title: 'Reset this application to pending?',
+            description: 'It will go back into the review queue. No email is sent.',
+            confirmLabel: 'Reset to Pending',
+        },
+    };
+
+    const changeStatus = async (
+        newStatus: keyof typeof STATUS_CONFIRMATIONS,
+    ) => {
+        if (!(await confirm(STATUS_CONFIRMATIONS[newStatus]))) return;
         router.patch(route('admin.enrollments.updateStatus', enrollment.id), {
             enrollment_status: newStatus,
         });
     };
 
-    const deleteApplication = () => {
-        if (
-            !confirm(
-                `Permanently delete this application for ${student.first_name} ${student.last_name}? This cannot be undone — all of its documents, billing, and payment records will be deleted too. The student's own profile will NOT be deleted.`,
-            )
-        ) {
+    const deleteApplication = async () => {
+        const confirmed = await confirm({
+            title: `Permanently delete ${studentName}'s application?`,
+            description:
+                "This cannot be undone — all of its documents, billing, and payment records will be deleted too. The student's own profile will NOT be deleted.",
+            confirmLabel: 'Delete Application',
+            destructive: true,
+        });
+        if (!confirmed) {
             return;
         }
         router.delete(route('admin.enrollments.destroy', enrollment.id));
@@ -431,6 +491,7 @@ export default function Show({ enrollment }) {
     return (
         <>
             <Head title={`${student.last_name}, ${student.first_name}`} />
+            {confirmDialog}
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
@@ -442,12 +503,15 @@ export default function Show({ enrollment }) {
                     </Link>
 
                     {flashSuccess && (
-                        <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                        <div
+                            role="status"
+                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        >
                             {flashSuccess}
                         </div>
                     )}
 
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
                             {student.last_name}, {student.first_name}{' '}
                             {student.middle_name}
@@ -460,38 +524,42 @@ export default function Show({ enrollment }) {
                     </div>
 
                     {/* Approve/Reject actions */}
-                    <div className="mb-6 flex gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                    <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                         <button
+                            type="button"
                             onClick={() => changeStatus('APPROVED')}
                             disabled={
                                 enrollment.enrollment_status === 'APPROVED'
                             }
-                            className="rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:opacity-40"
+                            className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             Approve
                         </button>
                         <button
+                            type="button"
                             onClick={() => changeStatus('REJECTED')}
                             disabled={
                                 enrollment.enrollment_status === 'REJECTED'
                             }
-                            className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-40"
+                            className="min-h-11 rounded-full bg-[#C6473B] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             Reject
                         </button>
                         <button
+                            type="button"
                             onClick={() => changeStatus('PENDING')}
                             disabled={
                                 enrollment.enrollment_status === 'PENDING'
                             }
-                            className="rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:bg-[#1F2A24]/5 disabled:opacity-40"
+                            className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             Reset to Pending
                         </button>
 
                         <button
+                            type="button"
                             onClick={deleteApplication}
-                            className="ml-auto rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
+                            className="min-h-11 rounded-full border border-[#C6473B]/30 bg-white px-4 py-2 text-sm font-semibold text-[#C6473B] transition-colors hover:bg-[#C6473B]/5 sm:ml-auto"
                         >
                             Delete Application
                         </button>
@@ -699,7 +767,7 @@ export default function Show({ enrollment }) {
 
                             {missingDocuments.length > 0 &&
                                 !enrollment.enrollee_user_id && (
-                                    <p className="mb-3 text-xs text-[#1F2A24]/40">
+                                    <p className="mb-3 text-xs text-[#1F2A24]/65">
                                         No linked parent portal account —
                                         reminders can't be sent for this
                                         application.

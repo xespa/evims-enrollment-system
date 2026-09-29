@@ -55,8 +55,19 @@ export default function SiteLayout({ children }) {
         if (!menuOpen) {
             setOpenMobileSection(null);
         }
+
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') {
+                setMenuOpen(false);
+            }
+        };
+        if (menuOpen) {
+            document.addEventListener('keydown', closeOnEscape);
+        }
+
         return () => {
             document.body.style.overflow = '';
+            document.removeEventListener('keydown', closeOnEscape);
         };
     }, [menuOpen]);
 
@@ -90,13 +101,19 @@ export default function SiteLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-[#FBF8F2] font-sans text-[#1F2A24]">
+            <a
+                href="#main-content"
+                className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+            >
+                Skip to content
+            </a>
             <header className="sticky top-0 z-40 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/95 backdrop-blur">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
                     <Link href="/" className="flex items-center gap-2.5">
                         <span className="flex items-center gap-2.5">
                             <img
-                                src="\images\logoevims.png"
-                                alt="evims-logo"
+                                src="/images/logoevims.png"
+                                alt=""
                                 className="h-15 w-15 rounded-full object-cover"
                             />
                         </span>
@@ -220,15 +237,20 @@ export default function SiteLayout({ children }) {
                                     ? `My Account (${enrollee.name})`
                                     : 'Log in to track your application'
                             }
+                            aria-label={
+                                enrollee
+                                    ? `My Account (${enrollee.name})`
+                                    : 'Log in to track your application'
+                            }
                         >
                             {enrollee?.profile_photo_url ? (
                                 <img
                                     src={enrollee.profile_photo_url}
-                                    alt={enrollee.name}
+                                    alt=""
                                     className="h-10 w-10 rounded-full object-cover"
                                 />
                             ) : (
-                                <UserCircle className="h-10 w-10" />
+                                <UserCircle className="h-10 w-10" aria-hidden="true" />
                             )}
                         </Link>
                     </div>
@@ -236,8 +258,10 @@ export default function SiteLayout({ children }) {
                     <button
                         type="button"
                         onClick={() => setMenuOpen((open) => !open)}
-                        className="rounded-md p-2 text-[#1F2A24] xl:hidden"
+                        className="-mr-2 rounded-md p-2 text-[#1F2A24] hover:bg-[#1F2A24]/5 xl:hidden"
                         aria-label="Toggle navigation"
+                        aria-expanded={menuOpen}
+                        aria-controls="site-mobile-nav"
                     >
                         <svg
                             width="22"
@@ -270,15 +294,20 @@ export default function SiteLayout({ children }) {
 
             {/* Mobile sidebar panel */}
             <aside
-                className={`fixed top-0 right-0 z-50 flex h-full w-72 max-w-[80vw] transform flex-col bg-[#FBF8F2] shadow-2xl transition-transform duration-300 ease-in-out xl:hidden ${
-                    menuOpen ? 'translate-x-0' : 'translate-x-full'
+                id="site-mobile-nav"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Site navigation"
+                inert={!menuOpen}
+                className={`fixed top-0 right-0 z-50 flex h-full w-72 max-w-[80vw] transform flex-col bg-[#FBF8F2] shadow-2xl transition-[transform,visibility] duration-300 ease-in-out xl:hidden ${
+                    menuOpen ? 'visible translate-x-0' : 'invisible translate-x-full'
                 }`}
             >
                 <div className="flex items-center justify-between border-b border-[#1F2A24]/10 p-5">
                     <button
                         type="button"
                         onClick={() => setMenuOpen(false)}
-                        className="rounded-md p-1 text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                        className="-ml-2 rounded-md p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                         aria-label="Close navigation"
                     >
                         <svg
@@ -311,15 +340,20 @@ export default function SiteLayout({ children }) {
                                 ? `My Account (${enrollee.name})`
                                 : 'Log in to track your application'
                         }
+                        aria-label={
+                            enrollee
+                                ? `My Account (${enrollee.name})`
+                                : 'Log in to track your application'
+                        }
                     >
                         {enrollee?.profile_photo_url ? (
                             <img
                                 src={enrollee.profile_photo_url}
-                                alt={enrollee.name}
+                                alt=""
                                 className="h-10 w-10 rounded-full object-cover"
                             />
                         ) : (
-                            <UserCircle className="h-10 w-10" />
+                            <UserCircle className="h-10 w-10" aria-hidden="true" />
                         )}
                     </Link>
                 </div>
@@ -405,15 +439,17 @@ export default function SiteLayout({ children }) {
                 </div>
             </aside>
 
-            <main>{children}</main>
+            <main id="main-content" tabIndex={-1} className="focus:outline-none">
+                {children}
+            </main>
 
-            <footer className="border-t border-[#1F2A24]/10 bg-[#1F2A24] text-[#FBF8F2]">
+            <footer className="border-t border-[#1F2A24]/10 bg-[#1F2A24] text-[#FBF8F2] [&_:focus-visible]:outline-[#E8A33D]">
                 <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <div className="flex items-center gap-2">
                             <img
                                 src="/images/logoevims.png"
-                                alt="evims-logo"
+                                alt=""
                                 className="h-15 w-15 rounded-full object-cover"
                             />
                             <span className="font-serif text-lg font-semibold">
@@ -460,18 +496,32 @@ export default function SiteLayout({ children }) {
                             Reach Us
                         </p>
                         <ul className="space-y-2 text-sm text-[#FBF8F2]/70">
-                            <li>+63935 073 4741</li>
-                            <li>evimstech2020@gmail.com</li>
+                            <li>
+                                <a
+                                    href="tel:+639350734741"
+                                    className="hover:text-[#FBF8F2] hover:underline"
+                                >
+                                    +63935 073 4741
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="mailto:evimstech2020@gmail.com"
+                                    className="break-all hover:text-[#FBF8F2] hover:underline"
+                                >
+                                    evimstech2020@gmail.com
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
-                <div className="flex flex-col items-center justify-between gap-2 border-t border-[#FBF8F2]/10 px-5 py-4 text-center text-xs text-[#FBF8F2]/50 sm:flex-row">
+                <div className="flex flex-col items-center justify-between gap-2 border-t border-[#FBF8F2]/10 px-5 py-4 text-center text-xs text-[#FBF8F2]/65 sm:flex-row">
                     <span>
                         © {new Date().getFullYear()} EVIMS. All rights reserved.
                     </span>
                     <Link
                         href={login()}
-                        className="text-[#FBF8F2]/40 hover:text-[#FBF8F2]/70 hover:underline"
+                        className="text-[#FBF8F2]/60 hover:text-[#FBF8F2]/70 hover:underline"
                     >
                         Staff Login
                     </Link>

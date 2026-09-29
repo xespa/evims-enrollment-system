@@ -1,10 +1,19 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export default function Index({ events }) {
     const { props } = usePage();
+    const [confirm, confirmDialog] = useConfirm();
 
-    const destroy = (event) => {
-        if (!confirm(`Delete "${event.title}"?`)) return;
+    const destroy = async (event) => {
+        const confirmed = await confirm({
+            title: `Delete "${event.title}"?`,
+            description:
+                'It will be removed from the public Events page. This cannot be undone.',
+            confirmLabel: 'Delete Event',
+            destructive: true,
+        });
+        if (!confirmed) return;
         router.delete(route('admin.events.destroy', event.id), {
             preserveScroll: true,
         });
@@ -13,14 +22,15 @@ export default function Index({ events }) {
     return (
         <>
             <Head title="Manage Events" />
+            {confirmDialog}
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex items-center justify-between">
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
                                 Events
                             </h1>
-                            <p className="text-sm text-[#1F2A24]/60">
+                            <p className="text-sm text-[#1F2A24]/70">
                                 Manage the events shown on the public Events
                                 page.
                             </p>
@@ -34,7 +44,7 @@ export default function Index({ events }) {
                     </div>
 
                     {props.flash?.success && (
-                        <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                        <div role="status" className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
                             {props.flash.success}
                         </div>
                     )}
@@ -53,7 +63,7 @@ export default function Index({ events }) {
                                             className="h-full w-full object-cover"
                                         />
                                     ) : (
-                                        <div className="flex h-full w-full items-center justify-center text-xs text-[#1F2A24]/40">
+                                        <div className="flex h-full w-full items-center justify-center text-xs text-[#1F2A24]/65">
                                             No image
                                         </div>
                                     )}
@@ -62,7 +72,7 @@ export default function Index({ events }) {
                                     <p className="text-sm font-medium text-[#1F2A24]">
                                         {event.title}
                                     </p>
-                                    <p className="text-xs text-[#1F2A24]/60">
+                                    <p className="text-xs text-[#1F2A24]/70">
                                         {event.event_date}
                                         {event.location
                                             ? ` · ${event.location}`
@@ -82,7 +92,7 @@ export default function Index({ events }) {
                                 </Link>
                                 <button
                                     onClick={() => destroy(event)}
-                                    className="text-sm font-medium text-red-600 hover:underline"
+                                    className="text-sm font-medium text-[#C6473B] hover:underline"
                                 >
                                     Delete
                                 </button>
@@ -90,7 +100,7 @@ export default function Index({ events }) {
                         ))}
 
                         {events.length === 0 && (
-                            <p className="p-6 text-center text-sm text-[#1F2A24]/40">
+                            <p className="p-6 text-center text-sm text-[#1F2A24]/65">
                                 No events yet. Create your first one.
                             </p>
                         )}

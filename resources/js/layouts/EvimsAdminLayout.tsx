@@ -9,6 +9,7 @@ import {
     PanelLeftOpen,
     Settings,
     Users,
+    X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -47,6 +48,22 @@ export default function EvimsAdminLayout({ children }) {
             return false;
         }
     };
+
+    useEffect(() => {
+        if (!mobileOpen) {
+            return;
+        }
+
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') {
+                setMobileOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => document.removeEventListener('keydown', closeOnEscape);
+    }, [mobileOpen]);
 
     useEffect(() => {
         if (!credentialsOpen) {
@@ -88,7 +105,7 @@ export default function EvimsAdminLayout({ children }) {
                 <div className="flex items-center gap-3">
                     <img
                         src="/images/logoevims.png"
-                        alt="evims-logo"
+                        alt=""
                         className={`shrink-0 rounded-full object-cover ${
                             collapsed ? 'h-13 w-13 lg:h-9 lg:w-9' : 'h-13 w-13'
                         }`}
@@ -99,19 +116,21 @@ export default function EvimsAdminLayout({ children }) {
                         <p className="font-serif text-lg font-semibold text-[#1F2A24]">
                             EVIMS
                         </p>
-                        <p className="text-xs text-[#1F2A24]/60">Admin Panel</p>
+                        <p className="text-xs text-[#1F2A24]/70">Admin Panel</p>
                     </div>
                 </div>
                 <button
+                    type="button"
                     onClick={() => setMobileOpen(false)}
-                    className="text-[#1F2A24]/40 hover:text-[#1F2A24]/70 lg:hidden"
+                    className="-mr-2 rounded-md p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] lg:hidden"
                     aria-label="Close menu"
                 >
-                    ✕
+                    <X className="h-5 w-5" aria-hidden="true" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => setCollapsed((c) => !c)}
-                    className="hidden shrink-0 rounded-md p-1.5 text-[#1F2A24]/50 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] lg:inline-flex"
+                    className="hidden shrink-0 rounded-md p-1.5 text-[#1F2A24]/65 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] lg:inline-flex"
                     aria-label={
                         collapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
@@ -125,14 +144,18 @@ export default function EvimsAdminLayout({ children }) {
                 </button>
             </div>
 
-            <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
+            <nav
+                aria-label="Admin"
+                className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4"
+            >
                 {NAV_ITEMS.map((item) => (
                     <Link
                         key={item.route}
                         href={route(item.route)}
                         onClick={() => setMobileOpen(false)}
                         title={collapsed ? item.label : undefined}
-                        className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition ${
+                        aria-current={isActive(item) ? 'page' : undefined}
+                        className={`flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition ${
                             collapsed ? 'lg:justify-center lg:px-2' : ''
                         } ${
                             isActive(item)
@@ -140,8 +163,11 @@ export default function EvimsAdminLayout({ children }) {
                                 : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]'
                         }`}
                     >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        <span className={collapsed ? 'lg:hidden' : ''}>
+                        <item.icon
+                            className="h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <span className={collapsed ? 'lg:sr-only' : ''}>
                             {item.label}
                         </span>
                     </Link>
@@ -158,12 +184,12 @@ export default function EvimsAdminLayout({ children }) {
                     >
                         {credentialsOpen && (
                             <div className="absolute bottom-full left-0 mb-2 w-full rounded-xl border border-[#1F2A24]/10 bg-white p-3 shadow-lg">
-                                <p className="text-[10px] font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                <p className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                     Account Credentials
                                 </p>
                                 <div className="mt-2 space-y-1.5">
                                     <div>
-                                        <p className="text-[10px] text-[#1F2A24]/50">
+                                        <p className="text-xs text-[#1F2A24]/65">
                                             Name
                                         </p>
                                         <p className="truncate text-sm text-[#1F2A24]">
@@ -171,7 +197,7 @@ export default function EvimsAdminLayout({ children }) {
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-[#1F2A24]/50">
+                                        <p className="text-xs text-[#1F2A24]/65">
                                             Email
                                         </p>
                                         <p className="truncate text-sm text-[#1F2A24]">
@@ -180,7 +206,7 @@ export default function EvimsAdminLayout({ children }) {
                                     </div>
                                     {user.role && (
                                         <div>
-                                            <p className="text-[10px] text-[#1F2A24]/50">
+                                            <p className="text-xs text-[#1F2A24]/65">
                                                 Role
                                             </p>
                                             <p className="truncate text-sm text-[#1F2A24]">
@@ -201,12 +227,12 @@ export default function EvimsAdminLayout({ children }) {
                                 <span className="block truncate text-sm font-medium text-[#1F2A24]">
                                     {user.name}
                                 </span>
-                                <span className="block truncate text-xs text-[#1F2A24]/60">
+                                <span className="block truncate text-xs text-[#1F2A24]/70">
                                     {user.email}
                                 </span>
                             </span>
                             <ChevronUp
-                                className={`h-4 w-4 shrink-0 text-[#1F2A24]/40 transition-transform ${
+                                className={`h-4 w-4 shrink-0 text-[#1F2A24]/65 transition-transform ${
                                     credentialsOpen ? '' : 'rotate-180'
                                 }`}
                             />
@@ -222,8 +248,8 @@ export default function EvimsAdminLayout({ children }) {
                         collapsed ? 'lg:justify-center lg:px-2' : ''
                     }`}
                 >
-                    <LogOut className="h-4 w-4 shrink-0" />
-                    <span className={collapsed ? 'lg:hidden' : ''}>
+                    <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className={collapsed ? 'lg:sr-only' : ''}>
                         Log Out
                     </span>
                 </Link>
@@ -233,12 +259,18 @@ export default function EvimsAdminLayout({ children }) {
 
     return (
         <div className="flex min-h-screen bg-[#FBF8F2]">
+            <a
+                href="#main-content"
+                className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+            >
+                Skip to content
+            </a>
             {/* Mobile top bar */}
             <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-[#1F2A24]/10 bg-white px-4 py-3 lg:hidden">
                 <div className="flex items-center gap-2.5">
                     <img
                         src="/images/logoevims.png"
-                        alt="evims-logo"
+                        alt=""
                         className="h-10 w-10 rounded-full object-cover"
                     />
                     <p className="font-serif text-base font-semibold text-[#1F2A24]">
@@ -246,9 +278,12 @@ export default function EvimsAdminLayout({ children }) {
                     </p>
                 </div>
                 <button
+                    type="button"
                     onClick={() => setMobileOpen(true)}
-                    className="text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                    className="-mr-2 rounded-md p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                     aria-label="Open menu"
+                    aria-expanded={mobileOpen}
+                    aria-controls="admin-sidebar"
                 >
                     <svg
                         width="24"
@@ -271,21 +306,27 @@ export default function EvimsAdminLayout({ children }) {
             {mobileOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+                    aria-hidden="true"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Sidebar: fixed drawer on mobile, static column on desktop */}
             <aside
+                id="admin-sidebar"
                 className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-shrink-0 flex-col overflow-hidden border-r border-[#1F2A24]/10 bg-white transition-all duration-200 ease-in-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:self-start ${
                     collapsed ? 'lg:w-20' : 'lg:w-64'
-                } ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                } ${mobileOpen ? 'visible translate-x-0' : 'invisible -translate-x-full lg:visible'}`}
             >
                 {SidebarContent}
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">
+            <main
+                id="main-content"
+                tabIndex={-1}
+                className="min-w-0 flex-1 overflow-y-auto pt-16 focus:outline-none lg:pt-0"
+            >
                 {children}
             </main>
         </div>

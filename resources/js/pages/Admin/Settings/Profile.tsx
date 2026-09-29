@@ -45,7 +45,7 @@ export default function Profile() {
 
             <AdminSettingsShell>
                 {props.flash?.success && (
-                    <div className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
+                    <div role="status" className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
                         {props.flash.success}
                     </div>
                 )}
@@ -55,7 +55,7 @@ export default function Profile() {
                     <h2 className="font-serif text-lg font-semibold text-[#1F2A24]">
                         Profile
                     </h2>
-                    <p className="mt-1 text-sm text-[#1F2A24]/60">
+                    <p className="mt-1 text-sm text-[#1F2A24]/70">
                         Update your name and email address
                     </p>
 
@@ -115,7 +115,7 @@ export default function Profile() {
                     <h2 className="font-serif text-lg font-semibold text-[#1F2A24]">
                         Delete account
                     </h2>
-                    <p className="mt-1 text-sm text-[#1F2A24]/60">
+                    <p className="mt-1 text-sm text-[#1F2A24]/70">
                         Delete your account and all of its resources
                     </p>
 

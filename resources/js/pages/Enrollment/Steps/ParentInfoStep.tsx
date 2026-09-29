@@ -3,9 +3,9 @@ import TextInput from '../Components/TextInput';
 export default function ParentInfoStep({ data, setData, errors }) {
     return (
         <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Parent / Guardian Information</h2>
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-4">Parent / Guardian Information</h2>
 
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-4">Father</h3>
+            <h3 className="text-sm font-semibold text-[#1F2A24]/75 mb-2 mt-4">Father</h3>
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <TextInput label="Last Name" name="father_last_name" value={data.father_last_name} onChange={setData} error={errors.father_last_name} />
                 <TextInput label="First Name" name="father_first_name" value={data.father_first_name} onChange={setData} error={errors.father_first_name} />
@@ -15,7 +15,7 @@ export default function ParentInfoStep({ data, setData, errors }) {
                 <TextInput label="Mobile No." name="father_mobile_no" value={data.father_mobile_no} onChange={setData} error={errors.father_mobile_no} />
             </div>
 
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-6">Mother</h3>
+            <h3 className="text-sm font-semibold text-[#1F2A24]/75 mb-2 mt-6">Mother</h3>
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <TextInput label="Maiden Last Name" name="mother_maiden_last_name" value={data.mother_maiden_last_name} onChange={setData} error={errors.mother_maiden_last_name} />
                 <TextInput label="First Name" name="mother_first_name" value={data.mother_first_name} onChange={setData} error={errors.mother_first_name} />

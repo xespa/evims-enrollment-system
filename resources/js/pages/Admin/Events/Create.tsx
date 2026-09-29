@@ -38,45 +38,48 @@ export default function Create() {
                             className="space-y-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
                         >
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                <label htmlFor="event-title" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                     Title *
                                 </label>
                                 <input
+                                    id="event-title"
                                     type="text"
                                     value={data.title}
                                     onChange={(e) =>
                                         setData('title', e.target.value)
                                     }
-                                    className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                    className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                 />
                                 {errors.title && (
-                                    <p className="mt-1 text-sm text-red-600">
+                                    <p className="mt-1 text-sm text-[#C6473B]">
                                         {errors.title}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                <label htmlFor="event-tag" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                     Tag
                                 </label>
                                 <input
+                                    id="event-tag"
                                     type="text"
                                     placeholder="e.g. Whole School, Grades 4-10"
                                     value={data.tag}
                                     onChange={(e) =>
                                         setData('tag', e.target.value)
                                     }
-                                    className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                    className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                 />
                             </div>
 
                             <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                    <label htmlFor="event-event_date" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                         Date *
                                     </label>
                                     <input
+                                    id="event-event_date"
                                         type="date"
                                         value={data.event_date}
                                         onChange={(e) =>
@@ -85,19 +88,20 @@ export default function Create() {
                                                 e.target.value,
                                             )
                                         }
-                                        className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                        className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                     />
                                     {errors.event_date && (
-                                        <p className="mt-1 text-sm text-red-600">
+                                        <p className="mt-1 text-sm text-[#C6473B]">
                                             {errors.event_date}
                                         </p>
                                     )}
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                    <label htmlFor="event-start_time" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                         Start Time
                                     </label>
                                     <input
+                                    id="event-start_time"
                                         type="text"
                                         placeholder="8:00 AM"
                                         value={data.start_time}
@@ -107,58 +111,62 @@ export default function Create() {
                                                 e.target.value,
                                             )
                                         }
-                                        className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                        className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                     />
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                    <label htmlFor="event-end_time" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                         End Time
                                     </label>
                                     <input
+                                    id="event-end_time"
                                         type="text"
                                         placeholder="12:00 NN"
                                         value={data.end_time}
                                         onChange={(e) =>
                                             setData('end_time', e.target.value)
                                         }
-                                        className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                        className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                <label htmlFor="event-location" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                     Location
                                 </label>
                                 <input
+                                    id="event-location"
                                     type="text"
                                     value={data.location}
                                     onChange={(e) =>
                                         setData('location', e.target.value)
                                     }
-                                    className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                    className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                 />
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                <label htmlFor="event-description" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                     Description
                                 </label>
                                 <textarea
+                                    id="event-description"
                                     rows={3}
                                     value={data.description}
                                     onChange={(e) =>
                                         setData('description', e.target.value)
                                     }
-                                    className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                    className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                                 />
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                <label htmlFor="event-image" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
                                     Image (JPG/PNG/WebP, max 4MB)
                                 </label>
                                 <input
+                                    id="event-image"
                                     type="file"
                                     accept=".jpg,.jpeg,.png,.webp"
                                     onChange={(e) =>
@@ -170,7 +178,7 @@ export default function Create() {
                                     className="block w-full text-sm text-[#1F2A24]/70 file:mr-4 file:rounded-full file:border-0 file:bg-[#2F6F4E]/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#2F6F4E] hover:file:bg-[#2F6F4E]/15"
                                 />
                                 {errors.image && (
-                                    <p className="mt-1 text-sm text-red-600">
+                                    <p className="mt-1 text-sm text-[#C6473B]">
                                         {errors.image}
                                     </p>
                                 )}

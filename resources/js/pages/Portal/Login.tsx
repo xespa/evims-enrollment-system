@@ -20,7 +20,7 @@ export default function Login() {
                     <h1 className="mt-3 font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
                         Log In to Your Account
                     </h1>
-                    <p className="mt-1 text-sm text-[#1F2A24]/60">
+                    <p className="mt-1 text-sm text-[#1F2A24]/70">
                         Track your application status and manage tuition payments.
                     </p>
                 </div>
@@ -69,7 +69,7 @@ export default function Login() {
                     </Form>
                 </div>
 
-                <p className="mt-6 text-center text-sm text-[#1F2A24]/60">
+                <p className="mt-6 text-center text-sm text-[#1F2A24]/70">
                     Don't have an account?{' '}
                     <TextLink href={route('portal.register')} className="font-medium text-[#2F6F4E] hover:text-[#25573E]">
                         Register

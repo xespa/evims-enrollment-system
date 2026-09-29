@@ -28,7 +28,7 @@ export default function Show({ enrollment }) {
     return (
         <>
             {props.flash?.success && (
-                <div className="mb-4 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div role="status" className="mb-4 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
                     {props.flash.success}
                 </div>
             )}

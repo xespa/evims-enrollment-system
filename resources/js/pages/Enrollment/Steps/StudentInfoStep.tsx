@@ -78,7 +78,7 @@ export default function StudentInfoStep({
 
     return (
         <div>
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+            <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
                 Student Information
             </h2>
 

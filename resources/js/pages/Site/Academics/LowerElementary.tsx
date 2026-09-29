@@ -209,7 +209,7 @@ export default function LowerElementary() {
                             <div key={stat.label} className="flex flex-col items-start gap-2">
                                 <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
                                 <dt className="text-2xl font-semibold text-[#1F2A24]">{stat.value}</dt>
-                                <dd className="text-xs text-[#1F2A24]/60">{stat.label}</dd>
+                                <dd className="text-xs text-[#1F2A24]/70">{stat.label}</dd>
                             </div>
                         ))}
                     </dl>
@@ -317,7 +317,7 @@ export default function LowerElementary() {
                                 <Quote className="h-6 w-6 text-[#E8A33D]" />
                                 <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">{testimonial.quote}</p>
                                 <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">{testimonial.name}</p>
-                                <p className="text-xs text-[#1F2A24]/60">{testimonial.relation}</p>
+                                <p className="text-xs text-[#1F2A24]/70">{testimonial.relation}</p>
                             </div>
                         ))}
                     </div>

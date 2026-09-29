@@ -110,7 +110,7 @@ export default function Home({ gradeLevels }) {
                                 <dt className="text-2xl font-semibold text-[#1F2A24]">
                                     13
                                 </dt>
-                                <dd className="text-xs text-[#1F2A24]/60">
+                                <dd className="text-xs text-[#1F2A24]/70">
                                     Grade levels, Nursery–10
                                 </dd>
                             </div>
@@ -118,7 +118,7 @@ export default function Home({ gradeLevels }) {
                                 <dt className="text-2xl font-semibold text-[#1F2A24]">
                                     3
                                 </dt>
-                                <dd className="text-xs text-[#1F2A24]/60">
+                                <dd className="text-xs text-[#1F2A24]/70">
                                     Session options
                                 </dd>
                             </div>
@@ -126,7 +126,7 @@ export default function Home({ gradeLevels }) {
                                 <dt className="text-2xl font-semibold text-[#1F2A24]">
                                     2
                                 </dt>
-                                <dd className="text-xs text-[#1F2A24]/60">
+                                <dd className="text-xs text-[#1F2A24]/70">
                                     Ways to pay tuition
                                 </dd>
                             </div>
@@ -165,7 +165,7 @@ export default function Home({ gradeLevels }) {
                                 key={item.title}
                                 className="rounded-2xl border border-[#1F2A24]/10 p-6"
                             >
-                                <p className="text-xs font-semibold text-[#E8A33D] uppercase">
+                                <p className="text-xs font-semibold text-[#a4670f] uppercase">
                                     {item.label}
                                 </p>
                                 <h3 className="mt-2 font-serif text-xl font-semibold text-[#1F2A24]">
