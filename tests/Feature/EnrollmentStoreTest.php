@@ -58,7 +58,7 @@ test('submitting the admission form creates the full enrollment record set', fun
     Storage::fake('public');
     actingAsEnrollee();
 
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
@@ -109,7 +109,7 @@ test('documents are optional at submission', function () {
     Storage::fake('public');
     actingAsEnrollee();
 
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel);
@@ -131,7 +131,7 @@ test('documents are optional at submission', function () {
 
 test('document uploads are validated for file type', function () {
     actingAsEnrollee();
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
@@ -146,7 +146,7 @@ test('document uploads are validated for file type', function () {
 
 test('a second application for the same school year is rejected while the first is still active', function () {
     actingAsEnrollee();
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
@@ -167,7 +167,7 @@ test('a second application for the same school year is rejected while the first 
 
 test('a student can reapply for the same school year after their prior application was rejected', function () {
     actingAsEnrollee();
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
@@ -186,7 +186,7 @@ test('a student can reapply for the same school year after their prior applicati
 });
 
 test('guests are sent to create an account instead of submitting directly', function () {
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel);
@@ -201,7 +201,7 @@ test('guests are sent to create an account instead of submitting directly', func
 });
 
 test('registering after being redirected mid-application returns the user to finish submitting', function () {
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel);
@@ -224,7 +224,7 @@ test('registering after being redirected mid-application returns the user to fin
 
 test('a student can reapply for the same school year after their prior application was cancelled', function () {
     actingAsEnrollee();
-    $gradeLevel = GradeLevel::factory()->create(['tuition_fee' => 30000]);
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
@@ -240,4 +240,28 @@ test('a student can reapply for the same school year after their prior applicati
     $this->post(route('enrollment.store'), $payload)->assertRedirect();
 
     expect(Enrollment::count())->toBe(2);
+});
+
+test('the billed total and installments follow the grade level fee breakdown', function () {
+    actingAsEnrollee();
+
+    // Grade 1 fees from the S.Y. 2026-2027 flyer.
+    $gradeLevel = GradeLevel::factory()->create([
+        'registration_fee' => 1725,
+        'miscellaneous_fee' => 6325,
+        'monthly_tuition' => 2070,
+        'monthly_laboratory_fee' => 690,
+        'books_fee' => 5099,
+    ]);
+    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('enrollment.store'), validEnrollmentPayload($gradeLevel, ['payment_option' => 'MONTHLY']));
+
+    $billingContract = Enrollment::first()->billingContract;
+    $installments = $billingContract->installments;
+
+    expect((float) $billingContract->total_fee)->toBe(40749.0)
+        ->and($installments)->toHaveCount(10)
+        ->and($installments->pluck('amount_due')->map(fn ($amount) => (float) $amount)->unique()->values()->all())->toBe([4074.9])
+        ->and(round($installments->sum('amount_due'), 2))->toBe(40749.0);
 });

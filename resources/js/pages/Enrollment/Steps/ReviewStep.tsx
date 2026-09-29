@@ -1,3 +1,9 @@
+import {
+    computeInstallments,
+    formatCurrency,
+    PAYMENT_OPTIONS,
+} from '../Components/fees';
+
 function ReviewRow({ label, value }) {
     return (
         <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
@@ -8,13 +14,25 @@ function ReviewRow({ label, value }) {
 }
 
 export default function ReviewStep({ data, gradeLevels }) {
-    const gradeName = gradeLevels.find(
+    const selectedGrade = gradeLevels.find(
         (g) => String(g.id) === String(data.grade_level_id),
-    )?.name;
-    const subjectNames = (
-        gradeLevels.find((g) => String(g.id) === String(data.grade_level_id))
-            ?.subjects ?? []
-    )
+    );
+    const gradeName = selectedGrade?.name;
+    const plan =
+        selectedGrade && data.payment_option
+            ? computeInstallments(
+                  selectedGrade.tuition_fee,
+                  data.payment_option,
+              )
+            : null;
+    const planSummary = !plan
+        ? null
+        : plan.count === 1
+          ? `1 payment of ${formatCurrency(plan.last)}`
+          : plan.regular === plan.last
+            ? `${plan.count} payments of ${formatCurrency(plan.regular)}`
+            : `${plan.count - 1} × ${formatCurrency(plan.regular)} + ${formatCurrency(plan.last)}`;
+    const subjectNames = (selectedGrade?.subjects ?? [])
         .filter((s) => (data.subject_ids ?? []).includes(s.id))
         .map((s) => s.name)
         .join(', ');
@@ -84,7 +102,29 @@ export default function ReviewStep({ data, gradeLevels }) {
                 <h3 className="mb-1 text-sm font-semibold text-gray-600">
                     Billing
                 </h3>
-                <ReviewRow label="Payment Option" value={data.payment_option} />
+                <ReviewRow
+                    label="Payment Option"
+                    value={PAYMENT_OPTIONS[data.payment_option]?.label}
+                />
+                <ReviewRow label="Payment Schedule" value={planSummary} />
+                <ReviewRow
+                    label="Payment Method"
+                    value={
+                        { COUNTER: 'School Counter', GCASH: 'GCash' }[
+                            data.payment_channel
+                        ]
+                    }
+                />
+                <div className="flex justify-between py-2 text-sm">
+                    <span className="font-semibold text-gray-900">
+                        Total Amount to Pay
+                    </span>
+                    <span className="text-base font-bold text-blue-700">
+                        {selectedGrade
+                            ? formatCurrency(selectedGrade.tuition_fee)
+                            : '—'}
+                    </span>
+                </div>
             </div>
         </div>
     );

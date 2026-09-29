@@ -1,9 +1,11 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { router } from '@inertiajs/react'
-
+import { router } from '@inertiajs/react';
 
 function formatCurrency(value) {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+    }).format(value);
 }
 
 export default function Show({ enrollment }) {
@@ -19,7 +21,9 @@ export default function Show({ enrollment }) {
     };
 
     const installmentPaid = (installment) =>
-        installment.payments.filter((p) => p.status === 'COMPLETED').reduce((s, p) => s + Number(p.amount), 0);
+        installment.payments
+            .filter((p) => p.status === 'COMPLETED')
+            .reduce((s, p) => s + Number(p.amount), 0);
 
     return (
         <>
@@ -30,12 +34,58 @@ export default function Show({ enrollment }) {
             )}
 
             <Head title="Tuition Payments" />
-            <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <div className="min-h-screen bg-gray-50 px-4 py-8">
                 <div className="mx-auto max-w-5xl">
-                    <h1 className="mb-1 text-2xl font-bold text-gray-900">Tuition Payments</h1>
+                    <h1 className="mb-1 text-2xl font-bold text-gray-900">
+                        Tuition Payments
+                    </h1>
                     <p className="mb-6 text-sm text-gray-500">
-                        {enrollment.student.first_name} {enrollment.student.last_name} — Reference #{enrollment.id}
+                        {enrollment.student.first_name}{' '}
+                        {enrollment.student.last_name} — Reference #
+                        {enrollment.id}
                     </p>
+
+                    {enrollment.billing_contract &&
+                        (() => {
+                            const totalFee = Number(
+                                enrollment.billing_contract.total_fee,
+                            );
+                            const totalPaid = installments.reduce(
+                                (s, i) => s + installmentPaid(i),
+                                0,
+                            );
+
+                            return (
+                                <div className="mb-4 grid grid-cols-3 gap-3 rounded-lg bg-white p-4 text-center shadow-sm">
+                                    <div>
+                                        <p className="text-xs text-gray-500">
+                                            Total Amount
+                                        </p>
+                                        <p className="text-lg font-bold text-gray-900">
+                                            {formatCurrency(totalFee)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">
+                                            Paid
+                                        </p>
+                                        <p className="text-lg font-bold text-green-700">
+                                            {formatCurrency(totalPaid)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">
+                                            Balance
+                                        </p>
+                                        <p className="text-lg font-bold text-blue-700">
+                                            {formatCurrency(
+                                                totalFee - totalPaid,
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
                     {errorMsg && (
                         <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -46,16 +96,27 @@ export default function Show({ enrollment }) {
                     <div className="divide-y divide-gray-100 rounded-lg bg-white shadow-sm">
                         {installments.map((installment) => {
                             const paid = installmentPaid(installment);
-                            const remaining = Number(installment.amount_due) - paid;
+                            const remaining =
+                                Number(installment.amount_due) - paid;
 
                             return (
-                                <div key={installment.id} className="flex items-center justify-between p-4">
+                                <div
+                                    key={installment.id}
+                                    className="flex items-center justify-between p-4"
+                                >
                                     <div>
                                         <p className="text-sm font-medium text-gray-800">
-                                            Installment #{installment.installment_number}
+                                            Installment #
+                                            {installment.installment_number}
                                         </p>
-                                        <p className="text-xs text-gray-500">Due {installment.due_date}</p>
-                                        <p className="text-sm text-gray-700">{formatCurrency(installment.amount_due)}</p>
+                                        <p className="text-xs text-gray-500">
+                                            Due {installment.due_date}
+                                        </p>
+                                        <p className="text-sm text-gray-700">
+                                            {formatCurrency(
+                                                installment.amount_due,
+                                            )}
+                                        </p>
                                     </div>
 
                                     {installment.status === 'PAID' ? (
@@ -64,11 +125,14 @@ export default function Show({ enrollment }) {
                                         </span>
                                     ) : (
                                         <button
-                                            onClick={() => payWithGcash(installment)}
+                                            onClick={() =>
+                                                payWithGcash(installment)
+                                            }
                                             disabled={processing}
                                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                                         >
-                                            Pay {formatCurrency(remaining)} via GCash
+                                            Pay {formatCurrency(remaining)} via
+                                            GCash
                                         </button>
                                     )}
                                 </div>

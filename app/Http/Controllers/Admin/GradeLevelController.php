@@ -30,11 +30,15 @@ class GradeLevelController extends Controller
     public function update(Request $request, GradeLevel $gradeLevel)
     {
         $validated = $request->validate([
-            'tuition_fee' => ['required', 'numeric', 'min:0'],
+            'registration_fee' => ['required', 'numeric', 'min:0'],
+            'miscellaneous_fee' => ['required', 'numeric', 'min:0'],
+            'monthly_tuition' => ['required', 'numeric', 'min:0'],
+            'monthly_laboratory_fee' => ['required', 'numeric', 'min:0'],
+            'books_fee' => ['required', 'numeric', 'min:0'],
         ]);
 
         $gradeLevel->update($validated);
 
-        return back()->with('success', "{$gradeLevel->name}'s tuition fee updated.");
+        return back()->with('success', "{$gradeLevel->name}'s fees updated.");
     }
 }
