@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
@@ -89,7 +90,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'destroy'])->name('enrollments.destroy');
 
     Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');
+    Route::get('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'show'])->name('gradeLevels.show');
     Route::patch('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'update'])->name('gradeLevels.update');
+    Route::post('/grade-levels/{gradeLevel}/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+    Route::patch('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
+    Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
 
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');

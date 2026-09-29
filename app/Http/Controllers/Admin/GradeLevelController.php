@@ -16,6 +16,17 @@ class GradeLevelController extends Controller
         ]);
     }
 
+    public function show(GradeLevel $gradeLevel)
+    {
+        return Inertia::render('Admin/GradeLevels/Show', [
+            'gradeLevel' => $gradeLevel->only(['id', 'name', 'tuition_fee']),
+            'subjects' => $gradeLevel->subjects()
+                ->withCount('enrollments')
+                ->orderBy('name')
+                ->get(['id', 'grade_level_id', 'name', 'code']),
+        ]);
+    }
+
     public function update(Request $request, GradeLevel $gradeLevel)
     {
         $validated = $request->validate([

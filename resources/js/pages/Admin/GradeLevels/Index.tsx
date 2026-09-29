@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 function formatCurrency(value) {
@@ -36,17 +36,18 @@ export default function Index({ gradeLevels }) {
 
     return (
         <>
-            <Head title="Tuition Fees" />
+            <Head title="Grade Levels" />
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="max-w-2xl">
                         <h1 className="mb-1 font-serif text-2xl font-semibold text-[#1F2A24]">
-                            Tuition Fees
+                            Grade Levels
                         </h1>
                         <p className="mb-6 text-sm text-[#1F2A24]/60">
-                            Set the total school-year tuition fee per grade
-                            level. This is what parents see during enrollment
-                            and what determines their installment schedule.
+                            Set the total school-year tuition fee and manage the
+                            subjects offered per grade level. This is what
+                            parents see during enrollment and what determines
+                            their installment schedule.
                         </p>
 
                         {props.flash?.success && (
@@ -65,9 +66,16 @@ export default function Index({ gradeLevels }) {
                                         <p className="text-sm font-medium text-[#1F2A24]">
                                             {gradeLevel.name}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <Link
+                                            href={route(
+                                                'admin.gradeLevels.show',
+                                                gradeLevel.id,
+                                            )}
+                                            className="text-xs text-[#2F6F4E] hover:underline"
+                                        >
                                             {gradeLevel.subjects_count} subjects
-                                        </p>
+                                            · Manage
+                                        </Link>
                                     </div>
 
                                     {editingId === gradeLevel.id ? (

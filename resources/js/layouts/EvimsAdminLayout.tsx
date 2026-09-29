@@ -1,8 +1,8 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    Banknote,
     Calendar,
     ChevronUp,
+    GraduationCap,
     LayoutDashboard,
     LogOut,
     PanelLeftClose,
@@ -16,7 +16,11 @@ const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
     { label: 'Students', route: 'admin.students.index', icon: Users },
     { label: 'Events', route: 'admin.events.index', icon: Calendar },
-    { label: 'Tuition Fees', route: 'admin.gradeLevels.index', icon: Banknote },
+    {
+        label: 'Grade Levels',
+        route: 'admin.gradeLevels.index',
+        icon: GraduationCap,
+    },
     {
         label: 'Settings',
         route: 'admin.settings.profile.edit',
