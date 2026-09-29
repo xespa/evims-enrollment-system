@@ -33,9 +33,9 @@ class Installment extends Model
         $paid = $this->totalPaid();
 
         $this->status = match (true) {
+            $paid >= (float) $this->amount_due => 'PAID',
             $paid <= 0 => 'UNPAID',
-            $paid < $this->amount_due => 'PARTIALLY_PAID',
-            default => 'PAID',
+            default => 'PARTIALLY_PAID',
         };
 
         $this->save();

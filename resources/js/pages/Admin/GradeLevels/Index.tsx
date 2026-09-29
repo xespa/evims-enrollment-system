@@ -165,6 +165,16 @@ export default function Index({ gradeLevels }) {
                                                 ))}
                                             </div>
 
+                                            <p className="mt-3 rounded-lg bg-[#E8A33D]/10 px-3 py-2 text-xs text-[#1F2A24]/80">
+                                                Saving also updates the unpaid
+                                                installments of this school
+                                                year's applications for{' '}
+                                                {gradeLevel.name}, so their next
+                                                payment (including GCash) uses
+                                                the new fees. Payments already
+                                                made are not changed.
+                                            </p>
+
                                             <div className="mt-3 flex items-center justify-between border-t border-[#1F2A24]/10 pt-3">
                                                 <p className="text-sm text-[#1F2A24]">
                                                     Total:{' '}

@@ -64,4 +64,16 @@ class Enrollment extends Model
     {
         return $this->cancelled_at !== null;
     }
+
+    /**
+     * The PH school year runs roughly June–March, so before June we're still
+     * in the one that started the previous calendar year (e.g. "2026-2027").
+     * Mirrors currentSchoolYearStart() in the enrollment form.
+     */
+    public static function currentSchoolYear(): string
+    {
+        $startYear = now()->month >= 6 ? now()->year : now()->year - 1;
+
+        return $startYear.'-'.($startYear + 1);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GradeLevel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class GradeLevelController extends Controller
@@ -37,8 +38,21 @@ class GradeLevelController extends Controller
             'books_fee' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $gradeLevel->update($validated);
+        $repricedCount = DB::transaction(function () use ($gradeLevel, $validated) {
+            $gradeLevel->update($validated);
 
-        return back()->with('success', "{$gradeLevel->name}'s fees updated.");
+            return $gradeLevel->repriceOpenBillingContracts();
+        });
+
+        $message = "{$gradeLevel->name}'s fees updated.";
+
+        if ($repricedCount > 0) {
+            $message .= ' '.trans_choice(
+                ':count unpaid bill now uses the new fees.|:count unpaid bills now use the new fees.',
+                $repricedCount,
+            );
+        }
+
+        return back()->with('success', $message);
     }
 }

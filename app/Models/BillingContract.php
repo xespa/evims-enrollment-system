@@ -51,17 +51,70 @@ class BillingContract extends Model
         $intervalMonths = intdiv(10, $count) ?: 10;
         $startDate = Carbon::create(now()->year, 6, 15);
 
-        for ($i = 1; $i <= $count; $i++) {
-            $amount = $i === $count
-                ? $this->total_fee - ($amountPerInstallment * ($count - 1))
-                : $amountPerInstallment;
-
+        foreach (self::splitIntoInstallments((float) $this->total_fee, $count) as $number => $amount) {
             $this->installments()->create([
-                'installment_number' => $i,
+                'installment_number' => $number,
                 'amount_due' => $amount,
-                'due_date' => $startDate->copy()->addMonths(($i - 1) * $intervalMonths),
+                'due_date' => $startDate->copy()->addMonths(($number - 1) * $intervalMonths),
                 'status' => 'UNPAID',
             ]);
         }
+    }
+
+    /**
+     * Re-prices the installments that aren't fully paid yet to what they
+     * would be under a new total fee, using the same split as a brand-new
+     * contract. Fully paid installments and collected payments are left
+     * untouched. Since a GCash checkout charges amount_due minus what's
+     * already paid, the next PayMongo charge uses the new price.
+     *
+     * Returns whether any installment amount actually changed.
+     */
+    public function repriceTo(float $newTotalFee): bool
+    {
+        $installments = $this->installments()->orderBy('installment_number')->get();
+        $newAmounts = self::splitIntoInstallments($newTotalFee, $installments->count());
+        $changed = false;
+
+        foreach ($installments as $installment) {
+            if ($installment->status === 'PAID') {
+                continue;
+            }
+
+            // Never bill below what's already been paid on this installment
+            // (possible when fees go down after a partial payment).
+            $newAmount = max($newAmounts[$installment->installment_number] ?? 0.0, $installment->totalPaid());
+
+            if (round((float) $installment->amount_due, 2) !== round($newAmount, 2)) {
+                $installment->amount_due = $newAmount;
+                $installment->refreshStatus();
+                $changed = true;
+            }
+        }
+
+        $this->update(['total_fee' => $this->installments()->sum('amount_due')]);
+
+        return $changed;
+    }
+
+    /**
+     * Splits a total into equal installments keyed by installment number,
+     * with the last one absorbing any rounding difference.
+     *
+     * @return array<int, float>
+     */
+    protected static function splitIntoInstallments(float $total, int $count): array
+    {
+        $count = max(1, $count);
+        $amountPerInstallment = round($total / $count, 2);
+        $amounts = [];
+
+        for ($number = 1; $number <= $count; $number++) {
+            $amounts[$number] = $number === $count
+                ? round($total - ($amountPerInstallment * ($count - 1)), 2)
+                : $amountPerInstallment;
+        }
+
+        return $amounts;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -52,6 +53,27 @@ class GradeLevel extends Model
             + (float) $this->miscellaneous_fee
             + (float) $this->books_fee
             + self::BILLABLE_MONTHS * ((float) $this->monthly_tuition + (float) $this->monthly_laboratory_fee);
+    }
+
+    /**
+     * Applies this grade level's current total fee to the unpaid installments
+     * of its active applications for the current (or a later) school year.
+     * Cancelled, rejected, and past-school-year applications keep their bill.
+     *
+     * Returns how many billing contracts were re-priced.
+     */
+    public function repriceOpenBillingContracts(): int
+    {
+        return BillingContract::query()
+            ->whereHas('enrollment', fn (Builder $query) => $query
+                ->where('grade_level_id', $this->id)
+                ->whereNull('cancelled_at')
+                ->where('enrollment_status', '!=', 'REJECTED')
+                ->where('school_year', '>=', Enrollment::currentSchoolYear()))
+            ->whereHas('installments', fn (Builder $query) => $query->where('status', '!=', 'PAID'))
+            ->get()
+            ->filter(fn (BillingContract $contract) => $contract->repriceTo((float) $this->tuition_fee))
+            ->count();
     }
 
     public function subjects()
