@@ -57,12 +57,15 @@ Route::post('/admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])
 Route::middleware('signed')->group(function () {
     Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
     Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
+
+    // The GCash return URLs are signed when we hand them to PayMongo, which
+    // redirects to them unchanged — so they can safely link to the payment page.
+    Route::get('/payments/{enrollment}/{installment}/success', [PaymentController::class, 'callbackSuccess'])->name('payments.callback.success');
+    Route::get('/payments/{enrollment}/{installment}/failed', [PaymentController::class, 'callbackFailed'])->name('payments.callback.failed');
 });
 
-// PayMongo callback + webhook stay unsigned — they're driven by PayMongo's own
-// redirect/webhook, not something we can attach our signature to.
-Route::get('/payments/{enrollment}/{installment}/success', [PaymentController::class, 'callbackSuccess'])->name('payments.callback.success');
-Route::get('/payments/{enrollment}/{installment}/failed', [PaymentController::class, 'callbackFailed'])->name('payments.callback.failed');
+// The webhook stays unsigned: PayMongo calls it directly, and it's verified by
+// its own Paymongo-Signature HMAC instead.
 Route::post('/paymongo/webhook', [PaymentController::class, 'webhook'])->name('paymongo.webhook');
 Route::get('/payments/sandbox/{payment}/checkout', [PaymentController::class, 'sandboxCheckout'])->name('payments.sandbox.checkout');
 Route::post('/payments/sandbox/{payment}/confirm', [PaymentController::class, 'sandboxConfirm'])->name('payments.sandbox.confirm');
