@@ -16,12 +16,22 @@ class GradeLevelFactory extends Factory
     public function definition(): array
     {
         return [
+            // Nursery has its own rules (no LRN), so it's only ever picked on
+            // purpose, via nursery(), never at random.
             'name' => fake()->unique()->randomElement([
-                'Nursery', 'Pre-K 1', 'Pre-K 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+                'Pre-K 1', 'Pre-K 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
                 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
             ]),
-            'level_order' => fake()->unique()->numberBetween(0, 12),
+            'level_order' => fake()->unique()->numberBetween(1, 12),
         ];
+    }
+
+    /**
+     * Nursery: its students are new to school and never have an LRN.
+     */
+    public function nursery(): static
+    {
+        return $this->state(fn () => ['name' => 'Nursery', 'level_order' => 0]);
     }
 
     /**

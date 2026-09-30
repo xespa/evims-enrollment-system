@@ -425,3 +425,55 @@ test('mobile numbers are optional', function () {
 
     expect(Enrollment::sole()->student->parentProfile->father_mobile_no)->toBeNull();
 });
+
+test('nursery applications must be No LRN', function (array $overrides, string $field, string $message) {
+    actingAsEnrollee();
+    $nursery = GradeLevel::factory()->nursery()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $nursery->curricula()->first()->id, 'name' => 'Numeracy']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($nursery, $overrides))
+        ->assertSessionHasErrors([$field => $message]);
+
+    expect(Enrollment::count())->toBe(0);
+})->with([
+    'with LRN' => [
+        ['student_type' => 'WITH_LRN', 'lrn' => '45250112345678'],
+        'student_type',
+        'Nursery students don’t have an LRN yet, so the student type must be No LRN.',
+    ],
+    'returnee' => [
+        ['student_type' => 'RETURNEE'],
+        'student_type',
+        'Nursery students don’t have an LRN yet, so the student type must be No LRN.',
+    ],
+    'no LRN but one filled in anyway' => [
+        ['student_type' => 'NO_LRN', 'lrn' => '45250112345678'],
+        'lrn',
+        'Nursery students don’t have an LRN yet. Leave this blank.',
+    ],
+]);
+
+test('nursery applications with No LRN go through', function () {
+    actingAsEnrollee();
+    $nursery = GradeLevel::factory()->nursery()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $nursery->curricula()->first()->id, 'name' => 'Numeracy']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($nursery, ['student_type' => 'NO_LRN', 'lrn' => null]))
+        ->assertSessionHasNoErrors();
+
+    expect(Enrollment::sole()->student_type)->toBe('NO_LRN');
+});
+
+test('pre-K students can apply with an LRN', function (string $gradeName) {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create(['name' => $gradeName]);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Numeracy']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'student_type' => 'WITH_LRN',
+        'lrn' => '45250112345678',
+    ]))->assertSessionHasNoErrors();
+
+    expect(Enrollment::sole()->student_type)->toBe('WITH_LRN')
+        ->and(Enrollment::sole()->student->lrn)->toBe('45250112345678');
+})->with(['Pre-K 1', 'Pre-K 2']);

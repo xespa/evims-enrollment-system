@@ -1,12 +1,16 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 
-// Pre-Elementary levels (no LRN yet), with the age each one is for.
+// Pre-Elementary levels, with the age each one is for.
 const PRE_ELEMENTARY_AGES = {
     Nursery: 3,
     'Pre-K 1': 4,
     'Pre-K 2': 5,
 };
+
+// Only Nursery students are always new to school, so they never have an
+// LRN yet. Must match StoreEnrollmentRequest::NO_LRN_GRADE_LEVEL.
+const NO_LRN_GRADE_LEVEL = 'Nursery';
 
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return '';
@@ -53,16 +57,26 @@ export default function StudentInfoStep({
         }));
     };
 
+    const gradeName = (id) =>
+        gradeLevels.find((g) => String(g.id) === String(id))?.name;
+    const isNursery = gradeName(data.grade_level_id) === NO_LRN_GRADE_LEVEL;
+
     const handleGradeLevelChange = (name, value) => {
-        const selected = gradeLevels.find(
-            (g) => String(g.id) === String(value),
-        );
-        const isPreElementary = selected?.name in PRE_ELEMENTARY_AGES;
+        const wasNursery =
+            gradeName(data.grade_level_id) === NO_LRN_GRADE_LEVEL;
+        const becomesNursery = gradeName(value) === NO_LRN_GRADE_LEVEL;
 
         setData((prevData) => ({
             ...prevData,
             grade_level_id: value,
-            student_type: isPreElementary ? 'NO_LRN' : prevData.student_type,
+            student_type: becomesNursery
+                ? 'NO_LRN'
+                : // Leaving Nursery: the "No LRN" it set was automatic, so
+                  // make the parent choose for the new grade level.
+                  wasNursery
+                  ? ''
+                  : prevData.student_type,
+            lrn: becomesNursery ? '' : prevData.lrn,
         }));
     };
 
@@ -80,6 +94,12 @@ export default function StudentInfoStep({
                     onChange={setData}
                     error={errors.student_type}
                     required
+                    disabled={isNursery}
+                    hint={
+                        isNursery
+                            ? 'Nursery students don’t have an LRN yet.'
+                            : null
+                    }
                     options={[
                         { value: 'NO_LRN', label: 'No LRN' },
                         { value: 'WITH_LRN', label: 'With LRN' },

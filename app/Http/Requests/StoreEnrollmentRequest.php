@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\BillingContract;
 use App\Models\Curriculum;
+use App\Models\GradeLevel;
 use App\Models\Student;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,6 +14,12 @@ use Illuminate\Validation\Rule;
 class StoreEnrollmentRequest extends FormRequest
 {
     private const MOBILE_NUMBER_FIELDS = ['father_mobile_no', 'mother_mobile_no'];
+
+    /**
+     * The only grade level whose students never have an LRN yet (they're new
+     * to school). Must match NO_LRN_GRADE_LEVEL in StudentInfoStep.
+     */
+    public const NO_LRN_GRADE_LEVEL = 'Nursery';
 
     public function authorize(): bool
     {
@@ -95,6 +102,14 @@ class StoreEnrollmentRequest extends FormRequest
             ->first();
     }
 
+    private function isForNoLrnGradeLevel(): bool
+    {
+        $gradeLevelId = $this->input('grade_level_id');
+
+        return is_numeric($gradeLevelId)
+            && GradeLevel::whereKey($gradeLevelId)->value('name') === self::NO_LRN_GRADE_LEVEL;
+    }
+
     public function rules(): array
     {
         $existingStudentId = $this->resolveExistingStudentId();
@@ -126,8 +141,24 @@ class StoreEnrollmentRequest extends FormRequest
         return [
             // Student — 'lrn' is intentionally NOT unique anymore. A matching LRN
             // means "this is the same returning student," not a validation error.
-            'student_type' => ['required', 'in:NO_LRN,WITH_LRN,RETURNEE'],
-            'lrn' => ['nullable', 'digits:14'],
+            'student_type' => [
+                'required',
+                'in:NO_LRN,WITH_LRN,RETURNEE',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if ($value !== 'NO_LRN' && $this->isForNoLrnGradeLevel()) {
+                        $fail('Nursery students don’t have an LRN yet, so the student type must be No LRN.');
+                    }
+                },
+            ],
+            'lrn' => [
+                'nullable',
+                'digits:14',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (filled($value) && $this->isForNoLrnGradeLevel()) {
+                        $fail('Nursery students don’t have an LRN yet. Leave this blank.');
+                    }
+                },
+            ],
             'psa_birth_cert_no' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
