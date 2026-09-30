@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -58,6 +60,36 @@ class Enrollment extends Model
     public function enrolleeUser()
     {
         return $this->belongsTo(EnrolleeUser::class);
+    }
+
+    /**
+     * Adds a boolean `parent_email_verified` attribute: whether the parent
+     * account behind this application has confirmed its email address.
+     * Applications are accepted before verification, so the admin needs this
+     * to spot a mistyped or unreachable address before approving.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeWithParentEmailVerified(Builder $query): void
+    {
+        $query->withExists(self::parentEmailVerifiedExists());
+    }
+
+    public function loadParentEmailVerified(): static
+    {
+        return $this->loadExists(self::parentEmailVerifiedExists());
+    }
+
+    /**
+     * @return array<string, Closure(Builder<EnrolleeUser>): void>
+     */
+    private static function parentEmailVerifiedExists(): array
+    {
+        return [
+            'enrolleeUser as parent_email_verified' => function (Builder $query): void {
+                $query->whereNotNull('email_verified_at');
+            },
+        ];
     }
 
     public function isCancelled(): bool

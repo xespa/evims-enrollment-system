@@ -523,6 +523,24 @@ export default function Show({ enrollment }) {
                         </span>
                     </div>
 
+                    {!enrollment.parent_email_verified && (
+                        <div
+                            role="status"
+                            className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                        >
+                            <span className="font-semibold">
+                                Email not verified.
+                            </span>{' '}
+                            The parent hasn't confirmed{' '}
+                            <span className="font-medium">
+                                {enrollment.email}
+                            </span>{' '}
+                            yet, so status emails may not reach them and they
+                            can't open the portal. Consider confirming their
+                            contact details before approving.
+                        </div>
+                    )}
+
                     {/* Approve/Reject actions */}
                     <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                         <button

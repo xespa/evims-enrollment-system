@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\OfficeVerification;
 use App\Models\Subject;
+use App\Models\User;
 use App\Models\VitalInformation;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -200,18 +201,21 @@ test('guests are sent to create an account instead of submitting directly', func
     expect(Enrollment::count())->toBe(0);
 });
 
-test('registering after being redirected mid-application returns the user to finish submitting', function () {
+test('a guest application is submitted as soon as they register', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
-    $payload = validEnrollmentPayload($gradeLevel);
-
-    // First attempt as a guest — bounced to registration, "intended" URL saved.
-    $this->post(route('admission.store'), $payload);
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'form_138' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
+    ]));
     expect(Enrollment::count())->toBe(0);
 
-    // Registering should send them back to the admission page, not the
-    // verification notice, so they can pick up where they left off.
+    $this->get(route('portal.register'))
+        ->assertInertia(fn ($page) => $page->where('hasPendingApplication', true));
+
     $response = $this->post(route('portal.register.store'), [
         'name' => 'Juan Dela Cruz',
         'email' => 'parent@example.com',
@@ -219,7 +223,95 @@ test('registering after being redirected mid-application returns the user to fin
         'password_confirmation' => 'password123',
     ]);
 
-    $response->assertRedirect(route('admission.create'));
+    $enrollment = Enrollment::with('student', 'officeVerification')->sole();
+    $response->assertRedirect(route('admission.success', $enrollment->id));
+
+    expect($enrollment->enrollee_user_id)->toBe(EnrolleeUser::where('email', 'parent@example.com')->value('id'))
+        ->and($enrollment->enrollment_status)->toBe('PENDING')
+        ->and($enrollment->student->first_name)->toBe('Juan');
+
+    // The upload survives the detour through registration, moving from the
+    // private holding area onto the public disk like any other document.
+    Storage::disk('public')->assertExists($enrollment->officeVerification->form_138_path);
+    expect(Storage::disk('local')->allFiles('pending-documents'))->toBeEmpty();
+
+    // Submitted exactly once — nothing is left waiting in the session.
+    $response->assertSessionMissing('pending_enrollment');
+});
+
+test('a guest application is submitted as soon as they log in to an existing account', function () {
+    $enrollee = EnrolleeUser::factory()->create();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel));
+
+    $response = $this->post(route('portal.login.store'), [
+        'email' => $enrollee->email,
+        'password' => 'password',
+    ]);
+
+    $enrollment = Enrollment::sole();
+    $response->assertRedirect(route('admission.success', $enrollment->id));
+    expect($enrollment->enrollee_user_id)->toBe($enrollee->id);
+});
+
+test('a guest application submitted after registering shows up for the admin', function () {
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel));
+    $this->post(route('portal.register.store'), [
+        'name' => 'Juan Dela Cruz',
+        'email' => 'parent@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn ($page) => $page
+            ->has('applications.data', 1)
+            ->where('applications.data.0.student.first_name', 'Juan'));
+});
+
+test('a newer guest submission replaces the held one and its uploads', function () {
+    Storage::fake('local');
+
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'form_138' => UploadedFile::fake()->create('first.pdf', 200, 'application/pdf'),
+    ]));
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'first_name' => 'Pedro',
+        'form_138' => UploadedFile::fake()->create('second.pdf', 200, 'application/pdf'),
+    ]));
+
+    expect(Storage::disk('local')->allFiles('pending-documents'))->toHaveCount(1);
+
+    $this->post(route('portal.register.store'), [
+        'name' => 'Pedro Dela Cruz',
+        'email' => 'parent@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    expect(Enrollment::with('student')->sole()->student->first_name)->toBe('Pedro');
+});
+
+test('registering without a held application goes to the verification notice', function () {
+    $this->post(route('portal.register.store'), [
+        'name' => 'Juan Dela Cruz',
+        'email' => 'parent@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ])->assertRedirect(route('portal.verification.notice'));
+
+    expect(Enrollment::count())->toBe(0);
 });
 
 test('a student can reapply for the same school year after their prior application was cancelled', function () {

@@ -268,6 +268,14 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                             <td className="px-4 py-3 text-[#1F2A24]">
                                                 {student.last_name},{' '}
                                                 {student.first_name}
+                                                {!enrollment.parent_email_verified && (
+                                                    <span
+                                                        className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]"
+                                                        title="The parent hasn't confirmed their email address yet."
+                                                    >
+                                                        Email not verified
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {student.lrn || (

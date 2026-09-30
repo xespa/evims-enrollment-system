@@ -28,6 +28,7 @@ class StudentController extends Controller
             ->join('students', 'students.id', '=', 'enrollments.student_id')
             ->with(['student', 'gradeLevel', 'officeVerification'])
             ->select('enrollments.*')
+            ->withParentEmailVerified()
             ->orderBy('students.last_name')
             ->orderBy('students.first_name')
             ->orderByDesc('enrollments.school_year');

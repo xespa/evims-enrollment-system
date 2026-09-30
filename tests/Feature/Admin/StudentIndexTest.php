@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\OfficeVerification;
@@ -156,5 +157,28 @@ test('a returning student\'s earlier application still shows up when filtering b
         ->assertInertia(fn (Assert $page) => $page
             ->has('applications.data', 1)
             ->where('applications.data.0.id', $gradeOneApplication->id)
+        );
+});
+
+test('the applications list flags parents who have not verified their email', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    Enrollment::factory()->create([
+        'student_id' => Student::factory()->create(['last_name' => 'Aquino']),
+        'enrollee_user_id' => EnrolleeUser::factory()->create(),
+    ]);
+    Enrollment::factory()->create([
+        'student_id' => Student::factory()->create(['last_name' => 'Bautista']),
+        'enrollee_user_id' => EnrolleeUser::factory()->unverified()->create(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('applications.data', 2)
+            ->where('applications.data.0.student.last_name', 'Aquino')
+            ->where('applications.data.0.parent_email_verified', true)
+            ->where('applications.data.1.student.last_name', 'Bautista')
+            ->where('applications.data.1.parent_email_verified', false)
         );
 });

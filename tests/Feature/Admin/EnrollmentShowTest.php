@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\AcademicHistory;
+use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
@@ -29,3 +30,19 @@ test('the enrollment show page includes the academic history', function () {
             ->where('enrollment.academic_history.previous_school_address', 'Borongan City, Eastern Samar')
         );
 });
+
+test('the enrollment show page flags a parent who has not verified their email', function (bool $isVerified) {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = $isVerified ? EnrolleeUser::factory()->create() : EnrolleeUser::factory()->unverified()->create();
+    $enrollment = Enrollment::factory()->create(['enrollee_user_id' => $enrollee->id]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollments.show', $enrollment))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('enrollment.parent_email_verified', $isVerified)
+            ->missing('enrollment.enrollee_user')
+        );
+})->with([
+    'verified parent' => true,
+    'unverified parent' => false,
+]);

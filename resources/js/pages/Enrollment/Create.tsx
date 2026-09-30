@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useForm, Head, usePage } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
+import {
+    DRAFT_FILE_FIELDS,
+    clearDraft,
+    loadDraft,
+    saveDraft,
+} from '@/lib/enrollment-draft';
 import StepperNav from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -132,45 +138,6 @@ const FIELD_TO_STEP = {
     payment_option: 8,
     payment_channel: 8,
 };
-
-// Persists in-progress answers to this browser so navigating away (home,
-// another page, a closed tab) and coming back doesn't lose what was already
-// filled in. File inputs can't be serialized to localStorage, so uploaded
-// files are intentionally left out — those need to be reselected.
-const DRAFT_STORAGE_KEY = 'evims:enrollment-draft';
-const DRAFT_FILE_FIELDS = ['form_138', 'birth_certificate', 'good_moral_certificate'];
-
-function loadDraft() {
-    if (typeof window === 'undefined') return null;
-
-    try {
-        const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : null;
-    } catch {
-        return null;
-    }
-}
-
-function saveDraft(draft) {
-    if (typeof window === 'undefined') return;
-
-    try {
-        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-    } catch {
-        // Storage full, disabled, or unavailable (private browsing) — the
-        // form still works, it just won't survive navigating away.
-    }
-}
-
-function clearDraft() {
-    if (typeof window === 'undefined') return;
-
-    try {
-        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-    } catch {
-        // Nothing to do if storage isn't available.
-    }
-}
 
 function currentSchoolYearStart() {
     const now = new Date();
@@ -518,9 +485,9 @@ export default function Create({
             forceFormData: true,
             onSuccess: (page) => {
                 // A guest without an account gets redirected to register
-                // instead of the success page — that's not a real
-                // submission yet, so the draft must survive it. Only clear
-                // once we've actually landed on the success page.
+                // instead — the server holds their application until then,
+                // but keep the draft too in case they back out of signing
+                // up. The success page clears it once it's really submitted.
                 if (page.component === 'Enrollment/Success') {
                     clearDraft();
                 }

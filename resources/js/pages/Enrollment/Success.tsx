@@ -1,7 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { clearDraft } from '@/lib/enrollment-draft';
 
 export default function Success({ enrollment }) {
+    // A guest who submitted, then registered, lands here straight from the
+    // sign-up form — their browser draft is still around and is now stale.
+    useEffect(() => {
+        clearDraft();
+    }, []);
+
     return (
         <>
             <Head title="Application Submitted" />

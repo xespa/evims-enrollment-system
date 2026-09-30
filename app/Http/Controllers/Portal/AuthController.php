@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\EnrolleeUser;
+use App\Services\PendingEnrollment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,15 +15,16 @@ use Inertia\Response;
 
 class AuthController extends Controller
 {
-    public function create(Request $request): Response
+    public function create(Request $request, PendingEnrollment $pendingEnrollment): Response
     {
         return Inertia::render('Portal/Register', [
             'prefillName' => $request->query('name', ''),
             'prefillEmail' => $request->query('email', ''),
+            'hasPendingApplication' => $pendingEnrollment->exists(),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, PendingEnrollment $pendingEnrollment): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -36,18 +38,18 @@ class AuthController extends Controller
 
         $enrollee->sendEmailVerificationNotification();
 
-        // If they were redirected here mid-application (see EnrollmentController::store),
-        // this sends them straight back to finish submitting instead of stranding
-        // them on the verification notice.
-        return redirect()->intended(route('portal.verification.notice'));
+        return $this->submitPendingApplication($pendingEnrollment, $enrollee)
+            ?? redirect()->route('portal.verification.notice');
     }
 
-    public function showLogin(): Response
+    public function showLogin(PendingEnrollment $pendingEnrollment): Response
     {
-        return Inertia::render('Portal/Login');
+        return Inertia::render('Portal/Login', [
+            'hasPendingApplication' => $pendingEnrollment->exists(),
+        ]);
     }
 
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request, PendingEnrollment $pendingEnrollment): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -62,7 +64,26 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('portal.dashboard'));
+        return $this->submitPendingApplication($pendingEnrollment, Auth::guard('enrollee')->user())
+            ?? redirect()->intended(route('portal.dashboard'));
+    }
+
+    /**
+     * A guest who filled in the admission form before having an account was
+     * sent here to register or log in (see EnrollmentController::store) —
+     * submit that held application now that they're authenticated.
+     */
+    private function submitPendingApplication(PendingEnrollment $pendingEnrollment, EnrolleeUser $enrollee): ?RedirectResponse
+    {
+        $enrollment = $pendingEnrollment->submitFor($enrollee);
+
+        if (! $enrollment) {
+            return null;
+        }
+
+        return redirect()
+            ->route('admission.success', $enrollment->id)
+            ->with('success', 'Your account is ready and your application has been submitted.');
     }
 
     public function logout(Request $request): RedirectResponse

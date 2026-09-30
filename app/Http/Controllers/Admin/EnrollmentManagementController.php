@@ -50,6 +50,7 @@ class EnrollmentManagementController extends Controller
             'billingContract.installments.payments',
             'officeVerification',
         ]);
+        $enrollment->loadParentEmailVerified();
 
         return Inertia::render('Admin/Enrollments/Show', [
             'enrollment' => $enrollment,

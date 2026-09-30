@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 
-export default function Login() {
+export default function Login({ hasPendingApplication = false }) {
     return (
         <div className="min-h-screen bg-[#FBF8F2] px-4 py-16">
             <Head title="Parent Login" />
@@ -24,6 +24,16 @@ export default function Login() {
                         Track your application status and manage tuition payments.
                     </p>
                 </div>
+
+                {hasPendingApplication && (
+                    <div
+                        role="status"
+                        className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80"
+                    >
+                        Your application is saved. Log in and we'll submit it
+                        right away.
+                    </div>
+                )}
 
                 <div className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8">
                     <Form action={route('portal.login.store')} method="post" resetOnSuccess={['password']} className="space-y-4">
