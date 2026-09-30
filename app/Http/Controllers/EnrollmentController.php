@@ -49,9 +49,9 @@ class EnrollmentController extends Controller
 
         return Inertia::render('Enrollment/Create', [
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name', 'level_order']),
-            // Fees and subjects per open school year, keyed by school year
-            // then grade level ID. Only years the school has set up are
-            // open, so nobody applies against guessed fees.
+            // Fees and subjects of the one school year applications are for,
+            // keyed by school year then grade level ID. Only a year the
+            // school has set up is open, so nobody applies against guessed fees.
             'curricula' => $this->openCurricula(),
             'previousApplication' => $previousApplication,
             // Only a logged-in enrollee with at least one prior application gets
@@ -94,10 +94,8 @@ class EnrollmentController extends Controller
 
         return response()->json([
             'matched' => true,
-            // Lets the frontend enforce that this new application's school
-            // year is exactly one year after the last one — a returning
-            // student can't apply for the same year twice (already blocked
-            // elsewhere) or skip years ahead.
+            // Lets the frontend stop a returning student from applying again
+            // for the year they last applied for, before the next one opens.
             'previousSchoolYear' => $latestEnrollment?->school_year,
             'student' => [
                 // Student
@@ -165,28 +163,30 @@ class EnrollmentController extends Controller
     }
 
     /**
-     * Every set-up school year from last year onward (late enrollees can
-     * still apply for the year that just started), with each grade level's
-     * fees and subjects.
+     * The school year applications are for, with each grade level's fees
+     * and subjects. Empty when no school year is open.
      *
      * @return array<string, array<int, Curriculum>>
      */
     private function openCurricula(): array
     {
-        $startYear = (int) explode('-', Enrollment::currentSchoolYear())[0] - 1;
-        $previousSchoolYear = $startYear.'-'.($startYear + 1);
+        $schoolYear = Curriculum::applicationSchoolYear();
 
-        return Curriculum::query()
-            ->published()
-            ->where('school_year', '>=', $previousSchoolYear)
-            ->with(['subjects' => fn ($query) => $query
-                ->select(['id', 'curriculum_id', 'name', 'code'])
-                ->orderBy('name')])
-            ->orderBy('school_year')
-            ->get()
-            ->groupBy('school_year')
-            ->map(fn ($curricula) => $curricula->keyBy('grade_level_id')->all())
-            ->all();
+        if ($schoolYear === null) {
+            return [];
+        }
+
+        return [
+            $schoolYear => Curriculum::query()
+                ->published()
+                ->where('school_year', $schoolYear)
+                ->with(['subjects' => fn ($query) => $query
+                    ->select(['id', 'curriculum_id', 'name', 'code'])
+                    ->orderBy('name')])
+                ->get()
+                ->keyBy('grade_level_id')
+                ->all(),
+        ];
     }
 
     /**

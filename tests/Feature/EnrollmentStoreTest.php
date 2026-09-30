@@ -11,6 +11,7 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Models\VitalInformation;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 function actingAsEnrollee(): EnrolleeUser
@@ -70,6 +71,21 @@ test('submitting the admission form creates the full enrollment record set', fun
     expect($verification->has_form_138)->toBeFalse();
     expect($verification->has_birth_certificate)->toBeFalse();
     expect($verification->has_good_moral_certificate)->toBeFalse();
+});
+
+test('the date of application is always the day it is submitted, not the date sent by the form', function () {
+    // 7 AM in Manila is still the previous day in UTC.
+    $this->travelTo(Carbon::parse('2026-09-30 07:00', 'Asia/Manila'));
+    actingAsEnrollee();
+
+    $gradeLevel = GradeLevel::factory()->withCurriculum()->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'date_of_application' => '2020-01-01',
+    ]))->assertSessionHasNoErrors();
+
+    expect(Enrollment::first()->date_of_application->toDateString())->toBe('2026-09-30');
 });
 
 test('documents are optional at submission', function () {
@@ -324,7 +340,7 @@ test('the billed total and installments follow the grade level fee breakdown', f
         ->and(round($installments->sum('amount_due'), 2))->toBe(40749.0);
 });
 
-test('an application is priced from the chosen school year\'s fees', function () {
+test('an application is always for the newest open school year and priced from its fees', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->create();
     [$start] = explode('-', Enrollment::currentSchoolYear());
@@ -334,25 +350,29 @@ test('an application is priced from the chosen school year\'s fees', function ()
     $nextYear = Curriculum::factory()->for($gradeLevel)->totalFee(33000)->create(['school_year' => $nextSchoolYear]);
     $nextYearSubject = Subject::factory()->for($nextYear)->create();
 
+    // The form sending the current year doesn't matter.
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
-        'school_year' => $nextSchoolYear,
+        'school_year' => Enrollment::currentSchoolYear(),
         'subject_ids' => [$nextYearSubject->id],
     ]))->assertRedirect();
 
     $enrollment = Enrollment::sole();
 
-    expect((float) $enrollment->billingContract->total_fee)->toBe(33000.0)
+    expect($enrollment->school_year)->toBe($nextSchoolYear)
+        ->and((float) $enrollment->billingContract->total_fee)->toBe(33000.0)
         ->and($enrollment->subjects->pluck('id')->all())->toBe([$nextYearSubject->id]);
 });
 
-test('a school year that is not set up for the grade level cannot be applied for', function () {
+test('a grade level not set up for the open school year cannot be applied for', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
     [$start] = explode('-', Enrollment::currentSchoolYear());
     $notSetUp = ($start + 1).'-'.($start + 2);
+    // Another grade level opens next school year, but this one doesn't.
+    Curriculum::factory()->for(GradeLevel::factory())->create(['school_year' => $notSetUp]);
 
-    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['school_year' => $notSetUp]))
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel))
         ->assertSessionHasErrors(['school_year' => "Enrollment for S.Y. {$notSetUp} isn't open for this grade level yet."]);
 
     expect(Enrollment::count())->toBe(0);
@@ -361,18 +381,18 @@ test('a school year that is not set up for the grade level cannot be applied for
 test('subjects from another school year are rejected', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+    $thisYearSubject = Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
     [$start] = explode('-', Enrollment::currentSchoolYear());
-    $otherYear = Curriculum::factory()->for($gradeLevel)->create(['school_year' => ($start + 1).'-'.($start + 2)]);
-    $otherYearSubject = Subject::factory()->for($otherYear)->create();
+    Curriculum::factory()->for($gradeLevel)->create(['school_year' => ($start + 1).'-'.($start + 2)]);
 
-    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['subject_ids' => [$otherYearSubject->id]]))
+    // Next school year is the open one, so this year's subjects no longer count.
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['subject_ids' => [$thisYearSubject->id]]))
         ->assertSessionHasErrors('subject_ids.0');
 
     expect(Enrollment::count())->toBe(0);
 });
 
-test('mobile numbers are saved as 11 digits however they were typed', function (string $typed) {
+test('mobile numbers are saved in international form however they were typed', function (string $typed, string $saved) {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
@@ -384,24 +404,27 @@ test('mobile numbers are saved as 11 digits however they were typed', function (
 
     $parents = Enrollment::sole()->student->parentProfile;
 
-    expect($parents->father_mobile_no)->toBe('09171234567')
-        ->and($parents->mother_mobile_no)->toBe('09171234567');
+    expect($parents->father_mobile_no)->toBe($saved)
+        ->and($parents->mother_mobile_no)->toBe($saved);
 })->with([
-    'plain' => '09171234567',
-    'grouped with spaces' => '0917 123 4567',
-    'with dashes' => '0917-123-4567',
-    'international' => '+63 917 123 4567',
-    'without the leading zero' => '917 123 4567',
+    'plain' => ['09171234567', '+639171234567'],
+    'grouped with spaces' => ['0917 123 4567', '+639171234567'],
+    'with dashes' => ['0917-123-4567', '+639171234567'],
+    'international' => ['+63 917 123 4567', '+639171234567'],
+    'without the leading zero' => ['917 123 4567', '+639171234567'],
+    'united states' => ['+1 415 555 2671', '+14155552671'],
+    'united kingdom' => ['+44 7911 123456', '+447911123456'],
+    'with a 00 international prefix' => ['0044 7911 123456', '+447911123456'],
 ]);
 
-test('mobile numbers must be 11 digits starting with 09', function (string $typed) {
+test('mobile numbers must be a valid number for their country', function (string $typed) {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
     Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['father_mobile_no' => $typed]))
         ->assertSessionHasErrors([
-            'father_mobile_no' => 'Enter a valid mobile number: +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.',
+            'father_mobile_no' => 'Enter a valid mobile number with its country code. Philippine numbers are +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.',
         ]);
 
     expect(Enrollment::count())->toBe(0);
@@ -411,6 +434,9 @@ test('mobile numbers must be 11 digits starting with 09', function (string $type
     'too short' => '0917 123',
     'too long' => '0917 123 45678',
     'landline' => '(053) 123 4567',
+    'philippine landline with country code' => '+63 53 123 4567',
+    'too short for another country' => '+1 415',
+    'too long for any country' => '+44 7911 1234 5678 90',
 ]);
 
 test('mobile numbers are optional', function () {

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Calendar } from 'lucide-react';
 
-export default function TextInput({ label, name, value, onChange, error, type = 'text', required = false, ...rest }) {
+export default function TextInput({ label, name, value, onChange, error, type = 'text', required = false, disabled = false, ...rest }) {
     const inputRef = useRef(null);
     const isDate = type === 'date';
     const errorId = `${name}-error`;
@@ -24,6 +24,7 @@ export default function TextInput({ label, name, value, onChange, error, type = 
                     type={type}
                     value={value ?? ''}
                     onChange={(e) => onChange(name, e.target.value)}
+                    disabled={disabled}
                     aria-required={required || undefined}
                     aria-invalid={error ? true : undefined}
                     aria-describedby={error ? errorId : undefined}
@@ -34,7 +35,7 @@ export default function TextInput({ label, name, value, onChange, error, type = 
                     }`}
                     {...rest}
                 />
-                {isDate && (
+                {isDate && !disabled && (
                     <button
                         type="button"
                         onClick={openPicker}

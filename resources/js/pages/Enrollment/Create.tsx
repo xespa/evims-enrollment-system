@@ -7,7 +7,10 @@ import {
     loadDraft,
     saveDraft,
 } from '@/lib/enrollment-draft';
-import { isValidMobileNumber } from './Components/mobile-number';
+import {
+    isValidMobileNumber,
+    mobileNumberProblem,
+} from './Components/mobile-number';
 import StepperNav from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -76,7 +79,7 @@ const FIELD_LABELS = {
 // clicking directly on the stepper nav, this only affects the linear flow.
 const FAST_TRACK_SKIP_STEPS = [2, 3, 4, 5, 7];
 
-// Optional, but must be a complete 11-digit number when filled in.
+// Optional, but must be a complete number when filled in.
 const MOBILE_NUMBER_FIELDS = {
     father_mobile_no: "father's mobile number",
     mother_mobile_no: "mother's mobile number",
@@ -146,27 +149,10 @@ const FIELD_TO_STEP = {
     payment_channel: 8,
 };
 
-function currentSchoolYearStart() {
-    const now = new Date();
-    const month = now.getMonth() + 1; // 1–12
-    // PH school year runs roughly June–March/April; before June we're still
-    // in the school year that started the previous calendar year.
-    return month >= 6 ? now.getFullYear() : now.getFullYear() - 1;
-}
-
-// Only school years the school has set up (fees + subjects) can be applied
-// for. Defaults to the current one, else the next open one, else the latest.
-function getDefaultSchoolYear(schoolYears) {
-    const startYear = currentSchoolYearStart();
-    const current = `${startYear}-${startYear + 1}`;
-
-    if (schoolYears.includes(current)) return current;
-
-    return (
-        schoolYears.find((year) => year > current) ??
-        schoolYears[schoolYears.length - 1] ??
-        ''
-    );
+// The server only sends the one school year applications are for (the
+// newest one the school has opened), so there's nothing to choose.
+function getApplicationSchoolYear(schoolYears) {
+    return schoolYears[schoolYears.length - 1] ?? '';
 }
 
 // A grade level as the form steps expect it: its name plus that school
@@ -179,12 +165,12 @@ function gradeLevelsForSchoolYear(gradeLevels, curricula, schoolYear) {
         .map((g) => ({ ...offered[g.id], id: g.id, name: g.name }));
 }
 
-// A family applies once per school year, so a continuing application is
-// always for the year right after their last one — regardless of whether
-// the grade level is advancing or being repeated.
-function nextSchoolYear(schoolYear) {
-    const [start] = schoolYear.split('-').map(Number);
-    return `${start + 1}-${start + 2}`;
+// Today in the applicant's own timezone — toISOString() is UTC, which is
+// still yesterday before 8 AM in the Philippines.
+function todayDateString() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 function calculateAge(dateOfBirth) {
@@ -243,8 +229,8 @@ export default function Create({
     );
     const [fastTrack, setFastTrack] = useState(false);
     // The matched child's last application's school year, e.g. "2026-2027" —
-    // used to enforce that this new application is for the very next year,
-    // not the same year again or a year skipped ahead.
+    // used to stop a second application for a year they've already applied
+    // for, before the next school year has opened.
     const [previousSchoolYear, setPreviousSchoolYear] = useState(null);
 
     const defaultFormData = {
@@ -262,8 +248,8 @@ export default function Create({
         sex: '',
         session_time_preference: '',
         email: enrollee?.email ?? '',
-        school_year: getDefaultSchoolYear(schoolYears),
-        date_of_application: new Date().toISOString().slice(0, 10),
+        school_year: getApplicationSchoolYear(schoolYears),
+        date_of_application: todayDateString(),
 
         // Address
         house_number_street: '',
@@ -324,11 +310,10 @@ export default function Create({
     const { data, setData, post, processing, errors } = useForm({
         ...defaultFormData,
         ...draft?.data,
-        // A saved draft may be for a year that's no longer open.
-        ...(draft?.data?.school_year &&
-        !schoolYears.includes(draft.data.school_year)
-            ? { school_year: defaultFormData.school_year }
-            : {}),
+        // Always today — a draft from an earlier day can't keep its old date.
+        date_of_application: defaultFormData.date_of_application,
+        // Always the open school year — a draft may be from an earlier one.
+        school_year: defaultFormData.school_year,
     });
 
     // The grade levels (with fees and subjects) of the chosen school year.
@@ -401,17 +386,13 @@ export default function Create({
         });
     };
 
-    // Fast-track applications must be for the year right after the child's
+    // Fast-track applications must be for a later year than the child's
     // last one on file — this only ever applies once a match has set a
     // previous school year to compare against.
     const getSchoolYearIssue = () => {
         if (!fastTrack || !previousSchoolYear) return null;
-        const expected = nextSchoolYear(previousSchoolYear);
-        if (!schoolYears.includes(expected)) {
-            return `Your last application was for ${previousSchoolYear}, so this one is for ${expected} — but enrollment for ${expected} isn't open yet. Please check back once the school opens it.`;
-        }
-        if (data.school_year === expected) return null;
-        return `Your last application was for ${previousSchoolYear}. Since this is a continuing application, it should be for ${expected} instead of ${data.school_year} — please update the School Year above before continuing.`;
+        if (data.school_year > previousSchoolYear) return null;
+        return `Your last application was for ${previousSchoolYear}, and enrollment for the next school year isn't open yet. Please check back once the school opens it.`;
     };
 
     // Mobile numbers are optional, but one that's been started must be
@@ -486,7 +467,7 @@ export default function Create({
                 messages.push(
                     `Please finish the ${unfinishedMobileNumbers
                         .map((field) => MOBILE_NUMBER_FIELDS[field])
-                        .join(' and ')} — it should be the 10 digits after +63, starting with 9 (or leave it blank).`,
+                        .join(' and ')} (or leave it blank).`,
                 );
             }
             if (schoolYearIssue) {
@@ -519,24 +500,12 @@ export default function Create({
     };
 
     const handleLrnMatched = (student, prevSchoolYear) => {
-        const expectedSchoolYear = prevSchoolYear
-            ? nextSchoolYear(prevSchoolYear)
-            : null;
-
         setData((prev) => ({
             ...prev,
             ...student,
             age: student.date_of_birth
                 ? calculateAge(student.date_of_birth)
                 : prev.age,
-            // Default straight to the correct next school year, so there's
-            // usually nothing to fix — the reminder below only fires if
-            // this gets changed to something else afterward (or if that
-            // year isn't open yet).
-            school_year:
-                expectedSchoolYear && schoolYears.includes(expectedSchoolYear)
-                    ? expectedSchoolYear
-                    : prev.school_year,
         }));
         setPreviousSchoolYear(prevSchoolYear ?? null);
         setFastTrack(true);
@@ -607,7 +576,7 @@ export default function Create({
               }),
               ...getUnfinishedMobileNumbers().map((field) => [
                   field,
-                  'Enter the 10 digits after +63, starting with 9.',
+                  mobileNumberProblem(data[field]),
               ]),
           ])
         : {};
@@ -621,7 +590,7 @@ export default function Create({
     };
 
     const fastTrackSelectClass = (field: string) =>
-        `mt-1.5 min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
+        `mt-1.5 min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:cursor-not-allowed disabled:bg-[#1F2A24]/5 disabled:text-[#1F2A24]/70 ${
             stepProps.errors[field] ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
         }`;
 
@@ -690,10 +659,9 @@ export default function Create({
                                         We matched this child's LRN to your
                                         account — their student, address,
                                         parent, academic, and document info is
-                                        already on file, so we skipped
-                                        straight to subjects. Use the steps
-                                        above if you need to review or update
-                                        anything.
+                                        already on file, so we skipped straight
+                                        to subjects. Use the steps above if you
+                                        need to review or update anything.
                                     </p>
 
                                     <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -706,12 +674,7 @@ export default function Create({
                                             </label>
                                             <select
                                                 value={data.school_year}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'school_year',
-                                                        e.target.value,
-                                                    )
-                                                }
+                                                disabled
                                                 id="fast-track-school_year"
                                                 aria-invalid={
                                                     stepProps.errors.school_year
@@ -722,16 +685,14 @@ export default function Create({
                                                     'school_year',
                                                 )}
                                             >
-                                                {schoolYears.map(
-                                                    (year) => (
-                                                        <option
-                                                            key={year}
-                                                            value={year}
-                                                        >
-                                                            {year}
-                                                        </option>
-                                                    ),
-                                                )}
+                                                {schoolYears.map((year) => (
+                                                    <option
+                                                        key={year}
+                                                        value={year}
+                                                    >
+                                                        {year}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 
@@ -752,7 +713,8 @@ export default function Create({
                                                 }
                                                 id="fast-track-grade_level_id"
                                                 aria-invalid={
-                                                    stepProps.errors.grade_level_id
+                                                    stepProps.errors
+                                                        .grade_level_id
                                                         ? true
                                                         : undefined
                                                 }
@@ -797,7 +759,8 @@ export default function Create({
                                                 }
                                                 id="fast-track-session_time_preference"
                                                 aria-invalid={
-                                                    stepProps.errors.session_time_preference
+                                                    stepProps.errors
+                                                        .session_time_preference
                                                         ? true
                                                         : undefined
                                                 }
@@ -864,9 +827,7 @@ export default function Create({
                                 )}
                                 {step === 5 && <VitalInfoStep {...stepProps} />}
                                 {step === 6 && <SubjectsStep {...stepProps} />}
-                                {step === 7 && (
-                                    <DocumentsStep {...stepProps} />
-                                )}
+                                {step === 7 && <DocumentsStep {...stepProps} />}
                                 {step === 8 && <BillingStep {...stepProps} />}
                                 {step === 9 && <ReviewStep {...stepProps} />}
 

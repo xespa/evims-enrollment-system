@@ -8,7 +8,7 @@ import {
     isValidMobileNumber,
 } from '@/pages/Enrollment/Components/mobile-number';
 
-/** "0917 123 4567"; anything saved before numbers were validated is shown as-is. */
+/** "+63 917 123 4567"; anything saved before numbers were validated is shown as-is. */
 function displayMobileNumber(value) {
     return value && isValidMobileNumber(value) ? formatMobileNumber(value) : value;
 }

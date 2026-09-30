@@ -219,6 +219,7 @@ export default function StudentInfoStep({
                     onChange={setData}
                     error={errors.school_year}
                     required
+                    disabled
                     options={schoolYearOptions}
                 />
                 <TextInput
@@ -229,6 +230,7 @@ export default function StudentInfoStep({
                     onChange={setData}
                     error={errors.date_of_application}
                     required
+                    disabled
                 />
             </div>
 

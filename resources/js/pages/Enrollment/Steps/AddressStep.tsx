@@ -14,6 +14,7 @@ export default function AddressStep({ data, setData, errors }) {
     const [provinceCode, setProvinceCode] = useState(data.province_code ?? '');
     const [cityCode, setCityCode] = useState(data.city_code ?? '');
     const [zipCodeOptions, setZipCodeOptions] = useState([]);
+    const [loadingZipCodes, setLoadingZipCodes] = useState(false);
 
     const [loadingProvinces, setLoadingProvinces] = useState(true);
     const [loadingCities, setLoadingCities] = useState(false);
@@ -53,9 +54,9 @@ export default function AddressStep({ data, setData, errors }) {
             .finally(() => setLoadingBarangays(false));
     }, [cityCode]);
 
-    // Whenever the city code is known, suggest zip code(s) for it. Coverage
-    // is partial, so no match just leaves the plain text field for manual
-    // entry — this never overwrites a zip code the user already has.
+    // Whenever the city code is known, look up its zip code(s). A single
+    // match is filled in and locked; coverage is partial, so no match leaves
+    // the text field open for manual entry, and several give a dropdown.
     useEffect(() => {
         if (!cityCode || !data.city_municipality) {
             setZipCodeOptions([]);
@@ -67,16 +68,18 @@ export default function AddressStep({ data, setData, errors }) {
             city: data.city_municipality,
         });
 
+        setLoadingZipCodes(true);
         fetch(`/api/ph-address/zip-codes?${params}`)
             .then((res) => res.json())
             .then((json) => {
                 const list = Array.isArray(json) ? json : [];
                 setZipCodeOptions(list);
-                if (list.length === 1 && !data.zip_code) {
+                if (list.length === 1) {
                     setData((prev) => ({ ...prev, zip_code: list[0] }));
                 }
             })
-            .catch(() => setZipCodeOptions([]));
+            .catch(() => setZipCodeOptions([]))
+            .finally(() => setLoadingZipCodes(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cityCode]);
 
@@ -206,6 +209,11 @@ export default function AddressStep({ data, setData, errors }) {
                         value={data.zip_code}
                         onChange={setData}
                         error={errors.zip_code}
+                        disabled={
+                            !cityCode ||
+                            loadingZipCodes ||
+                            zipCodeOptions.length === 1
+                        }
                     />
                 )}
             </div>

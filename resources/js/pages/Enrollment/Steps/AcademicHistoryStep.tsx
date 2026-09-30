@@ -2,20 +2,39 @@ import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
 import StepGuide from '../Components/StepGuide';
 
-// Generates recent school years like "2025-2026", "2024-2025", etc.
-function generateSchoolYearOptions(count = 10) {
-    const currentYear = new Date().getFullYear();
+// Recent school years, newest first: from the school year being applied
+// for (which can be a year ahead of the calendar) back `count` years.
+function generateSchoolYearOptions(applicationSchoolYear, count = 10) {
+    const applicationStart = Number.parseInt(applicationSchoolYear, 10);
+    const newestStart = Math.max(
+        new Date().getFullYear(),
+        Number.isNaN(applicationStart) ? 0 : applicationStart,
+    );
     const years = [];
     for (let i = 0; i < count; i++) {
-        const start = currentYear - i;
+        const start = newestStart - i;
         years.push(`${start}-${start + 1}`);
     }
     return years.map((y) => ({ value: y, label: y }));
 }
 
+// A value filled in from a returning student's record always shows, even
+// if it's outside the usual choices.
+function withCurrentValue(options, value) {
+    return value && !options.some((o) => o.value === value)
+        ? [{ value, label: value }, ...options]
+        : options;
+}
+
 export default function AcademicHistoryStep({ data, setData, errors, gradeLevels }) {
-    const gradeOptions = gradeLevels.map((g) => ({ value: g.name, label: g.name }));
-    const schoolYearOptions = generateSchoolYearOptions();
+    const gradeOptions = withCurrentValue(
+        gradeLevels.map((g) => ({ value: g.name, label: g.name })),
+        data.last_grade_level_completed,
+    );
+    const schoolYearOptions = withCurrentValue(
+        generateSchoolYearOptions(data.school_year),
+        data.last_school_year_completed,
+    );
 
     return (
         <div>

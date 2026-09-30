@@ -130,7 +130,9 @@ class SubmitEnrollmentApplication
                 'grade_level_id' => $validated['grade_level_id'],
                 'school_year' => $validated['school_year'],
                 'student_type' => $validated['student_type'],
-                'date_of_application' => $validated['date_of_application'],
+                // Always the day it's actually submitted, in the school's
+                // timezone — never whatever date the form sent.
+                'date_of_application' => now('Asia/Manila')->toDateString(),
                 'age' => $validated['age'],
                 'session_time_preference' => $validated['session_time_preference'],
                 'email' => $validated['email'],

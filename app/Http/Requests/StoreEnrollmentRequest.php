@@ -16,6 +16,12 @@ class StoreEnrollmentRequest extends FormRequest
     private const MOBILE_NUMBER_FIELDS = ['father_mobile_no', 'mother_mobile_no'];
 
     /**
+     * International form: a Philippine mobile (+63 9XX XXX XXXX), or any
+     * other country's number of 7 to 15 digits in all (the E.164 maximum).
+     */
+    public const MOBILE_NUMBER_PATTERN = '/^\+(?:639\d{9}|(?!63)[1-9]\d{6,14})$/';
+
+    /**
      * The only grade level whose students never have an LRN yet (they're new
      * to school). Must match NO_LRN_GRADE_LEVEL in StudentInfoStep.
      */
@@ -27,11 +33,17 @@ class StoreEnrollmentRequest extends FormRequest
     }
 
     /**
-     * Mobile numbers are stored as 11 digits ("09171234567"), however they
-     * were typed: spaces, dashes and a +63 prefix are accepted and removed.
+     * Sets the school year to the one applications are for. Mobile numbers
+     * are stored in international form ("+639171234567"), however they
+     * were typed: spaces, dashes, a leading 0 and a missing +63 on a
+     * Philippine number are all accepted.
      */
     protected function prepareForValidation(): void
     {
+        // Applications are always for the newest open school year, never
+        // whatever year the form sent.
+        $this->merge(['school_year' => Curriculum::applicationSchoolYear()]);
+
         foreach (self::MOBILE_NUMBER_FIELDS as $field) {
             if ($this->filled($field) && is_string($this->input($field))) {
                 $this->merge([$field => self::normalizeMobileNumber($this->input($field))]);
@@ -54,11 +66,15 @@ class StoreEnrollmentRequest extends FormRequest
 
         $digits = preg_replace('/\D/', '', $trimmed) ?? '';
 
-        if (str_starts_with($digits, '63') && strlen($digits) > 10) {
-            return '0'.substr($digits, 2);
-        }
-
-        return str_starts_with($digits, '9') ? '0'.$digits : $digits;
+        return match (true) {
+            $digits === '' => '',
+            str_starts_with($trimmed, '+') => '+'.$digits,
+            str_starts_with($digits, '00') => '+'.substr($digits, 2),
+            str_starts_with($digits, '63') && strlen($digits) > 10 => '+'.$digits,
+            str_starts_with($digits, '09') => '+63'.substr($digits, 1),
+            str_starts_with($digits, '9') => '+63'.$digits,
+            default => $digits,
+        };
     }
 
     /**
@@ -170,7 +186,6 @@ class StoreEnrollmentRequest extends FormRequest
             // Enrollment
             'grade_level_id' => ['required', 'exists:grade_levels,id'],
             'school_year' => $schoolYearRules,
-            'date_of_application' => ['required', 'date'],
             'age' => ['required', 'integer', 'min:2'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],
             'email' => ['required', 'email', 'max:255'],
@@ -191,13 +206,13 @@ class StoreEnrollmentRequest extends FormRequest
             'father_middle_name' => ['nullable', 'string', 'max:255'],
             'father_occupation' => ['nullable', 'string', 'max:255'],
             'father_name_of_office' => ['nullable', 'string', 'max:255'],
-            'father_mobile_no' => ['nullable', 'regex:/^09\d{9}$/'],
+            'father_mobile_no' => ['nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
             'mother_maiden_last_name' => ['nullable', 'string', 'max:255'],
             'mother_first_name' => ['nullable', 'string', 'max:255'],
             'mother_middle_name' => ['nullable', 'string', 'max:255'],
             'mother_occupation' => ['nullable', 'string', 'max:255'],
             'mother_name_of_office' => ['nullable', 'string', 'max:255'],
-            'mother_mobile_no' => ['nullable', 'regex:/^09\d{9}$/'],
+            'mother_mobile_no' => ['nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
 
             // Academic history
             'last_grade_level_completed' => ['nullable', 'string', 'max:255'],
@@ -239,7 +254,7 @@ class StoreEnrollmentRequest extends FormRequest
      */
     public function messages(): array
     {
-        $mobileNumberMessage = 'Enter a valid mobile number: +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.';
+        $mobileNumberMessage = 'Enter a valid mobile number with its country code. Philippine numbers are +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.';
 
         return [
             'father_mobile_no.regex' => $mobileNumberMessage,

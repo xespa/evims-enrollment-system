@@ -127,6 +127,22 @@ class Curriculum extends Model
     }
 
     /**
+     * The one school year new applications are for: the newest the school
+     * has published, as long as it isn't older than last school year.
+     */
+    public static function applicationSchoolYear(): ?string
+    {
+        $startYear = (int) explode('-', Enrollment::currentSchoolYear())[0] - 1;
+
+        $schoolYear = self::query()
+            ->published()
+            ->where('school_year', '>=', $startYear.'-'.($startYear + 1))
+            ->max('school_year');
+
+        return $schoolYear === null ? null : (string) $schoolYear;
+    }
+
+    /**
      * The school year currently being set up, if any. Only one at a time.
      */
     public static function draftSchoolYear(): ?string

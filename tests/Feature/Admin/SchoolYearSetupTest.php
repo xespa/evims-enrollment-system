@@ -184,7 +184,7 @@ test('a draft school year is not offered to applicants', function () {
             'school_year' => $draftYear,
             'subject_ids' => [$draftSubject->id],
         ]))
-        ->assertSessionHasErrors('school_year');
+        ->assertSessionHasErrors('subject_ids.0');
 
     expect(Enrollment::count())->toBe(0);
 });

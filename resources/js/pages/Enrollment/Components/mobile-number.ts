@@ -1,59 +1,172 @@
-// Philippine mobile numbers, kept in the local 11-digit form: 09XXXXXXXXX.
-// Must match StoreEnrollmentRequest::normalizeMobileNumber() on the server.
+// Mobile numbers, kept in international form: "+" then the country code and
+// the number, e.g. "+639171234567". Philippine numbers must be a real PH
+// mobile (+63 9XX XXX XXXX); other countries only need a plausible length.
+// Must match StoreEnrollmentRequest::normalizeMobileNumber() and its rules
+// on the server.
 
-export const MOBILE_NUMBER_LENGTH = 11;
+import {
+    CALLING_COUNTRIES,
+    DEFAULT_COUNTRY_ISO,
+    findCountry,
+} from './country-calling-codes';
+import type { CallingCountry } from './country-calling-codes';
+
+// E.164 caps a whole number (country code included) at 15 digits.
+const MAX_DIGITS = 15;
+
+const PHILIPPINE_NATIONAL_LENGTH = 10;
+
+// When several countries share a calling code, a saved number is shown
+// under the biggest one.
+const PREFERRED_ISO_BY_CODE: Record<string, string> = { '1': 'US', '7': 'RU' };
 
 /**
- * Digits only, in local form: "+63 917 123 4567" and "917-123-4567" both
- * become "09171234567". Capped at 11 digits.
+ * Digits only, in international form: "0917 123 4567", "+63 917 123 4567"
+ * and "917-123-4567" all become "+639171234567", and "+1 415 555 2671"
+ * becomes "+14155552671". Anything else is returned as bare digits, which
+ * then fails validation.
  */
 export function normalizeMobileNumber(input: unknown): string {
-    let digits = String(input ?? '').replace(/\D/g, '');
+    const text = String(input ?? '').trim();
+    const digits = text.replace(/\D/g, '');
 
-    if (digits.startsWith('63') && digits.length > 10) {
-        digits = `0${digits.slice(2)}`;
-    } else if (digits.startsWith('9')) {
-        digits = `0${digits}`;
+    if (digits === '') {
+        return '';
+    }
+    if (text.startsWith('+')) {
+        return `+${digits}`;
+    }
+    if (digits.startsWith('00')) {
+        return `+${digits.slice(2)}`;
+    }
+    if (digits.startsWith('63') && digits.length > PHILIPPINE_NATIONAL_LENGTH) {
+        return `+${digits}`;
+    }
+    if (digits.startsWith('09')) {
+        return `+63${digits.slice(1)}`;
+    }
+    if (digits.startsWith('9')) {
+        return `+63${digits}`;
     }
 
-    return digits.slice(0, MOBILE_NUMBER_LENGTH);
+    return digits;
 }
 
 export function isValidMobileNumber(value: unknown): boolean {
-    return /^09\d{9}$/.test(normalizeMobileNumber(value));
+    return /^\+(?:639\d{9}|(?!63)[1-9]\d{6,14})$/.test(
+        normalizeMobileNumber(value),
+    );
 }
 
-// The input shows a fixed "+63" and only the 10 digits after it.
-export const NATIONAL_NUMBER_LENGTH = 10;
+/**
+ * Splits a saved number into its country and the digits after the country
+ * code, e.g. "+639171234567" → Philippines + "9171234567". The longest
+ * matching code wins; `preferredIso` breaks ties between countries that
+ * share one (e.g. the US and Canada).
+ */
+export function parseMobileNumber(
+    value: unknown,
+    preferredIso?: string,
+): { country: CallingCountry; national: string } {
+    const normalized = normalizeMobileNumber(value);
+
+    if (!normalized.startsWith('+')) {
+        return {
+            country: findCountry(preferredIso ?? DEFAULT_COUNTRY_ISO),
+            national: normalized,
+        };
+    }
+
+    const digits = normalized.slice(1);
+    const matches = CALLING_COUNTRIES.filter((country) =>
+        digits.startsWith(country.code),
+    );
+    const longest = Math.max(0, ...matches.map((c) => c.code.length));
+    const candidates = matches.filter((c) => c.code.length === longest);
+
+    const country =
+        candidates.find((c) => c.iso === preferredIso) ??
+        candidates.find((c) => c.iso === PREFERRED_ISO_BY_CODE[c.code]) ??
+        candidates[0];
+
+    if (!country) {
+        return { country: findCountry(DEFAULT_COUNTRY_ISO), national: digits };
+    }
+
+    return { country, national: digits.slice(country.code.length) };
+}
+
+/** Joins a country and the digits after its code; empty when there's no number. */
+export function toMobileNumber(
+    country: CallingCountry,
+    national: string,
+): string {
+    return national ? `+${country.code}${national}` : '';
+}
+
+/** How many digits may follow the country's code. */
+export function maxNationalLength(country: CallingCountry): number {
+    return country.iso === 'PH'
+        ? PHILIPPINE_NATIONAL_LENGTH
+        : MAX_DIGITS - country.code.length;
+}
 
 /**
- * The digits typed after "+63": "0917…", "+63 917…" and "917…" all become
- * "917…". Capped at 10 digits.
+ * The digits typed after the country code: a leading trunk "0" (as in
+ * "0917…" or "07911…") is dropped, and so is "63" pasted in front of a
+ * Philippine number. Capped at the country's maximum length.
  */
-export function toNationalNumber(input: unknown): string {
+export function toNationalNumber(
+    input: unknown,
+    country: CallingCountry,
+): string {
     let digits = String(input ?? '').replace(/\D/g, '');
 
-    if (digits.startsWith('63') && digits.length > NATIONAL_NUMBER_LENGTH) {
+    if (
+        country.iso === 'PH' &&
+        digits.startsWith('63') &&
+        digits.length > PHILIPPINE_NATIONAL_LENGTH
+    ) {
         digits = digits.slice(2);
-    } else if (digits.startsWith('0')) {
+    }
+    if (digits.startsWith('0')) {
         digits = digits.slice(1);
     }
 
-    return digits.slice(0, NATIONAL_NUMBER_LENGTH);
+    return digits.slice(0, maxNationalLength(country));
 }
 
-/** "9171234567" → "917 123 4567" (partial numbers are grouped as far as they go). */
+/**
+ * Groups digits in threes, keeping the last four together: "9171234567" →
+ * "917 123 4567", "4155552671" → "415 555 2671".
+ */
 export function formatNationalNumber(national: string): string {
-    return [national.slice(0, 3), national.slice(3, 6), national.slice(6, 10)]
-        .filter(Boolean)
-        .join(' ');
+    const groups: string[] = [];
+    let rest = national;
+
+    while (rest.length > 4) {
+        groups.push(rest.slice(0, 3));
+        rest = rest.slice(3);
+    }
+    if (rest) {
+        groups.push(rest);
+    }
+
+    return groups.join(' ');
 }
 
-/** "09171234567" → "0917 123 4567" (partial numbers are grouped as far as they go). */
+/** "+639171234567" → "+63 917 123 4567". */
 export function formatMobileNumber(value: unknown): string {
-    const digits = normalizeMobileNumber(value);
+    const { country, national } = parseMobileNumber(value);
 
-    return [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 11)]
-        .filter(Boolean)
-        .join(' ');
+    return `+${country.code} ${formatNationalNumber(national)}`.trim();
+}
+
+/** What's wrong with an unfinished number, phrased for its country. */
+export function mobileNumberProblem(value: unknown): string {
+    const { country } = parseMobileNumber(value);
+
+    return country.iso === 'PH'
+        ? 'Enter the 10 digits after +63, starting with 9.'
+        : `Enter the full number after +${country.code}.`;
 }

@@ -108,7 +108,7 @@ test('the enrollment form receives each open school year\'s fee breakdown and to
         );
 });
 
-test('the enrollment form only offers school years that are set up, from last year on', function () {
+test('the enrollment form only offers the newest set-up school year', function () {
     $gradeLevel = GradeLevel::factory()->create();
     [$start] = explode('-', Enrollment::currentSchoolYear());
     $year = fn (int $offset) => ($start + $offset).'-'.($start + $offset + 1);
@@ -119,11 +119,32 @@ test('the enrollment form only offers school years that are set up, from last ye
 
     $this->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('curricula', 3)
-            ->has("curricula.{$year(-1)}")
-            ->has("curricula.{$year(0)}")
+            ->has('curricula', 1)
             ->has("curricula.{$year(1)}")
-            ->missing("curricula.{$year(-2)}")
-            ->missing("curricula.{$year(2)}")
         );
+});
+
+test('the enrollment form offers last school year while nothing newer is set up', function () {
+    $gradeLevel = GradeLevel::factory()->create();
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    $year = fn (int $offset) => ($start + $offset).'-'.($start + $offset + 1);
+
+    foreach ([-2, -1] as $offset) {
+        Curriculum::factory()->for($gradeLevel)->create(['school_year' => $year($offset)]);
+    }
+
+    $this->get(route('admission.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('curricula', 1)
+            ->has("curricula.{$year(-1)}")
+        );
+});
+
+test('the enrollment form offers no school year once they are all too old', function () {
+    $gradeLevel = GradeLevel::factory()->create();
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    Curriculum::factory()->for($gradeLevel)->create(['school_year' => ($start - 2).'-'.($start - 1)]);
+
+    $this->get(route('admission.create'))
+        ->assertInertia(fn (Assert $page) => $page->where('curricula', []));
 });
