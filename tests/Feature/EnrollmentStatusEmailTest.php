@@ -15,7 +15,7 @@ test('approving an enrollment emails the applicant', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch(route('admin.enrollments.updateStatus', $enrollment), [
+        ->patch(route('admin.enrollments.status.update', $enrollment), [
             'enrollment_status' => 'APPROVED',
         ])
         ->assertRedirect();
@@ -33,7 +33,7 @@ test('no email is sent when status is unchanged', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch(route('admin.enrollments.updateStatus', $enrollment), [
+        ->patch(route('admin.enrollments.status.update', $enrollment), [
             'enrollment_status' => 'PENDING',
         ]);
 

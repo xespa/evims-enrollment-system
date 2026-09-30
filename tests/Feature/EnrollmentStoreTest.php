@@ -67,11 +67,11 @@ test('submitting the admission form creates the full enrollment record set', fun
         'good_moral_certificate' => UploadedFile::fake()->create('good-moral.pdf', 200, 'application/pdf'),
     ]);
 
-    $response = $this->post(route('enrollment.store'), $payload);
+    $response = $this->post(route('admission.store'), $payload);
 
     $enrollment = Enrollment::first();
     expect($enrollment)->not->toBeNull();
-    $response->assertRedirect(route('enrollment.success', $enrollment->id));
+    $response->assertRedirect(route('admission.success', $enrollment->id));
 
     // Vital information is now actually created (previously a no-op placeholder).
     expect(VitalInformation::where('enrollment_id', $enrollment->id)->exists())->toBeTrue();
@@ -114,10 +114,10 @@ test('documents are optional at submission', function () {
 
     $payload = validEnrollmentPayload($gradeLevel);
 
-    $response = $this->post(route('enrollment.store'), $payload);
+    $response = $this->post(route('admission.store'), $payload);
 
     $enrollment = Enrollment::first();
-    $response->assertRedirect(route('enrollment.success', $enrollment->id));
+    $response->assertRedirect(route('admission.success', $enrollment->id));
 
     $verification = OfficeVerification::where('enrollment_id', $enrollment->id)->first();
     expect($verification)->not->toBeNull();
@@ -138,7 +138,7 @@ test('document uploads are validated for file type', function () {
         'form_138' => UploadedFile::fake()->create('form138.exe', 200, 'application/x-msdownload'),
     ]);
 
-    $this->post(route('enrollment.store'), $payload)
+    $this->post(route('admission.store'), $payload)
         ->assertSessionHasErrors('form_138');
 
     expect(Enrollment::count())->toBe(0);
@@ -154,12 +154,12 @@ test('a second application for the same school year is rejected while the first 
         'lrn' => '12345678901234',
     ]);
 
-    $this->post(route('enrollment.store'), $payload)->assertRedirect();
+    $this->post(route('admission.store'), $payload)->assertRedirect();
     expect(Enrollment::count())->toBe(1);
     expect(Enrollment::first()->enrollment_status)->toBe('PENDING');
 
     // Same LRN, same school year, application still pending — blocked.
-    $this->post(route('enrollment.store'), $payload)
+    $this->post(route('admission.store'), $payload)
         ->assertSessionHasErrors('school_year');
 
     expect(Enrollment::count())->toBe(1);
@@ -175,12 +175,12 @@ test('a student can reapply for the same school year after their prior applicati
         'lrn' => '12345678901234',
     ]);
 
-    $this->post(route('enrollment.store'), $payload)->assertRedirect();
+    $this->post(route('admission.store'), $payload)->assertRedirect();
     $firstEnrollment = Enrollment::first();
     $firstEnrollment->update(['enrollment_status' => 'REJECTED']);
 
     // Same LRN, same school year, but the only prior application was rejected — allowed.
-    $this->post(route('enrollment.store'), $payload)->assertRedirect();
+    $this->post(route('admission.store'), $payload)->assertRedirect();
 
     expect(Enrollment::count())->toBe(2);
 });
@@ -191,7 +191,7 @@ test('guests are sent to create an account instead of submitting directly', func
 
     $payload = validEnrollmentPayload($gradeLevel);
 
-    $response = $this->post(route('enrollment.store'), $payload);
+    $response = $this->post(route('admission.store'), $payload);
 
     $response->assertRedirect(route('portal.register', [
         'name' => 'Juan Dela Cruz',
@@ -207,7 +207,7 @@ test('registering after being redirected mid-application returns the user to fin
     $payload = validEnrollmentPayload($gradeLevel);
 
     // First attempt as a guest — bounced to registration, "intended" URL saved.
-    $this->post(route('enrollment.store'), $payload);
+    $this->post(route('admission.store'), $payload);
     expect(Enrollment::count())->toBe(0);
 
     // Registering should send them back to the admission page, not the
@@ -219,7 +219,7 @@ test('registering after being redirected mid-application returns the user to fin
         'password_confirmation' => 'password123',
     ]);
 
-    $response->assertRedirect(route('enrollment.create'));
+    $response->assertRedirect(route('admission.create'));
 });
 
 test('a student can reapply for the same school year after their prior application was cancelled', function () {
@@ -232,12 +232,12 @@ test('a student can reapply for the same school year after their prior applicati
         'lrn' => '12345678901234',
     ]);
 
-    $this->post(route('enrollment.store'), $payload)->assertRedirect();
+    $this->post(route('admission.store'), $payload)->assertRedirect();
     $firstEnrollment = Enrollment::first();
     $firstEnrollment->update(['cancelled_at' => now()]);
 
     // Same LRN, same school year, but the only prior application was cancelled — allowed.
-    $this->post(route('enrollment.store'), $payload)->assertRedirect();
+    $this->post(route('admission.store'), $payload)->assertRedirect();
 
     expect(Enrollment::count())->toBe(2);
 });
@@ -255,7 +255,7 @@ test('the billed total and installments follow the grade level fee breakdown', f
     ]);
     Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
 
-    $this->post(route('enrollment.store'), validEnrollmentPayload($gradeLevel, ['payment_option' => 'MONTHLY']));
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['payment_option' => 'MONTHLY']));
 
     $billingContract = Enrollment::first()->billingContract;
     $installments = $billingContract->installments;

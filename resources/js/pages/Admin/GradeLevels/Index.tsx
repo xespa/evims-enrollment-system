@@ -52,7 +52,7 @@ export default function Index({ gradeLevels }) {
 
     const saveFees = (e, gradeLevelId) => {
         e.preventDefault();
-        patch(route('admin.gradeLevels.update', gradeLevelId), {
+        patch(route('admin.grade-levels.update', gradeLevelId), {
             preserveScroll: true,
             onSuccess: () => setEditingId(null),
         });
@@ -90,7 +90,7 @@ export default function Index({ gradeLevels }) {
                                             </p>
                                             <Link
                                                 href={route(
-                                                    'admin.gradeLevels.show',
+                                                    'admin.grade-levels.show',
                                                     gradeLevel.id,
                                                 )}
                                                 className="text-xs text-[#2F6F4E] hover:underline"

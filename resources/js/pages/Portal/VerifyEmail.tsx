@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 export default function VerifyEmail() {
     const { post, processing } = useForm();
 
-    const resend = () => post(route('portal.verification.resend'));
+    const resend = () => post(route('portal.verification.send'));
 
     return (
         <div className="mx-auto max-w-sm px-4 py-16 text-center">

@@ -79,7 +79,7 @@ function PaymentsSection({ enrollment }) {
 
     const submitCashPayment = (e) => {
         e.preventDefault();
-        post(route('admin.enrollments.payments.cash', enrollment.id), {
+        post(route('admin.enrollments.cash-payments.store', enrollment.id), {
             preserveScroll: true,
             onSuccess: () => {
                 setPayingInstallmentId(null);
@@ -448,7 +448,7 @@ export default function Show({ enrollment }) {
         newStatus: keyof typeof STATUS_CONFIRMATIONS,
     ) => {
         if (!(await confirm(STATUS_CONFIRMATIONS[newStatus]))) return;
-        router.patch(route('admin.enrollments.updateStatus', enrollment.id), {
+        router.patch(route('admin.enrollments.status.update', enrollment.id), {
             enrollment_status: newStatus,
         });
     };
@@ -469,7 +469,7 @@ export default function Show({ enrollment }) {
 
     const toggleVerification = (field, currentValue) => {
         router.patch(
-            route('admin.enrollments.updateVerification', enrollment.id),
+            route('admin.enrollments.verification.update', enrollment.id),
             {
                 has_form_138:
                     field === 'has_form_138'

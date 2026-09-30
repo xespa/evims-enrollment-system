@@ -22,7 +22,7 @@ test('admins can update a grade level fee breakdown', function () {
     $gradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->patch(route('admin.gradeLevels.update', $gradeLevel), [
+        ->patch(route('admin.grade-levels.update', $gradeLevel), [
             'registration_fee' => 1725,
             'miscellaneous_fee' => 5175,
             'monthly_tuition' => 1725,
@@ -44,7 +44,7 @@ test('fee breakdown values are required and cannot be negative', function () {
     $gradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->patch(route('admin.gradeLevels.update', $gradeLevel), [
+        ->patch(route('admin.grade-levels.update', $gradeLevel), [
             'registration_fee' => -1,
             'miscellaneous_fee' => 5175,
             'monthly_tuition' => 1725,
@@ -58,7 +58,7 @@ test('non-admin users cannot update grade level fees', function () {
     $gradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($staff)
-        ->patch(route('admin.gradeLevels.update', $gradeLevel), ['registration_fee' => 0])
+        ->patch(route('admin.grade-levels.update', $gradeLevel), ['registration_fee' => 0])
         ->assertForbidden();
 });
 
@@ -71,7 +71,7 @@ test('the enrollment form receives each grade level fee breakdown and total', fu
         'books_fee' => 5099,
     ]);
 
-    $this->get(route('enrollment.create'))
+    $this->get(route('admission.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Enrollment/Create')

@@ -19,7 +19,7 @@ const NAV_ITEMS = [
     { label: 'Events', route: 'admin.events.index', icon: Calendar },
     {
         label: 'Grade Levels',
-        route: 'admin.gradeLevels.index',
+        route: 'admin.grade-levels.index',
         icon: GraduationCap,
     },
     {

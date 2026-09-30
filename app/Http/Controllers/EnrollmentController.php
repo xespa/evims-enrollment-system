@@ -193,7 +193,7 @@ class EnrollmentController extends Controller
             // for GET requests (for POST it falls back to the Referer header,
             // which isn't reliable) — set it explicitly instead, so it's the
             // admission page regardless of method or browser referrer policy.
-            session(['url.intended' => route('enrollment.create')]);
+            session(['url.intended' => route('admission.create')]);
 
             return redirect()->route('portal.register', [
                 'name' => trim("{$validated['first_name']} {$validated['last_name']}"),
@@ -345,7 +345,7 @@ class EnrollmentController extends Controller
             return $enrollment;
         });
 
-        return redirect()->route('enrollment.success', $enrollment->id);
+        return redirect()->route('admission.success', $enrollment->id);
     }
 
     public function success(Enrollment $enrollment)

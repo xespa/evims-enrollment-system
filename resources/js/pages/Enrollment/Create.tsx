@@ -514,7 +514,7 @@ export default function Create({
             return;
         }
 
-        post(route('enrollment.store'), {
+        post(route('admission.store'), {
             forceFormData: true,
             onSuccess: (page) => {
                 // A guest without an account gets redirected to register

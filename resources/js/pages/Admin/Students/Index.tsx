@@ -41,7 +41,7 @@ function AssignLrnCell({ studentId }) {
 
     const submit = (e) => {
         e.preventDefault();
-        patch(route('admin.students.assignLrn', studentId), {
+        patch(route('admin.students.lrn.update', studentId), {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {

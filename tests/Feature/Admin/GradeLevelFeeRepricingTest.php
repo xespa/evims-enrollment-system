@@ -64,7 +64,7 @@ function payTowardInstallment(Installment $installment, float $amount): void
 function raiseTuitionTo1400(GradeLevel $gradeLevel): TestResponse
 {
     return test()->actingAs(User::factory()->create(['role' => 'ADMIN']))
-        ->patch(route('admin.gradeLevels.update', $gradeLevel), [
+        ->patch(route('admin.grade-levels.update', $gradeLevel), [
             'registration_fee' => 1000,
             'miscellaneous_fee' => 0,
             'monthly_tuition' => 1400,
@@ -155,7 +155,7 @@ test('lowering fees never bills an installment below what was already paid', fun
 
     // ₱1,000 + 10 × ₱400 = ₱5,000, i.e. ₱500 per installment.
     $this->actingAs(User::factory()->create(['role' => 'ADMIN']))
-        ->patch(route('admin.gradeLevels.update', $gradeLevel), [
+        ->patch(route('admin.grade-levels.update', $gradeLevel), [
             'registration_fee' => 1000,
             'miscellaneous_fee' => 0,
             'monthly_tuition' => 400,

@@ -18,18 +18,18 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware('auth:enrollee')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-        Route::get('verify-email', [VerificationController::class, 'notice'])->name('verification.notice');
-        Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])
+        Route::get('email/verify', [VerificationController::class, 'notice'])->name('verification.notice');
+        Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
             ->middleware('signed')
             ->name('verification.verify');
-        Route::post('email/resend', [VerificationController::class, 'resend'])
+        Route::post('email/verification-notification', [VerificationController::class, 'resend'])
             ->middleware('throttle:6,1')
-            ->name('verification.resend');
+            ->name('verification.send');
 
-        Route::post('profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update'); // ← must be here, inside auth:enrollee
+        Route::post('profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
+        Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
         Route::middleware('verified:portal.verification.notice')->group(function () {
@@ -37,7 +37,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
             Route::post('enrollments/{enrollment}/cancel', [DashboardController::class, 'cancel'])->name('enrollments.cancel');
             Route::post('enrollments/{enrollment}/documents/{type}', [DashboardController::class, 'uploadDocument'])
                 ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
-                ->name('documents.upload');
+                ->name('enrollments.documents.store');
         });
     });
 });

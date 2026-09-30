@@ -24,7 +24,7 @@ export default function VerifyLrnGate({
         setError('');
 
         try {
-            const response = await fetch(route('enrollment.verifyLrn'), {
+            const response = await fetch(route('admission.verify-lrn'), {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {

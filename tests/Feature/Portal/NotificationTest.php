@@ -51,7 +51,7 @@ test('approving an enrollment notifies the linked enrollee', function () {
     expect($enrollee->notifications()->count())->toBe(0);
 
     $this->actingAs($admin)
-        ->patch(route('admin.enrollments.updateStatus', $enrollment), ['enrollment_status' => 'APPROVED'])
+        ->patch(route('admin.enrollments.status.update', $enrollment), ['enrollment_status' => 'APPROVED'])
         ->assertSessionHasNoErrors();
 
     $enrollee->refresh();
@@ -79,7 +79,7 @@ test('recording a cash payment notifies the linked enrollee', function () {
     ]);
 
     $this->actingAs($admin)
-        ->post(route('admin.enrollments.payments.cash', $enrollment), [
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), [
             'installment_id' => $installment->id,
             'amount' => 30000,
         ])
@@ -112,7 +112,7 @@ test('an enrollee can mark a notification as read and mark all as read', functio
     expect($enrollee->unreadNotifications()->count())->toBe(1);
 
     $this->actingAs($enrollee, 'enrollee')
-        ->post(route('portal.notifications.readAll'))
+        ->post(route('portal.notifications.read-all'))
         ->assertRedirect();
 
     expect($enrollee->unreadNotifications()->count())->toBe(0);

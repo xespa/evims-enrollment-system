@@ -13,7 +13,7 @@ test('registrar can verify a document even when no verification row exists yet',
     expect(OfficeVerification::where('enrollment_id', $enrollment->id)->exists())->toBeFalse();
 
     $this->actingAs($admin)
-        ->patch(route('admin.enrollments.updateVerification', $enrollment), [
+        ->patch(route('admin.enrollments.verification.update', $enrollment), [
             'has_form_138' => true,
             'has_birth_certificate' => false,
             'has_good_moral_certificate' => false,

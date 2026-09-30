@@ -26,16 +26,16 @@ Route::get('/', function () {
         'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
     ]);
 })->name('home');
-Route::inertia('/about', 'Site/About')->name('site.about');
-Route::inertia('/academics/pre-elementary', 'Site/Academics/PreElementary')->name('site.academics.pre-elementary');
-Route::inertia('/academics/lower-elementary', 'Site/Academics/LowerElementary')->name('site.academics.lower-elementary');
-Route::inertia('/academics/upper-elementary', 'Site/Academics/UpperElementary')->name('site.academics.upper-elementary');
-Route::inertia('/academics/high-school', 'Site/Academics/HighSchool')->name('site.academics.high-school');
-Route::inertia('/student-services/guidance-counseling', 'Site/StudentServices/GuidanceCounseling')->name('site.student-services.guidance-counseling');
-Route::inertia('/student-services/health-services', 'Site/StudentServices/HealthServices')->name('site.student-services.health-services');
-Route::inertia('/student-services/library', 'Site/StudentServices/Library')->name('site.student-services.library');
-Route::inertia('/contact', 'Site/Contact')->name('site.contact');
-Route::get('/events', function () {
+Route::inertia('about', 'Site/About')->name('site.about');
+Route::inertia('academics/pre-elementary', 'Site/Academics/PreElementary')->name('site.academics.pre-elementary');
+Route::inertia('academics/lower-elementary', 'Site/Academics/LowerElementary')->name('site.academics.lower-elementary');
+Route::inertia('academics/upper-elementary', 'Site/Academics/UpperElementary')->name('site.academics.upper-elementary');
+Route::inertia('academics/high-school', 'Site/Academics/HighSchool')->name('site.academics.high-school');
+Route::inertia('student-services/guidance-counseling', 'Site/StudentServices/GuidanceCounseling')->name('site.student-services.guidance-counseling');
+Route::inertia('student-services/health-services', 'Site/StudentServices/HealthServices')->name('site.student-services.health-services');
+Route::inertia('student-services/library', 'Site/StudentServices/Library')->name('site.student-services.library');
+Route::inertia('contact', 'Site/Contact')->name('site.contact');
+Route::get('events', function () {
     $events = Event::upcoming()->orderBy('event_date')->get();
 
     if ($events->isEmpty()) {
@@ -46,29 +46,28 @@ Route::get('/events', function () {
         'events' => $events,
     ]);
 })->name('site.events');
-Route::get('/admission', [EnrollmentController::class, 'create'])->name('enrollment.create');
-Route::post('/admission', [EnrollmentController::class, 'store'])->name('enrollment.store');
-Route::get('/admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('enrollment.success');
-
-Route::post('/admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])
+Route::get('admission', [EnrollmentController::class, 'create'])->name('admission.create');
+Route::post('admission', [EnrollmentController::class, 'store'])->name('admission.store');
+Route::get('admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('admission.success');
+Route::post('admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])
     ->middleware('auth:enrollee')
-    ->name('enrollment.verifyLrn');
+    ->name('admission.verify-lrn');
 
 Route::middleware('signed')->group(function () {
-    Route::get('/payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
-    Route::post('/payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
+    Route::get('payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('payments/{enrollment}/installments/{installment}/gcash', [PaymentController::class, 'initiateGcash'])->name('payments.gcash.initiate');
 
     // The GCash return URLs are signed when we hand them to PayMongo, which
     // redirects to them unchanged — so they can safely link to the payment page.
-    Route::get('/payments/{enrollment}/{installment}/success', [PaymentController::class, 'callbackSuccess'])->name('payments.callback.success');
-    Route::get('/payments/{enrollment}/{installment}/failed', [PaymentController::class, 'callbackFailed'])->name('payments.callback.failed');
+    Route::get('payments/{enrollment}/installments/{installment}/success', [PaymentController::class, 'callbackSuccess'])->name('payments.callback.success');
+    Route::get('payments/{enrollment}/installments/{installment}/failed', [PaymentController::class, 'callbackFailed'])->name('payments.callback.failed');
 });
 
 // The webhook stays unsigned: PayMongo calls it directly, and it's verified by
 // its own Paymongo-Signature HMAC instead.
-Route::post('/paymongo/webhook', [PaymentController::class, 'webhook'])->name('paymongo.webhook');
-Route::get('/payments/sandbox/{payment}/checkout', [PaymentController::class, 'sandboxCheckout'])->name('payments.sandbox.checkout');
-Route::post('/payments/sandbox/{payment}/confirm', [PaymentController::class, 'sandboxConfirm'])->name('payments.sandbox.confirm');
+Route::post('paymongo/webhook', [PaymentController::class, 'webhook'])->name('paymongo.webhook');
+Route::get('payments/sandbox/{payment}/checkout', [PaymentController::class, 'sandboxCheckout'])->name('payments.sandbox.checkout');
+Route::post('payments/sandbox/{payment}/confirm', [PaymentController::class, 'sandboxConfirm'])->name('payments.sandbox.confirm');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -79,39 +78,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-    Route::patch('/students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.assignLrn');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'show'])->name('enrollments.show');
-    Route::patch('/admissionments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.updateStatus');
-    Route::patch('/admissionments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.updateVerification');
-    Route::post('/admissionments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
+    Route::resource('students', StudentController::class)->only(['index']);
+    Route::patch('students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.lrn.update');
+
+    Route::resource('enrollments', EnrollmentManagementController::class)->only(['show', 'destroy']);
+    Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
+    Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
+    Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
         ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
         ->name('enrollments.documents.remind');
-    Route::post('/admissionments/{enrollment}/payments/cash', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.payments.cash');
-    Route::delete('/admissionments/{enrollment}', [EnrollmentManagementController::class, 'destroy'])->name('enrollments.destroy');
+    Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
 
-    Route::get('/grade-levels', [GradeLevelController::class, 'index'])->name('gradeLevels.index');
-    Route::get('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'show'])->name('gradeLevels.show');
-    Route::patch('/grade-levels/{gradeLevel}', [GradeLevelController::class, 'update'])->name('gradeLevels.update');
-    Route::post('/grade-levels/{gradeLevel}/subjects', [SubjectController::class, 'store'])->name('subjects.store');
-    Route::patch('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
-    Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
+    Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show', 'update']);
+    Route::resource('grade-levels.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
 
-    Route::get('/events', [EventController::class, 'index'])->name('events.index');
-    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-    Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    Route::resource('events', EventController::class)->except(['show']);
 
-    Route::redirect('/settings', '/admin/settings/profile');
-    Route::get('/settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');
-    Route::patch('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
-    Route::get('/settings/security', [SettingsController::class, 'editSecurity'])->name('settings.security.edit');
-    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
-    Route::delete('/settings', [SettingsController::class, 'destroy'])->name('settings.destroy');
+    Route::redirect('settings', '/admin/settings/profile');
+    Route::get('settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');
+    Route::patch('settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::get('settings/security', [SettingsController::class, 'editSecurity'])->name('settings.security.edit');
+    Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    Route::delete('settings', [SettingsController::class, 'destroy'])->name('settings.destroy');
 });
 
 require __DIR__.'/settings.php';

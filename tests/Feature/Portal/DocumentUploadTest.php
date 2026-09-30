@@ -16,7 +16,7 @@ test('owner can upload a document for their pending enrollment', function () {
     ]);
 
     $this->actingAs($enrollee, 'enrollee')
-        ->post(route('portal.documents.upload', [$enrollment, 'form_138']), [
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'form_138']), [
             'file' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
         ])
         ->assertRedirect()
@@ -48,7 +48,7 @@ test('re-uploading a document deletes the old file and clears its verified flag'
     ]);
 
     $this->actingAs($enrollee, 'enrollee')
-        ->post(route('portal.documents.upload', [$enrollment, 'form_138']), [
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'form_138']), [
             'file' => UploadedFile::fake()->create('new-form138.pdf', 200, 'application/pdf'),
         ])
         ->assertSessionHasNoErrors();
@@ -70,7 +70,7 @@ test('documents cannot be uploaded once the enrollment is approved', function ()
     ]);
 
     $this->actingAs($enrollee, 'enrollee')
-        ->post(route('portal.documents.upload', [$enrollment, 'form_138']), [
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'form_138']), [
             'file' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
         ])
         ->assertSessionHasErrors('document');
@@ -87,7 +87,7 @@ test('a different account cannot upload a document for someone elses enrollment'
     ]);
 
     $this->actingAs($intruder, 'enrollee')
-        ->post(route('portal.documents.upload', [$enrollment, 'form_138']), [
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'form_138']), [
             'file' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
         ])
         ->assertForbidden();

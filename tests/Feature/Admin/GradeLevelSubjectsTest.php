@@ -11,8 +11,8 @@ test('non-admin users cannot manage grade level subjects', function () {
     $gradeLevel = GradeLevel::factory()->create();
     $subject = Subject::factory()->for($gradeLevel)->create();
 
-    $this->actingAs($staff)->get(route('admin.gradeLevels.show', $gradeLevel))->assertForbidden();
-    $this->actingAs($staff)->post(route('admin.subjects.store', $gradeLevel), ['name' => 'Science'])->assertForbidden();
+    $this->actingAs($staff)->get(route('admin.grade-levels.show', $gradeLevel))->assertForbidden();
+    $this->actingAs($staff)->post(route('admin.grade-levels.subjects.store', $gradeLevel), ['name' => 'Science'])->assertForbidden();
     $this->actingAs($staff)->patch(route('admin.subjects.update', $subject), ['name' => 'Science'])->assertForbidden();
     $this->actingAs($staff)->delete(route('admin.subjects.destroy', $subject))->assertForbidden();
 });
@@ -25,7 +25,7 @@ test('admins can view the subjects of a grade level', function () {
     Subject::factory()->create(['name' => 'Other Grade Subject']);
 
     $this->actingAs($admin)
-        ->get(route('admin.gradeLevels.show', $gradeLevel))
+        ->get(route('admin.grade-levels.show', $gradeLevel))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/GradeLevels/Show')
@@ -42,7 +42,7 @@ test('admins can add a subject to a grade level', function () {
     $gradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->post(route('admin.subjects.store', $gradeLevel), ['name' => 'Science', 'code' => 'SCI'])
+        ->post(route('admin.grade-levels.subjects.store', $gradeLevel), ['name' => 'Science', 'code' => 'SCI'])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
@@ -56,11 +56,11 @@ test('subject names must be unique within a grade level', function () {
     $otherGradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($admin)
-        ->post(route('admin.subjects.store', $gradeLevel), ['name' => 'Science'])
+        ->post(route('admin.grade-levels.subjects.store', $gradeLevel), ['name' => 'Science'])
         ->assertSessionHasErrors('name');
 
     $this->actingAs($admin)
-        ->post(route('admin.subjects.store', $otherGradeLevel), ['name' => 'Science'])
+        ->post(route('admin.grade-levels.subjects.store', $otherGradeLevel), ['name' => 'Science'])
         ->assertSessionHasNoErrors();
 });
 

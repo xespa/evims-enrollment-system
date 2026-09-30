@@ -15,7 +15,7 @@ export default function Show({ gradeLevel, subjects }) {
 
     const addSubject = (e) => {
         e.preventDefault();
-        createForm.post(route('admin.subjects.store', gradeLevel.id), {
+        createForm.post(route('admin.grade-levels.subjects.store', gradeLevel.id), {
             preserveScroll: true,
             onSuccess: () => createForm.reset(),
         });
@@ -64,7 +64,7 @@ export default function Show({ gradeLevel, subjects }) {
                 <div className="mx-auto max-w-6xl">
                     <div className="max-w-2xl">
                         <Link
-                            href={route('admin.gradeLevels.index')}
+                            href={route('admin.grade-levels.index')}
                             className="mb-3 inline-flex min-h-9 items-center text-sm font-medium text-[#2F6F4E] hover:underline"
                         >
                             ← Back to grade levels

@@ -105,7 +105,7 @@ export default function NotificationBell() {
             })),
         );
         router.post(
-            route('portal.notifications.readAll'),
+            route('portal.notifications.read-all'),
             {},
             { preserveScroll: true, preserveState: true },
         );

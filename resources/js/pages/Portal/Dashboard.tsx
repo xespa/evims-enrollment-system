@@ -114,7 +114,7 @@ export default function Dashboard({ enrollments }) {
         const key = `${enrollmentId}:${type}`;
         setUploadingDoc(key);
         router.post(
-            route('portal.documents.upload', {
+            route('portal.enrollments.documents.store', {
                 enrollment: enrollmentId,
                 type,
             }),
@@ -269,7 +269,7 @@ export default function Dashboard({ enrollments }) {
 
                 <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
                     <Link
-                        href={route('enrollment.create')}
+                        href={route('admission.create')}
                         className="inline-flex min-h-11 items-center rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
                     >
                         + Apply for New Enrollment

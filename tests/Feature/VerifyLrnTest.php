@@ -8,7 +8,7 @@ use App\Models\Student;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('the admission page has no fast-track gate for guests', function () {
-    $this->get(route('enrollment.create'))
+    $this->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('hasExistingRecord', false)
         );
@@ -18,7 +18,7 @@ test('the admission page has no fast-track gate for a first-time enrollee accoun
     $enrollee = EnrolleeUser::factory()->create();
 
     $this->actingAs($enrollee, 'enrollee')
-        ->get(route('enrollment.create'))
+        ->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('hasExistingRecord', false)
         );
@@ -33,14 +33,14 @@ test('the admission page offers the fast-track gate for a returning enrollee acc
     ]);
 
     $this->actingAs($enrollee, 'enrollee')
-        ->get(route('enrollment.create'))
+        ->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('hasExistingRecord', true)
         );
 });
 
 test('guests cannot use the lrn verification endpoint', function () {
-    $this->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678'])
+    $this->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678'])
         ->assertUnauthorized();
 });
 
@@ -48,7 +48,7 @@ test('lrn must be 14 digits', function () {
     $enrollee = EnrolleeUser::factory()->create();
 
     $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '123'])
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '123'])
         ->assertJsonValidationErrors('lrn');
 });
 
@@ -62,7 +62,7 @@ test('returns no match when the lrn does not belong to one of this account\'s ow
 
     // A completely unrelated LRN — not linked to this enrollee at all.
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250199999999']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250199999999']);
 
     $response->assertOk();
     expect($response->json('matched'))->toBeFalse();
@@ -81,7 +81,7 @@ test('does not leak another family\'s student even if the lrn is correct', funct
     $enrollee = EnrolleeUser::factory()->create();
 
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
 
     $response->assertOk();
     expect($response->json('matched'))->toBeFalse();
@@ -109,7 +109,7 @@ test('returns the full prefill payload for a matching student under this account
     ]);
 
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
 
     $response->assertOk();
     expect($response->json('matched'))->toBeTrue();
@@ -133,7 +133,7 @@ test('defaults the grade level to the next one up from their last enrollment', f
     ]);
 
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
 
     $response->assertOk();
     expect($response->json('student.grade_level_id'))->toBe($gradeOne->id);
@@ -153,7 +153,7 @@ test('prefills academic history as having last attended evims itself, not whatev
     ]);
 
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
 
     $response->assertOk();
     expect($response->json('student.last_grade_level_completed'))->toBe('Kinder');
@@ -174,7 +174,7 @@ test('keeps the same grade level when the student was already at the highest one
     ]);
 
     $response = $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('enrollment.verifyLrn'), ['lrn' => '45250112345678']);
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
 
     $response->assertOk();
     expect($response->json('student.grade_level_id'))->toBe($gradeTen->id);
