@@ -264,7 +264,10 @@ export default function EvimsAdminLayout({ children }) {
     );
 
     return (
-        <div className="flex min-h-screen bg-[#FBF8F2]">
+        // On desktop the layout is exactly one screen tall: the sidebar stays
+        // put and only the main content scrolls. On mobile the page itself
+        // scrolls under the fixed top bar, and the sidebar is a drawer.
+        <div className="evims-admin flex min-h-screen bg-[#FBF8F2] lg:h-dvh lg:overflow-hidden">
             <a
                 href="#main-content"
                 className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
@@ -320,7 +323,7 @@ export default function EvimsAdminLayout({ children }) {
             {/* Sidebar: fixed drawer on mobile, static column on desktop */}
             <aside
                 id="admin-sidebar"
-                className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-shrink-0 flex-col overflow-hidden border-r border-[#1F2A24]/10 bg-white transition-all duration-200 ease-in-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:self-start ${
+                className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-shrink-0 flex-col overflow-hidden border-r border-[#1F2A24]/10 bg-white transition-all duration-200 ease-in-out lg:static lg:z-auto lg:h-full lg:translate-x-0 ${
                     collapsed ? 'lg:w-20' : 'lg:w-64'
                 } ${mobileOpen ? 'visible translate-x-0' : 'invisible -translate-x-full lg:visible'}`}
             >
@@ -331,7 +334,10 @@ export default function EvimsAdminLayout({ children }) {
             <main
                 id="main-content"
                 tabIndex={-1}
-                className="min-w-0 flex-1 overflow-y-auto pt-16 focus:outline-none lg:pt-0"
+                // Tells Inertia this is where the page scrolls, so it resets
+                // (or preserves) the scroll position here on navigation.
+                scroll-region=""
+                className="min-w-0 flex-1 pt-16 focus:outline-none lg:h-full lg:overflow-y-auto lg:overscroll-contain lg:pt-0"
             >
                 {children}
             </main>

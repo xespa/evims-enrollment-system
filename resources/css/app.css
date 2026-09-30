@@ -163,6 +163,15 @@
     }
 }
 
+/* The admin screens are light-only, so the page behind them stays cream
+   even when the device is in dark mode — otherwise the dark page shows
+   through when scrolling past the top or bottom. */
+html:has(.evims-admin),
+html:has(.evims-admin) body {
+    background-color: #fbf8f2;
+    color-scheme: light;
+}
+
 /* Inputs under 16px make iOS Safari zoom the page on focus. Unlayered so it
    wins over text-sm/text-xs utilities on small screens only. */
 @media (max-width: 639px) {
