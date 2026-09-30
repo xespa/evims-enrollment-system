@@ -9,8 +9,20 @@ export type User = {
     [key: string]: unknown;
 };
 
+/** A student portal account (the `enrollee` guard). */
+export type Enrollee = {
+    id: number;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+    profile_photo_url: string | null;
+    [key: string]: unknown;
+};
+
 export type Auth = {
     user: User;
+    enrollee: Enrollee | null;
+    unreadNotificationsCount: number;
 };
 
 /* @chisel-passkeys */

@@ -21,6 +21,11 @@ createInertiaApp({
                 return SiteLayout;
             case name.startsWith('Portal/'):
                 return SiteLayout;
+            // Stands in for PayMongo's own hosted checkout, so it stays bare.
+            case name === 'Payments/SandboxCheckout':
+                return null;
+            case name.startsWith('Payments/'):
+                return SiteLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
