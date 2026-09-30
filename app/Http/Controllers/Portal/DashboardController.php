@@ -23,7 +23,10 @@ class DashboardController extends Controller
             ->latest()
             ->get()
             ->map(function (Enrollment $enrollment) {
+                // Only GCash payers get the online payment page; counter
+                // payers are shown the cashier instructions instead.
                 $enrollment->payment_url = $enrollment->enrollment_status === 'APPROVED'
+                    && $enrollment->billingContract?->paysOnline()
                     ? URL::signedRoute('payments.show', $enrollment->id)
                     : null;
 

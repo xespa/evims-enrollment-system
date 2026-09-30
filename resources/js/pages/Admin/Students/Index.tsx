@@ -1,5 +1,6 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 
 const STATUS_STYLES = {
     PENDING: 'bg-yellow-100 text-yellow-800',
@@ -114,12 +115,91 @@ function AssignLrnCell({ studentId }) {
     );
 }
 
+const PAYMENT_STATUS = {
+    UNPAID: { label: 'Unpaid', className: 'bg-[#1F2A24]/5 text-[#1F2A24]/70' },
+    PARTIALLY_PAID: {
+        label: 'Partially paid',
+        className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+    },
+    PAID: { label: 'Fully paid', className: 'bg-green-100 text-green-800' },
+};
+
+function formatPeso(value) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+    }).format(value);
+}
+
+/**
+ * Where the application stands on payment, with a quick way to record a
+ * counter payment once it's approved.
+ */
+function PaymentCell({ enrollment, onRecord }) {
+    const payment = enrollment.payment;
+
+    if (!payment) {
+        return <span className="text-xs text-[#1F2A24]/50">Not billed</span>;
+    }
+
+    const status = PAYMENT_STATUS[payment.status];
+    const canRecord =
+        enrollment.enrollment_status === 'APPROVED' &&
+        !enrollment.cancelled_at &&
+        payment.balance > 0;
+
+    return (
+        <div className="min-w-[9rem]">
+            <span
+                className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${status.className}`}
+            >
+                {status.label}
+            </span>
+            <p className="mt-1 text-xs text-[#1F2A24]/60 tabular-nums">
+                {formatPeso(payment.paid)} of {formatPeso(payment.total)}
+                <span className="text-[#1F2A24]/45">
+                    {' '}
+                    · {payment.channel === 'GCASH' ? 'GCash' : 'Counter'}
+                </span>
+            </p>
+            {canRecord ? (
+                <button
+                    type="button"
+                    onClick={onRecord}
+                    className="mt-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                >
+                    Record payment
+                </button>
+            ) : (
+                enrollment.enrollment_status !== 'APPROVED' &&
+                payment.balance > 0 && (
+                    <p className="mt-1 text-xs text-[#1F2A24]/45">
+                        Payable once approved
+                    </p>
+                )
+            )}
+        </div>
+    );
+}
+
 export default function Index({ applications, gradeLevels, schoolYears, filters }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [schoolYear, setSchoolYear] = useState(filters.school_year ?? '');
+    // The application whose counter payment is being recorded; kept apart
+    // from `isRecording` so the dialog doesn't blank out while closing.
+    const [recordingFor, setRecordingFor] = useState(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordSession, setRecordSession] = useState(0);
+
+    const openRecordPayment = (enrollment) => {
+        setRecordingFor(enrollment);
+        setRecordSession((n) => n + 1);
+        setIsRecording(true);
+    };
+
     const [gradeLevelId, setGradeLevelId] = useState(
         filters.grade_level_id ?? '',
     );
@@ -250,6 +330,9 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                         Documents
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                        Payment
+                                    </th>
+                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
                                         Action
                                     </th>
                                 </tr>
@@ -314,6 +397,16 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
+                                                <PaymentCell
+                                                    enrollment={enrollment}
+                                                    onRecord={() =>
+                                                        openRecordPayment(
+                                                            enrollment,
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
                                                 <Link
                                                     href={route(
                                                         'admin.enrollments.show',
@@ -331,7 +424,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                 {applications.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={7}
+                                            colSpan={8}
                                             className="px-4 py-8 text-center text-[#1F2A24]/65"
                                         >
                                             No applications found.
@@ -360,6 +453,17 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                     </div>
                 </div>
             </div>
+
+            {recordingFor?.payment && (
+                <RecordCounterPaymentDialog
+                    key={recordSession}
+                    enrollmentId={recordingFor.id}
+                    studentName={`${recordingFor.student.first_name} ${recordingFor.student.last_name}`}
+                    unpaidInstallments={recordingFor.payment.unpaid_installments}
+                    open={isRecording}
+                    onOpenChange={setIsRecording}
+                />
+            )}
         </>
     );
 }

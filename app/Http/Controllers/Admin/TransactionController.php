@@ -12,7 +12,7 @@ use Inertia\Response;
 
 class TransactionController extends Controller
 {
-    private const STATUSES = ['COMPLETED', 'PENDING', 'FAILED'];
+    private const STATUSES = ['COMPLETED', 'PENDING', 'FAILED', 'VOIDED'];
 
     private const METHODS = ['GCASH', 'CASH'];
 
@@ -73,6 +73,7 @@ class TransactionController extends Controller
             'enrollment.gradeLevel:id,name',
             'installment:id,installment_number,amount_due,due_date,status',
             'recordedBy:id,name',
+            'voidedBy:id,name',
         ]);
 
         return Inertia::render('Admin/Transactions/Show', [
@@ -93,6 +94,7 @@ class TransactionController extends Controller
             ->when($filters['search'] ?? null, function (Builder $query, string $search) {
                 $query->where(function (Builder $query) use ($search) {
                     $query->where('paymongo_source_id', 'like', "%{$search}%")
+                        ->orWhere('receipt_number', 'like', "%{$search}%")
                         ->orWhere('paymongo_payment_intent_id', 'like', "%{$search}%")
                         ->orWhereHas('enrollment', fn (Builder $enrollment) => $enrollment
                             ->where('email', 'like', "%{$search}%")

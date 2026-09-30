@@ -17,6 +17,7 @@ type Props = {
         enrollment_id: number;
         amount: string;
         method: 'GCASH' | 'CASH';
+        receipt_number: string | null;
         status: TransactionStatus;
         paymongo_source_id: string | null;
         paymongo_payment_intent_id: string | null;
@@ -24,6 +25,9 @@ type Props = {
         created_at: string;
         updated_at: string;
         recorded_by: { id: number; name: string } | null;
+        voided_at: string | null;
+        voided_by: { id: number; name: string } | null;
+        void_reason: string | null;
         enrollment: {
             id: number;
             email: string | null;
@@ -74,15 +78,25 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 function timelineFor(payment: Props['payment']): TimelineEvent[] {
     if (payment.method === 'CASH') {
-        return [
+        const events: TimelineEvent[] = [
             {
                 label: payment.recorded_by
-                    ? `Cash payment recorded by ${payment.recorded_by.name}`
-                    : 'Cash payment recorded',
+                    ? `Counter payment recorded by ${payment.recorded_by.name}`
+                    : 'Counter payment recorded',
                 at: payment.paid_at ?? payment.created_at,
                 tone: 'done',
             },
         ];
+
+        if (payment.status === 'VOIDED') {
+            events.push({
+                label: `Voided${payment.voided_by ? ` by ${payment.voided_by.name}` : ''}${payment.void_reason ? `: ${payment.void_reason}` : ''}`,
+                at: payment.voided_at,
+                tone: 'failed',
+            });
+        }
+
+        return events;
     }
 
     const events: TimelineEvent[] = [
@@ -200,9 +214,14 @@ export default function Show({ payment }: Props) {
                                     </>
                                 )}
                                 {payment.method === 'CASH' && (
-                                    <Row label="Recorded by">
-                                        {payment.recorded_by?.name ?? '—'}
-                                    </Row>
+                                    <>
+                                        <Row label="OR / receipt no.">
+                                            {payment.receipt_number ?? '—'}
+                                        </Row>
+                                        <Row label="Recorded by">
+                                            {payment.recorded_by?.name ?? '—'}
+                                        </Row>
+                                    </>
                                 )}
                                 <Row label="Created">
                                     {formatDateTime(payment.created_at)}

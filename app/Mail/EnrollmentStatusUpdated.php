@@ -16,7 +16,10 @@ class EnrollmentStatusUpdated extends Mailable
 
     public function build(): self
     {
-        $this->enrollment->loadMissing('student', 'gradeLevel');
+        $this->enrollment->loadMissing('student', 'gradeLevel', 'billingContract');
+
+        $isApproved = $this->enrollment->enrollment_status === 'APPROVED';
+        $paysOnline = (bool) $this->enrollment->billingContract?->paysOnline();
 
         return $this->subject($this->subjectLine())
             ->markdown('emails.enrollment-status', [
@@ -24,7 +27,8 @@ class EnrollmentStatusUpdated extends Mailable
                 'student' => $this->enrollment->student,
                 'gradeLevel' => $this->enrollment->gradeLevel,
                 'status' => $this->enrollment->enrollment_status,
-                'paymentUrl' => $this->enrollment->enrollment_status === 'APPROVED'
+                // Counter payers get cashier instructions, not a payment link.
+                'paymentUrl' => $isApproved && $paysOnline
                     ? URL::signedRoute('payments.show', $this->enrollment->id)
                     : null,
             ]);

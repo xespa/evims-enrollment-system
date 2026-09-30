@@ -17,6 +17,7 @@ type Transaction = {
     enrollment_id: number;
     amount: string;
     method: 'GCASH' | 'CASH';
+    receipt_number: string | null;
     status: Status;
     paymongo_source_id: string | null;
     paymongo_payment_intent_id: string | null;
@@ -55,6 +56,7 @@ const TABS: { value: '' | Status; label: string; countKey: Status | 'ALL' }[] =
         { value: 'COMPLETED', label: 'Paid', countKey: 'COMPLETED' },
         { value: 'PENDING', label: 'Pending', countKey: 'PENDING' },
         { value: 'FAILED', label: 'Failed', countKey: 'FAILED' },
+        { value: 'VOIDED', label: 'Voided', countKey: 'VOIDED' },
     ];
 
 const INPUT_CLASS =
@@ -199,7 +201,7 @@ export default function Index({ transactions, summary, filters }: Props) {
                                 />
                                 <input
                                     type="search"
-                                    placeholder="Student, LRN, email, reference or payment ID"
+                                    placeholder="Student, LRN, email, OR no., reference or payment ID"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     className={`${INPUT_CLASS} w-full pl-9`}

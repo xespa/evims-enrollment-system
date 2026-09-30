@@ -1,7 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { BadgeCheck, Camera, CheckCircle2, Loader2, PartyPopper } from 'lucide-react';
+import {
+    BadgeCheck,
+    Camera,
+    CheckCircle2,
+    Landmark,
+    Loader2,
+    PartyPopper,
+} from 'lucide-react';
 import { useConfirm } from '@/hooks/use-confirm';
 
 const STATUS_STYLES = {
@@ -41,6 +48,7 @@ const PAYMENT_STATUS_STYLES = {
     COMPLETED: 'bg-green-100 text-green-800',
     PENDING: 'bg-yellow-100 text-yellow-800',
     FAILED: 'bg-red-100 text-red-800',
+    VOIDED: 'bg-gray-100 text-gray-600',
 };
 
 const METHOD_LABELS = {
@@ -448,7 +456,48 @@ export default function Dashboard({ enrollments }) {
 
                                         {isApproved &&
                                             hasBalance &&
-                                            !isFullyPaid && (
+                                            !isFullyPaid &&
+                                            !enrollment.payment_url && (
+                                                <div className="flex gap-3 rounded-md bg-[#2F6F4E]/5 p-4">
+                                                    <Landmark
+                                                        className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-[#1F2A24]">
+                                                            You're approved!
+                                                            Please pay at the
+                                                            school cashier.
+                                                        </p>
+                                                        <p className="text-sm text-[#1F2A24]/70">
+                                                            Remaining balance:{' '}
+                                                            <span className="font-semibold text-[#2F6F4E]">
+                                                                {formatCurrency(
+                                                                    enrollment.remaining_balance,
+                                                                )}
+                                                            </span>{' '}
+                                                            of{' '}
+                                                            {formatCurrency(
+                                                                enrollment.total_billed,
+                                                            )}
+                                                        </p>
+                                                        <p className="mt-1 text-xs text-[#1F2A24]/60">
+                                                            Bring reference no.{' '}
+                                                            <span className="font-semibold tabular-nums">
+                                                                #{enrollment.id}
+                                                            </span>
+                                                            . Your payment will
+                                                            show here once the
+                                                            cashier records it.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                        {isApproved &&
+                                            hasBalance &&
+                                            !isFullyPaid &&
+                                            enrollment.payment_url && (
                                                 <div className="flex flex-col gap-3 rounded-md bg-[#2F6F4E]/5 p-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div>
                                                         <p className="flex items-center gap-1.5 text-sm font-medium text-[#1F2A24]">

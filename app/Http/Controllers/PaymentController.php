@@ -22,7 +22,7 @@ class PaymentController extends Controller
 
     public function show(Enrollment $enrollment)
     {
-        abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+        $this->ensureCanPayOnline($enrollment);
 
         $enrollment->load('student', 'billingContract.installments.payments');
 
@@ -40,7 +40,7 @@ class PaymentController extends Controller
 
     public function initiateGcash(Enrollment $enrollment, Installment $installment)
     {
-        abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+        $this->ensureCanPayOnline($enrollment);
 
         $remaining = $installment->amount_due - $installment->totalPaid();
 
@@ -295,6 +295,21 @@ class PaymentController extends Controller
 
             return null;
         }
+    }
+
+    /**
+     * Online payment is only for approved applications that chose GCash.
+     * Counter payers pay the cashier, who records it, so an old or forwarded
+     * payment link must not let them check out online.
+     */
+    protected function ensureCanPayOnline(Enrollment $enrollment): void
+    {
+        abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+        abort_unless(
+            (bool) $enrollment->billingContract?->paysOnline(),
+            403,
+            'This application is paid at the school cashier, not online.',
+        );
     }
 
     /**

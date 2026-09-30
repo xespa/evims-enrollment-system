@@ -194,3 +194,25 @@ test('admins can view a transaction with its student, installment and recorder',
             ->missing('payment.recorded_by.email')
         );
 });
+
+test('voided counter payments have their own tab and stay out of the collected total', function () {
+    $enrollment = enrollmentWithInstallments('Cruz');
+    transactionFor($enrollment, ['amount' => 1000]);
+    $voided = transactionFor($enrollment, [
+        'amount' => 500,
+        'method' => 'CASH',
+        'paymongo_source_id' => null,
+        'receipt_number' => 'OR-1',
+        'status' => 'VOIDED',
+        'void_reason' => 'Duplicate entry',
+    ]);
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.transactions.index', ['status' => 'VOIDED']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('transactions.data', 1)
+            ->where('transactions.data.0.id', $voided->id)
+            ->where('summary.counts.VOIDED', 1)
+            ->where('summary.collected', 1000)
+        );
+});

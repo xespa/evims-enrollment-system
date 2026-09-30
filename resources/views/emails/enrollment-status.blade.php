@@ -6,11 +6,15 @@ Dear Parent/Guardian,
 @if ($status === 'APPROVED')
 We are pleased to inform you that **{{ $student->first_name }} {{ $student->last_name }}**'s enrollment application for **{{ $gradeLevel->name }}** (School Year {{ $enrollment->school_year }}) has been **approved**.
 
+@if ($paymentUrl)
 Please proceed to settle your tuition payment to secure your child's slot.
 
 @component('mail::button', ['url' => $paymentUrl])
 View Payment Details
 @endcomponent
+@else
+Please settle your tuition at the **school cashier** to secure your child's slot. Bring your reference number below; the cashier will record your payment and issue an official receipt.
+@endif
 @elseif ($status === 'REJECTED')
 Thank you for your interest in enrolling **{{ $student->first_name }} {{ $student->last_name }}** for **{{ $gradeLevel->name }}** (School Year {{ $enrollment->school_year }}).
 

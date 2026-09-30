@@ -1,5 +1,13 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
 import {
     formatMobileNumber,
@@ -42,6 +50,12 @@ const INSTALLMENT_STATUS_STYLES = {
     PAID: 'bg-green-100 text-green-800',
 };
 
+const INSTALLMENT_STATUS_LABELS = {
+    UNPAID: 'Unpaid',
+    PARTIALLY_PAID: 'Partially paid',
+    PAID: 'Paid',
+};
+
 function formatCurrency(value) {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -49,69 +63,179 @@ function formatCurrency(value) {
     }).format(value);
 }
 
-function PaymentsSection({ enrollment }) {
-    const [payingInstallmentId, setPayingInstallmentId] = useState(null);
-    const { data, setData, post, processing, errors, reset } = useForm({
-        installment_id: '',
-        amount: '',
+function formatShortDate(value) {
+    return new Date(value).toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+}
+
+const METHOD_LABELS = { CASH: 'Counter', GCASH: 'GCash' };
+
+/**
+ * Voids a counter payment recorded by mistake. The whole receipt is voided
+ * (a payment split across installments shares one OR number); it stays on
+ * record, and its installments reopen.
+ */
+function VoidPaymentDialog({ payment, receiptTotal, receiptParts, open, onOpenChange }) {
+    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+        reason: '',
     });
 
-    const installments = enrollment.billing_contract?.installments ?? [];
+    const close = (isOpen) => {
+        if (!isOpen) {
+            reset();
+            clearErrors();
+        }
+        onOpenChange(isOpen);
+    };
 
-    const totalDue = installments.reduce(
-        (sum, i) => sum + Number(i.amount_due),
-        0,
-    );
-    const totalPaid = installments.reduce(
-        (sum, i) =>
-            sum +
-            i.payments
-                .filter((p) => p.status === 'COMPLETED')
-                .reduce((s, p) => s + Number(p.amount), 0),
-        0,
-    );
-
-    const openPayForm = (installment) => {
-        setPayingInstallmentId(installment.id);
-        setData({
-            installment_id: installment.id,
-            amount: (
-                Number(installment.amount_due) - installmentPaid(installment)
-            ).toFixed(2),
+    const submit = (e) => {
+        e.preventDefault();
+        post(route('admin.payments.void', payment.id), {
+            preserveScroll: true,
+            onSuccess: () => close(false),
         });
     };
+
+    return (
+        <Dialog open={open} onOpenChange={close}>
+            <DialogContent
+                aria-describedby="void-payment-summary"
+                className="rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md"
+            >
+                <form onSubmit={submit}>
+                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                        <DialogTitle className="font-serif text-xl font-semibold">
+                            Void {payment.receipt_number ? `OR ${payment.receipt_number}` : 'this payment'}?
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 px-6 py-5">
+                        <p id="void-payment-summary" className="text-sm text-[#1F2A24]/75">
+                            <span className="font-semibold tabular-nums">{formatCurrency(receiptTotal)}</span>
+                            {receiptParts > 1 && ` across ${receiptParts} installments`} will stop counting as paid
+                            and the balance goes back up. The payment stays on record as voided — it isn't deleted.
+                        </p>
+
+                        <div>
+                            <label htmlFor="void-reason" className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                                Reason{' '}
+                                <span className="text-[#C6473B]" aria-hidden="true">
+                                    *
+                                </span>
+                            </label>
+                            <textarea
+                                id="void-reason"
+                                required
+                                autoFocus
+                                rows={3}
+                                maxLength={255}
+                                placeholder="e.g. Recorded on the wrong student"
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
+                                aria-invalid={errors.reason ? true : undefined}
+                                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                            />
+                            {errors.reason ? (
+                                <p className="mt-1 text-xs text-[#C6473B]">{errors.reason}</p>
+                            ) : (
+                                <p className="mt-1 text-xs text-[#1F2A24]/55">
+                                    The parent is notified, and this reason is kept with the payment.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:justify-end">
+                        <DialogClose asChild>
+                            <button
+                                type="button"
+                                className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium hover:bg-[#1F2A24]/5"
+                            >
+                                Keep payment
+                            </button>
+                        </DialogClose>
+                        <button
+                            type="submit"
+                            disabled={processing || data.reason.trim().length < 5}
+                            className="min-h-10 rounded-full bg-[#C6473B] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {processing ? 'Voiding…' : 'Void payment'}
+                        </button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function PaymentsSection({ enrollment }) {
+    const [isRecording, setIsRecording] = useState(false);
+    // Remounts the dialog per opening so it starts from the latest balance.
+    const [recordSession, setRecordSession] = useState(0);
+    const [voidingPayment, setVoidingPayment] = useState(null);
+    const [isVoiding, setIsVoiding] = useState(false);
+
+    const billingContract = enrollment.billing_contract;
+    const installments = billingContract?.installments ?? [];
+    const paysAtCounter = billingContract?.payment_channel !== 'GCASH';
 
     const installmentPaid = (installment) =>
         installment.payments
             .filter((p) => p.status === 'COMPLETED')
             .reduce((s, p) => s + Number(p.amount), 0);
 
-    const submitCashPayment = (e) => {
-        e.preventDefault();
-        post(route('admin.enrollments.cash-payments.store', enrollment.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setPayingInstallmentId(null);
-                reset();
-            },
-        });
+    const totalDue = installments.reduce((sum, i) => sum + Number(i.amount_due), 0);
+    const totalPaid = installments.reduce((sum, i) => sum + installmentPaid(i), 0);
+    const hasBalance = totalDue - totalPaid > 0.004;
+
+    // Every active counter payment on one OR number is voided together.
+    const activeCounterPayments = installments
+        .flatMap((i) => i.payments)
+        .filter((p) => p.method === 'CASH' && p.status === 'COMPLETED');
+    const receiptParts = (payment) =>
+        payment.receipt_number
+            ? activeCounterPayments.filter((p) => p.receipt_number === payment.receipt_number)
+            : [payment];
+
+    const openVoid = (payment) => {
+        setVoidingPayment(payment);
+        setIsVoiding(true);
     };
 
     return (
         <div className="mt-6 border-t border-[#1F2A24]/10 pt-4">
-            <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                    Payments
-                </h2>
-                <div className="text-sm text-[#1F2A24]/70">
-                    Paid{' '}
-                    <span className="font-semibold text-[#2F6F4E]">
-                        {formatCurrency(totalPaid)}
-                    </span>{' '}
-                    of{' '}
-                    <span className="font-semibold text-[#1F2A24]">
-                        {formatCurrency(totalDue)}
-                    </span>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        Payments
+                    </h2>
+                    {billingContract && (
+                        <span className="rounded-full bg-[#1F2A24]/5 px-2.5 py-0.5 text-xs font-medium text-[#1F2A24]/70">
+                            {paysAtCounter ? 'Pays at the school counter' : 'Pays online via GCash'}
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="text-sm text-[#1F2A24]/70">
+                        Paid{' '}
+                        <span className="font-semibold text-[#2F6F4E]">{formatCurrency(totalPaid)}</span>{' '}
+                        of <span className="font-semibold text-[#1F2A24]">{formatCurrency(totalDue)}</span>
+                    </div>
+                    {hasBalance && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setRecordSession((n) => n + 1);
+                                setIsRecording(true);
+                            }}
+                            className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                        >
+                            Record counter payment
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -119,17 +243,20 @@ function PaymentsSection({ enrollment }) {
                 {installments.map((installment) => {
                     const paid = installmentPaid(installment);
                     const remaining = Number(installment.amount_due) - paid;
+                    // Voided payments stay listed (struck through) so the record is complete.
+                    const shownPayments = installment.payments.filter((p) =>
+                        ['COMPLETED', 'VOIDED'].includes(p.status),
+                    );
 
                     return (
                         <div key={installment.id} className="py-3">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <span className="text-sm font-medium text-[#1F2A24]">
-                                        Installment #
-                                        {installment.installment_number}
+                                        Installment #{installment.installment_number}
                                     </span>
                                     <span className="ml-2 text-xs text-[#1F2A24]/70">
-                                        Due {installment.due_date}
+                                        Due {formatShortDate(installment.due_date)}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
@@ -139,96 +266,99 @@ function PaymentsSection({ enrollment }) {
                                     <span
                                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${INSTALLMENT_STATUS_STYLES[installment.status]}`}
                                     >
-                                        {installment.status}
+                                        {INSTALLMENT_STATUS_LABELS[installment.status] ?? installment.status}
                                     </span>
-                                    {installment.status !== 'PAID' && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                openPayForm(installment)
-                                            }
-                                            aria-expanded={
-                                                payingInstallmentId ===
-                                                installment.id
-                                            }
-                                            className="min-h-9 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
-                                        >
-                                            Record Cash Payment
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 
-                            {payingInstallmentId === installment.id && (
-                                <form
-                                    onSubmit={submitCashPayment}
-                                    className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-[#2F6F4E]/5 p-3"
-                                >
-                                    <label
-                                        htmlFor={`cash-amount-${installment.id}`}
-                                        className="text-xs text-[#1F2A24]/70"
-                                    >
-                                        Amount (₱)
-                                    </label>
-                                    <input
-                                        id={`cash-amount-${installment.id}`}
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        inputMode="decimal"
-                                        autoFocus
-                                        aria-invalid={
-                                            errors.amount ? true : undefined
-                                        }
-                                        value={data.amount}
-                                        onChange={(e) =>
-                                            setData('amount', e.target.value)
-                                        }
-                                        className="w-32 rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="min-h-9 rounded-full bg-[#2F6F4E] px-4 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
-                                    >
-                                        {processing ? 'Saving…' : 'Confirm'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setPayingInstallmentId(null)
-                                        }
-                                        className="min-h-9 rounded-full px-3 text-xs text-[#1F2A24]/70 hover:bg-[#1F2A24]/5"
-                                    >
-                                        Cancel
-                                    </button>
-                                    {errors.amount && (
-                                        <span
-                                            role="alert"
-                                            className="w-full text-xs text-[#C6473B]"
-                                        >
-                                            {errors.amount}
-                                        </span>
-                                    )}
-                                </form>
-                            )}
-
                             {paid > 0 && installment.status !== 'PAID' && (
                                 <p className="mt-1 text-xs text-[#1F2A24]/70">
-                                    {formatCurrency(paid)} paid so far,{' '}
-                                    {formatCurrency(remaining)} remaining
+                                    {formatCurrency(paid)} paid so far, {formatCurrency(remaining)} remaining
                                 </p>
+                            )}
+
+                            {shownPayments.length > 0 && (
+                                <ul className="mt-2 space-y-1.5 border-l-2 border-[#2F6F4E]/15 pl-3">
+                                    {shownPayments.map((payment) => {
+                                        const isVoided = payment.status === 'VOIDED';
+                                        const canVoid = payment.method === 'CASH' && !isVoided;
+
+                                        return (
+                                            <li key={payment.id} className="text-xs text-[#1F2A24]/65">
+                                                <div className="flex flex-wrap items-center justify-between gap-x-3">
+                                                    <span className={isVoided ? 'line-through' : undefined}>
+                                                        {METHOD_LABELS[payment.method] ?? payment.method}
+                                                        {payment.paid_at && ` · ${formatShortDate(payment.paid_at)}`}
+                                                        {payment.receipt_number && ` · OR ${payment.receipt_number}`}
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        {isVoided && (
+                                                            <span className="rounded-full bg-[#1F2A24]/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#1F2A24]/70 uppercase">
+                                                                Voided
+                                                            </span>
+                                                        )}
+                                                        <span className={`tabular-nums ${isVoided ? 'line-through' : ''}`}>
+                                                            {formatCurrency(payment.amount)}
+                                                        </span>
+                                                        {canVoid && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openVoid(payment)}
+                                                                className="min-h-8 rounded-full px-2 font-medium text-[#A83A30] hover:bg-[#C6473B]/10"
+                                                            >
+                                                                Void
+                                                            </button>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {isVoided && (
+                                                    <p className="mt-0.5 text-[#1F2A24]/55 italic">
+                                                        Voided
+                                                        {payment.voided_by?.name && ` by ${payment.voided_by.name}`}
+                                                        {payment.voided_at && ` on ${formatShortDate(payment.voided_at)}`}
+                                                        {payment.void_reason && `: ${payment.void_reason}`}
+                                                    </p>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
                             )}
                         </div>
                     );
                 })}
 
                 {installments.length === 0 && (
-                    <p className="py-3 text-sm text-[#1F2A24]/65">
-                        No installment schedule found.
-                    </p>
+                    <p className="py-3 text-sm text-[#1F2A24]/65">No installment schedule found.</p>
                 )}
             </div>
+
+            {installments.length > 0 && (
+                <RecordCounterPaymentDialog
+                    key={recordSession}
+                    enrollmentId={enrollment.id}
+                    unpaidInstallments={installments
+                        .map((installment) => ({
+                            id: installment.id,
+                            installment_number: installment.installment_number,
+                            owed: Math.max(0, Number(installment.amount_due) - installmentPaid(installment)),
+                        }))
+                        .filter((installment) => installment.owed > 0.004)}
+                    open={isRecording}
+                    onOpenChange={setIsRecording}
+                />
+            )}
+
+            {voidingPayment && (
+                <VoidPaymentDialog
+                    key={voidingPayment.id}
+                    payment={voidingPayment}
+                    receiptTotal={receiptParts(voidingPayment).reduce((s, p) => s + Number(p.amount), 0)}
+                    receiptParts={receiptParts(voidingPayment).length}
+                    open={isVoiding}
+                    onOpenChange={setIsVoiding}
+                />
+            )}
         </div>
     );
 }

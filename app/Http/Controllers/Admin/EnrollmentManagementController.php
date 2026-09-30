@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Payments\RecordCounterPayment;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusUpdated;
 use App\Models\Enrollment;
-use App\Models\Installment;
-use App\Models\Payment;
+use App\Models\User;
 use App\Notifications\DocumentReminder;
 use App\Notifications\EnrollmentStatusChanged;
-use App\Notifications\PaymentReceived;
+use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -47,7 +48,7 @@ class EnrollmentManagementController extends Controller
             'subjects',
             'academicHistory',
             'vitalInformation',
-            'billingContract.installments.payments',
+            'billingContract.installments.payments.voidedBy:id,name',
             'officeVerification',
         ]);
         $enrollment->loadParentEmailVerified();
@@ -118,38 +119,51 @@ class EnrollmentManagementController extends Controller
         return back()->with('success', "Reminder sent about the {$documentLabel}.");
     }
 
-    public function recordCashPayment(Request $request, Enrollment $enrollment)
+    /**
+     * Records a payment the parent made at the school cashier. The amount is
+     * applied to unpaid installments in order, so their statuses update.
+     */
+    public function recordCashPayment(Request $request, Enrollment $enrollment, RecordCounterPayment $recordCounterPayment): RedirectResponse
     {
+        $billingContract = $enrollment->billingContract()->with('installments.payments')->first();
+
+        abort_unless($billingContract, 404);
+
+        $remainingBalance = $billingContract->remainingBalance();
+        $formattedBalance = number_format($remainingBalance, 2);
+
         $validated = $request->validate([
-            'installment_id' => ['required', 'exists:installments,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'min:0.01', "max:{$remainingBalance}"],
+            'receipt_number' => ['required', 'string', 'max:50'],
+            'paid_on' => ['nullable', 'date', 'before_or_equal:today'],
+        ], [
+            'amount.max' => $remainingBalance > 0
+                ? "The amount can't be more than the remaining balance of ₱{$formattedBalance}."
+                : 'This application is already fully paid.',
+            'paid_on.before_or_equal' => "The payment date can't be in the future.",
+            'receipt_number.required' => 'Enter the OR number from the official receipt you issued.',
         ]);
 
-        $installment = Installment::findOrFail($validated['installment_id']);
+        $paidOn = isset($validated['paid_on']) ? Carbon::parse($validated['paid_on']) : today();
+        // Keep the time of day when it's recorded the same day it was paid.
+        $paidAt = $paidOn->isToday() ? now() : $paidOn->startOfDay();
 
-        // Guard: don't allow paying more than what's actually still owed on this installment
-        $remaining = $installment->amount_due - $installment->totalPaid();
-        if ($validated['amount'] > $remaining) {
-            return back()->withErrors(['amount' => "Amount exceeds remaining balance of ₱{$remaining} for this installment."]);
-        }
+        /** @var User $admin Admin routes use the staff (web) guard. */
+        $admin = $request->user();
 
-        $payment = Payment::create([
-            'installment_id' => $installment->id,
-            'enrollment_id' => $enrollment->id,
-            'amount' => $validated['amount'],
-            'method' => 'CASH',
-            'status' => 'COMPLETED',
-            'recorded_by' => $request->user()->id,
-            'paid_at' => now(),
-        ]);
+        $payments = $recordCounterPayment->handle(
+            $enrollment,
+            (float) $validated['amount'],
+            $validated['receipt_number'],
+            $paidAt,
+            $admin,
+        );
 
-        $installment->refreshStatus();
+        $formattedAmount = number_format((float) $validated['amount'], 2);
+        $message = "Counter payment of ₱{$formattedAmount} recorded";
+        $message .= $payments->count() > 1 ? " across {$payments->count()} installments." : '.';
 
-        $enrollment->loadMissing('student', 'enrolleeUser');
-        $payment->setRelation('enrollment', $enrollment);
-        $enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
-
-        return back()->with('success', 'Cash payment recorded.');
+        return back()->with('success', $message);
     }
 
     public function destroy(Enrollment $enrollment)

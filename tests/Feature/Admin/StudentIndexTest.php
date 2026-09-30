@@ -4,6 +4,7 @@ use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\OfficeVerification;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -180,5 +181,91 @@ test('the applications list flags parents who have not verified their email', fu
             ->where('applications.data.0.parent_email_verified', true)
             ->where('applications.data.1.student.last_name', 'Bautista')
             ->where('applications.data.1.parent_email_verified', false)
+        );
+});
+
+test('the applications list shows where each application stands on payment', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    $partlyPaid = Enrollment::factory()->create([
+        'student_id' => Student::factory()->create(['last_name' => 'Aquino']),
+        'enrollment_status' => 'APPROVED',
+    ]);
+    $partlyPaid->billingContract()->create([
+        'payment_option' => 'MONTHLY',
+        'payment_channel' => 'COUNTER',
+        'total_fee' => 10000,
+    ])->generateInstallments();
+    $firstInstallment = $partlyPaid->billingContract->installments()->orderBy('installment_number')->first();
+    Payment::create([
+        'installment_id' => $firstInstallment->id,
+        'enrollment_id' => $partlyPaid->id,
+        'amount' => 500,
+        'method' => 'CASH',
+        'receipt_number' => 'OR-1',
+        'status' => 'COMPLETED',
+        'paid_at' => now(),
+    ]);
+    // Voided money never counts as paid.
+    Payment::create([
+        'installment_id' => $firstInstallment->id,
+        'enrollment_id' => $partlyPaid->id,
+        'amount' => 999,
+        'method' => 'CASH',
+        'receipt_number' => 'OR-2',
+        'status' => 'VOIDED',
+        'paid_at' => now(),
+    ]);
+
+    Enrollment::factory()->create([
+        'student_id' => Student::factory()->create(['last_name' => 'Bautista']),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('applications.data.0.student.last_name', 'Aquino')
+            ->where('applications.data.0.payment.status', 'PARTIALLY_PAID')
+            ->where('applications.data.0.payment.channel', 'COUNTER')
+            ->where('applications.data.0.payment.total', 10000)
+            ->where('applications.data.0.payment.paid', 500)
+            ->where('applications.data.0.payment.balance', 9500)
+            ->has('applications.data.0.payment.unpaid_installments', 10)
+            ->where('applications.data.0.payment.unpaid_installments.0.installment_number', 1)
+            ->where('applications.data.0.payment.unpaid_installments.0.owed', 500)
+            ->where('applications.data.0.payment.unpaid_installments.1.owed', 1000)
+            ->missing('applications.data.0.billing_contract')
+            ->where('applications.data.1.student.last_name', 'Bautista')
+            ->where('applications.data.1.payment', null)
+        );
+});
+
+test('a fully paid application shows as paid with nothing left to record', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollment = Enrollment::factory()->create(['enrollment_status' => 'APPROVED']);
+    $enrollment->billingContract()->create([
+        'payment_option' => 'MONTHLY',
+        'payment_channel' => 'COUNTER',
+        'total_fee' => 10000,
+    ])->generateInstallments();
+
+    foreach ($enrollment->billingContract->installments as $installment) {
+        Payment::create([
+            'installment_id' => $installment->id,
+            'enrollment_id' => $enrollment->id,
+            'amount' => $installment->amount_due,
+            'method' => 'CASH',
+            'receipt_number' => 'OR-9',
+            'status' => 'COMPLETED',
+            'paid_at' => now(),
+        ]);
+    }
+
+    $this->actingAs($admin)
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('applications.data.0.payment.status', 'PAID')
+            ->where('applications.data.0.payment.balance', 0)
+            ->has('applications.data.0.payment.unpaid_installments', 0)
         );
 });

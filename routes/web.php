@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\VoidPaymentController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
         ->name('enrollments.documents.remind');
     Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
+    Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
 
     Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show']);
     // Setting up a school year: store starts a draft, update saves it

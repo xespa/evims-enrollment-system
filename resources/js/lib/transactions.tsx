@@ -1,17 +1,19 @@
 import { Banknote, Smartphone } from 'lucide-react';
 
-export type TransactionStatus = 'COMPLETED' | 'PENDING' | 'FAILED';
+export type TransactionStatus = 'COMPLETED' | 'PENDING' | 'FAILED' | 'VOIDED';
 
 export const STATUS_LABELS: Record<TransactionStatus, string> = {
     COMPLETED: 'Paid',
     PENDING: 'Pending',
     FAILED: 'Failed',
+    VOIDED: 'Voided',
 };
 
 export const STATUS_STYLES: Record<TransactionStatus, string> = {
     COMPLETED: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
     PENDING: 'bg-[#E8A33D]/15 text-[#a4670f]',
     FAILED: 'bg-[#C6473B]/10 text-[#A83A30]',
+    VOIDED: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
 };
 
 export function formatCurrency(value: number | string) {
@@ -33,17 +35,20 @@ export function formatDateTime(value: string) {
 
 /**
  * The ID a registrar would look up in the PayMongo dashboard (the payment
- * ID once paid, otherwise the checkout source ID), or a receipt-style
- * number for cash payments recorded at the counter.
+ * ID once paid, otherwise the checkout source ID), or for counter payments
+ * the official receipt (OR) number, falling back to a receipt-style number.
  */
 export function referenceId(transaction: {
     id: number;
     method: string;
+    receipt_number?: string | null;
     paymongo_payment_intent_id: string | null;
     paymongo_source_id: string | null;
 }) {
     if (transaction.method === 'CASH') {
-        return `CASH-${String(transaction.id).padStart(6, '0')}`;
+        return transaction.receipt_number
+            ? `OR ${transaction.receipt_number}`
+            : `CASH-${String(transaction.id).padStart(6, '0')}`;
     }
 
     return (

@@ -4,21 +4,57 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BillingContract extends Model
 {
+    /** Pays in person at the school cashier; the office records each payment. */
+    public const CHANNEL_COUNTER = 'COUNTER';
+
+    /** Pays online through GCash (PayMongo). */
+    public const CHANNEL_GCASH = 'GCASH';
+
+    public const CHANNELS = [self::CHANNEL_COUNTER, self::CHANNEL_GCASH];
+
     protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee'];
 
     protected $casts = [
         'total_fee' => 'decimal:2',
     ];
 
-    public function enrollment()
+    /**
+     * Whether the parent pays online. Counter payers never get a payment
+     * link or GCash checkout; the cashier records their payments instead.
+     */
+    public function paysOnline(): bool
+    {
+        return $this->payment_channel === self::CHANNEL_GCASH;
+    }
+
+    /**
+     * What's still owed across all installments.
+     */
+    public function remainingBalance(): float
+    {
+        return round(
+            $this->installments->sum(fn (Installment $installment) => max(0, (float) $installment->amount_due - $installment->totalPaid())),
+            2,
+        );
+    }
+
+    /**
+     * @return BelongsTo<Enrollment, $this>
+     */
+    public function enrollment(): BelongsTo
     {
         return $this->belongsTo(Enrollment::class);
     }
 
-    public function installments()
+    /**
+     * @return HasMany<Installment, $this>
+     */
+    public function installments(): HasMany
     {
         return $this->hasMany(Installment::class);
     }

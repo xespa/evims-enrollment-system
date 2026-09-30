@@ -82,6 +82,7 @@ test('recording a cash payment notifies the linked enrollee', function () {
         ->post(route('admin.enrollments.cash-payments.store', $enrollment), [
             'installment_id' => $installment->id,
             'amount' => 30000,
+            'receipt_number' => 'OR-1001',
         ])
         ->assertSessionHasNoErrors();
 

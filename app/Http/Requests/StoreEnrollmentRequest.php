@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\BillingContract;
 use App\Models\Curriculum;
 use App\Models\Student;
 use Closure;
@@ -193,7 +194,7 @@ class StoreEnrollmentRequest extends FormRequest
 
             // Billing
             'payment_option' => ['required', 'string'],
-            'payment_channel' => ['required', 'string'],
+            'payment_channel' => ['required', Rule::in(BillingContract::CHANNELS)],
 
             // Documents
             'form_138' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
