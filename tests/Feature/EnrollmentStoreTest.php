@@ -371,3 +371,57 @@ test('subjects from another school year are rejected', function () {
 
     expect(Enrollment::count())->toBe(0);
 });
+
+test('mobile numbers are saved as 11 digits however they were typed', function (string $typed) {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'father_mobile_no' => $typed,
+        'mother_mobile_no' => $typed,
+    ]))->assertSessionHasNoErrors();
+
+    $parents = Enrollment::sole()->student->parentProfile;
+
+    expect($parents->father_mobile_no)->toBe('09171234567')
+        ->and($parents->mother_mobile_no)->toBe('09171234567');
+})->with([
+    'plain' => '09171234567',
+    'grouped with spaces' => '0917 123 4567',
+    'with dashes' => '0917-123-4567',
+    'international' => '+63 917 123 4567',
+    'without the leading zero' => '917 123 4567',
+]);
+
+test('mobile numbers must be 11 digits starting with 09', function (string $typed) {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['father_mobile_no' => $typed]))
+        ->assertSessionHasErrors([
+            'father_mobile_no' => 'Enter a valid mobile number: +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.',
+        ]);
+
+    expect(Enrollment::count())->toBe(0);
+})->with([
+    'letters' => 'call me',
+    'digits mixed with letters' => '0917abc4567',
+    'too short' => '0917 123',
+    'too long' => '0917 123 45678',
+    'landline' => '(053) 123 4567',
+]);
+
+test('mobile numbers are optional', function () {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'father_mobile_no' => '',
+        'mother_mobile_no' => null,
+    ]))->assertSessionHasNoErrors();
+
+    expect(Enrollment::sole()->student->parentProfile->father_mobile_no)->toBeNull();
+});

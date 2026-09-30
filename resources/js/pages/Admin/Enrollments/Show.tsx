@@ -1,6 +1,15 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
+import {
+    formatMobileNumber,
+    isValidMobileNumber,
+} from '@/pages/Enrollment/Components/mobile-number';
+
+/** "0917 123 4567"; anything saved before numbers were validated is shown as-is. */
+function displayMobileNumber(value) {
+    return value && isValidMobileNumber(value) ? formatMobileNumber(value) : value;
+}
 
 function InfoRow({ label, value }) {
     return (
@@ -666,7 +675,9 @@ export default function Show({ enrollment }) {
                             />
                             <InfoRow
                                 label="Mobile No."
-                                value={student.parent_profile?.father_mobile_no}
+                                value={displayMobileNumber(
+                                    student.parent_profile?.father_mobile_no,
+                                )}
                             />
                         </div>
 
@@ -686,7 +697,9 @@ export default function Show({ enrollment }) {
                             />
                             <InfoRow
                                 label="Mobile No."
-                                value={student.parent_profile?.mother_mobile_no}
+                                value={displayMobileNumber(
+                                    student.parent_profile?.mother_mobile_no,
+                                )}
                             />
                         </div>
 

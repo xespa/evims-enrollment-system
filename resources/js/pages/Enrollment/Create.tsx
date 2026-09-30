@@ -7,6 +7,7 @@ import {
     loadDraft,
     saveDraft,
 } from '@/lib/enrollment-draft';
+import { isValidMobileNumber } from './Components/mobile-number';
 import StepperNav from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -74,6 +75,12 @@ const FIELD_LABELS = {
 // Academic History, Vital Info, and Documents. They're still reachable by
 // clicking directly on the stepper nav, this only affects the linear flow.
 const FAST_TRACK_SKIP_STEPS = [2, 3, 4, 5, 7];
+
+// Optional, but must be a complete 11-digit number when filled in.
+const MOBILE_NUMBER_FIELDS = {
+    father_mobile_no: "father's mobile number",
+    mother_mobile_no: "mother's mobile number",
+};
 
 const FIELD_TO_STEP = {
     student_type: 1,
@@ -407,13 +414,24 @@ export default function Create({
         return `Your last application was for ${previousSchoolYear}. Since this is a continuing application, it should be for ${expected} instead of ${data.school_year} — please update the School Year above before continuing.`;
     };
 
+    // Mobile numbers are optional, but one that's been started must be
+    // complete before leaving its step.
+    const getUnfinishedMobileNumbers = () =>
+        Object.keys(MOBILE_NUMBER_FIELDS).filter(
+            (field) =>
+                FIELD_TO_STEP[field] === step &&
+                data[field] &&
+                !isValidMobileNumber(data[field]),
+        );
+
     // Once the flagged fields are actually filled in, drop the message
     // instead of leaving it stuck on screen.
     useEffect(() => {
         if (
             nextBlockedReason &&
             getMissingFields().length === 0 &&
-            !getSchoolYearIssue()
+            !getSchoolYearIssue() &&
+            getUnfinishedMobileNumbers().length === 0
         ) {
             setNextBlockedReason('');
         }
@@ -450,13 +468,25 @@ export default function Create({
     const goNext = () => {
         const missing = getMissingFields();
         const schoolYearIssue = getSchoolYearIssue();
-        if (missing.length > 0 || schoolYearIssue) {
+        const unfinishedMobileNumbers = getUnfinishedMobileNumbers();
+        if (
+            missing.length > 0 ||
+            schoolYearIssue ||
+            unfinishedMobileNumbers.length > 0
+        ) {
             const messages = [];
             if (missing.length > 0) {
                 messages.push(
                     `Before continuing, please fill in: ${missing
                         .map((field) => FIELD_LABELS[field] ?? field)
                         .join(', ')}.`,
+                );
+            }
+            if (unfinishedMobileNumbers.length > 0) {
+                messages.push(
+                    `Please finish the ${unfinishedMobileNumbers
+                        .map((field) => MOBILE_NUMBER_FIELDS[field])
+                        .join(' and ')} — it should be the 10 digits after +63, starting with 9 (or leave it blank).`,
                 );
             }
             if (schoolYearIssue) {
@@ -565,8 +595,8 @@ export default function Create({
     // (next to the input, not only in the banner). Recomputed every render,
     // so each message disappears as soon as its field is filled in.
     const missingFieldErrors = nextBlockedReason
-        ? Object.fromEntries(
-              getMissingFields().map((field) => {
+        ? Object.fromEntries([
+              ...getMissingFields().map((field) => {
                   const label = FIELD_LABELS[field] ?? field;
                   return [
                       field,
@@ -575,7 +605,11 @@ export default function Create({
                           : `${label} is required.`,
                   ];
               }),
-          )
+              ...getUnfinishedMobileNumbers().map((field) => [
+                  field,
+                  'Enter the 10 digits after +63, starting with 9.',
+              ]),
+          ])
         : {};
 
     const stepProps = {

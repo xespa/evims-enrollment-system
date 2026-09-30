@@ -11,9 +11,46 @@ use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
+    private const MOBILE_NUMBER_FIELDS = ['father_mobile_no', 'mother_mobile_no'];
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Mobile numbers are stored as 11 digits ("09171234567"), however they
+     * were typed: spaces, dashes and a +63 prefix are accepted and removed.
+     */
+    protected function prepareForValidation(): void
+    {
+        foreach (self::MOBILE_NUMBER_FIELDS as $field) {
+            if ($this->filled($field) && is_string($this->input($field))) {
+                $this->merge([$field => self::normalizeMobileNumber($this->input($field))]);
+            }
+        }
+    }
+
+    /**
+     * Mirrors normalizeMobileNumber() in the admission form. Anything that
+     * isn't a digit is kept out of the result only when the rest looks like
+     * a number, so letters still fail validation instead of vanishing.
+     */
+    public static function normalizeMobileNumber(string $input): string
+    {
+        $trimmed = trim($input);
+
+        if (! preg_match('/^[\d\s\-().+]+$/', $trimmed)) {
+            return $trimmed;
+        }
+
+        $digits = preg_replace('/\D/', '', $trimmed) ?? '';
+
+        if (str_starts_with($digits, '63') && strlen($digits) > 10) {
+            return '0'.substr($digits, 2);
+        }
+
+        return str_starts_with($digits, '9') ? '0'.$digits : $digits;
     }
 
     /**
@@ -122,13 +159,13 @@ class StoreEnrollmentRequest extends FormRequest
             'father_middle_name' => ['nullable', 'string', 'max:255'],
             'father_occupation' => ['nullable', 'string', 'max:255'],
             'father_name_of_office' => ['nullable', 'string', 'max:255'],
-            'father_mobile_no' => ['nullable', 'string', 'max:20'],
+            'father_mobile_no' => ['nullable', 'regex:/^09\d{9}$/'],
             'mother_maiden_last_name' => ['nullable', 'string', 'max:255'],
             'mother_first_name' => ['nullable', 'string', 'max:255'],
             'mother_middle_name' => ['nullable', 'string', 'max:255'],
             'mother_occupation' => ['nullable', 'string', 'max:255'],
             'mother_name_of_office' => ['nullable', 'string', 'max:255'],
-            'mother_mobile_no' => ['nullable', 'string', 'max:20'],
+            'mother_mobile_no' => ['nullable', 'regex:/^09\d{9}$/'],
 
             // Academic history
             'last_grade_level_completed' => ['nullable', 'string', 'max:255'],
@@ -162,6 +199,19 @@ class StoreEnrollmentRequest extends FormRequest
             'form_138' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'birth_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'good_moral_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        $mobileNumberMessage = 'Enter a valid mobile number: +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.';
+
+        return [
+            'father_mobile_no.regex' => $mobileNumberMessage,
+            'mother_mobile_no.regex' => $mobileNumberMessage,
         ];
     }
 }
