@@ -4,31 +4,44 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GradeLevel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class GradeLevelController extends Controller
 {
-    public function index()
+    /**
+     * Fees and subjects are both edited in modals on this one page, so each
+     * grade level ships with its subjects (a handful each).
+     */
+    public function index(Request $request): Response
     {
         return Inertia::render('Admin/GradeLevels/Index', [
-            'gradeLevels' => GradeLevel::withCount('subjects')->orderBy('level_order')->get(),
+            'gradeLevels' => GradeLevel::query()
+                ->with(['subjects' => fn ($query) => $query
+                    ->select(['id', 'grade_level_id', 'name', 'code'])
+                    ->withCount('enrollments')
+                    ->orderBy('name')])
+                ->orderBy('level_order')
+                ->get(),
+            // Lets a link (or the old per-grade page URL) open a grade
+            // level's Manage Subjects modal directly.
+            'manageGradeLevelId' => $request->integer('manage') ?: null,
         ]);
     }
 
-    public function show(GradeLevel $gradeLevel)
+    /**
+     * Subjects used to live on their own page; keep old links working by
+     * opening that grade level's subjects modal instead.
+     */
+    public function show(GradeLevel $gradeLevel): RedirectResponse
     {
-        return Inertia::render('Admin/GradeLevels/Show', [
-            'gradeLevel' => $gradeLevel->only(['id', 'name', 'tuition_fee']),
-            'subjects' => $gradeLevel->subjects()
-                ->withCount('enrollments')
-                ->orderBy('name')
-                ->get(['id', 'grade_level_id', 'name', 'code']),
-        ]);
+        return to_route('admin.grade-levels.index', ['manage' => $gradeLevel->id]);
     }
 
-    public function update(Request $request, GradeLevel $gradeLevel)
+    public function update(Request $request, GradeLevel $gradeLevel): RedirectResponse
     {
         $validated = $request->validate([
             'registration_fee' => ['required', 'numeric', 'min:0'],

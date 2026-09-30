@@ -1,214 +1,244 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
+import { BookOpen, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import {
     BILLABLE_MONTHS,
     formatCurrency,
 } from '@/pages/Enrollment/Components/fees';
+import EditFeesDialog from './Components/EditFeesDialog';
+import ManageSubjectsDialog from './Components/ManageSubjectsDialog';
+import { MONTHLY_FEES, ONE_TIME_FEES } from './Components/types';
+import type { GradeLevel } from './Components/types';
 
-const FEE_FIELDS = [
-    { name: 'registration_fee', label: 'Registration Fee' },
-    { name: 'miscellaneous_fee', label: 'Miscellaneous Fee' },
-    { name: 'books_fee', label: 'Books' },
-    { name: 'monthly_tuition', label: 'Monthly Tuition' },
-    { name: 'monthly_laboratory_fee', label: 'Monthly Laboratory Fee' },
-];
+type Props = {
+    gradeLevels: GradeLevel[];
+    manageGradeLevelId: number | null;
+};
 
-const EMPTY_FEES = Object.fromEntries(FEE_FIELDS.map((f) => [f.name, '']));
+const STAGES = [
+    { key: 'pre', title: 'Pre-Elementary', note: 'Nursery to Pre-K' },
+    { key: 'elem', title: 'Elementary', note: 'Grades 1 to 6' },
+    { key: 'jhs', title: 'Junior High School', note: 'Grades 7 to 10' },
+] as const;
 
-function totalOf(fees) {
-    const amount = (name) => Number(fees[name]) || 0;
+type StageKey = (typeof STAGES)[number]['key'];
 
-    return (
-        amount('registration_fee') +
-        amount('miscellaneous_fee') +
-        amount('books_fee') +
-        BILLABLE_MONTHS *
-            (amount('monthly_tuition') + amount('monthly_laboratory_fee'))
+function stageOf(gradeLevel: GradeLevel): StageKey {
+    const grade = Number(gradeLevel.name.match(/^Grade\s+(\d+)/i)?.[1]);
+
+    if (!grade) {
+        return 'pre';
+    }
+
+    return grade <= 6 ? 'elem' : 'jhs';
+}
+
+function feeTotal(gradeLevel: GradeLevel, names: { name: string }[]) {
+    return names.reduce(
+        (total, { name }) =>
+            total + Number(gradeLevel[name as keyof GradeLevel] ?? 0),
+        0,
     );
 }
 
-export default function Index({ gradeLevels }) {
+function GradeLevelCard({
+    gradeLevel,
+    onEditFees,
+    onManageSubjects,
+}: {
+    gradeLevel: GradeLevel;
+    onEditFees: () => void;
+    onManageSubjects: () => void;
+}) {
+    const oneTime = feeTotal(gradeLevel, ONE_TIME_FEES);
+    const monthly = feeTotal(gradeLevel, MONTHLY_FEES);
+    const subjectCount = gradeLevel.subjects.length;
+
+    return (
+        <article className="flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-5 transition-shadow hover:shadow-md hover:shadow-[#1F2A24]/5">
+            <div className="flex items-start justify-between gap-3">
+                <h3 className="font-serif text-lg font-semibold text-[#1F2A24]">
+                    {gradeLevel.name}
+                </h3>
+                <span
+                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                        subjectCount > 0
+                            ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                            : 'bg-[#E8A33D]/15 text-[#a4670f]'
+                    }`}
+                >
+                    <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                    {subjectCount === 0
+                        ? 'No subjects'
+                        : `${subjectCount} ${subjectCount === 1 ? 'subject' : 'subjects'}`}
+                </span>
+            </div>
+
+            <p className="mt-3 text-2xl font-semibold text-[#1F2A24] tabular-nums">
+                {formatCurrency(gradeLevel.tuition_fee)}
+            </p>
+            <p className="text-xs text-[#1F2A24]/55">per school year</p>
+
+            <dl className="mt-4 space-y-1.5 border-t border-[#1F2A24]/10 pt-3 text-sm">
+                <div className="flex justify-between gap-3">
+                    <dt className="text-[#1F2A24]/65">One-time fees</dt>
+                    <dd className="text-[#1F2A24] tabular-nums">
+                        {formatCurrency(oneTime)}
+                    </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                    <dt className="text-[#1F2A24]/65">Monthly</dt>
+                    <dd className="text-[#1F2A24] tabular-nums">
+                        {formatCurrency(monthly)}{' '}
+                        <span className="text-[#1F2A24]/55">
+                            × {BILLABLE_MONTHS}
+                        </span>
+                    </dd>
+                </div>
+            </dl>
+
+            <div className="mt-auto grid grid-cols-2 gap-2 pt-5">
+                <button
+                    type="button"
+                    onClick={onEditFees}
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                >
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                    Edit fees
+                </button>
+                <button
+                    type="button"
+                    onClick={onManageSubjects}
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full bg-[#2F6F4E] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                >
+                    <BookOpen className="h-4 w-4" aria-hidden="true" />
+                    Subjects
+                </button>
+            </div>
+        </article>
+    );
+}
+
+export default function Index({ gradeLevels, manageGradeLevelId }: Props) {
     const { props } = usePage();
-    const [editingId, setEditingId] = useState(null);
 
-    const { data, setData, patch, processing, errors, reset, clearErrors } =
-        useForm(EMPTY_FEES);
+    // Which grade level each modal is for, kept separately from whether
+    // it's open so the content doesn't vanish during the close animation.
+    const [feesId, setFeesId] = useState<number | null>(null);
+    const [isFeesOpen, setIsFeesOpen] = useState(false);
+    // Bumped on every open so the fee form starts fresh from the saved
+    // fees, never from edits that were cancelled last time.
+    const [feesSession, setFeesSession] = useState(0);
+    const [subjectsId, setSubjectsId] = useState<number | null>(
+        manageGradeLevelId,
+    );
+    const [isSubjectsOpen, setIsSubjectsOpen] = useState(
+        manageGradeLevelId !== null,
+    );
 
-    const startEditing = (gradeLevel) => {
-        clearErrors();
-        setData(
-            Object.fromEntries(
-                FEE_FIELDS.map((f) => [f.name, gradeLevel[f.name]]),
-            ),
-        );
-        setEditingId(gradeLevel.id);
+    // Looked up from the latest props, so the modals reflect each save.
+    const feesGradeLevel = gradeLevels.find((g) => g.id === feesId);
+    const subjectsGradeLevel = gradeLevels.find((g) => g.id === subjectsId);
+
+    const openFees = (gradeLevel: GradeLevel) => {
+        setFeesId(gradeLevel.id);
+        setFeesSession((n) => n + 1);
+        setIsFeesOpen(true);
     };
 
-    const cancelEditing = () => {
-        setEditingId(null);
-        reset();
-        clearErrors();
+    const openSubjects = (gradeLevel: GradeLevel) => {
+        setSubjectsId(gradeLevel.id);
+        setIsSubjectsOpen(true);
     };
 
-    const saveFees = (e, gradeLevelId) => {
-        e.preventDefault();
-        patch(route('admin.grade-levels.update', gradeLevelId), {
-            preserveScroll: true,
-            onSuccess: () => setEditingId(null),
-        });
-    };
+    const flashSuccess = props.flash?.success;
+    const anyModalOpen = isFeesOpen || isSubjectsOpen;
 
     return (
         <>
             <Head title="Grade Levels" />
+
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="max-w-2xl">
-                        <h1 className="mb-1 font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <div className="mb-6 max-w-2xl">
+                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
                             Grade Levels
                         </h1>
-                        <p className="mb-6 text-sm text-[#1F2A24]/70">
-                            Set the school fees and manage the subjects offered
-                            per grade level. The total (one-time fees + books +{' '}
+                        <p className="mt-1 text-sm text-[#1F2A24]/70">
+                            Set each grade level's fees and the subjects
+                            offered. The total (one-time fees plus{' '}
                             {BILLABLE_MONTHS} months of monthly fees) is what
                             parents see during enrollment and what they pay.
                         </p>
+                    </div>
 
-                        {props.flash?.success && (
-                            <div role="status" className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]">
-                                {props.flash.success}
-                            </div>
-                        )}
-
-                        <div className="divide-y divide-[#1F2A24]/10 rounded-2xl border border-[#1F2A24]/10 bg-white">
-                            {gradeLevels.map((gradeLevel) => (
-                                <div key={gradeLevel.id} className="p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-medium text-[#1F2A24]">
-                                                {gradeLevel.name}
-                                            </p>
-                                            <Link
-                                                href={route(
-                                                    'admin.grade-levels.show',
-                                                    gradeLevel.id,
-                                                )}
-                                                className="text-xs text-[#2F6F4E] hover:underline"
-                                            >
-                                                {gradeLevel.subjects_count}{' '}
-                                                subjects · Manage
-                                            </Link>
-                                        </div>
-
-                                        {editingId !== gradeLevel.id && (
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-sm font-semibold text-[#1F2A24]">
-                                                    {formatCurrency(
-                                                        gradeLevel.tuition_fee,
-                                                    )}
-                                                </span>
-                                                <button
-                                                    onClick={() =>
-                                                        startEditing(gradeLevel)
-                                                    }
-                                                    className="text-xs font-medium text-[#2F6F4E] hover:underline"
-                                                >
-                                                    Edit
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {editingId === gradeLevel.id && (
-                                        <form
-                                            onSubmit={(e) =>
-                                                saveFees(e, gradeLevel.id)
-                                            }
-                                            className="mt-3 rounded-xl bg-[#FBF8F2] p-3"
-                                        >
-                                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                                {FEE_FIELDS.map((field) => (
-                                                    <label
-                                                        key={field.name}
-                                                        className="block"
-                                                    >
-                                                        <span className="mb-1 block text-xs text-[#1F2A24]/70">
-                                                            {field.label} (₱)
-                                                        </span>
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0"
-                                                            value={
-                                                                data[field.name]
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    field.name,
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
-                                                        />
-                                                        {errors[field.name] && (
-                                                            <span className="mt-1 block text-xs text-red-600">
-                                                                {
-                                                                    errors[
-                                                                        field
-                                                                            .name
-                                                                    ]
-                                                                }
-                                                            </span>
-                                                        )}
-                                                    </label>
-                                                ))}
-                                            </div>
-
-                                            <p className="mt-3 rounded-lg bg-[#E8A33D]/10 px-3 py-2 text-xs text-[#1F2A24]/80">
-                                                Saving also updates the unpaid
-                                                installments of this school
-                                                year's applications for{' '}
-                                                {gradeLevel.name}, so their next
-                                                payment (including GCash) uses
-                                                the new fees. Payments already
-                                                made are not changed.
-                                            </p>
-
-                                            <div className="mt-3 flex items-center justify-between border-t border-[#1F2A24]/10 pt-3">
-                                                <p className="text-sm text-[#1F2A24]">
-                                                    Total:{' '}
-                                                    <span className="font-semibold">
-                                                        {formatCurrency(
-                                                            totalOf(data),
-                                                        )}
-                                                    </span>
-                                                </p>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={cancelEditing}
-                                                        className="text-xs text-[#1F2A24]/70 hover:underline"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        type="submit"
-                                                        disabled={processing}
-                                                        className="rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:opacity-50"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    )}
-                                </div>
-                            ))}
+                    {flashSuccess && !anyModalOpen && (
+                        <div
+                            role="status"
+                            className="mb-6 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        >
+                            {flashSuccess}
                         </div>
+                    )}
+
+                    <div className="space-y-8">
+                        {STAGES.map((stage) => {
+                            const levels = gradeLevels.filter(
+                                (g) => stageOf(g) === stage.key,
+                            );
+
+                            if (levels.length === 0) {
+                                return null;
+                            }
+
+                            return (
+                                <section key={stage.key}>
+                                    <div className="mb-3 flex items-baseline gap-2">
+                                        <h2 className="text-sm font-semibold tracking-wide text-[#1F2A24]/80 uppercase">
+                                            {stage.title}
+                                        </h2>
+                                        <span className="text-xs text-[#1F2A24]/50">
+                                            {stage.note}
+                                        </span>
+                                    </div>
+                                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        {levels.map((gradeLevel) => (
+                                            <GradeLevelCard
+                                                key={gradeLevel.id}
+                                                gradeLevel={gradeLevel}
+                                                onEditFees={() =>
+                                                    openFees(gradeLevel)
+                                                }
+                                                onManageSubjects={() =>
+                                                    openSubjects(gradeLevel)
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
+
+            {feesGradeLevel && (
+                <EditFeesDialog
+                    key={feesSession}
+                    gradeLevel={feesGradeLevel}
+                    open={isFeesOpen}
+                    onOpenChange={setIsFeesOpen}
+                />
+            )}
+
+            {subjectsGradeLevel && (
+                <ManageSubjectsDialog
+                    key={subjectsGradeLevel.id}
+                    gradeLevel={subjectsGradeLevel}
+                    open={isSubjectsOpen}
+                    onOpenChange={setIsSubjectsOpen}
+                />
+            )}
         </>
     );
 }

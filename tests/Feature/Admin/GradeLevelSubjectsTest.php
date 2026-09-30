@@ -17,24 +17,47 @@ test('non-admin users cannot manage grade level subjects', function () {
     $this->actingAs($staff)->delete(route('admin.subjects.destroy', $subject))->assertForbidden();
 });
 
-test('admins can view the subjects of a grade level', function () {
+test('the grade levels page lists each grade level with its own subjects', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $gradeLevel = GradeLevel::factory()->create(['level_order' => 1]);
+    $otherGradeLevel = GradeLevel::factory()->create(['level_order' => 2]);
+    Subject::factory()->for($gradeLevel)->create(['name' => 'Mathematics', 'code' => 'MATH']);
+    Subject::factory()->for($gradeLevel)->create(['name' => 'English']);
+    Subject::factory()->for($otherGradeLevel)->create(['name' => 'Science']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.grade-levels.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/GradeLevels/Index')
+            ->where('manageGradeLevelId', null)
+            ->where('gradeLevels.0.id', $gradeLevel->id)
+            ->has('gradeLevels.0.subjects', 2)
+            ->where('gradeLevels.0.subjects.0.name', 'English')
+            ->where('gradeLevels.0.subjects.1.name', 'Mathematics')
+            ->where('gradeLevels.0.subjects.1.code', 'MATH')
+            ->where('gradeLevels.0.subjects.0.enrollments_count', 0)
+            ->has('gradeLevels.1.subjects', 1)
+            ->where('gradeLevels.1.subjects.0.name', 'Science')
+        );
+});
+
+test('the grade levels page can open straight to a grade level\'s subjects', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
     $gradeLevel = GradeLevel::factory()->create();
-    Subject::factory()->for($gradeLevel)->create(['name' => 'Mathematics']);
-    Subject::factory()->for($gradeLevel)->create(['name' => 'English']);
-    Subject::factory()->create(['name' => 'Other Grade Subject']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.grade-levels.index', ['manage' => $gradeLevel->id]))
+        ->assertInertia(fn (Assert $page) => $page->where('manageGradeLevelId', $gradeLevel->id));
+});
+
+test('the old per-grade subjects page redirects to its subjects modal', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $gradeLevel = GradeLevel::factory()->create();
 
     $this->actingAs($admin)
         ->get(route('admin.grade-levels.show', $gradeLevel))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/GradeLevels/Show')
-            ->where('gradeLevel.id', $gradeLevel->id)
-            ->has('subjects', 2)
-            ->where('subjects.0.name', 'English')
-            ->where('subjects.1.name', 'Mathematics')
-            ->where('subjects.0.enrollments_count', 0)
-        );
+        ->assertRedirect(route('admin.grade-levels.index', ['manage' => $gradeLevel->id]));
 });
 
 test('admins can add a subject to a grade level', function () {
