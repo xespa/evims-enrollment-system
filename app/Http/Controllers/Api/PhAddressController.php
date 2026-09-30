@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,49 +16,43 @@ class PhAddressController extends Controller
     // normalize to "SAN FERNANDO" and line up across the two datasets.
     private const IGNORED_NAME_TOKENS = ['CITY', 'OF', 'CPO'];
 
-    private function loadJson(string $filename, string $cacheKey): array
-    {
-        return Cache::rememberForever($cacheKey, function () use ($filename) {
-            $path = storage_path("app/ph-address/{$filename}");
+    /**
+     * Bump whenever the files in resources/data/ph-address change, so a
+     * deploy starts from fresh cache entries instead of serving stale ones.
+     */
+    private const DATA_VERSION = 'v1';
 
-            if (! file_exists($path)) {
-                throw new RuntimeException("PH address data file missing: {$path}");
-            }
+    private const CACHE_TTL_DAYS = 30;
 
-            $decoded = json_decode(file_get_contents($path), true);
-
-            if (! is_array($decoded)) {
-                throw new RuntimeException("PH address data file is empty or invalid JSON: {$path}");
-            }
-
-            return $decoded;
-        });
-    }
+    private const BROWSER_MAX_AGE_SECONDS = 86400;
 
     public function provinces(): JsonResponse
     {
-        $provinces = $this->loadJson('provinces.json', 'ph_address_provinces');
-        usort($provinces, fn ($a, $b) => strcmp($a['name'], $b['name']));
+        $provinces = $this->remember('provinces', fn () => $this->sortByName(
+            $this->loadRecords('provinces.json'),
+        ));
 
-        return response()->json($provinces);
+        return $this->staticJson($provinces);
     }
 
     public function cities(string $provinceCode): JsonResponse
     {
-        $cities = $this->loadJson('city-mun.json', 'ph_address_city_mun');
-        $filtered = array_values(array_filter($cities, fn ($c) => $c['prov_code'] === $provinceCode));
-        usort($filtered, fn ($a, $b) => strcmp($a['name'], $b['name']));
+        $cities = $this->remember("cities:{$provinceCode}", fn () => $this->sortByName(array_filter(
+            $this->loadRecords('city-mun.json'),
+            fn (array $city) => $city['prov_code'] === $provinceCode,
+        )));
 
-        return response()->json($filtered);
+        return $this->staticJson($cities);
     }
 
     public function barangays(string $munCode): JsonResponse
     {
-        $barangays = $this->loadJson('barangays.json', 'ph_address_barangays');
-        $filtered = array_values(array_filter($barangays, fn ($b) => $b['mun_code'] === $munCode));
-        usort($filtered, fn ($a, $b) => strcmp($a['name'], $b['name']));
+        $barangays = $this->remember("barangays:{$munCode}", fn () => $this->sortByName(array_filter(
+            $this->loadRecords('barangays.json'),
+            fn (array $barangay) => $barangay['mun_code'] === $munCode,
+        )));
 
-        return response()->json($filtered);
+        return $this->staticJson($barangays);
     }
 
     /**
@@ -84,16 +79,20 @@ class PhAddressController extends Controller
 
         sort($zips);
 
-        return response()->json(array_values($zips));
+        return $this->staticJson($zips);
     }
 
     /**
+     * The zip-code index is small (one entry per province + city pair), so
+     * it's cached whole rather than per lookup, which also keeps free-text
+     * query strings from creating unbounded cache keys.
+     *
      * @return array{byProvinceCity: array<string, string[]>}
      */
     private function zipCodeLookup(): array
     {
-        return Cache::rememberForever('ph_address_zip_lookup', function () {
-            $source = $this->loadJson('zip-codes.json', 'ph_address_zip_source');
+        return $this->remember('zip-code-index', function () {
+            $source = $this->loadJson('zip-codes.json');
 
             $byProvinceCity = [];
 
@@ -143,5 +142,79 @@ class PhAddressController extends Controller
         $key = $this->normalizeName($name);
 
         return str_starts_with($key, 'NCR') ? 'METRO MANILA' : $key;
+    }
+
+    /**
+     * Cache small, already-filtered results under a versioned key. The raw
+     * files are only read on a cache miss, so the full barangay dataset
+     * never has to round-trip through the cache store.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    private function remember(string $key, Closure $callback): mixed
+    {
+        return Cache::remember(
+            'ph_address:'.self::DATA_VERSION.":{$key}",
+            now()->addDays(self::CACHE_TTL_DAYS),
+            $callback,
+        );
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function loadJson(string $filename): array
+    {
+        $path = resource_path("data/ph-address/{$filename}");
+
+        if (! file_exists($path)) {
+            throw new RuntimeException("PH address data file missing: {$path}");
+        }
+
+        $contents = file_get_contents($path);
+        $decoded = $contents === false ? null : json_decode($contents, true);
+
+        if (! is_array($decoded)) {
+            throw new RuntimeException("PH address data file is empty or invalid JSON: {$path}");
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * The province, city and barangay files are flat lists of string records.
+     *
+     * @return list<array<string, string>>
+     */
+    private function loadRecords(string $filename): array
+    {
+        /** @var list<array<string, string>> */
+        return $this->loadJson($filename);
+    }
+
+    /**
+     * @param  array<array-key, array<string, string>>  $items
+     * @return list<array<string, string>>
+     */
+    private function sortByName(array $items): array
+    {
+        usort($items, fn (array $a, array $b) => strcmp($a['name'], $b['name']));
+
+        return $items;
+    }
+
+    /**
+     * The address data only changes on deploy, so browsers may reuse it.
+     *
+     * @param  array<int|string, mixed>  $data
+     */
+    private function staticJson(array $data): JsonResponse
+    {
+        return response()->json($data)
+            ->setPublic()
+            ->setMaxAge(self::BROWSER_MAX_AGE_SECONDS);
     }
 }

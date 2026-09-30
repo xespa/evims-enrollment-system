@@ -47,15 +47,17 @@ Enrollee (parent) accounts are separate. Create one at `/portal/register`.
 
 ### Philippine address data
 
-The address pickers load JSON files from `storage/app/ph-address/`. These files are not in git, so copy them in before using the admission form:
+The address pickers on the admission form read static JSON files that are committed to the repo:
 
 ```
-storage/app/ph-address/
+resources/data/ph-address/
 ├── provinces.json
 ├── city-mun.json
 ├── barangays.json
 └── zip-codes.json
 ```
+
+`PhAddressController` caches each filtered result (for example, the barangays of one municipality), and browsers cache the responses for a day. If you edit these files, bump `DATA_VERSION` in `app/Http/Controllers/Api/PhAddressController.php` so the next deploy uses fresh cache entries.
 
 ## Configuration
 

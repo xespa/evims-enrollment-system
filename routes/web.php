@@ -16,8 +16,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
     Route::get('provinces', [PhAddressController::class, 'provinces'])->name('provinces');
-    Route::get('cities/{provinceCode}', [PhAddressController::class, 'cities'])->name('cities');
-    Route::get('barangays/{munCode}', [PhAddressController::class, 'barangays'])->name('barangays');
+    Route::get('cities/{provinceCode}', [PhAddressController::class, 'cities'])
+        ->where('provinceCode', '[0-9]{4}')
+        ->name('cities');
+    Route::get('barangays/{munCode}', [PhAddressController::class, 'barangays'])
+        ->where('munCode', '[0-9]{6}')
+        ->name('barangays');
     Route::get('zip-codes', [PhAddressController::class, 'zipCodes'])->name('zip-codes');
 });
 
