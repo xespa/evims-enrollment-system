@@ -14,11 +14,24 @@ import {
     Mail,
     MapPin,
     Phone,
-    Quote,
     ShieldAlert,
     Target,
     UsersRound,
 } from 'lucide-react';
+import {
+    ContactCards,
+    FeatureCards,
+    IconCards,
+    PageSection,
+    Testimonials,
+} from '@/components/site/page-sections';
+import {
+    SCHOOL_EMAIL,
+    SCHOOL_PHONE,
+    SCHOOL_PHONE_LINK,
+    ServiceCta,
+    ServiceHero,
+} from '@/components/student-services/service-page';
 
 const STATS = [
     { icon: UsersRound, value: '5', label: 'Professional Counselors' },
@@ -181,23 +194,21 @@ const CONTACT_INFO = [
     {
         icon: Phone,
         title: 'Main Office',
-        primary: '0936 084 2412',
-        secondary: 'Monday - Friday',
-        tertiary: '7:30 AM - 4:00 PM',
+        lines: [SCHOOL_PHONE, 'Monday – Friday', '7:30 AM – 4:00 PM'],
+        href: SCHOOL_PHONE_LINK,
+        action: 'Call now',
     },
     {
         icon: Mail,
         title: 'Email Us',
-        primary: 'evimstech2020@gmail.com',
-        secondary: 'We respond within',
-        tertiary: 'school hours',
+        lines: [SCHOOL_EMAIL, 'We respond within school hours'],
+        href: `mailto:${SCHOOL_EMAIL}`,
+        action: 'Send an email',
     },
     {
         icon: MapPin,
         title: 'Location',
-        primary: 'Santiago Street, Brgy. Balud, Borongan City',
-        secondary: 'Main Campus',
-        tertiary: '',
+        lines: ['Santiago Street, Brgy. Balud', 'Borongan City · Main Campus'],
     },
 ];
 
@@ -206,187 +217,49 @@ export default function GuidanceCounseling() {
         <>
             <Head title="EVIMS — Guidance & Counseling" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Student Services
-                    </span>
+            <ServiceHero
+                current="guidance-counseling"
+                eyebrow="Student Services"
+                title="Guidance & Counseling"
+                intro="Support services dedicated to helping every student achieve academic success, personal growth, and emotional well-being throughout their educational journey."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        Guidance & Counseling
-                    </h1>
+            <PageSection
+                tone="white"
+                title="Our Counseling Services"
+                description="Support designed around the academic, social, and emotional needs of every student."
+            >
+                <FeatureCards items={SERVICES} />
+            </PageSection>
 
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Comprehensive support services dedicated to helping
-                        every student achieve academic success, personal growth,
-                        and emotional well-being throughout their educational
-                        journey
-                    </p>
+            <PageSection
+                title="Student & Family Resources"
+                description="Tools and resources that support student success and family involvement."
+            >
+                <IconCards items={RESOURCES} />
+            </PageSection>
 
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat) => (
-                            <div
-                                key={stat.label}
-                                className="flex flex-col items-start gap-2"
-                            >
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">
-                                    {stat.value}
-                                </dt>
-                                <dd className="text-xs text-[#1F2A24]/70">
-                                    {stat.label}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
+            <PageSection
+                tone="white"
+                title="Student & Parent Testimonials"
+                description="Hear from our school community about the difference guidance and counseling makes."
+            >
+                <Testimonials items={TESTIMONIALS} />
+            </PageSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Our Counseling Services
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Comprehensive support services designed to address the
-                        academic, social, emotional, and career development
-                        needs of all students
-                    </h2>
+            <PageSection
+                title="Get the Support You Need"
+                description="Our caring counseling team is here to help students and families navigate challenges, reach their goals, and thrive."
+            >
+                <ContactCards items={CONTACT_INFO} />
+            </PageSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {SERVICES.map((service) => (
-                            <div
-                                key={service.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <service.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {service.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {service.copy}
-                                </p>
-                                <ul className="mt-4 space-y-2">
-                                    {service.features.map((feature) => (
-                                        <li
-                                            key={feature}
-                                            className="flex items-start gap-2 text-sm text-[#1F2A24]/70"
-                                        >
-                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    Student & Family Resources
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Comprehensive resources and tools to support student
-                    success, mental health, and family engagement
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {RESOURCES.map((resource) => (
-                        <div
-                            key={resource.title}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
-                        >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                <resource.icon className="h-5 w-5 text-[#E8A33D]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                {resource.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {resource.copy}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Student & Parent Testimonials
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Hear from our school community about the positive impact
-                        of our guidance and counseling services
-                    </h2>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {TESTIMONIALS.map((testimonial) => (
-                            <div
-                                key={testimonial.name}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <Quote className="h-6 w-6 text-[#E8A33D]" />
-                                <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {testimonial.quote}
-                                </p>
-                                <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">
-                                    {testimonial.name}
-                                </p>
-                                <p className="text-xs text-[#1F2A24]/70">
-                                    {testimonial.relation}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
-                        Get the Support You Need
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm text-[#FBF8F2]/80">
-                        Our caring, professional counseling team is here to help
-                        students and families navigate challenges, achieve
-                        goals, and thrive academically and personally.
-                    </p>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                        {CONTACT_INFO.map((info) => (
-                            <div
-                                key={info.title}
-                                className="rounded-2xl bg-[#FBF8F2]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FBF8F2]/15">
-                                    <info.icon className="h-5 w-5 text-[#FBF8F2]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#FBF8F2]">
-                                    {info.title}
-                                </h3>
-                                <p className="mt-2 text-sm font-medium text-[#FBF8F2]/90">
-                                    {info.primary}
-                                </p>
-                                {info.secondary && (
-                                    <p className="mt-1 text-xs text-[#FBF8F2]/70">
-                                        {info.secondary}
-                                    </p>
-                                )}
-                                {info.tertiary && (
-                                    <p className="text-xs text-[#FBF8F2]/70">
-                                        {info.tertiary}
-                                    </p>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <ServiceCta
+                current="guidance-counseling"
+                title="We're here to listen"
+                copy="Talk to our guidance office about academics, friendships, or anything on your child's mind."
+            />
         </>
     );
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\VoidPaymentController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
+use App\Models\Curriculum;
 use App\Models\Event;
 use App\Models\GradeLevel;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,8 @@ Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
 Route::get('/', function () {
     return inertia('Site/Home', [
         'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
+        // The school year applications are open for, or null if none is.
+        'openSchoolYear' => Curriculum::applicationSchoolYear(),
     ]);
 })->name('home');
 Route::inertia('about', 'Site/About')->name('site.about');
@@ -45,14 +48,10 @@ Route::inertia('student-services/health-services', 'Site/StudentServices/HealthS
 Route::inertia('student-services/library', 'Site/StudentServices/Library')->name('site.student-services.library');
 Route::inertia('contact', 'Site/Contact')->name('site.contact');
 Route::get('events', function () {
-    $events = Event::upcoming()->orderBy('event_date')->get();
-
-    if ($events->isEmpty()) {
-        $events = Event::orderBy('event_date', 'desc')->limit(6)->get();
-    }
-
     return inertia('Site/Events', [
-        'events' => $events,
+        // Every event the school has posted — they don't expire — with the
+        // newest date first.
+        'events' => Event::query()->orderByDesc('event_date')->orderByDesc('id')->get(),
     ]);
 })->name('site.events');
 Route::get('admission', [EnrollmentController::class, 'create'])->name('admission.create');

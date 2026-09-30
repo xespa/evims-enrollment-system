@@ -34,7 +34,6 @@ const NAV_LINKS = [
         ],
     },
     { label: 'Events', href: '/events' },
-    { label: 'Gallery', href: '/gallery' },
     { label: 'Contact Us', href: '/contact' },
 ];
 
@@ -250,9 +249,18 @@ export default function SiteLayout({ children }) {
                                     className="h-10 w-10 rounded-full object-cover"
                                 />
                             ) : (
-                                <UserCircle className="h-10 w-10" aria-hidden="true" />
+                                <UserCircle
+                                    className="h-10 w-10"
+                                    aria-hidden="true"
+                                />
                             )}
                         </Link>
+                    </div>
+
+                    {/* On phones and tablets the bell sits beside the menu
+                        button, so parents see new updates without opening it. */}
+                    <div className="mr-1 ml-auto xl:hidden">
+                        <NotificationBell />
                     </div>
 
                     <button
@@ -300,7 +308,9 @@ export default function SiteLayout({ children }) {
                 aria-label="Site navigation"
                 inert={!menuOpen}
                 className={`fixed top-0 right-0 z-50 flex h-full w-72 max-w-[80vw] transform flex-col bg-[#FBF8F2] shadow-2xl transition-[transform,visibility] duration-300 ease-in-out xl:hidden ${
-                    menuOpen ? 'visible translate-x-0' : 'invisible translate-x-full'
+                    menuOpen
+                        ? 'visible translate-x-0'
+                        : 'invisible translate-x-full'
                 }`}
             >
                 <div className="flex items-center justify-between border-b border-[#1F2A24]/10 p-5">
@@ -353,7 +363,10 @@ export default function SiteLayout({ children }) {
                                 className="h-10 w-10 rounded-full object-cover"
                             />
                         ) : (
-                            <UserCircle className="h-10 w-10" aria-hidden="true" />
+                            <UserCircle
+                                className="h-10 w-10"
+                                aria-hidden="true"
+                            />
                         )}
                     </Link>
                 </div>
@@ -439,7 +452,11 @@ export default function SiteLayout({ children }) {
                 </div>
             </aside>
 
-            <main id="main-content" tabIndex={-1} className="focus:outline-none">
+            <main
+                id="main-content"
+                tabIndex={-1}
+                className="focus:outline-none"
+            >
                 {children}
             </main>
 

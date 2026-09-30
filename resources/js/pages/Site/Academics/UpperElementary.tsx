@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     Award,
     Bot,
@@ -20,13 +20,21 @@ import {
     Newspaper,
     Palette,
     Puzzle,
-    Quote,
     Trophy,
     Users,
 } from 'lucide-react';
+import {
+    FeatureCards,
+    Highlights,
+    IconCards,
+    ProgramCta,
+    ProgramHero,
+    ProgramSection,
+    Testimonials,
+} from '@/components/academics/program-page';
 
 const STATS = [
-    { icon: GraduationCap, value: '4-6', label: 'Grade Levels' },
+    { icon: GraduationCap, value: '4–6', label: 'Grade Levels' },
     { icon: Users, value: '1:15', label: 'Teacher to Student Ratio' },
     { icon: BookOpen, value: '12', label: 'Core & Elective Subjects' },
     { icon: Award, value: '95%', label: 'Middle School Readiness' },
@@ -233,225 +241,57 @@ export default function UpperElementary() {
         <>
             <Head title="EVIMS — Upper Elementary" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Grades 4–6
-                    </span>
+            <ProgramHero
+                current="upper-elementary"
+                eyebrow="Grades 4–6"
+                title="Upper Elementary"
+                intro="Building academic excellence and independence through a challenging curriculum, critical thinking, and leadership development opportunities."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        Upper Elementary
-                    </h1>
+            <ProgramSection
+                tone="white"
+                title="Core Academic Subjects"
+                description="A rigorous, standards-based curriculum designed to challenge students and prepare them for advanced learning."
+            >
+                <FeatureCards items={SUBJECTS} />
+            </ProgramSection>
 
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Building academic excellence and independence in grades
-                        4-6 through challenging curriculum, critical thinking,
-                        and leadership development opportunities
-                    </p>
+            <ProgramSection
+                title="21st Century Skills"
+                description="Essential skills and competencies for success in high school and beyond."
+            >
+                <IconCards items={SKILLS} />
+            </ProgramSection>
 
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat) => (
-                            <div
-                                key={stat.label}
-                                className="flex flex-col items-start gap-2"
-                            >
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">
-                                    {stat.value}
-                                </dt>
-                                <dd className="text-xs text-[#1F2A24]/70">
-                                    {stat.label}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="Enrichment Activities"
+                description="Beyond academics, students explore interests, develop talents, and build friendships through diverse activities."
+            >
+                <IconCards items={ACTIVITIES} variant="dark" columns={4} />
+            </ProgramSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Core Academic Subjects
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Rigorous, standards-based curriculum designed to
-                        challenge students and prepare them for advanced
-                        learning
-                    </h2>
+            <ProgramSection
+                title="Student Achievements"
+                description="Our upper elementary students consistently excel in academics, competitions, and personal growth."
+            >
+                <Highlights items={ACHIEVEMENTS} />
+            </ProgramSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {SUBJECTS.map((subject) => (
-                            <div
-                                key={subject.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <subject.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {subject.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {subject.copy}
-                                </p>
-                                <ul className="mt-4 space-y-2">
-                                    {subject.features.map((feature) => (
-                                        <li
-                                            key={feature}
-                                            className="flex items-start gap-2 text-sm text-[#1F2A24]/70"
-                                        >
-                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="Student Spotlights"
+                description="Celebrating the outstanding work and achievements of our upper elementary students."
+            >
+                <Testimonials items={SPOTLIGHTS} />
+            </ProgramSection>
 
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    21st Century Skills
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Essential skills and competencies for success in middle
-                    school, high school, and beyond
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {SKILLS.map((skill) => (
-                        <div
-                            key={skill.title}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
-                        >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                <skill.icon className="h-5 w-5 text-[#E8A33D]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                {skill.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {skill.copy}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Enrichment Activities
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Beyond academics, students explore interests, develop
-                        talents, and build friendships through diverse
-                        activities
-                    </h2>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        {ACTIVITIES.map((activity) => (
-                            <div
-                                key={activity.title}
-                                className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]"
-                            >
-                                <activity.icon className="h-5 w-5 text-[#E8A33D]" />
-                                <h3 className="mt-3 font-serif text-lg font-semibold">
-                                    {activity.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">
-                                    {activity.copy}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    Student Achievements
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Our upper elementary students consistently excel in
-                    academics, competitions, and personal growth
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                    {ACHIEVEMENTS.map((achievement) => (
-                        <div
-                            key={achievement.title}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-8 text-center"
-                        >
-                            <p className="font-serif text-4xl font-semibold text-[#2F6F4E]">
-                                {achievement.value}
-                            </p>
-                            <h3 className="mt-2 font-serif text-lg font-semibold text-[#1F2A24]">
-                                {achievement.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {achievement.copy}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Student Spotlights
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Celebrating the outstanding work and achievements of our
-                        upper elementary students
-                    </h2>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {SPOTLIGHTS.map((spotlight) => (
-                            <div
-                                key={spotlight.name}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <Quote className="h-6 w-6 text-[#E8A33D]" />
-                                <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {spotlight.quote}
-                                </p>
-                                <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">
-                                    {spotlight.name}
-                                </p>
-                                <p className="text-xs text-[#1F2A24]/70">
-                                    {spotlight.relation}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
-                            Prepare for Future Success
-                        </h2>
-                        <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Join our upper elementary program where academic
-                            excellence meets character development, preparing
-                            confident, capable students ready for middle school
-                            challenges and beyond.
-                        </p>
-                    </div>
-                    <Link
-                        href="/admission"
-                        className="rounded-full bg-[#FBF8F2] px-5 py-2 text-base font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#FBF8F2]/90"
-                    >
-                        Enroll Now
-                    </Link>
-                </div>
-            </section>
+            <ProgramCta
+                current="upper-elementary"
+                title="Prepare for Future Success"
+                copy="Join our upper elementary program where academic excellence meets character development, preparing confident, capable students for the challenges ahead."
+            />
         </>
     );
 }

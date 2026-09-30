@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     Activity,
     BookOpen,
@@ -13,13 +13,21 @@ import {
     Notebook,
     Palette,
     PenLine,
-    Quote,
     TrendingUp,
     Users,
 } from 'lucide-react';
+import {
+    DaySchedule,
+    FeatureCards,
+    IconCards,
+    ProgramCta,
+    ProgramHero,
+    ProgramSection,
+    Testimonials,
+} from '@/components/academics/program-page';
 
 const STATS = [
-    { icon: GraduationCap, value: 'K-3', label: 'Grade Levels' },
+    { icon: GraduationCap, value: '1–3', label: 'Grade Levels' },
     { icon: Users, value: '1:12', label: 'Teacher to Student Ratio' },
     { icon: Notebook, value: '6.5', label: 'Hours of Learning Daily' },
     { icon: BookOpen, value: '100%', label: 'Reading Success Rate' },
@@ -139,16 +147,56 @@ const TEACHING_APPROACH = [
 ];
 
 const SCHEDULE = [
-    { time: '8:00 AM', title: 'Morning Meeting', copy: 'Community building and daily preview' },
-    { time: '8:30 AM', title: 'Reading Workshop', copy: 'Phonics, guided reading, and literacy centers' },
-    { time: '9:45 AM', title: 'Math Exploration', copy: 'Number concepts and problem-solving' },
-    { time: '10:30 AM', title: 'Snack & Recess', copy: 'Nutrition and outdoor play time' },
-    { time: '11:00 AM', title: 'Writing Workshop', copy: 'Creative expression and communication' },
-    { time: '12:00 PM', title: 'Lunch & Social Time', copy: 'Nutrition and peer interaction' },
-    { time: '1:00 PM', title: 'Science Discovery', copy: 'Hands-on experiments and observations' },
-    { time: '1:45 PM', title: 'Social Studies', copy: 'Community and cultural learning' },
-    { time: '2:15 PM', title: 'Creative Arts', copy: 'Art, music, and creative expression' },
-    { time: '2:45 PM', title: 'Closing Circle', copy: 'Reflection and preparation for home' },
+    {
+        time: '8:00 AM',
+        title: 'Morning Meeting',
+        copy: 'Community building and daily preview',
+    },
+    {
+        time: '8:30 AM',
+        title: 'Reading Workshop',
+        copy: 'Phonics, guided reading, and literacy centers',
+    },
+    {
+        time: '9:45 AM',
+        title: 'Math Exploration',
+        copy: 'Number concepts and problem-solving',
+    },
+    {
+        time: '10:30 AM',
+        title: 'Snack & Recess',
+        copy: 'Nutrition and outdoor play time',
+    },
+    {
+        time: '11:00 AM',
+        title: 'Writing Workshop',
+        copy: 'Creative expression and communication',
+    },
+    {
+        time: '12:00 PM',
+        title: 'Lunch & Social Time',
+        copy: 'Nutrition and peer interaction',
+    },
+    {
+        time: '1:00 PM',
+        title: 'Science Discovery',
+        copy: 'Hands-on experiments and observations',
+    },
+    {
+        time: '1:45 PM',
+        title: 'Social Studies',
+        copy: 'Community and cultural learning',
+    },
+    {
+        time: '2:15 PM',
+        title: 'Creative Arts',
+        copy: 'Art, music, and creative expression',
+    },
+    {
+        time: '2:45 PM',
+        title: 'Closing Circle',
+        copy: 'Reflection and preparation for home',
+    },
 ];
 
 const TESTIMONIALS = [
@@ -189,158 +237,57 @@ export default function LowerElementary() {
         <>
             <Head title="EVIMS — Lower Elementary" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Grades K–3
-                    </span>
+            <ProgramHero
+                current="lower-elementary"
+                eyebrow="Grades 1–3"
+                title="Lower Elementary"
+                intro="Building strong foundations for lifelong learning through nurturing care, engaging activities, and developmentally appropriate instruction."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        Lower Elementary
-                    </h1>
+            <ProgramSection
+                tone="white"
+                title="Grade-Level Programs"
+                description="Developmentally appropriate learning experiences tailored to each grade level's unique needs and milestones."
+            >
+                <FeatureCards items={PROGRAMS} columns={4} />
+            </ProgramSection>
 
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Building strong foundations for lifelong learning in grades K-3 through nurturing care, engaging
-                        activities, and developmentally appropriate instruction
-                    </p>
+            <ProgramSection
+                title="Core Learning Areas"
+                description="A comprehensive curriculum addressing every aspect of early elementary education and development."
+            >
+                <IconCards items={LEARNING_AREAS} />
+            </ProgramSection>
 
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat) => (
-                            <div key={stat.label} className="flex flex-col items-start gap-2">
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">{stat.value}</dt>
-                                <dd className="text-xs text-[#1F2A24]/70">{stat.label}</dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="Our Teaching Approach"
+                description="Research-based methods that make learning engaging, meaningful, and successful for every child."
+            >
+                <IconCards items={TEACHING_APPROACH} variant="dark" />
+            </ProgramSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Grade-Level Programs</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Developmentally appropriate learning experiences tailored to each grade level's unique needs and
-                        milestones
-                    </h2>
+            <ProgramSection
+                title="A Day of Learning"
+                description="A balanced daily schedule combining focused instruction, active learning, and creative exploration."
+            >
+                <DaySchedule slots={SCHEDULE} />
+            </ProgramSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        {PROGRAMS.map((program) => (
-                            <div key={program.title} className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <program.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">{program.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{program.copy}</p>
-                                <ul className="mt-4 space-y-2">
-                                    {program.features.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-2 text-sm text-[#1F2A24]/70">
-                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="Parent Experiences"
+                description="Hear from families who have watched their children thrive in our nurturing lower elementary environment."
+            >
+                <Testimonials items={TESTIMONIALS} />
+            </ProgramSection>
 
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Core Learning Areas</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Comprehensive curriculum addressing all aspects of early elementary education and development
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {LEARNING_AREAS.map((area) => (
-                        <div key={area.title} className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                <area.icon className="h-5 w-5 text-[#E8A33D]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">{area.title}</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{area.copy}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Our Teaching Approach</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Research-based methods and strategies that make learning engaging, meaningful, and successful for
-                        every child
-                    </h2>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {TEACHING_APPROACH.map((item) => (
-                            <div key={item.title} className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]">
-                                <item.icon className="h-5 w-5 text-[#E8A33D]" />
-                                <h3 className="mt-3 font-serif text-lg font-semibold">{item.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/70">{item.copy}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">A Day of Learning</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Balanced daily schedule combining focused instruction, active learning, and creative exploration
-                </h2>
-
-                <ol className="mt-10 space-y-4 border-l border-[#1F2A24]/10 pl-6">
-                    {SCHEDULE.map((slot) => (
-                        <li key={slot.time} className="relative">
-                            <span className="absolute top-1.5 -left-[29px] h-3 w-3 rounded-full bg-[#2F6F4E]" />
-                            <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">{slot.time}</p>
-                            <h3 className="mt-1 font-serif text-lg font-semibold text-[#1F2A24]">{slot.title}</h3>
-                            <p className="mt-1 text-sm leading-relaxed text-[#1F2A24]/70">{slot.copy}</p>
-                        </li>
-                    ))}
-                </ol>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Parent Experiences</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Hear from families who have watched their children thrive in our nurturing lower elementary
-                        environment
-                    </h2>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {TESTIMONIALS.map((testimonial) => (
-                            <div key={testimonial.name} className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                                <Quote className="h-6 w-6 text-[#E8A33D]" />
-                                <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">{testimonial.quote}</p>
-                                <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">{testimonial.name}</p>
-                                <p className="text-xs text-[#1F2A24]/70">{testimonial.relation}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">Start Your Child's Learning Journey</h2>
-                        <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Give your child the strong foundation they need for academic success and personal growth in our
-                            nurturing, engaging lower elementary program.
-                        </p>
-                    </div>
-                    <Link
-                        href="/admission"
-                        className="rounded-full bg-[#FBF8F2] px-5 py-2 text-base font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#FBF8F2]/90"
-                    >
-                        Enroll Now
-                    </Link>
-                </div>
-            </section>
+            <ProgramCta
+                current="lower-elementary"
+                title="Start Your Child's Learning Journey"
+                copy="Give your child the strong foundation they need for academic success and personal growth in our nurturing, engaging lower elementary program."
+            />
         </>
     );
 }

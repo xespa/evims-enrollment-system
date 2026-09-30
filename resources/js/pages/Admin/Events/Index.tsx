@@ -12,18 +12,9 @@ import EventFormDialog from '@/components/event-form-dialog';
 import type { SchoolEvent } from '@/components/event-form-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
 
-type Tab = 'upcoming' | 'past';
-
 /** "2026-10-05T00:00:00.000000Z" → a local date for that calendar day. */
 function eventDay(event: SchoolEvent): Date {
     return new Date(`${event.event_date.slice(0, 10)}T00:00:00`);
-}
-
-function todayDateString(): string {
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 function timeRange(event: SchoolEvent): string | null {
@@ -40,20 +31,6 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<SchoolEvent | null>(null);
-
-    const today = todayDateString();
-    const upcoming = events
-        .filter((event) => event.event_date.slice(0, 10) >= today)
-        // Soonest first; the server sends newest first.
-        .reverse();
-    const past = events.filter(
-        (event) => event.event_date.slice(0, 10) < today,
-    );
-
-    const [tab, setTab] = useState<Tab>(
-        upcoming.length > 0 || past.length === 0 ? 'upcoming' : 'past',
-    );
-    const shown = tab === 'upcoming' ? upcoming : past;
 
     const openCreate = () => {
         setEditingEvent(null);
@@ -79,11 +56,6 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
         });
     };
 
-    const tabs: { key: Tab; label: string; count: number }[] = [
-        { key: 'upcoming', label: 'Upcoming', count: upcoming.length },
-        { key: 'past', label: 'Past', count: past.length },
-    ];
-
     return (
         <>
             <Head title="Manage Events" />
@@ -102,8 +74,8 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
                                 Events
                             </h1>
                             <p className="text-sm text-[#1F2A24]/70">
-                                Manage the events shown on the public Events
-                                page.
+                                Post events for families to see on the public
+                                Events page.
                             </p>
                         </div>
                         <button
@@ -125,81 +97,49 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
                         </div>
                     )}
 
-                    <div
-                        role="tablist"
-                        aria-label="Events"
-                        className="mb-4 inline-flex rounded-full border border-[#1F2A24]/10 bg-white p-1"
-                    >
-                        {tabs.map(({ key, label, count }) => (
-                            <button
-                                key={key}
-                                type="button"
-                                role="tab"
-                                aria-selected={tab === key}
-                                onClick={() => setTab(key)}
-                                className={`inline-flex min-h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
-                                    tab === key
-                                        ? 'bg-[#2F6F4E] text-white'
-                                        : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
-                                }`}
-                            >
-                                {label}
-                                <span
-                                    className={`rounded-full px-1.5 text-xs tabular-nums ${
-                                        tab === key
-                                            ? 'bg-white/20'
-                                            : 'bg-[#1F2A24]/10'
-                                    }`}
-                                >
-                                    {count}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
+                    <p className="mb-4 text-sm text-[#1F2A24]/60">
+                        {events.length === 1
+                            ? '1 posted event'
+                            : `${events.length} posted events`}
+                    </p>
 
-                    {shown.length === 0 ? (
+                    {events.length === 0 ? (
                         <div className="flex flex-col items-center rounded-2xl border border-dashed border-[#1F2A24]/15 bg-white px-6 py-14 text-center">
                             <CalendarDays
                                 className="h-10 w-10 text-[#2F6F4E]/60"
                                 aria-hidden="true"
                             />
                             <p className="mt-3 font-medium text-[#1F2A24]">
-                                {tab === 'upcoming'
-                                    ? 'No upcoming events'
-                                    : 'No past events'}
+                                No events posted yet
                             </p>
-                            {tab === 'upcoming' && (
-                                <>
-                                    <p className="mt-1 text-sm text-[#1F2A24]/65">
-                                        Add one so families can see what's
-                                        coming up.
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={openCreate}
-                                        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
-                                    >
-                                        <Plus
-                                            className="h-4 w-4"
-                                            aria-hidden="true"
-                                        />
-                                        New Event
-                                    </button>
-                                </>
-                            )}
+                            <>
+                                <p className="mt-1 text-sm text-[#1F2A24]/65">
+                                    Post one so families can see what's
+                                    happening at school.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={openCreate}
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <Plus
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    New Event
+                                </button>
+                            </>
                         </div>
                     ) : (
                         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {shown.map((event) => {
+                            {events.map((event) => {
                                 const day = eventDay(event);
                                 const time = timeRange(event);
 
                                 return (
                                     <li
                                         key={event.id}
-                                        className={`flex flex-col overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white shadow-sm ${
-                                            tab === 'past' ? 'opacity-80' : ''
-                                        }`}
+                                        className="flex flex-col overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white shadow-sm"
                                     >
                                         <div className="relative h-36 bg-[#2F6F4E]/10">
                                             {event.image_path ? (

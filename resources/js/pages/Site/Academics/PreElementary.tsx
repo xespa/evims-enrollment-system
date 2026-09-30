@@ -1,21 +1,28 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     Activity,
     Award,
     Baby,
     Brain,
-    CheckCircle2,
     Clock,
     GraduationCap,
     Heart,
     Leaf,
     MessageCircle,
     Palette,
-    Quote,
     Smile,
     Sparkles,
     Users,
 } from 'lucide-react';
+import {
+    DaySchedule,
+    FeatureCards,
+    IconCards,
+    ProgramCta,
+    ProgramHero,
+    ProgramSection,
+    Testimonials,
+} from '@/components/academics/program-page';
 
 const STATS = [
     { icon: Users, value: '1:10', label: 'Teacher to Student Ratio' },
@@ -127,16 +134,56 @@ const FOCUS_AREAS = [
 ];
 
 const SCHEDULE = [
-    { time: '7:00 AM', title: 'Arrival & Free Play', copy: 'Gentle start with choice activities' },
-    { time: '8:00 AM', title: 'Morning Circle', copy: 'Greetings, calendar, and daily plan' },
-    { time: '8:30 AM', title: 'Learning Centers', copy: 'Literacy, math, and skill building' },
-    { time: '9:30 AM', title: 'Snack & Social Time', copy: 'Healthy snack and conversation' },
-    { time: '10:00 AM', title: 'Outdoor Play', copy: 'Physical activity and fresh air' },
-    { time: '11:00 AM', title: 'Creative Arts', copy: 'Art, music, or dramatic play' },
-    { time: '12:00 PM', title: 'Lunch Time', copy: 'Nutritious meal and social skills' },
-    { time: '1:00 PM', title: 'Quiet Time/Rest', copy: 'Stories, relaxation, or nap' },
-    { time: '2:00 PM', title: 'Science & Discovery', copy: 'Hands-on exploration' },
-    { time: '3:00 PM', title: 'Closing Circle', copy: 'Review day and prepare for home' },
+    {
+        time: '7:00 AM',
+        title: 'Arrival & Free Play',
+        copy: 'Gentle start with choice activities',
+    },
+    {
+        time: '8:00 AM',
+        title: 'Morning Circle',
+        copy: 'Greetings, calendar, and daily plan',
+    },
+    {
+        time: '8:30 AM',
+        title: 'Learning Centers',
+        copy: 'Literacy, math, and skill building',
+    },
+    {
+        time: '9:30 AM',
+        title: 'Snack & Social Time',
+        copy: 'Healthy snack and conversation',
+    },
+    {
+        time: '10:00 AM',
+        title: 'Outdoor Play',
+        copy: 'Physical activity and fresh air',
+    },
+    {
+        time: '11:00 AM',
+        title: 'Creative Arts',
+        copy: 'Art, music, or dramatic play',
+    },
+    {
+        time: '12:00 PM',
+        title: 'Lunch Time',
+        copy: 'Nutritious meal and social skills',
+    },
+    {
+        time: '1:00 PM',
+        title: 'Quiet Time/Rest',
+        copy: 'Stories, relaxation, or nap',
+    },
+    {
+        time: '2:00 PM',
+        title: 'Science & Discovery',
+        copy: 'Hands-on exploration',
+    },
+    {
+        time: '3:00 PM',
+        title: 'Closing Circle',
+        copy: 'Review day and prepare for home',
+    },
 ];
 
 const TESTIMONIALS = [
@@ -177,132 +224,49 @@ export default function PreElementary() {
         <>
             <Head title="EVIMS — Pre-Elementary" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Early Childhood Education
-                    </span>
+            <ProgramHero
+                current="pre-elementary"
+                eyebrow="Early Childhood · Nursery – Pre-K 2"
+                title="Pre-Elementary"
+                intro="Building strong foundations for lifelong learning — a warm, playful start where young children grow in independence, curiosity, and confidence."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        Pre-Elementary
-                    </h1>
+            <ProgramSection
+                tone="white"
+                title="Early Learning Programs"
+                description="Comprehensive programs designed to nurture young minds."
+            >
+                <FeatureCards items={PROGRAMS} />
+            </ProgramSection>
 
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Building strong foundations for lifelong learning
-                    </p>
+            <ProgramSection
+                title="Developmental Focus Areas"
+                description="A comprehensive approach to early childhood development."
+            >
+                <IconCards items={FOCUS_AREAS} />
+            </ProgramSection>
 
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat, index) => (
-                            <div key={`${stat.label}-${index}`} className="flex flex-col items-start gap-2">
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">{stat.value}</dt>
-                                <dd className="text-xs text-[#1F2A24]/70">{stat.label}</dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="A Day in Pre-Elementary"
+                description="A structured yet flexible daily routine."
+            >
+                <DaySchedule slots={SCHEDULE} />
+            </ProgramSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Early Learning Programs</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Comprehensive programs designed to nurture young minds
-                    </h2>
+            <ProgramSection
+                title="What Parents Say"
+                description="Hear from families who have experienced our program."
+            >
+                <Testimonials items={TESTIMONIALS} />
+            </ProgramSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {PROGRAMS.map((program) => (
-                            <div key={program.title} className="rounded-2xl border border-[#1F2A24]/10 p-6">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <program.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">{program.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{program.copy}</p>
-                                <ul className="mt-4 space-y-2">
-                                    {program.features.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-2 text-sm text-[#1F2A24]/70">
-                                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">Developmental Focus Areas</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Comprehensive approach to early childhood development
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {FOCUS_AREAS.map((area) => (
-                        <div key={area.title} className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                <area.icon className="h-5 w-5 text-[#E8A33D]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">{area.title}</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">{area.copy}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">A Day in Pre-Elementary</p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">Structured yet flexible daily routine</h2>
-
-                    <ol className="mt-10 space-y-4 border-l border-[#1F2A24]/10 pl-6">
-                        {SCHEDULE.map((slot) => (
-                            <li key={slot.time} className="relative">
-                                <span className="absolute top-1.5 -left-[29px] h-3 w-3 rounded-full bg-[#2F6F4E]" />
-                                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">{slot.time}</p>
-                                <h3 className="mt-1 font-serif text-lg font-semibold text-[#1F2A24]">{slot.title}</h3>
-                                <p className="mt-1 text-sm leading-relaxed text-[#1F2A24]/70">{slot.copy}</p>
-                            </li>
-                        ))}
-                    </ol>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">What Parents Say</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Hear from families who have experienced our program
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {TESTIMONIALS.map((testimonial) => (
-                        <div key={testimonial.name} className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6">
-                            <Quote className="h-6 w-6 text-[#E8A33D]" />
-                            <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">{testimonial.quote}</p>
-                            <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">{testimonial.name}</p>
-                            <p className="text-xs text-[#1F2A24]/70">{testimonial.relation}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">Give Your Child the Best Start</h2>
-                        <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Join our nurturing pre-elementary community
-                        </p>
-                    </div>
-                    <Link
-                        href="/admission"
-                        className="rounded-full bg-[#FBF8F2] px-5 py-2 text-base font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#FBF8F2]/90"
-                    >
-                        Enroll Now
-                    </Link>
-                </div>
-            </section>
+            <ProgramCta
+                current="pre-elementary"
+                title="Give Your Child the Best Start"
+                copy="Join our nurturing pre-elementary community."
+            />
         </>
     );
 }

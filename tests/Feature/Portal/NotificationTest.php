@@ -118,3 +118,49 @@ test('an enrollee can mark a notification as read and mark all as read', functio
 
     expect($enrollee->unreadNotifications()->count())->toBe(0);
 });
+
+test('the bell can mark notifications read in the background, without a redirect', function () {
+    $enrollee = EnrolleeUser::factory()->create();
+    $notification = fn (string $title) => $enrollee->notifications()->create([
+        'id' => (string) Str::uuid(),
+        'type' => EnrollmentStatusChanged::class,
+        'data' => ['title' => $title, 'message' => $title, 'url' => '/portal/dashboard'],
+    ]);
+    $first = $notification('First');
+    $notification('Second');
+    $notification('Third');
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->postJson(route('portal.notifications.read', $first->id))
+        ->assertNoContent();
+
+    expect($first->fresh()->read_at)->not->toBeNull()
+        ->and($enrollee->unreadNotifications()->count())->toBe(2);
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->postJson(route('portal.notifications.read-all'))
+        ->assertNoContent();
+
+    expect($enrollee->unreadNotifications()->count())->toBe(0);
+});
+
+test('the bell shows the 20 latest notifications', function () {
+    $enrollee = EnrolleeUser::factory()->create();
+
+    foreach (range(1, 25) as $number) {
+        $enrollee->notifications()->create([
+            'id' => (string) Str::uuid(),
+            'type' => EnrollmentStatusChanged::class,
+            'data' => ['title' => "Update {$number}", 'message' => 'message'],
+            'created_at' => now()->addMinutes($number),
+        ]);
+    }
+
+    $response = $this->actingAs($enrollee, 'enrollee')
+        ->getJson(route('portal.notifications.index'))
+        ->assertOk()
+        ->assertJsonCount(20, 'notifications');
+
+    expect($response->json('notifications.0.data.title'))->toBe('Update 25')
+        ->and($response->json('unread_count'))->toBe(25);
+});

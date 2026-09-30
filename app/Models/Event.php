@@ -14,9 +14,4 @@ class Event extends Model
     protected $casts = [
         'event_date' => 'date',
     ];
-
-    public function scopeUpcoming($query)
-    {
-        return $query->where('event_date', '>=', now()->toDateString());
-    }
 }

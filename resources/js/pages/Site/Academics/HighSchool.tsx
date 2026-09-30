@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     Award,
     Briefcase,
@@ -12,12 +12,20 @@ import {
     HeartPulse,
     Lightbulb,
     Palette,
-    Quote,
     Users,
 } from 'lucide-react';
+import {
+    DaySchedule,
+    FeatureCards,
+    IconCards,
+    ProgramCta,
+    ProgramHero,
+    ProgramSection,
+    Testimonials,
+} from '@/components/academics/program-page';
 
 const STATS = [
-    { icon: GraduationCap, value: '9-12', label: 'Grade Levels' },
+    { icon: GraduationCap, value: '7–10', label: 'Grade Levels' },
     { icon: Users, value: '1:15', label: 'Teacher to Student Ratio' },
     { icon: Award, value: '95%', label: 'College Acceptance Rate' },
     { icon: Compass, value: '25+', label: 'AP & Honors Courses' },
@@ -188,195 +196,49 @@ export default function HighSchool() {
         <>
             <Head title="EVIMS — High School" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Grades 9–12
-                    </span>
+            <ProgramHero
+                current="high-school"
+                eyebrow="Grades 7–10"
+                title="High School"
+                intro="Empowering tomorrow's leaders through rigorous academics, character development, and innovative learning experiences that prepare students for lifelong achievement."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        High School
-                    </h1>
+            <ProgramSection
+                tone="white"
+                title="Academic Programs"
+                description="Comprehensive high school programs designed to challenge, inspire, and prepare students for success beyond the classroom."
+            >
+                <FeatureCards items={PROGRAMS} />
+            </ProgramSection>
 
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Empowering tomorrow's leaders through rigorous
-                        academics, character development, and innovative
-                        learning experiences that prepare students for college
-                        success and lifelong achievement
-                    </p>
+            <ProgramSection
+                title="Student Development Focus"
+                description="A comprehensive approach to adolescent development, preparing students for further studies, career, and citizenship."
+            >
+                <IconCards items={DEVELOPMENT_FOCUS} />
+            </ProgramSection>
 
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat) => (
-                            <div
-                                key={stat.label}
-                                className="flex flex-col items-start gap-2"
-                            >
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">
-                                    {stat.value}
-                                </dt>
-                                <dd className="text-xs text-[#1F2A24]/70">
-                                    {stat.label}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
+            <ProgramSection
+                tone="white"
+                title="Daily Schedule"
+                description="A structured academic day with flexibility for individual learning needs and extracurricular engagement."
+            >
+                <DaySchedule slots={SCHEDULE} />
+            </ProgramSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Academic Programs
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Comprehensive high school programs designed to
-                        challenge, inspire, and prepare students for success in
-                        college and beyond
-                    </h2>
+            <ProgramSection
+                title="What Families Say"
+                description="Hear from parents and students who have experienced our high school education."
+            >
+                <Testimonials items={TESTIMONIALS} />
+            </ProgramSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {PROGRAMS.map((program) => (
-                            <div
-                                key={program.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <program.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {program.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {program.copy}
-                                </p>
-                                <ul className="mt-4 space-y-2">
-                                    {program.features.map((feature) => (
-                                        <li
-                                            key={feature}
-                                            className="flex items-start gap-2 text-sm text-[#1F2A24]/70"
-                                        >
-                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    Student Development Focus
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Comprehensive approach to adolescent development preparing
-                    students for college, career, and citizenship
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {DEVELOPMENT_FOCUS.map((item) => (
-                        <div
-                            key={item.title}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
-                        >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                <item.icon className="h-5 w-5 text-[#E8A33D]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                {item.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {item.copy}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Daily Schedule
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Structured academic day with flexibility for individual
-                        learning needs and extracurricular engagement
-                    </h2>
-
-                    <ol className="mt-10 space-y-4 border-l border-[#1F2A24]/10 pl-6">
-                        {SCHEDULE.map((slot) => (
-                            <li key={slot.time} className="relative">
-                                <span className="absolute top-1.5 -left-[29px] h-3 w-3 rounded-full bg-[#2F6F4E]" />
-                                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                                    {slot.time}
-                                </p>
-                                <h3 className="mt-1 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {slot.title}
-                                </h3>
-                                <p className="mt-1 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {slot.copy}
-                                </p>
-                            </li>
-                        ))}
-                    </ol>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    What Families Say
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Hear from parents and students who have experienced the
-                    transformative power of our high school education
-                </h2>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {TESTIMONIALS.map((testimonial) => (
-                        <div
-                            key={testimonial.name}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
-                        >
-                            <Quote className="h-6 w-6 text-[#E8A33D]" />
-                            <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {testimonial.quote}
-                            </p>
-                            <p className="mt-4 font-serif text-base font-semibold text-[#1F2A24]">
-                                {testimonial.name}
-                            </p>
-                            <p className="text-xs text-[#1F2A24]/70">
-                                {testimonial.relation}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
-                            Shape Your Future Today
-                        </h2>
-                        <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                            Join our dynamic high school community where
-                            academic excellence meets character development,
-                            preparing students to become confident leaders and
-                            responsible global citizens ready for college
-                            success.
-                        </p>
-                    </div>
-                    <Link
-                        href="/admission"
-                        className="rounded-full bg-[#FBF8F2] px-5 py-2 text-base font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#FBF8F2]/90"
-                    >
-                        Enroll Now
-                    </Link>
-                </div>
-            </section>
+            <ProgramCta
+                current="high-school"
+                title="Shape Your Future Today"
+                copy="Join our dynamic high school community where academic excellence meets character development, preparing students to become confident leaders and responsible global citizens."
+            />
         </>
     );
 }

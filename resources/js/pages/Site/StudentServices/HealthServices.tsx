@@ -11,18 +11,31 @@ import {
     Dumbbell,
     GraduationCap,
     HandHeart,
-    Hospital,
     LifeBuoy,
     Mail,
     MapPin,
     Phone,
-    Quote,
     ShieldCheck,
     Siren,
     Stethoscope,
     Syringe,
     UserRound,
 } from 'lucide-react';
+import {
+    ContactCards,
+    FeatureCards,
+    IconCards,
+    PageSection,
+    TeamCards,
+    Testimonials,
+} from '@/components/site/page-sections';
+import {
+    SCHOOL_EMAIL,
+    SCHOOL_PHONE,
+    SCHOOL_PHONE_LINK,
+    ServiceCta,
+    ServiceHero,
+} from '@/components/student-services/service-page';
 
 const STATS = [
     { icon: LifeBuoy, value: '24/7', label: 'Healthcare Available' },
@@ -151,36 +164,25 @@ const WELLNESS_PROGRAMS = [
     },
 ];
 
+// Only numbers that really work belong here: the school's own line and
+// the Philippines' national emergency hotline.
 const EMERGENCY_CONTACTS = [
-    {
-        icon: Building2,
-        title: 'School Health Office',
-        lines: [
-            'Main Line: (555) 123-4567',
-            'Available: Monday-Friday, 7:30 AM - 4:00 PM',
-        ],
-    },
     {
         icon: Siren,
         title: 'Emergency Services',
         lines: [
-            '911 - For life-threatening emergencies',
-            'Immediate medical assistance',
+            '911',
+            'Philippine national emergency hotline, for life-threatening emergencies',
         ],
+        href: 'tel:911',
+        action: 'Call 911',
     },
     {
-        icon: Hospital,
-        title: 'Local Hospital',
-        lines: [
-            'Memorial General Hospital',
-            '(555) 987-6543',
-            'Emergency Room open 24/7',
-        ],
-    },
-    {
-        icon: LifeBuoy,
-        title: 'Crisis Hotline',
-        lines: ['National Crisis Hotline: 988', '24/7 Mental Health Support'],
+        icon: Building2,
+        title: 'School Health Office',
+        lines: [SCHOOL_PHONE, 'Monday – Friday, 7:30 AM – 4:00 PM'],
+        href: SCHOOL_PHONE_LINK,
+        action: 'Call the school',
     },
 ];
 
@@ -224,35 +226,30 @@ const CONTACT_INFO = [
         lines: [
             'Health Services Center',
             'Building A, Ground Floor',
-            'Open: Mon-Fri, 7:30 AM - 4:00 PM',
+            'Mon – Fri, 7:30 AM – 4:00 PM',
         ],
     },
     {
         icon: Phone,
         title: 'Call Us',
-        lines: [
-            'Main Office: (555) 123-4567',
-            'Emergency: (555) 123-HELP',
-            'Fax: (555) 123-4569',
-        ],
+        lines: [SCHOOL_PHONE, 'School main line'],
+        href: SCHOOL_PHONE_LINK,
+        action: 'Call now',
     },
     {
         icon: Mail,
         title: 'Email Us',
         lines: [
-            'health@school.edu',
-            'For appointments, questions,',
-            'or health concerns',
+            SCHOOL_EMAIL,
+            'For appointments, questions, or health concerns',
         ],
+        href: `mailto:${SCHOOL_EMAIL}`,
+        action: 'Send an email',
     },
     {
         icon: CalendarCheck,
-        title: 'Book Appointment',
-        lines: [
-            'Schedule online or call',
-            'Same-day appointments available',
-            'Walk-ins welcome for emergencies',
-        ],
+        title: 'Book an Appointment',
+        lines: ['Call or visit the office', 'Walk-ins welcome for emergencies'],
     },
 ];
 
@@ -261,273 +258,79 @@ export default function HealthServices() {
         <>
             <Head title="EVIMS — Health Services" />
 
-            <section className="relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
-                        Your Health, Our Priority
-                    </span>
+            <ServiceHero
+                current="health-services"
+                eyebrow="Your Health, Our Priority"
+                title="Health Services"
+                intro="Healthcare dedicated to the physical, mental, and emotional well-being of our whole school community."
+                stats={STATS}
+            />
 
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
-                        Health Services
-                    </h1>
-
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
-                        Comprehensive healthcare solutions dedicated to the
-                        physical, mental, and emotional well-being of our entire
-                        school community with professional medical support
-                        available 24/7
-                    </p>
-
-                    <dl className="mt-12 grid max-w-3xl grid-cols-2 gap-6 border-t border-[#1F2A24]/10 pt-6 sm:grid-cols-4">
-                        {STATS.map((stat) => (
-                            <div
-                                key={stat.label}
-                                className="flex flex-col items-start gap-2"
-                            >
-                                <stat.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                <dt className="text-2xl font-semibold text-[#1F2A24]">
-                                    {stat.value}
-                                </dt>
-                                <dd className="text-xs text-[#1F2A24]/70">
-                                    {stat.label}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Our Services
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Comprehensive Healthcare Solutions
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm text-[#1F2A24]/70">
-                        From preventive care to emergency response, we provide
-                        complete health services tailored to your needs
-                    </p>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {SERVICES.map((service) => (
-                            <div
-                                key={service.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                    <service.icon className="h-5 w-5 text-[#2F6F4E]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {service.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {service.copy}
-                                </p>
-                                <ul className="mt-4 space-y-2">
-                                    {service.features.map((feature) => (
-                                        <li
-                                            key={feature}
-                                            className="flex items-start gap-2 text-sm text-[#1F2A24]/70"
-                                        >
-                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8A33D]" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    Our Team
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Expert Healthcare Professionals
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm text-[#1F2A24]/70">
-                    Meet our dedicated team of licensed professionals committed
-                    to your well-being
-                </p>
-
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {TEAM.map((member) => (
-                        <div
-                            key={member.name}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
-                        >
-                            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2F6F4E]/10">
-                                <UserRound className="h-6 w-6 text-[#2F6F4E]" />
-                            </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                {member.name}
-                            </h3>
-                            <p className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                                {member.role}
+            {/* Emergency numbers first, where they're easy to find. */}
+            <section className="px-5">
+                <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#C6473B]/20 bg-[#C6473B]/[0.04] p-6 sm:p-8">
+                    <div className="flex items-start gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C6473B] text-white">
+                            <Siren className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <div>
+                            <h2 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                                In an emergency
+                            </h2>
+                            <p className="mt-1 text-sm text-[#1F2A24]/70">
+                                Call for help right away, then let the school
+                                know.
                             </p>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                {member.bio}
-                            </p>
-                            <div className="mt-4 flex items-center gap-4">
-                                <span className="flex items-center gap-1.5 text-sm font-semibold text-[#2F6F4E]">
-                                    <Mail className="h-4 w-4" /> Email
-                                </span>
-                                <span className="flex items-center gap-1.5 text-sm font-semibold text-[#2F6F4E]">
-                                    <Phone className="h-4 w-4" /> Call
-                                </span>
-                            </div>
                         </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Wellness Programs
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        Holistic Health Initiatives
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm text-[#1F2A24]/70">
-                        Comprehensive programs designed to promote physical,
-                        mental, and emotional well-being
-                    </p>
-
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {WELLNESS_PROGRAMS.map((program) => (
-                            <div
-                                key={program.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8A33D]/10">
-                                    <program.icon className="h-5 w-5 text-[#E8A33D]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
-                                    {program.title}
-                                </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {program.copy}
-                                </p>
-                            </div>
-                        ))}
+                    </div>
+                    <div className="mt-6">
+                        <ContactCards items={EMERGENCY_CONTACTS} />
                     </div>
                 </div>
             </section>
 
-            <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                    Emergency Contacts
-                </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                    Important information for health emergencies and urgent
-                    situations
-                </h2>
+            <PageSection
+                title="Our Services"
+                description="From preventive care to emergency response, health services tailored to every student's needs."
+            >
+                <FeatureCards items={SERVICES} />
+            </PageSection>
 
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    {EMERGENCY_CONTACTS.map((contact) => (
-                        <div
-                            key={contact.title}
-                            className="rounded-2xl bg-[#1F2A24] p-6 text-[#FBF8F2]"
-                        >
-                            <contact.icon className="h-5 w-5 text-[#E8A33D]" />
-                            <h3 className="mt-3 font-serif text-lg font-semibold">
-                                {contact.title}
-                            </h3>
-                            {contact.lines.map((line) => (
-                                <p
-                                    key={line}
-                                    className="mt-1 text-sm leading-relaxed text-[#FBF8F2]/70"
-                                >
-                                    {line}
-                                </p>
-                            ))}
-                        </div>
-                    ))}
-                </div>
-            </section>
+            <PageSection
+                tone="white"
+                title="Our Team"
+                description="Meet the professionals committed to our students' well-being."
+            >
+                <TeamCards members={TEAM} />
+            </PageSection>
 
-            <section className="border-y border-[#1F2A24]/10 bg-white">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
-                        Testimonials
-                    </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
-                        What Our Community Says
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm text-[#1F2A24]/70">
-                        Real experiences from students, parents, and staff
-                        members
-                    </p>
+            <PageSection
+                title="Wellness Programs"
+                description="Programs designed to promote physical, mental, and emotional well-being."
+            >
+                <IconCards items={WELLNESS_PROGRAMS} />
+            </PageSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {TESTIMONIALS.map((testimonial) => (
-                            <div
-                                key={testimonial.name}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
-                            >
-                                <Quote className="h-6 w-6 text-[#E8A33D]" />
-                                <p className="mt-4 text-sm leading-relaxed text-[#1F2A24]/70">
-                                    {testimonial.quote}
-                                </p>
-                                <div className="mt-4 flex items-center gap-3">
-                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2F6F4E]/10 font-serif text-sm font-semibold text-[#2F6F4E]">
-                                        {testimonial.name.charAt(0)}
-                                    </span>
-                                    <div>
-                                        <p className="font-serif text-base font-semibold text-[#1F2A24]">
-                                            {testimonial.name}
-                                        </p>
-                                        <p className="text-xs text-[#1F2A24]/70">
-                                            {testimonial.relation}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <PageSection
+                tone="white"
+                title="What Our Community Says"
+                description="Experiences from students, parents, and staff."
+            >
+                <Testimonials items={TESTIMONIALS} />
+            </PageSection>
 
-            <section className="bg-[#2F6F4E]">
-                <div className="mx-auto max-w-7xl px-5 py-16">
-                    <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
-                        Get in Touch
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm text-[#FBF8F2]/80">
-                        Our dedicated health team is here to support you. Reach
-                        out for appointments, questions, or health concerns.
-                    </p>
+            <PageSection
+                title="Get in Touch"
+                description="Our health team is here to help. Reach out for appointments, questions, or health concerns."
+            >
+                <ContactCards items={CONTACT_INFO} />
+            </PageSection>
 
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        {CONTACT_INFO.map((info) => (
-                            <div
-                                key={info.title}
-                                className="rounded-2xl bg-[#FBF8F2]/10 p-6"
-                            >
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FBF8F2]/15">
-                                    <info.icon className="h-5 w-5 text-[#FBF8F2]" />
-                                </span>
-                                <h3 className="mt-4 font-serif text-lg font-semibold text-[#FBF8F2]">
-                                    {info.title}
-                                </h3>
-                                {info.lines.map((line) => (
-                                    <p
-                                        key={line}
-                                        className="mt-1 text-xs text-[#FBF8F2]/70"
-                                    >
-                                        {line}
-                                    </p>
-                                ))}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <ServiceCta
+                current="health-services"
+                title="Healthy students learn better"
+                copy="Questions about your child's health needs, medication, or immunizations? Our health office is happy to help."
+            />
         </>
     );
 }
