@@ -6,6 +6,9 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Enrollment extends Model
 {
@@ -22,42 +25,66 @@ class Enrollment extends Model
         'cancelled_at' => 'datetime',
     ];
 
-    public function student()
+    /**
+     * @return BelongsTo<Student, $this>
+     */
+    public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
-    public function gradeLevel()
+    /**
+     * @return BelongsTo<GradeLevel, $this>
+     */
+    public function gradeLevel(): BelongsTo
     {
         return $this->belongsTo(GradeLevel::class);
     }
 
-    public function academicHistory()
+    /**
+     * @return HasOne<AcademicHistory, $this>
+     */
+    public function academicHistory(): HasOne
     {
         return $this->hasOne(AcademicHistory::class);
     }
 
-    public function vitalInformation()
+    /**
+     * @return HasOne<VitalInformation, $this>
+     */
+    public function vitalInformation(): HasOne
     {
         return $this->hasOne(VitalInformation::class);
     }
 
-    public function billingContract()
+    /**
+     * @return HasOne<BillingContract, $this>
+     */
+    public function billingContract(): HasOne
     {
         return $this->hasOne(BillingContract::class);
     }
 
-    public function officeVerification()
+    /**
+     * @return HasOne<OfficeVerification, $this>
+     */
+    public function officeVerification(): HasOne
     {
         return $this->hasOne(OfficeVerification::class);
     }
 
-    public function subjects()
+    /**
+     * @return BelongsToMany<Subject, $this>
+     */
+    public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'enrollment_subject');
     }
 
-    public function enrolleeUser()
+    /**
+     * @return BelongsTo<EnrolleeUser, $this>
+     */
+    public function enrolleeUser(): BelongsTo
     {
         return $this->belongsTo(EnrolleeUser::class);
     }

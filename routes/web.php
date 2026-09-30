@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
@@ -97,6 +98,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show', 'update']);
     Route::resource('grade-levels.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
+
+    Route::resource('transactions', TransactionController::class)
+        ->only(['index', 'show'])
+        ->parameters(['transactions' => 'payment']);
 
     Route::resource('events', EventController::class)->except(['show']);
 

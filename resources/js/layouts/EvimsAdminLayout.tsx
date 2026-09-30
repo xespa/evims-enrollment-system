@@ -7,6 +7,7 @@ import {
     LogOut,
     PanelLeftClose,
     PanelLeftOpen,
+    ReceiptText,
     Settings,
     Users,
     X,
@@ -16,6 +17,11 @@ import { useEffect, useRef, useState } from 'react';
 const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
     { label: 'Students', route: 'admin.students.index', icon: Users },
+    {
+        label: 'Transactions',
+        route: 'admin.transactions.index',
+        icon: ReceiptText,
+    },
     { label: 'Events', route: 'admin.events.index', icon: Calendar },
     {
         label: 'Grade Levels',

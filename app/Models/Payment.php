@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
@@ -16,17 +17,26 @@ class Payment extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function installment()
+    /**
+     * @return BelongsTo<Installment, $this>
+     */
+    public function installment(): BelongsTo
     {
         return $this->belongsTo(Installment::class);
     }
 
-    public function enrollment()
+    /**
+     * @return BelongsTo<Enrollment, $this>
+     */
+    public function enrollment(): BelongsTo
     {
         return $this->belongsTo(Enrollment::class);
     }
 
-    public function recordedBy()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
