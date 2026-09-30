@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/spinner';
 export default function Login({ hasPendingApplication = false }) {
     return (
         <div className="min-h-screen bg-[#FBF8F2] px-4 py-16">
-            <Head title="Parent Login" />
+            <Head title="Student Portal Login" />
 
             <div className="mx-auto max-w-md">
                 <div className="mb-6 text-center">

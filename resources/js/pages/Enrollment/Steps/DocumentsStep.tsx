@@ -18,7 +18,7 @@ export default function DocumentsStep({ data, setData, errors }) {
             </h2>
             <p className="mb-4 text-sm text-[#1F2A24]/70">
                 Optional for now — if you don't have a scanned copy yet, you can
-                upload or replace these later from your parent portal any time
+                upload or replace these later from your student portal any time
                 before your application is approved.
             </p>
 

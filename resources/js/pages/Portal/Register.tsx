@@ -14,7 +14,7 @@ export default function Register({
 }) {
     return (
         <div className="min-h-screen bg-[#FBF8F2] px-4 py-16">
-            <Head title="Create Parent Account" />
+            <Head title="Create Student Portal Account" />
 
             <div className="mx-auto max-w-md">
                 <div className="mb-6 text-center">

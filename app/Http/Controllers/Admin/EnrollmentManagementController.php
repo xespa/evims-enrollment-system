@@ -106,7 +106,7 @@ class EnrollmentManagementController extends Controller
         $enrollment->loadMissing('student', 'enrolleeUser');
 
         if (! $enrollment->enrolleeUser) {
-            return back()->withErrors(['reminder' => 'This application has no linked parent portal account to notify.']);
+            return back()->withErrors(['reminder' => 'This application has no linked student portal account to notify.']);
         }
 
         $documentLabel = self::DOCUMENT_LABELS[self::DOCUMENT_TYPES[$type]];

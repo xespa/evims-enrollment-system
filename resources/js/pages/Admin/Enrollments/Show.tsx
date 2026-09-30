@@ -531,13 +531,14 @@ export default function Show({ enrollment }) {
                             <span className="font-semibold">
                                 Email not verified.
                             </span>{' '}
-                            The parent hasn't confirmed{' '}
+                            The student portal account for{' '}
                             <span className="font-medium">
                                 {enrollment.email}
                             </span>{' '}
-                            yet, so status emails may not reach them and they
-                            can't open the portal. Consider confirming their
-                            contact details before approving.
+                            hasn't been confirmed yet, so status emails may not
+                            arrive and the student portal can't be opened.
+                            Consider confirming the contact details before
+                            approving.
                         </div>
                     )}
 
@@ -786,7 +787,7 @@ export default function Show({ enrollment }) {
                             {missingDocuments.length > 0 &&
                                 !enrollment.enrollee_user_id && (
                                     <p className="mb-3 text-xs text-[#1F2A24]/65">
-                                        No linked parent portal account —
+                                        No linked student portal account —
                                         reminders can't be sent for this
                                         application.
                                     </p>

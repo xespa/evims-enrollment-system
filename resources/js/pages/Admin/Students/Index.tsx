@@ -271,7 +271,7 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                                 {!enrollment.parent_email_verified && (
                                                     <span
                                                         className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]"
-                                                        title="The parent hasn't confirmed their email address yet."
+                                                        title="The student portal account's email address hasn't been confirmed yet."
                                                     >
                                                         Email not verified
                                                     </span>

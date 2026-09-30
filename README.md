@@ -3,7 +3,7 @@
 EVIMS is an online enrollment and school website system. It has three parts:
 
 - **Public school website**: home, about, academics, student services, events, contact.
-- **Enrollee portal**: parents and guardians register, submit applications, upload documents and pay tuition by GCash through PayMongo.
+- **Student portal**: parents/guardians or students register, submit applications, upload documents and pay tuition by GCash through PayMongo.
 - **Admin panel**: staff review applications, verify documents, assign LRNs, record cash payments and manage grade levels, fees, subjects and events.
 
 ## Tech stack
@@ -43,7 +43,7 @@ Then open `http://localhost:8000`.
 | Admin | `admin@example.com` | `password` |
 | Staff | `test@example.com`  | `password` |
 
-Enrollee (parent) accounts are separate. Create one at `/portal/register`.
+Student portal accounts are separate from staff accounts. Create one at `/portal/register`.
 
 ### Philippine address data
 
@@ -104,11 +104,11 @@ SCHOOL_GCASH_NAME="EVIMS School Inc."
 
 ## How enrollment works
 
-1. **Register.** A parent creates an enrollee account at `/portal/register` and verifies their email.
-2. **Apply.** The parent fills in the admission form at `/admission`: student info, address, parents, academic history, subjects, and a billing plan. An application starts as `PENDING`.
-3. **Upload documents.** The parent uploads Form 138, a birth certificate and a good moral certificate from the portal dashboard.
-4. **Review.** An admin opens the application (`/admin/enrollments/{id}`), verifies the documents, can send reminders for missing ones, and sets the status to `APPROVED` or `REJECTED`. The parent gets an email and an in-portal notification.
-5. **Pay.** Once an application is approved, the parent pays each installment by GCash through a signed payment link. PayMongo's webhook and the return URLs mark installments as paid. Admins can also record cash payments.
+1. **Register.** A parent/guardian or student creates a student portal account at `/portal/register` and verifies their email.
+2. **Apply.** The parent/guardian or student fills in the admission form at `/admission`: student info, address, parents, academic history, subjects, and a billing plan. An application starts as `PENDING`.
+3. **Upload documents.** The parent/guardian or student uploads Form 138, a birth certificate and a good moral certificate from the student portal dashboard.
+4. **Review.** An admin opens the application (`/admin/enrollments/{id}`), verifies the documents, can send reminders for missing ones, and sets the status to `APPROVED` or `REJECTED`. The parent/guardian or student gets an email and an in-portal notification.
+5. **Pay.** Once an application is approved, the parent/guardian or student pays each installment by GCash through a signed payment link. PayMongo's webhook and the return URLs mark installments as paid. Admins can also record cash payments.
 
 ### Billing plans
 
