@@ -118,7 +118,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->only(['index', 'show'])
         ->parameters(['transactions' => 'payment']);
 
-    Route::resource('events', EventController::class)->except(['show']);
+    // Creating and editing happen in a modal on the index page.
+    Route::resource('events', EventController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::redirect('settings', '/admin/settings/profile');
     Route::get('settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');

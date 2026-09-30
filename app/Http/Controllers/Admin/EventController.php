@@ -17,11 +17,6 @@ class EventController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('Admin/Events/Create');
-    }
-
     public function store(Request $request)
     {
         $validated = $this->validated($request);
@@ -33,13 +28,6 @@ class EventController extends Controller
         Event::create($validated);
 
         return redirect()->route('admin.events.index')->with('success', 'Event created.');
-    }
-
-    public function edit(Event $event)
-    {
-        return Inertia::render('Admin/Events/Edit', [
-            'event' => $event,
-        ]);
     }
 
     public function update(Request $request, Event $event)
