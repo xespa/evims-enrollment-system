@@ -2,14 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Curriculum;
+use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 
 class GradeLevelSeeder extends Seeder
 {
     /**
+     * The grade levels, set up for the current school year with the
      * S.Y. 2026-2027 fee schedule. The billed total (tuition_fee) is derived
-     * from these on save — see GradeLevel::computeTotalFee().
+     * from these on save — see Curriculum::computeTotalFee().
      */
     public function run(): void
     {
@@ -33,8 +37,15 @@ class GradeLevelSeeder extends Seeder
             ['name' => 'Grade 10', 'level_order' => 12, ...$juniorHigh, 'books_fee' => 8841],
         ];
 
+        $schoolYear = Enrollment::currentSchoolYear();
+
         foreach ($levels as $level) {
-            GradeLevel::create($level);
+            $gradeLevel = GradeLevel::create(Arr::only($level, ['name', 'level_order']));
+
+            $gradeLevel->curricula()->create([
+                'school_year' => $schoolYear,
+                ...Arr::only($level, Curriculum::FEE_FIELDS),
+            ]);
         }
     }
 }

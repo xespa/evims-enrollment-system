@@ -8,21 +8,6 @@ const PRE_ELEMENTARY_AGES = {
     'Pre-K 2': 5,
 };
 
-// Offers one school year back through two years ahead of the current one —
-// enough room for late enrollees and early applications, without listing
-// every year that's ever existed.
-function generateSchoolYearOptions() {
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const currentStart = month >= 6 ? now.getFullYear() : now.getFullYear() - 1;
-
-    const years = [];
-    for (let start = currentStart - 1; start <= currentStart + 2; start++) {
-        years.push(`${start}-${start + 1}`);
-    }
-    return years.map((y) => ({ value: y, label: y }));
-}
-
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return '';
 
@@ -45,6 +30,8 @@ export default function StudentInfoStep({
     setData,
     errors,
     gradeLevels,
+    // Only the school years that are open for enrollment.
+    schoolYears,
 }) {
     const gradeOptions = gradeLevels.map((g) => ({
         value: g.id,
@@ -53,7 +40,10 @@ export default function StudentInfoStep({
                 ? `${g.name} (Age ${PRE_ELEMENTARY_AGES[g.name]})`
                 : g.name,
     }));
-    const schoolYearOptions = generateSchoolYearOptions();
+    const schoolYearOptions = schoolYears.map((year) => ({
+        value: year,
+        label: year,
+    }));
 
     const handleDateOfBirthChange = (name, value) => {
         setData((prevData) => ({

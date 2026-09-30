@@ -2,6 +2,7 @@
 
 use App\Models\Address;
 use App\Models\BillingContract;
+use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
@@ -20,47 +21,12 @@ function actingAsEnrollee(): EnrolleeUser
     return $enrollee;
 }
 
-function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): array
-{
-    return array_merge([
-        'student_type' => 'NO_LRN',
-        'lrn' => null,
-        'psa_birth_cert_no' => '123-4567-89012',
-        'last_name' => 'Dela Cruz',
-        'first_name' => 'Juan',
-        'middle_name' => 'Santos',
-        'extension_name' => null,
-        'date_of_birth' => '2015-05-10',
-        'sex' => 'MALE',
-
-        'grade_level_id' => $gradeLevel->id,
-        'school_year' => '2026-2027',
-        'date_of_application' => now()->toDateString(),
-        'age' => 10,
-        'session_time_preference' => 'MORNING_SESSION',
-        'email' => 'parent@example.com',
-
-        'barangay' => 'Balud',
-        'city_municipality' => 'Borongan City',
-        'city_code' => '0826-01',
-        'province' => 'Eastern Samar',
-        'province_code' => '0826',
-        'country' => 'Philippines',
-        'zip_code' => '6800',
-
-        'subject_ids' => $gradeLevel->subjects()->pluck('id')->toArray(),
-
-        'payment_option' => 'MONTHLY',
-        'payment_channel' => 'COUNTER',
-    ], $overrides);
-}
-
 test('submitting the admission form creates the full enrollment record set', function () {
     Storage::fake('public');
     actingAsEnrollee();
 
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
         'form_138' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
@@ -111,7 +77,7 @@ test('documents are optional at submission', function () {
     actingAsEnrollee();
 
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel);
 
@@ -133,7 +99,7 @@ test('documents are optional at submission', function () {
 test('document uploads are validated for file type', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
         'form_138' => UploadedFile::fake()->create('form138.exe', 200, 'application/x-msdownload'),
@@ -148,7 +114,7 @@ test('document uploads are validated for file type', function () {
 test('a second application for the same school year is rejected while the first is still active', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
         'student_type' => 'WITH_LRN',
@@ -169,7 +135,7 @@ test('a second application for the same school year is rejected while the first 
 test('a student can reapply for the same school year after their prior application was rejected', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
         'student_type' => 'WITH_LRN',
@@ -188,7 +154,7 @@ test('a student can reapply for the same school year after their prior applicati
 
 test('guests are sent to create an account instead of submitting directly', function () {
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel);
 
@@ -206,7 +172,7 @@ test('a guest application is submitted as soon as they register', function () {
     Storage::fake('local');
 
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
         'form_138' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
@@ -242,7 +208,7 @@ test('a guest application is submitted as soon as they register', function () {
 test('a guest application is submitted as soon as they log in to an existing account', function () {
     $enrollee = EnrolleeUser::factory()->create();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel));
 
@@ -258,7 +224,7 @@ test('a guest application is submitted as soon as they log in to an existing acc
 
 test('a guest application submitted after registering shows up for the admin', function () {
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel));
     $this->post(route('portal.register.store'), [
@@ -281,7 +247,7 @@ test('a newer guest submission replaces the held one and its uploads', function 
     Storage::fake('local');
 
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
         'form_138' => UploadedFile::fake()->create('first.pdf', 200, 'application/pdf'),
@@ -317,7 +283,7 @@ test('registering without a held application goes to the verification notice', f
 test('a student can reapply for the same school year after their prior application was cancelled', function () {
     actingAsEnrollee();
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $payload = validEnrollmentPayload($gradeLevel, [
         'student_type' => 'WITH_LRN',
@@ -338,14 +304,14 @@ test('the billed total and installments follow the grade level fee breakdown', f
     actingAsEnrollee();
 
     // Grade 1 fees from the S.Y. 2026-2027 flyer.
-    $gradeLevel = GradeLevel::factory()->create([
+    $gradeLevel = GradeLevel::factory()->withCurriculum([
         'registration_fee' => 1725,
         'miscellaneous_fee' => 6325,
         'monthly_tuition' => 2070,
         'monthly_laboratory_fee' => 690,
         'books_fee' => 5099,
-    ]);
-    Subject::create(['grade_level_id' => $gradeLevel->id, 'name' => 'Math', 'code' => 'MATH1']);
+    ])->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['payment_option' => 'MONTHLY']));
 
@@ -356,4 +322,52 @@ test('the billed total and installments follow the grade level fee breakdown', f
         ->and($installments)->toHaveCount(10)
         ->and($installments->pluck('amount_due')->map(fn ($amount) => (float) $amount)->unique()->values()->all())->toBe([4074.9])
         ->and(round($installments->sum('amount_due'), 2))->toBe(40749.0);
+});
+
+test('an application is priced from the chosen school year\'s fees', function () {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->create();
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    $nextSchoolYear = ($start + 1).'-'.($start + 2);
+
+    Curriculum::factory()->for($gradeLevel)->totalFee(30000)->create();
+    $nextYear = Curriculum::factory()->for($gradeLevel)->totalFee(33000)->create(['school_year' => $nextSchoolYear]);
+    $nextYearSubject = Subject::factory()->for($nextYear)->create();
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, [
+        'school_year' => $nextSchoolYear,
+        'subject_ids' => [$nextYearSubject->id],
+    ]))->assertRedirect();
+
+    $enrollment = Enrollment::sole();
+
+    expect((float) $enrollment->billingContract->total_fee)->toBe(33000.0)
+        ->and($enrollment->subjects->pluck('id')->all())->toBe([$nextYearSubject->id]);
+});
+
+test('a school year that is not set up for the grade level cannot be applied for', function () {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    $notSetUp = ($start + 1).'-'.($start + 2);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['school_year' => $notSetUp]))
+        ->assertSessionHasErrors(['school_year' => "Enrollment for S.Y. {$notSetUp} isn't open for this grade level yet."]);
+
+    expect(Enrollment::count())->toBe(0);
+});
+
+test('subjects from another school year are rejected', function () {
+    actingAsEnrollee();
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math']);
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    $otherYear = Curriculum::factory()->for($gradeLevel)->create(['school_year' => ($start + 1).'-'.($start + 2)]);
+    $otherYearSubject = Subject::factory()->for($otherYear)->create();
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['subject_ids' => [$otherYearSubject->id]]))
+        ->assertSessionHasErrors('subject_ids.0');
+
+    expect(Enrollment::count())->toBe(0);
 });

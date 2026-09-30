@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import {
     Dialog,
@@ -13,10 +13,11 @@ import {
     formatCurrency,
 } from '@/pages/Enrollment/Components/fees';
 import { INPUT_CLASS, MONTHLY_FEES, ONE_TIME_FEES } from './types';
-import type { FeeName, GradeLevel } from './types';
+import type { Curriculum, FeeName, GradeLevel } from './types';
 
 type Props = {
     gradeLevel: GradeLevel;
+    curriculum: Curriculum;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -81,21 +82,22 @@ function FeeInput({
 }
 
 /**
- * Edits one grade level's fee breakdown, with a live total. Mount it with
- * key={gradeLevel.id} so the form starts from that grade level's fees.
+ * Edits one grade level's fees for one school year, with a live total.
+ * Remount it for each opening so the form starts from the saved fees.
  */
 export default function EditFeesDialog({
     gradeLevel,
+    curriculum,
     open,
     onOpenChange,
 }: Props) {
     const { data, setData, patch, processing, errors, isDirty } = useForm<Fees>(
         {
-            registration_fee: gradeLevel.registration_fee,
-            miscellaneous_fee: gradeLevel.miscellaneous_fee,
-            books_fee: gradeLevel.books_fee,
-            monthly_tuition: gradeLevel.monthly_tuition,
-            monthly_laboratory_fee: gradeLevel.monthly_laboratory_fee,
+            registration_fee: curriculum.registration_fee,
+            miscellaneous_fee: curriculum.miscellaneous_fee,
+            books_fee: curriculum.books_fee,
+            monthly_tuition: curriculum.monthly_tuition,
+            monthly_laboratory_fee: curriculum.monthly_laboratory_fee,
         },
     );
 
@@ -108,12 +110,12 @@ export default function EditFeesDialog({
         MONTHLY_FEES.map((f) => f.name),
     );
     const total = oneTime + BILLABLE_MONTHS * monthly;
-    const currentTotal = Number(gradeLevel.tuition_fee);
+    const currentTotal = Number(curriculum.tuition_fee);
     const totalChanged = Math.abs(total - currentTotal) >= 0.005;
 
     const save = (e: FormEvent) => {
         e.preventDefault();
-        patch(route('admin.grade-levels.update', gradeLevel.id), {
+        patch(route('admin.curricula.update', curriculum.id), {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => onOpenChange(false),
@@ -130,7 +132,8 @@ export default function EditFeesDialog({
                 <form onSubmit={save}>
                     <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
-                            Edit {gradeLevel.name} fees
+                            Edit {gradeLevel.name} fees ·{' '}
+                            {curriculum.school_year}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -210,17 +213,18 @@ export default function EditFeesDialog({
                             </div>
                         </dl>
 
-                        <p className="flex gap-2 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-3 py-2.5 text-xs leading-relaxed text-[#7a4d0b]">
-                            <AlertTriangle
-                                className="mt-0.5 h-4 w-4 shrink-0"
+                        <p className="flex gap-2 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2.5 text-xs leading-relaxed text-[#1F2A24]/80">
+                            <Info
+                                className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
                                 aria-hidden="true"
                             />
                             <span>
-                                Saving also updates the unpaid installments of
-                                this school year's {gradeLevel.name}{' '}
-                                applications, so their next payment (including
-                                GCash) uses the new fees. Payments already made
-                                aren't changed.
+                                Only new {curriculum.school_year}{' '}
+                                {gradeLevel.name} applications will use these
+                                fees.{' '}
+                                {curriculum.enrollments_count > 0
+                                    ? `The ${curriculum.enrollments_count} ${curriculum.enrollments_count === 1 ? 'application' : 'applications'} already made ${curriculum.enrollments_count === 1 ? 'keeps its' : 'keep their'} original price.`
+                                    : 'No one has applied for it yet.'}
                             </span>
                         </p>
                     </div>

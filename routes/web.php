@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
@@ -96,8 +98,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('enrollments.documents.remind');
     Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
 
-    Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show', 'update']);
-    Route::resource('grade-levels.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
+    Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show']);
+    // Setting up a school year: store starts a draft, update saves it
+    // (opening enrollment), destroy cancels it.
+    Route::resource('school-years', SchoolYearController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->parameters(['school-years' => 'schoolYear'])
+        ->where(['schoolYear' => '\d{4}-\d{4}']);
+    // A curriculum is one grade level's fees + subjects for one school year.
+    Route::resource('curricula', CurriculumController::class)->only(['update']);
+    Route::resource('curricula.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
 
     Route::resource('transactions', TransactionController::class)
         ->only(['index', 'show'])

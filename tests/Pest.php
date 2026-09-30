@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Enrollment;
+use App\Models\GradeLevel;
+use App\Models\Subject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +50,46 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * A complete, valid admission form submission for the given grade level,
+ * applying for the current school year with all of that year's subjects.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): array
+{
+    return array_merge([
+        'student_type' => 'NO_LRN',
+        'lrn' => null,
+        'psa_birth_cert_no' => '123-4567-89012',
+        'last_name' => 'Dela Cruz',
+        'first_name' => 'Juan',
+        'middle_name' => 'Santos',
+        'extension_name' => null,
+        'date_of_birth' => '2015-05-10',
+        'sex' => 'MALE',
+
+        'grade_level_id' => $gradeLevel->id,
+        'school_year' => Enrollment::currentSchoolYear(),
+        'date_of_application' => now()->toDateString(),
+        'age' => 10,
+        'session_time_preference' => 'MORNING_SESSION',
+        'email' => 'parent@example.com',
+
+        'barangay' => 'Balud',
+        'city_municipality' => 'Borongan City',
+        'city_code' => '0826-01',
+        'province' => 'Eastern Samar',
+        'province_code' => '0826',
+        'country' => 'Philippines',
+        'zip_code' => '6800',
+
+        'subject_ids' => Subject::whereIn('curriculum_id', $gradeLevel->curricula()->pluck('id'))->pluck('id')->toArray(),
+
+        'payment_option' => 'MONTHLY',
+        'payment_channel' => 'COUNTER',
+    ], $overrides);
 }

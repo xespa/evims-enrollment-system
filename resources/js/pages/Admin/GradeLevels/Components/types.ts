@@ -5,17 +5,27 @@ export type Subject = {
     enrollments_count: number;
 };
 
-export type GradeLevel = {
+/** One grade level's fees and subjects for one school year. */
+export type Curriculum = {
     id: number;
-    name: string;
-    level_order: number;
+    school_year: string;
     registration_fee: string;
     miscellaneous_fee: string;
     books_fee: string;
     monthly_tuition: string;
     monthly_laboratory_fee: string;
     tuition_fee: string;
+    /** Applications already made for this grade level and year. */
+    enrollments_count: number;
     subjects: Subject[];
+};
+
+export type GradeLevel = {
+    id: number;
+    name: string;
+    level_order: number;
+    /** Null when the grade level isn't offered in the selected school year. */
+    curriculum: Curriculum | null;
 };
 
 export type FeeName =

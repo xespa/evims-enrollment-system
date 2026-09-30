@@ -17,11 +17,13 @@ import {
 } from '@/components/ui/dialog';
 import { useConfirm } from '@/hooks/use-confirm';
 import { INPUT_CLASS } from './types';
-import type { GradeLevel, Subject } from './types';
+import type { Curriculum, GradeLevel, Subject } from './types';
 
 type Props = {
     /** Always the latest copy from page props, so the list stays in sync after each save. */
     gradeLevel: GradeLevel;
+    /** The selected school year's fees and subjects for this grade level. */
+    curriculum: Curriculum;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -176,6 +178,7 @@ function SubjectRow({
 
 export default function ManageSubjectsDialog({
     gradeLevel,
+    curriculum,
     open,
     onOpenChange,
 }: Props) {
@@ -191,16 +194,13 @@ export default function ManageSubjectsDialog({
 
     const add = (e: FormEvent) => {
         e.preventDefault();
-        addForm.post(
-            route('admin.grade-levels.subjects.store', gradeLevel.id),
-            {
-                ...VISIT_OPTIONS,
-                onSuccess: () => {
-                    setNotice(`${addForm.data.name} added.`);
-                    addForm.reset();
-                },
+        addForm.post(route('admin.curricula.subjects.store', curriculum.id), {
+            ...VISIT_OPTIONS,
+            onSuccess: () => {
+                setNotice(`${addForm.data.name} added.`);
+                addForm.reset();
             },
-        );
+        });
     };
 
     const remove = async (subject: Subject) => {
@@ -231,7 +231,7 @@ export default function ManageSubjectsDialog({
         onOpenChange(isOpen);
     };
 
-    const subjects = gradeLevel.subjects;
+    const subjects = curriculum.subjects;
 
     return (
         <>
@@ -244,7 +244,8 @@ export default function ManageSubjectsDialog({
                 >
                     <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
-                            {gradeLevel.name} subjects
+                            {gradeLevel.name} subjects ·{' '}
+                            {curriculum.school_year}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -361,8 +362,9 @@ export default function ManageSubjectsDialog({
                     <p className="border-t border-[#1F2A24]/10 px-6 py-3 text-xs text-[#1F2A24]/55">
                         {subjects.length}{' '}
                         {subjects.length === 1 ? 'subject' : 'subjects'} ·
-                        Subjects used by existing enrollments can be renamed but
-                        not removed.
+                        Subjects already used by {curriculum.school_year}{' '}
+                        applications can be renamed but not removed. To drop
+                        one, remove it from the next school year instead.
                     </p>
                 </DialogContent>
             </Dialog>

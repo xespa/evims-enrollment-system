@@ -2,90 +2,42 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use Database\Factories\GradeLevelFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * A grade level (Nursery … Grade 10). Its fees and subjects live on a
+ * Curriculum per school year.
+ */
 class GradeLevel extends Model
 {
+    /** @use HasFactory<GradeLevelFactory> */
     use HasFactory;
-
-    /**
-     * Monthly fees are billed across a 10-month school year, matching the
-     * installment schedule in BillingContract::generateInstallments().
-     */
-    public const BILLABLE_MONTHS = 10;
 
     protected $fillable = [
         'name',
         'level_order',
-        'registration_fee',
-        'miscellaneous_fee',
-        'monthly_tuition',
-        'monthly_laboratory_fee',
-        'books_fee',
-        'tuition_fee',
-    ];
-
-    protected $casts = [
-        'registration_fee' => 'decimal:2',
-        'miscellaneous_fee' => 'decimal:2',
-        'monthly_tuition' => 'decimal:2',
-        'monthly_laboratory_fee' => 'decimal:2',
-        'books_fee' => 'decimal:2',
-        'tuition_fee' => 'decimal:2',
     ];
 
     /**
-     * tuition_fee is the total amount billed for the school year, so it is
-     * always derived from the fee breakdown rather than set independently.
+     * @return HasMany<Curriculum, $this>
      */
-    protected static function booted(): void
+    public function curricula(): HasMany
     {
-        static::saving(function (GradeLevel $gradeLevel) {
-            $gradeLevel->tuition_fee = $gradeLevel->computeTotalFee();
-        });
+        return $this->hasMany(Curriculum::class);
     }
 
-    public function computeTotalFee(): float
+    public function curriculumFor(string $schoolYear): ?Curriculum
     {
-        return (float) $this->registration_fee
-            + (float) $this->miscellaneous_fee
-            + (float) $this->books_fee
-            + self::BILLABLE_MONTHS * ((float) $this->monthly_tuition + (float) $this->monthly_laboratory_fee);
+        return $this->curricula()->forSchoolYear($schoolYear)->first();
     }
 
     /**
-     * Applies this grade level's current total fee to the unpaid installments
-     * of its active applications for the current (or a later) school year.
-     * Cancelled, rejected, and past-school-year applications keep their bill.
-     *
-     * Returns how many billing contracts were re-priced.
+     * @return HasMany<Enrollment, $this>
      */
-    public function repriceOpenBillingContracts(): int
-    {
-        return BillingContract::query()
-            ->whereHas('enrollment', fn (Builder $query) => $query
-                ->where('grade_level_id', $this->id)
-                ->whereNull('cancelled_at')
-                ->where('enrollment_status', '!=', 'REJECTED')
-                ->where('school_year', '>=', Enrollment::currentSchoolYear()))
-            ->whereHas('installments', fn (Builder $query) => $query->where('status', '!=', 'PAID'))
-            ->get()
-            ->filter(fn (BillingContract $contract) => $contract->repriceTo((float) $this->tuition_fee))
-            ->count();
-    }
-
-    /**
-     * @return HasMany<Subject, $this>
-     */
-    public function subjects(): HasMany
-    {
-        return $this->hasMany(Subject::class);
-    }
-
-    public function enrollments()
+    public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }

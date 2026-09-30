@@ -1,6 +1,14 @@
-import { Head, usePage } from '@inertiajs/react';
-import { BookOpen, Pencil } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    CalendarPlus,
+    FilePen,
+    Loader2,
+    Pencil,
+    Save,
+} from 'lucide-react';
 import { useState } from 'react';
+import { useConfirm } from '@/hooks/use-confirm';
 import {
     BILLABLE_MONTHS,
     formatCurrency,
@@ -8,10 +16,16 @@ import {
 import EditFeesDialog from './Components/EditFeesDialog';
 import ManageSubjectsDialog from './Components/ManageSubjectsDialog';
 import { MONTHLY_FEES, ONE_TIME_FEES } from './Components/types';
-import type { GradeLevel } from './Components/types';
+import type { Curriculum, GradeLevel } from './Components/types';
 
 type Props = {
     gradeLevels: GradeLevel[];
+    schoolYear: string;
+    schoolYears: string[];
+    currentSchoolYear: string;
+    /** A newly set-up year awaiting Save or Cancel, if any. */
+    draftSchoolYear: string | null;
+    nextSchoolYear: string;
     manageGradeLevelId: number | null;
 };
 
@@ -33,26 +47,54 @@ function stageOf(gradeLevel: GradeLevel): StageKey {
     return grade <= 6 ? 'elem' : 'jhs';
 }
 
-function feeTotal(gradeLevel: GradeLevel, names: { name: string }[]) {
+function feeTotal(curriculum: Curriculum, names: { name: string }[]) {
     return names.reduce(
         (total, { name }) =>
-            total + Number(gradeLevel[name as keyof GradeLevel] ?? 0),
+            total + Number(curriculum[name as keyof Curriculum] ?? 0),
         0,
     );
 }
 
+function yearLabel(
+    schoolYear: string,
+    currentSchoolYear: string,
+    draftSchoolYear: string | null,
+) {
+    if (schoolYear === draftSchoolYear) return 'Draft';
+    if (schoolYear === currentSchoolYear) return 'Current';
+
+    return schoolYear > currentSchoolYear ? 'Upcoming' : 'Past';
+}
+
 function GradeLevelCard({
     gradeLevel,
+    schoolYear,
     onEditFees,
     onManageSubjects,
 }: {
     gradeLevel: GradeLevel;
+    schoolYear: string;
     onEditFees: () => void;
     onManageSubjects: () => void;
 }) {
-    const oneTime = feeTotal(gradeLevel, ONE_TIME_FEES);
-    const monthly = feeTotal(gradeLevel, MONTHLY_FEES);
-    const subjectCount = gradeLevel.subjects.length;
+    const curriculum = gradeLevel.curriculum;
+
+    if (!curriculum) {
+        return (
+            <article className="flex flex-col justify-center rounded-2xl border border-dashed border-[#1F2A24]/15 bg-white/60 p-5">
+                <h3 className="font-serif text-lg font-semibold text-[#1F2A24]/60">
+                    {gradeLevel.name}
+                </h3>
+                <p className="mt-1 text-sm text-[#1F2A24]/55">
+                    Not offered in {schoolYear}.
+                </p>
+            </article>
+        );
+    }
+
+    const oneTime = feeTotal(curriculum, ONE_TIME_FEES);
+    const monthly = feeTotal(curriculum, MONTHLY_FEES);
+    const subjectCount = curriculum.subjects.length;
 
     return (
         <article className="flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-5 transition-shadow hover:shadow-md hover:shadow-[#1F2A24]/5">
@@ -75,9 +117,13 @@ function GradeLevelCard({
             </div>
 
             <p className="mt-3 text-2xl font-semibold text-[#1F2A24] tabular-nums">
-                {formatCurrency(gradeLevel.tuition_fee)}
+                {formatCurrency(curriculum.tuition_fee)}
             </p>
-            <p className="text-xs text-[#1F2A24]/55">per school year</p>
+            <p className="text-xs text-[#1F2A24]/55">
+                per school year
+                {curriculum.enrollments_count > 0 &&
+                    ` · ${curriculum.enrollments_count} ${curriculum.enrollments_count === 1 ? 'application' : 'applications'}`}
+            </p>
 
             <dl className="mt-4 space-y-1.5 border-t border-[#1F2A24]/10 pt-3 text-sm">
                 <div className="flex justify-between gap-3">
@@ -119,8 +165,21 @@ function GradeLevelCard({
     );
 }
 
-export default function Index({ gradeLevels, manageGradeLevelId }: Props) {
+export default function Index({
+    gradeLevels,
+    schoolYear,
+    schoolYears,
+    currentSchoolYear,
+    draftSchoolYear,
+    nextSchoolYear,
+    manageGradeLevelId,
+}: Props) {
     const { props } = usePage();
+    const [confirm, confirmDialog] = useConfirm();
+    const [isSettingUp, setIsSettingUp] = useState(false);
+    const [draftAction, setDraftAction] = useState<'save' | 'cancel' | null>(
+        null,
+    );
 
     // Which grade level each modal is for, kept separately from whether
     // it's open so the content doesn't vanish during the close animation.
@@ -151,12 +210,90 @@ export default function Index({ gradeLevels, manageGradeLevelId }: Props) {
         setIsSubjectsOpen(true);
     };
 
+    const showSchoolYear = (year: string) => {
+        router.get(
+            route('admin.grade-levels.index'),
+            { school_year: year },
+            { preserveScroll: true },
+        );
+    };
+
+    const latestSchoolYear = schoolYears[schoolYears.length - 1];
+
+    const setUpNextSchoolYear = async () => {
+        const confirmed = await confirm({
+            title: `Set up ${nextSchoolYear}?`,
+            description: latestSchoolYear
+                ? `This creates a draft of ${nextSchoolYear} with every grade level's fees and subjects copied from ${latestSchoolYear}. Review and edit it, then Save to open enrollment — or Cancel to discard it. ${latestSchoolYear} isn't affected either way.`
+                : `This creates a draft of ${nextSchoolYear} with no subjects and ₱0 fees. Fill it in, then Save to open enrollment — or Cancel to discard it.`,
+            confirmLabel: `Set up ${nextSchoolYear}`,
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
+        router.post(
+            route('admin.school-years.store'),
+            { school_year: nextSchoolYear },
+            {
+                onStart: () => setIsSettingUp(true),
+                onFinish: () => setIsSettingUp(false),
+            },
+        );
+    };
+
+    const saveDraft = async () => {
+        if (!draftSchoolYear) return;
+
+        const confirmed = await confirm({
+            title: `Save ${draftSchoolYear}?`,
+            description: `Parents will be able to apply for ${draftSchoolYear} with these fees and subjects. You can still edit them afterward; applications already made keep their price.`,
+            confirmLabel: `Save ${draftSchoolYear}`,
+        });
+
+        if (!confirmed) return;
+
+        router.patch(
+            route('admin.school-years.update', draftSchoolYear),
+            {},
+            {
+                onStart: () => setDraftAction('save'),
+                onFinish: () => setDraftAction(null),
+            },
+        );
+    };
+
+    const cancelDraft = async () => {
+        if (!draftSchoolYear) return;
+
+        const confirmed = await confirm({
+            title: `Cancel setting up ${draftSchoolYear}?`,
+            description: `The draft and every change made to it will be discarded. Nothing else is affected, and you can set it up again later.`,
+            confirmLabel: 'Discard draft',
+            cancelLabel: 'Keep editing',
+            destructive: true,
+        });
+
+        if (!confirmed) return;
+
+        router.delete(route('admin.school-years.destroy', draftSchoolYear), {
+            onStart: () => setDraftAction('cancel'),
+            onFinish: () => setDraftAction(null),
+        });
+    };
+
+    const isViewingDraft = schoolYear === draftSchoolYear;
     const flashSuccess = props.flash?.success;
+    const setUpError = (props.errors as Record<string, string> | undefined)
+        ?.school_year;
     const anyModalOpen = isFeesOpen || isSubjectsOpen;
+    const hasSchoolYears = schoolYears.length > 0;
 
     return (
         <>
             <Head title="Grade Levels" />
+            {confirmDialog}
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
@@ -165,12 +302,157 @@ export default function Index({ gradeLevels, manageGradeLevelId }: Props) {
                             Grade Levels
                         </h1>
                         <p className="mt-1 text-sm text-[#1F2A24]/70">
-                            Set each grade level's fees and the subjects
-                            offered. The total (one-time fees plus{' '}
-                            {BILLABLE_MONTHS} months of monthly fees) is what
-                            parents see during enrollment and what they pay.
+                            Each school year has its own fees and subjects per
+                            grade level, so next year's curriculum can change
+                            without touching this year's students or bills.
                         </p>
                     </div>
+
+                    {/* School year */}
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-3">
+                        <nav
+                            aria-label="School year"
+                            className="flex flex-wrap gap-1"
+                        >
+                            {schoolYears.map((year) => {
+                                const isSelected = year === schoolYear;
+
+                                return (
+                                    <button
+                                        key={year}
+                                        type="button"
+                                        onClick={() => showSchoolYear(year)}
+                                        aria-current={
+                                            isSelected ? 'page' : undefined
+                                        }
+                                        className={`inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
+                                            isSelected
+                                                ? 'bg-[#2F6F4E] text-white'
+                                                : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]'
+                                        }`}
+                                    >
+                                        S.Y. {year}
+                                        <span
+                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${
+                                                isSelected
+                                                    ? 'bg-white/20'
+                                                    : 'bg-[#1F2A24]/5 text-[#1F2A24]/55'
+                                            }`}
+                                        >
+                                            {yearLabel(
+                                                year,
+                                                currentSchoolYear,
+                                                draftSchoolYear,
+                                            )}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </nav>
+
+                        {!draftSchoolYear && (
+                            <button
+                                type="button"
+                                onClick={setUpNextSchoolYear}
+                                disabled={isSettingUp}
+                                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-dashed border-[#2F6F4E]/50 px-4 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5 disabled:cursor-wait disabled:opacity-60"
+                            >
+                                {isSettingUp ? (
+                                    <Loader2
+                                        className="h-4 w-4 animate-spin"
+                                        aria-hidden="true"
+                                    />
+                                ) : (
+                                    <CalendarPlus
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                Set up {nextSchoolYear}
+                            </button>
+                        )}
+                    </div>
+
+                    {draftSchoolYear && (
+                        <div
+                            role="region"
+                            aria-label={`Setting up ${draftSchoolYear}`}
+                            className="mb-6 flex flex-col gap-3 rounded-2xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <div className="flex gap-3">
+                                <FilePen
+                                    className="mt-0.5 h-5 w-5 shrink-0 text-[#a4670f]"
+                                    aria-hidden="true"
+                                />
+                                <div>
+                                    <p className="text-sm font-semibold text-[#1F2A24]">
+                                        {draftSchoolYear} is a draft
+                                    </p>
+                                    <p className="text-sm text-[#1F2A24]/70">
+                                        {isViewingDraft
+                                            ? 'Edit its fees and subjects below. Parents can’t apply for it until you save.'
+                                            : 'Parents can’t apply for it until you review and save it.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex shrink-0 flex-wrap gap-2">
+                                {!isViewingDraft && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            showSchoolYear(draftSchoolYear)
+                                        }
+                                        className="min-h-10 rounded-full px-4 text-sm font-medium text-[#2F6F4E] hover:underline"
+                                    >
+                                        Review draft
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={cancelDraft}
+                                    disabled={draftAction !== null}
+                                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                    {draftAction === 'cancel' && (
+                                        <Loader2
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={saveDraft}
+                                    disabled={draftAction !== null}
+                                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-60"
+                                >
+                                    {draftAction === 'save' ? (
+                                        <Loader2
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                        />
+                                    ) : (
+                                        <Save
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    Save {draftSchoolYear}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {setUpError && (
+                        <div
+                            role="alert"
+                            className="mb-6 rounded-xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A83A30]"
+                        >
+                            {setUpError}
+                        </div>
+                    )}
 
                     {flashSuccess && !anyModalOpen && (
                         <div
@@ -181,60 +463,76 @@ export default function Index({ gradeLevels, manageGradeLevelId }: Props) {
                         </div>
                     )}
 
-                    <div className="space-y-8">
-                        {STAGES.map((stage) => {
-                            const levels = gradeLevels.filter(
-                                (g) => stageOf(g) === stage.key,
-                            );
+                    {!hasSchoolYears ? (
+                        <div className="rounded-2xl border border-dashed border-[#1F2A24]/15 bg-white px-6 py-12 text-center">
+                            <p className="font-serif text-lg font-semibold text-[#1F2A24]">
+                                No school year is set up yet
+                            </p>
+                            <p className="mt-1 text-sm text-[#1F2A24]/65">
+                                Set up {nextSchoolYear} to add its fees and
+                                subjects. Enrollment opens for a school year
+                                once it's saved.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            {STAGES.map((stage) => {
+                                const levels = gradeLevels.filter(
+                                    (g) => stageOf(g) === stage.key,
+                                );
 
-                            if (levels.length === 0) {
-                                return null;
-                            }
+                                if (levels.length === 0) {
+                                    return null;
+                                }
 
-                            return (
-                                <section key={stage.key}>
-                                    <div className="mb-3 flex items-baseline gap-2">
-                                        <h2 className="text-sm font-semibold tracking-wide text-[#1F2A24]/80 uppercase">
-                                            {stage.title}
-                                        </h2>
-                                        <span className="text-xs text-[#1F2A24]/50">
-                                            {stage.note}
-                                        </span>
-                                    </div>
-                                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                        {levels.map((gradeLevel) => (
-                                            <GradeLevelCard
-                                                key={gradeLevel.id}
-                                                gradeLevel={gradeLevel}
-                                                onEditFees={() =>
-                                                    openFees(gradeLevel)
-                                                }
-                                                onManageSubjects={() =>
-                                                    openSubjects(gradeLevel)
-                                                }
-                                            />
-                                        ))}
-                                    </div>
-                                </section>
-                            );
-                        })}
-                    </div>
+                                return (
+                                    <section key={stage.key}>
+                                        <div className="mb-3 flex items-baseline gap-2">
+                                            <h2 className="text-sm font-semibold tracking-wide text-[#1F2A24]/80 uppercase">
+                                                {stage.title}
+                                            </h2>
+                                            <span className="text-xs text-[#1F2A24]/50">
+                                                {stage.note}
+                                            </span>
+                                        </div>
+                                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                            {levels.map((gradeLevel) => (
+                                                <GradeLevelCard
+                                                    key={gradeLevel.id}
+                                                    gradeLevel={gradeLevel}
+                                                    schoolYear={schoolYear}
+                                                    onEditFees={() =>
+                                                        openFees(gradeLevel)
+                                                    }
+                                                    onManageSubjects={() =>
+                                                        openSubjects(gradeLevel)
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    </section>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {feesGradeLevel && (
+            {feesGradeLevel?.curriculum && (
                 <EditFeesDialog
                     key={feesSession}
                     gradeLevel={feesGradeLevel}
+                    curriculum={feesGradeLevel.curriculum}
                     open={isFeesOpen}
                     onOpenChange={setIsFeesOpen}
                 />
             )}
 
-            {subjectsGradeLevel && (
+            {subjectsGradeLevel?.curriculum && (
                 <ManageSubjectsDialog
-                    key={subjectsGradeLevel.id}
+                    key={subjectsGradeLevel.curriculum.id}
                     gradeLevel={subjectsGradeLevel}
+                    curriculum={subjectsGradeLevel.curriculum}
                     open={isSubjectsOpen}
                     onOpenChange={setIsSubjectsOpen}
                 />

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Curriculum;
 use App\Models\Student;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -35,11 +37,43 @@ class StoreEnrollmentRequest extends FormRequest
         return $enrollee?->enrollments()->value('student_id');
     }
 
+    /**
+     * The fees and subjects offered for the chosen grade level and school
+     * year, or null if that year hasn't been set up for it.
+     */
+    public function curriculum(): ?Curriculum
+    {
+        $gradeLevelId = $this->input('grade_level_id');
+        $schoolYear = $this->input('school_year');
+
+        if (! is_numeric($gradeLevelId) || ! is_string($schoolYear)) {
+            return null;
+        }
+
+        return Curriculum::query()
+            ->published()
+            ->where('grade_level_id', $gradeLevelId)
+            ->where('school_year', $schoolYear)
+            ->first();
+    }
+
     public function rules(): array
     {
         $existingStudentId = $this->resolveExistingStudentId();
+        $curriculum = $this->curriculum();
 
-        $schoolYearRules = ['required', 'string', 'max:9'];
+        $schoolYearRules = [
+            'required',
+            'string',
+            'max:9',
+            // Only school years the school has set up (fees + subjects) can
+            // be applied for, so nobody is billed with guessed fees.
+            function (string $attribute, mixed $value, Closure $fail) use ($curriculum) {
+                if (! $curriculum && $this->filled('grade_level_id')) {
+                    $fail("Enrollment for S.Y. {$value} isn't open for this grade level yet.");
+                }
+            },
+        ];
         if ($existingStudentId) {
             // Only an active (pending/approved, not cancelled) application for the
             // same school year counts as a duplicate — a rejected or cancelled one
@@ -117,7 +151,8 @@ class StoreEnrollmentRequest extends FormRequest
 
             // Subjects
             'subject_ids' => ['required', 'array', 'min:1'],
-            'subject_ids.*' => ['exists:subjects,id'],
+            // Must be offered for this grade level in this school year.
+            'subject_ids.*' => [Rule::exists('subjects', 'id')->where('curriculum_id', $curriculum ? $curriculum->id : 0)],
 
             // Billing
             'payment_option' => ['required', 'string'],

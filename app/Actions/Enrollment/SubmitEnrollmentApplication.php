@@ -2,9 +2,9 @@
 
 namespace App\Actions\Enrollment;
 
+use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
-use App\Models\GradeLevel;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -162,12 +162,19 @@ class SubmitEnrollmentApplication
                 'special_health_problems' => $validated['special_health_problems'] ?? null,
             ]);
 
-            $gradeLevel = GradeLevel::findOrFail($validated['grade_level_id']);
+            // Priced from this grade level's fees for the chosen school year.
+            // The total is copied onto the contract, so later fee changes
+            // never alter a bill that's already been issued.
+            $curriculum = Curriculum::query()
+                ->published()
+                ->where('grade_level_id', $validated['grade_level_id'])
+                ->where('school_year', $validated['school_year'])
+                ->firstOrFail();
 
             $billingContract = $enrollment->billingContract()->create([
                 'payment_option' => $validated['payment_option'],
                 'payment_channel' => $validated['payment_channel'],
-                'total_fee' => $gradeLevel->tuition_fee,
+                'total_fee' => $curriculum->tuition_fee,
             ]);
 
             $billingContract->generateInstallments();

@@ -22,13 +22,13 @@ beforeEach(function () {
     Notification::fake();
 
     // ₱1,000 + 10 × ₱900 = ₱10,000, i.e. ten ₱1,000 monthly installments.
-    $gradeLevel = GradeLevel::factory()->create([
+    $gradeLevel = GradeLevel::factory()->withCurriculum([
         'registration_fee' => 1000,
         'miscellaneous_fee' => 0,
         'books_fee' => 0,
         'monthly_tuition' => 900,
         'monthly_laboratory_fee' => 0,
-    ]);
+    ])->create();
 
     $this->enrollment = Enrollment::factory()->create([
         'grade_level_id' => $gradeLevel->id,
@@ -39,7 +39,7 @@ beforeEach(function () {
     $this->enrollment->billingContract()->create([
         'payment_option' => 'MONTHLY',
         'payment_channel' => 'GCASH',
-        'total_fee' => $gradeLevel->tuition_fee,
+        'total_fee' => $gradeLevel->curricula()->first()->tuition_fee,
     ])->generateInstallments();
 
     $this->installment = $this->enrollment->billingContract->installments()->where('installment_number', 1)->first();

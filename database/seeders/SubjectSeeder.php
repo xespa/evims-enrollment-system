@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Enrollment;
 use App\Models\GradeLevel;
-use App\Models\Subject;
 use Illuminate\Database\Seeder;
 
 class SubjectSeeder extends Seeder
@@ -43,13 +43,13 @@ class SubjectSeeder extends Seeder
             'Grade 10' => $juniorHighSubjects,
         ];
 
+        $schoolYear = Enrollment::currentSchoolYear();
+
         foreach ($map as $gradeName => $subjects) {
-            $grade = GradeLevel::where('name', $gradeName)->first();
+            $curriculum = GradeLevel::where('name', $gradeName)->firstOrFail()->curriculumFor($schoolYear);
+
             foreach ($subjects as $subjectName) {
-                Subject::create([
-                    'grade_level_id' => $grade->id,
-                    'name' => $subjectName,
-                ]);
+                $curriculum->subjects()->create(['name' => $subjectName]);
             }
         }
     }

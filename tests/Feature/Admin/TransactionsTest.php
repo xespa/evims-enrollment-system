@@ -13,13 +13,13 @@ use Inertia\Testing\AssertableInertia as Assert;
  */
 function enrollmentWithInstallments(string $lastName): Enrollment
 {
-    $gradeLevel = GradeLevel::factory()->create([
+    $gradeLevel = GradeLevel::factory()->withCurriculum([
         'registration_fee' => 1000,
         'miscellaneous_fee' => 0,
         'books_fee' => 0,
         'monthly_tuition' => 900,
         'monthly_laboratory_fee' => 0,
-    ]);
+    ])->create();
 
     $enrollment = Enrollment::factory()->create([
         'student_id' => Student::factory()->create(['last_name' => $lastName, 'lrn' => null]),
@@ -31,7 +31,7 @@ function enrollmentWithInstallments(string $lastName): Enrollment
     $enrollment->billingContract()->create([
         'payment_option' => 'MONTHLY',
         'payment_channel' => 'GCASH',
-        'total_fee' => $gradeLevel->tuition_fee,
+        'total_fee' => $gradeLevel->curricula()->first()->tuition_fee,
     ])->generateInstallments();
 
     return $enrollment;

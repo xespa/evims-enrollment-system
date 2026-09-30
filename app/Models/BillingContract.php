@@ -62,42 +62,6 @@ class BillingContract extends Model
     }
 
     /**
-     * Re-prices the installments that aren't fully paid yet to what they
-     * would be under a new total fee, using the same split as a brand-new
-     * contract. Fully paid installments and collected payments are left
-     * untouched. Since a GCash checkout charges amount_due minus what's
-     * already paid, the next PayMongo charge uses the new price.
-     *
-     * Returns whether any installment amount actually changed.
-     */
-    public function repriceTo(float $newTotalFee): bool
-    {
-        $installments = $this->installments()->orderBy('installment_number')->get();
-        $newAmounts = self::splitIntoInstallments($newTotalFee, $installments->count());
-        $changed = false;
-
-        foreach ($installments as $installment) {
-            if ($installment->status === 'PAID') {
-                continue;
-            }
-
-            // Never bill below what's already been paid on this installment
-            // (possible when fees go down after a partial payment).
-            $newAmount = max($newAmounts[$installment->installment_number] ?? 0.0, $installment->totalPaid());
-
-            if (round((float) $installment->amount_due, 2) !== round($newAmount, 2)) {
-                $installment->amount_due = $newAmount;
-                $installment->refreshStatus();
-                $changed = true;
-            }
-        }
-
-        $this->update(['total_fee' => $this->installments()->sum('amount_due')]);
-
-        return $changed;
-    }
-
-    /**
      * Splits a total into equal installments keyed by installment number,
      * with the last one absorbing any rounding difference.
      *

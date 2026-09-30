@@ -147,21 +147,29 @@ function currentSchoolYearStart() {
     return month >= 6 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
-function getDefaultSchoolYear() {
+// Only school years the school has set up (fees + subjects) can be applied
+// for. Defaults to the current one, else the next open one, else the latest.
+function getDefaultSchoolYear(schoolYears) {
     const startYear = currentSchoolYearStart();
-    return `${startYear}-${startYear + 1}`;
+    const current = `${startYear}-${startYear + 1}`;
+
+    if (schoolYears.includes(current)) return current;
+
+    return (
+        schoolYears.find((year) => year > current) ??
+        schoolYears[schoolYears.length - 1] ??
+        ''
+    );
 }
 
-// Offers one school year back through two years ahead of the current one —
-// enough room for late enrollees and early applications, without listing
-// every year that's ever existed.
-function generateSchoolYearOptions() {
-    const currentStart = currentSchoolYearStart();
-    const years = [];
-    for (let start = currentStart - 1; start <= currentStart + 2; start++) {
-        years.push(`${start}-${start + 1}`);
-    }
-    return years;
+// A grade level as the form steps expect it: its name plus that school
+// year's fees and subjects. Grade levels not offered that year are left out.
+function gradeLevelsForSchoolYear(gradeLevels, curricula, schoolYear) {
+    const offered = curricula[schoolYear] ?? {};
+
+    return gradeLevels
+        .filter((g) => offered[g.id])
+        .map((g) => ({ ...offered[g.id], id: g.id, name: g.name }));
 }
 
 // A family applies once per school year, so a continuing application is
@@ -190,12 +198,14 @@ function calculateAge(dateOfBirth) {
 }
 
 export default function Create({
-    gradeLevels,
+    gradeLevels: allGradeLevels,
+    curricula,
     previousApplication,
     hasExistingRecord,
 }) {
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
+    const schoolYears = Object.keys(curricula).sort();
 
     // The localStorage "resume where I left off" draft is a guest-only
     // safety net — it exists because a guest has no account to fall back
@@ -245,7 +255,7 @@ export default function Create({
         sex: '',
         session_time_preference: '',
         email: enrollee?.email ?? '',
-        school_year: getDefaultSchoolYear(),
+        school_year: getDefaultSchoolYear(schoolYears),
         date_of_application: new Date().toISOString().slice(0, 10),
 
         // Address
@@ -307,7 +317,45 @@ export default function Create({
     const { data, setData, post, processing, errors } = useForm({
         ...defaultFormData,
         ...draft?.data,
+        // A saved draft may be for a year that's no longer open.
+        ...(draft?.data?.school_year &&
+        !schoolYears.includes(draft.data.school_year)
+            ? { school_year: defaultFormData.school_year }
+            : {}),
     });
+
+    // The grade levels (with fees and subjects) of the chosen school year.
+    const gradeLevels = gradeLevelsForSchoolYear(
+        allGradeLevels,
+        curricula,
+        data.school_year,
+    );
+
+    // Switching school years can leave a grade level or subjects picked
+    // that the new year doesn't offer, so drop those instead of sending them.
+    useEffect(() => {
+        const grade = gradeLevels.find(
+            (g) => String(g.id) === String(data.grade_level_id),
+        );
+        const offeredSubjectIds = new Set(
+            (grade?.subjects ?? []).map((s) => s.id),
+        );
+        const keptSubjectIds = (data.subject_ids ?? []).filter((id) =>
+            offeredSubjectIds.has(id),
+        );
+
+        if (
+            (data.grade_level_id && !grade) ||
+            keptSubjectIds.length !== (data.subject_ids ?? []).length
+        ) {
+            setData((prev) => ({
+                ...prev,
+                grade_level_id: grade ? prev.grade_level_id : '',
+                subject_ids: keptSubjectIds,
+            }));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.school_year, data.grade_level_id]);
 
     const totalSteps = 9;
 
@@ -352,6 +400,9 @@ export default function Create({
     const getSchoolYearIssue = () => {
         if (!fastTrack || !previousSchoolYear) return null;
         const expected = nextSchoolYear(previousSchoolYear);
+        if (!schoolYears.includes(expected)) {
+            return `Your last application was for ${previousSchoolYear}, so this one is for ${expected} — but enrollment for ${expected} isn't open yet. Please check back once the school opens it.`;
+        }
         if (data.school_year === expected) return null;
         return `Your last application was for ${previousSchoolYear}. Since this is a continuing application, it should be for ${expected} instead of ${data.school_year} — please update the School Year above before continuing.`;
     };
@@ -450,8 +501,12 @@ export default function Create({
                 : prev.age,
             // Default straight to the correct next school year, so there's
             // usually nothing to fix — the reminder below only fires if
-            // this gets changed to something else afterward.
-            school_year: expectedSchoolYear ?? prev.school_year,
+            // this gets changed to something else afterward (or if that
+            // year isn't open yet).
+            school_year:
+                expectedSchoolYear && schoolYears.includes(expectedSchoolYear)
+                    ? expectedSchoolYear
+                    : prev.school_year,
         }));
         setPreviousSchoolYear(prevSchoolYear ?? null);
         setFastTrack(true);
@@ -528,12 +583,35 @@ export default function Create({
         setData,
         errors: { ...missingFieldErrors, ...errors },
         gradeLevels,
+        schoolYears,
     };
 
     const fastTrackSelectClass = (field: string) =>
         `mt-1.5 min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
             stepProps.errors[field] ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
         }`;
+
+    if (schoolYears.length === 0) {
+        return (
+            <>
+                <Head title="Enrollment Application" />
+                <div className="flex min-h-screen items-center justify-center bg-[#FBF8F2] px-4 py-12">
+                    <div
+                        role="status"
+                        className="w-full max-w-md rounded-[2rem] border border-[#1F2A24]/10 bg-white p-8 text-center shadow-xl shadow-[#1F2A24]/5"
+                    >
+                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                            Enrollment isn't open yet
+                        </h1>
+                        <p className="mt-2 text-sm text-[#1F2A24]/70">
+                            The school is still preparing the fees and subjects
+                            for the coming school year. Please check back soon.
+                        </p>
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -610,7 +688,7 @@ export default function Create({
                                                     'school_year',
                                                 )}
                                             >
-                                                {generateSchoolYearOptions().map(
+                                                {schoolYears.map(
                                                     (year) => (
                                                         <option
                                                             key={year}

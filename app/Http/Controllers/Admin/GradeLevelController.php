@@ -3,29 +3,65 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Curriculum;
+use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class GradeLevelController extends Controller
 {
     /**
-     * Fees and subjects are both edited in modals on this one page, so each
-     * grade level ships with its subjects (a handful each).
+     * Each grade level's fees and subjects for one school year at a time.
+     * Both are edited in modals on this page, so the subjects ship along.
      */
     public function index(Request $request): Response
     {
-        return Inertia::render('Admin/GradeLevels/Index', [
-            'gradeLevels' => GradeLevel::query()
+        $schoolYears = Curriculum::schoolYears();
+        $schoolYear = $this->selectedSchoolYear($request->string('school_year')->toString(), $schoolYears);
+
+        $enrollmentCounts = Enrollment::query()
+            ->where('school_year', $schoolYear)
+            ->selectRaw('grade_level_id, count(*) as count')
+            ->groupBy('grade_level_id')
+            ->pluck('count', 'grade_level_id');
+
+        $gradeLevels = GradeLevel::query()
+            ->with(['curricula' => fn ($query) => $query
+                ->forSchoolYear($schoolYear)
                 ->with(['subjects' => fn ($query) => $query
-                    ->select(['id', 'grade_level_id', 'name', 'code'])
+                    ->select(['id', 'curriculum_id', 'name', 'code'])
                     ->withCount('enrollments')
-                    ->orderBy('name')])
-                ->orderBy('level_order')
-                ->get(),
+                    ->orderBy('name')])])
+            ->orderBy('level_order')
+            ->get()
+            ->map(fn (GradeLevel $gradeLevel) => [
+                'id' => $gradeLevel->id,
+                'name' => $gradeLevel->name,
+                'level_order' => $gradeLevel->level_order,
+                'curriculum' => $gradeLevel->curricula->first()?->setAttribute(
+                    'enrollments_count',
+                    (int) ($enrollmentCounts[$gradeLevel->id] ?? 0),
+                ),
+            ]);
+
+        $latestSchoolYear = end($schoolYears) ?: null;
+
+        return Inertia::render('Admin/GradeLevels/Index', [
+            'gradeLevels' => $gradeLevels,
+            'schoolYear' => $schoolYear,
+            'schoolYears' => $schoolYears,
+            'currentSchoolYear' => Enrollment::currentSchoolYear(),
+            // A newly set-up year awaiting Save or Cancel; hidden from
+            // applicants until saved.
+            'draftSchoolYear' => Curriculum::draftSchoolYear(),
+            // The only year that can be set up next: the one after the
+            // latest, copied from it.
+            'nextSchoolYear' => $latestSchoolYear
+                ? Curriculum::nextSchoolYear($latestSchoolYear)
+                : Enrollment::currentSchoolYear(),
             // Lets a link (or the old per-grade page URL) open a grade
             // level's Manage Subjects modal directly.
             'manageGradeLevelId' => $request->integer('manage') ?: null,
@@ -41,31 +77,24 @@ class GradeLevelController extends Controller
         return to_route('admin.grade-levels.index', ['manage' => $gradeLevel->id]);
     }
 
-    public function update(Request $request, GradeLevel $gradeLevel): RedirectResponse
+    /**
+     * The requested year if it's been set up, otherwise the current school
+     * year, otherwise the latest one that exists.
+     *
+     * @param  list<string>  $schoolYears
+     */
+    private function selectedSchoolYear(string $requested, array $schoolYears): string
     {
-        $validated = $request->validate([
-            'registration_fee' => ['required', 'numeric', 'min:0'],
-            'miscellaneous_fee' => ['required', 'numeric', 'min:0'],
-            'monthly_tuition' => ['required', 'numeric', 'min:0'],
-            'monthly_laboratory_fee' => ['required', 'numeric', 'min:0'],
-            'books_fee' => ['required', 'numeric', 'min:0'],
-        ]);
+        $current = Enrollment::currentSchoolYear();
 
-        $repricedCount = DB::transaction(function () use ($gradeLevel, $validated) {
-            $gradeLevel->update($validated);
-
-            return $gradeLevel->repriceOpenBillingContracts();
-        });
-
-        $message = "{$gradeLevel->name}'s fees updated.";
-
-        if ($repricedCount > 0) {
-            $message .= ' '.trans_choice(
-                ':count unpaid bill now uses the new fees.|:count unpaid bills now use the new fees.',
-                $repricedCount,
-            );
+        if (in_array($requested, $schoolYears, true)) {
+            return $requested;
         }
 
-        return back()->with('success', $message);
+        if (in_array($current, $schoolYears, true) || $schoolYears === []) {
+            return $current;
+        }
+
+        return end($schoolYears);
     }
 }

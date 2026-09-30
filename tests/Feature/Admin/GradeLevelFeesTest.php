@@ -1,11 +1,13 @@
 <?php
 
+use App\Models\Curriculum;
+use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('the total fee is derived from the fee breakdown', function () {
-    $gradeLevel = GradeLevel::factory()->create([
+    $curriculum = Curriculum::factory()->create([
         'registration_fee' => 1725,
         'miscellaneous_fee' => 6125,
         'monthly_tuition' => 1380,
@@ -14,15 +16,15 @@ test('the total fee is derived from the fee breakdown', function () {
         'tuition_fee' => 1,
     ]);
 
-    expect((float) $gradeLevel->fresh()->tuition_fee)->toBe(36391.0);
+    expect((float) $curriculum->fresh()->tuition_fee)->toBe(36391.0);
 });
 
-test('admins can update a grade level fee breakdown', function () {
+test('admins can update a school year\'s fee breakdown for a grade level', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
-    $gradeLevel = GradeLevel::factory()->create();
+    $curriculum = Curriculum::factory()->create();
 
     $this->actingAs($admin)
-        ->patch(route('admin.grade-levels.update', $gradeLevel), [
+        ->patch(route('admin.curricula.update', $curriculum), [
             'registration_fee' => 1725,
             'miscellaneous_fee' => 5175,
             'monthly_tuition' => 1725,
@@ -32,19 +34,37 @@ test('admins can update a grade level fee breakdown', function () {
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
-    $gradeLevel->refresh();
+    $curriculum->refresh();
 
-    expect((float) $gradeLevel->monthly_tuition)->toBe(1725.0)
-        ->and((float) $gradeLevel->books_fee)->toBe(5251.0)
-        ->and((float) $gradeLevel->tuition_fee)->toBe(29401.0);
+    expect((float) $curriculum->monthly_tuition)->toBe(1725.0)
+        ->and((float) $curriculum->books_fee)->toBe(5251.0)
+        ->and((float) $curriculum->tuition_fee)->toBe(29401.0);
+});
+
+test('updating one school year\'s fees leaves other years alone', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $gradeLevel = GradeLevel::factory()->create();
+    $thisYear = Curriculum::factory()->for($gradeLevel)->totalFee(30000)->create(['school_year' => '2026-2027']);
+    $nextYear = Curriculum::factory()->for($gradeLevel)->totalFee(30000)->create(['school_year' => '2027-2028']);
+
+    $this->actingAs($admin)->patch(route('admin.curricula.update', $nextYear), [
+        'registration_fee' => 35000,
+        'miscellaneous_fee' => 0,
+        'monthly_tuition' => 0,
+        'monthly_laboratory_fee' => 0,
+        'books_fee' => 0,
+    ]);
+
+    expect((float) $nextYear->fresh()->tuition_fee)->toBe(35000.0)
+        ->and((float) $thisYear->fresh()->tuition_fee)->toBe(30000.0);
 });
 
 test('fee breakdown values are required and cannot be negative', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
-    $gradeLevel = GradeLevel::factory()->create();
+    $curriculum = Curriculum::factory()->create();
 
     $this->actingAs($admin)
-        ->patch(route('admin.grade-levels.update', $gradeLevel), [
+        ->patch(route('admin.curricula.update', $curriculum), [
             'registration_fee' => -1,
             'miscellaneous_fee' => 5175,
             'monthly_tuition' => 1725,
@@ -53,34 +73,57 @@ test('fee breakdown values are required and cannot be negative', function () {
         ->assertSessionHasErrors(['registration_fee', 'books_fee']);
 });
 
-test('non-admin users cannot update grade level fees', function () {
+test('non-admin users cannot update fees', function () {
     $staff = User::factory()->create(['role' => 'STAFF']);
-    $gradeLevel = GradeLevel::factory()->create();
+    $curriculum = Curriculum::factory()->create();
 
     $this->actingAs($staff)
-        ->patch(route('admin.grade-levels.update', $gradeLevel), ['registration_fee' => 0])
+        ->patch(route('admin.curricula.update', $curriculum), ['registration_fee' => 0])
         ->assertForbidden();
 });
 
-test('the enrollment form receives each grade level fee breakdown and total', function () {
-    $gradeLevel = GradeLevel::factory()->create([
+test('the enrollment form receives each open school year\'s fee breakdown and total', function () {
+    $gradeLevel = GradeLevel::factory()->withCurriculum([
         'registration_fee' => 1725,
         'miscellaneous_fee' => 6325,
         'monthly_tuition' => 2070,
         'monthly_laboratory_fee' => 690,
         'books_fee' => 5099,
-    ]);
+    ])->create();
+
+    $schoolYear = Enrollment::currentSchoolYear();
+    $key = "curricula.{$schoolYear}.{$gradeLevel->id}";
 
     $this->get(route('admission.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Enrollment/Create')
             ->where('gradeLevels.0.id', $gradeLevel->id)
-            ->where('gradeLevels.0.registration_fee', '1725.00')
-            ->where('gradeLevels.0.miscellaneous_fee', '6325.00')
-            ->where('gradeLevels.0.monthly_tuition', '2070.00')
-            ->where('gradeLevels.0.monthly_laboratory_fee', '690.00')
-            ->where('gradeLevels.0.books_fee', '5099.00')
-            ->where('gradeLevels.0.tuition_fee', '40749.00')
+            ->where("{$key}.registration_fee", '1725.00')
+            ->where("{$key}.miscellaneous_fee", '6325.00')
+            ->where("{$key}.monthly_tuition", '2070.00')
+            ->where("{$key}.monthly_laboratory_fee", '690.00')
+            ->where("{$key}.books_fee", '5099.00')
+            ->where("{$key}.tuition_fee", '40749.00')
+        );
+});
+
+test('the enrollment form only offers school years that are set up, from last year on', function () {
+    $gradeLevel = GradeLevel::factory()->create();
+    [$start] = explode('-', Enrollment::currentSchoolYear());
+    $year = fn (int $offset) => ($start + $offset).'-'.($start + $offset + 1);
+
+    foreach ([-2, -1, 0, 1] as $offset) {
+        Curriculum::factory()->for($gradeLevel)->create(['school_year' => $year($offset)]);
+    }
+
+    $this->get(route('admission.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('curricula', 3)
+            ->has("curricula.{$year(-1)}")
+            ->has("curricula.{$year(0)}")
+            ->has("curricula.{$year(1)}")
+            ->missing("curricula.{$year(-2)}")
+            ->missing("curricula.{$year(2)}")
         );
 });

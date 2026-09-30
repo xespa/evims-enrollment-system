@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\GradeLevel;
+use App\Models\Curriculum;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -16,7 +16,7 @@ class SubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'grade_level_id' => GradeLevel::factory(),
+            'curriculum_id' => Curriculum::factory(),
             'name' => fake()->unique()->words(2, true),
             'code' => strtoupper(fake()->unique()->lexify('???')),
         ];

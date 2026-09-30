@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Enrollment\SubmitEnrollmentApplication;
 use App\Http\Requests\StoreEnrollmentRequest;
+use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
@@ -47,7 +48,11 @@ class EnrollmentController extends Controller
         }
 
         return Inertia::render('Enrollment/Create', [
-            'gradeLevels' => GradeLevel::with('subjects')->orderBy('level_order')->get(),
+            'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name', 'level_order']),
+            // Fees and subjects per open school year, keyed by school year
+            // then grade level ID. Only years the school has set up are
+            // open, so nobody applies against guessed fees.
+            'curricula' => $this->openCurricula(),
             'previousApplication' => $previousApplication,
             // Only a logged-in enrollee with at least one prior application gets
             // the "confirm your child's LRN" fast-track gate — guests and
@@ -157,6 +162,31 @@ class EnrollmentController extends Controller
                 'special_health_problems' => $latestEnrollment?->vitalInformation?->special_health_problems,
             ],
         ]);
+    }
+
+    /**
+     * Every set-up school year from last year onward (late enrollees can
+     * still apply for the year that just started), with each grade level's
+     * fees and subjects.
+     *
+     * @return array<string, array<int, Curriculum>>
+     */
+    private function openCurricula(): array
+    {
+        $startYear = (int) explode('-', Enrollment::currentSchoolYear())[0] - 1;
+        $previousSchoolYear = $startYear.'-'.($startYear + 1);
+
+        return Curriculum::query()
+            ->published()
+            ->where('school_year', '>=', $previousSchoolYear)
+            ->with(['subjects' => fn ($query) => $query
+                ->select(['id', 'curriculum_id', 'name', 'code'])
+                ->orderBy('name')])
+            ->orderBy('school_year')
+            ->get()
+            ->groupBy('school_year')
+            ->map(fn ($curricula) => $curricula->keyBy('grade_level_id')->all())
+            ->all();
     }
 
     /**
