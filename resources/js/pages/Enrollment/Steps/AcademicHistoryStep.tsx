@@ -1,5 +1,6 @@
 import TextInput from '../Components/TextInput';
 import SelectInput from '../Components/SelectInput';
+import StepGuide from '../Components/StepGuide';
 
 // Generates recent school years like "2025-2026", "2024-2025", etc.
 function generateSchoolYearOptions(count = 10) {
@@ -18,8 +19,8 @@ export default function AcademicHistoryStep({ data, setData, errors, gradeLevels
 
     return (
         <div>
-            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-1">Academic History</h2>
-            <p className="text-sm text-[#1F2A24]/70 mb-4">Required for returnees and transferees. Skip if this is a first-time enrollment.</p>
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-3">Academic History</h2>
+            <StepGuide>Required for returnees and transferees. Skip if this is a first-time enrollment.</StepGuide>
 
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <SelectInput

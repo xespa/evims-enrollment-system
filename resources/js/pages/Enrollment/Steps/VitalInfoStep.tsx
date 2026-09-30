@@ -1,3 +1,5 @@
+import StepGuide from '../Components/StepGuide';
+
 function CheckboxRow({ label, name, checked, onChange }) {
     return (
         <label className="-mx-2 flex min-h-10 cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-[#1F2A24]/[0.03]">
@@ -28,8 +30,8 @@ export default function VitalInfoStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-1">Vital Information</h2>
-            <p className="text-sm text-[#1F2A24]/70 mb-4">Please check all that apply to the student.</p>
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-3">Vital Information</h2>
+            <StepGuide>Please check all that apply to the student.</StepGuide>
 
             <fieldset className="rounded-xl border border-[#1F2A24]/10 p-4">
                 <legend className="sr-only">Student history checklist</legend>

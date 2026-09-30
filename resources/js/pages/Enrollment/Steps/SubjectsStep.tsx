@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react';
+import StepGuide from '../Components/StepGuide';
 
 export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
     const selectedGrade = gradeLevels.find((g) => String(g.id) === String(data.grade_level_id));
@@ -20,11 +21,11 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
 
     return (
         <div>
-            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-1">Subjects</h2>
-            <p className="text-sm text-[#1F2A24]/70 mb-4">
-                Showing subjects for <span className="font-medium">{selectedGrade?.name ?? '—'}</span>.
+            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-3">Subjects</h2>
+            <StepGuide>
+                Showing subjects for <span className="font-semibold">{selectedGrade?.name ?? '—'}</span>.
                 {!selectedGrade && ' Please go back and select a grade level first.'}
-            </p>
+            </StepGuide>
 
             {subjects.length > 0 && (
                 <div className="mb-4 flex flex-wrap items-center gap-2">

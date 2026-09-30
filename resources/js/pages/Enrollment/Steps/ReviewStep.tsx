@@ -3,6 +3,7 @@ import {
     formatCurrency,
     PAYMENT_OPTIONS,
 } from '../Components/fees';
+import StepGuide from '../Components/StepGuide';
 
 function ReviewRow({ label, value }) {
     return (
@@ -39,12 +40,12 @@ export default function ReviewStep({ data, gradeLevels }) {
 
     return (
         <div>
-            <h2 className="mb-1 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-3 font-serif text-xl font-semibold text-[#1F2A24]">
                 Review Your Application
             </h2>
-            <p className="mb-4 text-sm text-[#1F2A24]/70">
+            <StepGuide>
                 Please check everything before submitting.
-            </p>
+            </StepGuide>
 
             <div className="mb-4">
                 <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">

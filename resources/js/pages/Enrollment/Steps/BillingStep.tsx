@@ -5,6 +5,7 @@ import {
     formatCurrency,
     PAYMENT_OPTIONS,
 } from '../Components/fees';
+import StepGuide from '../Components/StepGuide';
 
 function FeeRow({ label, detail, amount }) {
     return (
@@ -33,9 +34,9 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                 <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
                     Billing / Tuition Contract
                 </h2>
-                <p className="text-sm text-[#1F2A24]/70">
+                <StepGuide className="">
                     Select a grade level first to see the school fees.
-                </p>
+                </StepGuide>
             </div>
         );
     }

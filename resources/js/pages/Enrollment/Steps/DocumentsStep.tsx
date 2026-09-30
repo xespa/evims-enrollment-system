@@ -1,4 +1,5 @@
 import { FileCheck2 } from 'lucide-react';
+import StepGuide from '../Components/StepGuide';
 
 const DOCUMENTS = [
     { field: 'form_138', label: 'Form 138 (Report Card)' },
@@ -13,14 +14,14 @@ export default function DocumentsStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="mb-1 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-3 font-serif text-xl font-semibold text-[#1F2A24]">
                 Supporting Documents
             </h2>
-            <p className="mb-4 text-sm text-[#1F2A24]/70">
+            <StepGuide>
                 Optional for now — if you don't have a scanned copy yet, you can
                 upload or replace these later from your student portal any time
                 before your application is approved.
-            </p>
+            </StepGuide>
 
             {DOCUMENTS.map((doc) => {
                 const hintId = `${doc.field}-hint`;
