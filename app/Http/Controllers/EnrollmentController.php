@@ -146,7 +146,7 @@ class EnrollmentController extends Controller
                 'last_grade_level_completed' => $latestEnrollment?->gradeLevel?->name,
                 'last_school_year_completed' => $latestEnrollment?->school_year,
                 'previous_school_name' => $latestEnrollment ? self::SCHOOL_NAME : null,
-                'previous_school_id' => null,
+                'previous_school_id' => $latestEnrollment ? config('services.evims.school_id') : null,
                 'previous_school_address' => $latestEnrollment ? self::SCHOOL_ADDRESS : null,
 
                 // Vital info

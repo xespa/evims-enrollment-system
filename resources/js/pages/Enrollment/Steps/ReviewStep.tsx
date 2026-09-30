@@ -43,9 +43,7 @@ export default function ReviewStep({ data, gradeLevels }) {
             <h2 className="mb-3 font-serif text-xl font-semibold text-[#1F2A24]">
                 Review Your Application
             </h2>
-            <StepGuide>
-                Please check everything before submitting.
-            </StepGuide>
+            <StepGuide>Please check everything before submitting.</StepGuide>
 
             <div className="mb-4">
                 <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
@@ -75,6 +73,20 @@ export default function ReviewStep({ data, gradeLevels }) {
                     value={data.city_municipality}
                 />
                 <ReviewRow label="Province" value={data.province} />
+            </div>
+
+            <div className="mb-4">
+                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                    Academic History
+                </h3>
+                <ReviewRow
+                    label="Last School Year Completed"
+                    value={data.last_school_year_completed}
+                />
+                <ReviewRow
+                    label="Previous School ID"
+                    value={data.previous_school_id}
+                />
             </div>
 
             <div className="mb-4">

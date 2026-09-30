@@ -39,12 +39,18 @@ return [
         'secret_key' => env('PAYMONGO_SECRET_KEY'),
         'public_key' => env('PAYMONGO_PUBLIC_KEY'),
         'webhook_secret' => env('PAYMONGO_WEBHOOK_SECRET'),
-        # Set to true for sandbox mode, false for production
+        // Set to true for sandbox mode, false for production
         'sandbox_mode' => env('PAYMONGO_SANDBOX_MODE', false),
     ],
 
     'school_gcash' => [
         'number' => env('SCHOOL_GCASH_NUMBER'),
         'account_name' => env('SCHOOL_GCASH_NAME'),
+    ],
+
+    'evims' => [
+        // EVIMS's own DepEd School ID, prefilled as a returning student's
+        // "Previous School ID" on their next application.
+        'school_id' => env('EVIMS_SCHOOL_ID'),
     ],
 ];

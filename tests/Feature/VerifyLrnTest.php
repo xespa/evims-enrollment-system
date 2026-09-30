@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AcademicHistory;
 use App\Models\Address;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
@@ -160,6 +161,32 @@ test('prefills academic history as having last attended evims itself, not whatev
     expect($response->json('student.last_school_year_completed'))->toBe('2026-2027');
     expect($response->json('student.previous_school_name'))->toBe('Eastern Visayas International Montessori School');
     expect($response->json('student.previous_school_address'))->toBe('Santiago St., Brgy. Balud');
+});
+
+test('prefills the previous school id with evims own school id, not the one entered on the last application', function () {
+    config(['services.evims.school_id' => '405123']);
+
+    $kinder = GradeLevel::factory()->create(['name' => 'Kinder', 'level_order' => 0]);
+    GradeLevel::factory()->create(['name' => 'Grade 1', 'level_order' => 1]);
+
+    $enrollee = EnrolleeUser::factory()->create();
+    $student = Student::factory()->create(['lrn' => '45250112345678']);
+    $enrollment = Enrollment::factory()->create([
+        'student_id' => $student->id,
+        'enrollee_user_id' => $enrollee->id,
+        'grade_level_id' => $kinder->id,
+    ]);
+    AcademicHistory::create([
+        'enrollment_id' => $enrollment->id,
+        'previous_school_name' => 'St. Mary Learning Center',
+        'previous_school_id' => '999999',
+    ]);
+
+    $response = $this->actingAs($enrollee, 'enrollee')
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678']);
+
+    $response->assertOk();
+    expect($response->json('student.previous_school_id'))->toBe('405123');
 });
 
 test('keeps the same grade level when the student was already at the highest one', function () {

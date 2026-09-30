@@ -768,6 +768,13 @@ export default function Show({ enrollment }) {
                                 }
                             />
                             <InfoRow
+                                label="Previous School ID"
+                                value={
+                                    enrollment.academic_history
+                                        ?.previous_school_id
+                                }
+                            />
+                            <InfoRow
                                 label="Previous School Address"
                                 value={
                                     enrollment.academic_history
