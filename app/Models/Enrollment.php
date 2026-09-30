@@ -119,6 +119,65 @@ class Enrollment extends Model
         ];
     }
 
+    /**
+     * What paymentSummary() needs, for eager loading: the bill and its
+     * installments with the amount paid on each (voided money excluded).
+     *
+     * @return array<int|string, mixed>
+     */
+    public static function paymentSummaryRelations(): array
+    {
+        return [
+            'billingContract:id,enrollment_id,payment_channel,total_fee',
+            'billingContract.installments' => fn ($installments) => $installments
+                ->select(['id', 'billing_contract_id', 'installment_number', 'amount_due'])
+                ->withSum(['payments as paid_amount' => fn ($payments) => $payments->where('status', 'COMPLETED')], 'amount')
+                ->orderBy('installment_number'),
+        ];
+    }
+
+    /**
+     * Where this application stands on payment: status, totals, and what
+     * each unpaid installment still owes. Null when there's no bill yet.
+     * Load paymentSummaryRelations() first so this doesn't query per row.
+     *
+     * @return array{status: string, channel: string, total: float, paid: float, balance: float, unpaid_installments: list<array{id: int, installment_number: int, owed: float}>}|null
+     */
+    public function paymentSummary(): ?array
+    {
+        $billingContract = $this->billingContract;
+
+        if (! $billingContract) {
+            return null;
+        }
+
+        $total = round((float) $billingContract->installments->sum('amount_due'), 2);
+        $paid = round((float) $billingContract->installments->sum('paid_amount'), 2);
+        $balance = round(max(0, $total - $paid), 2);
+
+        $unpaidInstallments = array_values($billingContract->installments
+            ->map(fn (Installment $installment) => [
+                'id' => $installment->id,
+                'installment_number' => $installment->installment_number,
+                'owed' => round(max(0, (float) $installment->amount_due - (float) $installment->paid_amount), 2),
+            ])
+            ->filter(fn (array $installment) => $installment['owed'] > 0)
+            ->all());
+
+        return [
+            'status' => match (true) {
+                $balance <= 0 => 'PAID',
+                $paid > 0 => 'PARTIALLY_PAID',
+                default => 'UNPAID',
+            },
+            'channel' => $billingContract->payment_channel,
+            'total' => $total,
+            'paid' => $paid,
+            'balance' => $balance,
+            'unpaid_installments' => $unpaidInstallments,
+        ];
+    }
+
     public function isCancelled(): bool
     {
         return $this->cancelled_at !== null;

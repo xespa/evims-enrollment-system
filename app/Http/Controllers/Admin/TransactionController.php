@@ -76,8 +76,23 @@ class TransactionController extends Controller
             'voidedBy:id,name',
         ]);
 
+        $canVoid = $payment->method === 'CASH' && $payment->status === 'COMPLETED';
+
+        // Voiding covers the whole receipt: every installment it was split across.
+        $receiptParts = $canVoid && $payment->receipt_number
+            ? Payment::query()
+                ->activeWithReceipt($payment->receipt_number)
+                ->where('enrollment_id', $payment->enrollment_id)
+                ->get(['id', 'amount'])
+            : collect([$payment]);
+
         return Inertia::render('Admin/Transactions/Show', [
             'payment' => $payment,
+            'canVoid' => $canVoid,
+            'receipt' => [
+                'total' => round((float) $receiptParts->sum('amount'), 2),
+                'parts' => $receiptParts->count(),
+            ],
         ]);
     }
 

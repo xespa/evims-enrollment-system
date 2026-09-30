@@ -1,6 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, CircleDashed, XCircle } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
+import VoidPaymentDialog from '@/components/void-payment-dialog';
 import {
     MethodLabel,
     STATUS_LABELS,
@@ -12,6 +14,10 @@ import {
 import type { TransactionStatus } from '@/lib/transactions';
 
 type Props = {
+    /** Only counter payments still in effect can be voided. */
+    canVoid: boolean;
+    /** The whole receipt this payment is part of, which voiding covers. */
+    receipt: { total: number; parts: number };
     payment: {
         id: number;
         enrollment_id: number;
@@ -140,7 +146,11 @@ const TIMELINE_ICONS = {
     failed: <XCircle className="h-5 w-5 text-[#A83A30]" aria-hidden="true" />,
 };
 
-export default function Show({ payment }: Props) {
+export default function Show({ payment, canVoid, receipt }: Props) {
+    const { props } = usePage();
+    const flashSuccess = props.flash?.success;
+    const [isVoiding, setIsVoiding] = useState(false);
+
     const { enrollment, installment } = payment;
     const student = enrollment.student;
 
@@ -158,11 +168,31 @@ export default function Show({ payment }: Props) {
                         Back to transactions
                     </Link>
 
+                    {flashSuccess && !isVoiding && (
+                        <div
+                            role="status"
+                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        >
+                            {flashSuccess}
+                        </div>
+                    )}
+
                     {/* Header */}
                     <div className="mb-6 rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                        <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/50 uppercase">
-                            Payment
-                        </p>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                            <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/50 uppercase">
+                                Payment
+                            </p>
+                            {canVoid && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsVoiding(true)}
+                                    className="min-h-9 rounded-full border border-[#C6473B]/30 px-4 text-xs font-semibold text-[#A83A30] transition-colors hover:bg-[#C6473B]/10"
+                                >
+                                    Void payment
+                                </button>
+                            )}
+                        </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3">
                             <h1 className="font-serif text-3xl font-semibold text-[#1F2A24] tabular-nums">
                                 {formatCurrency(payment.amount)}
@@ -320,6 +350,16 @@ export default function Show({ payment }: Props) {
                     </div>
                 </div>
             </div>
+
+            {canVoid && (
+                <VoidPaymentDialog
+                    payment={payment}
+                    receiptTotal={receipt.total}
+                    receiptParts={receipt.parts}
+                    open={isVoiding}
+                    onOpenChange={setIsVoiding}
+                />
+            )}
         </>
     );
 }

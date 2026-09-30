@@ -1,7 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Search } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import DateRangePicker from '@/components/date-range-picker';
+import PayableEnrollmentLookupDialog from '@/components/payable-enrollment-lookup-dialog';
+import type { PayableEnrollment } from '@/components/payable-enrollment-lookup-dialog';
+import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import {
     MethodLabel,
     STATUS_LABELS,
@@ -63,6 +66,22 @@ const INPUT_CLASS =
     'min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
 
 export default function Index({ transactions, summary, filters }: Props) {
+    const { props } = usePage();
+    const flashSuccess = props.flash?.success;
+
+    // Recording a counter payment: pick who is paying, then the amount.
+    const [isLookupOpen, setIsLookupOpen] = useState(false);
+    const [payer, setPayer] = useState<PayableEnrollment | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordSession, setRecordSession] = useState(0);
+
+    const choosePayer = (enrollment: PayableEnrollment) => {
+        setIsLookupOpen(false);
+        setPayer(enrollment);
+        setRecordSession((n) => n + 1);
+        setIsRecording(true);
+    };
+
     const [search, setSearch] = useState(filters.search);
     const [method, setMethod] = useState(filters.method);
     const [from, setFrom] = useState(filters.from);
@@ -101,14 +120,34 @@ export default function Index({ transactions, summary, filters }: Props) {
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
-                            Transactions
-                        </h1>
-                        <p className="mt-1 text-sm text-[#1F2A24]/65">
-                            Every GCash and cash tuition payment, newest first.
-                        </p>
+                    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                                Transactions
+                            </h1>
+                            <p className="mt-1 text-sm text-[#1F2A24]/65">
+                                Every GCash and cash tuition payment, newest
+                                first.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsLookupOpen(true)}
+                            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                        >
+                            <Plus className="h-4 w-4" aria-hidden="true" />
+                            Record counter payment
+                        </button>
                     </div>
+
+                    {flashSuccess && !isRecording && (
+                        <div
+                            role="status"
+                            className="mb-6 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        >
+                            {flashSuccess}
+                        </div>
+                    )}
 
                     {/* Summary */}
                     <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -406,6 +445,23 @@ export default function Index({ transactions, summary, filters }: Props) {
                     </div>
                 </div>
             </div>
+
+            <PayableEnrollmentLookupDialog
+                open={isLookupOpen}
+                onOpenChange={setIsLookupOpen}
+                onSelect={choosePayer}
+            />
+
+            {payer && (
+                <RecordCounterPaymentDialog
+                    key={recordSession}
+                    enrollmentId={payer.id}
+                    studentName={payer.student_name}
+                    unpaidInstallments={payer.payment.unpaid_installments}
+                    open={isRecording}
+                    onOpenChange={setIsRecording}
+                />
+            )}
         </>
     );
 }
