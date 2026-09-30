@@ -188,7 +188,7 @@ export default function Index({ transactions, summary, filters }: Props) {
                     {/* Status tabs */}
                     <nav
                         aria-label="Filter by status"
-                        className="mb-4 flex gap-1 overflow-x-auto border-b border-[#1F2A24]/10"
+                        className="mb-4 flex flex-wrap gap-x-1 border-b border-[#1F2A24]/10"
                     >
                         {TABS.map((tab) => {
                             const isActive = filters.status === tab.value;
