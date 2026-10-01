@@ -15,7 +15,7 @@ class Student extends Model
     ];
 
     protected $casts = [
-        'date_of_birth' => 'date',
+        'date_of_birth' => 'date:Y-m-d',
     ];
 
     public function address()

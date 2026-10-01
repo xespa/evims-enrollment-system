@@ -47,3 +47,15 @@ test('the enrollment show page flags a parent who has not verified their email',
     'verified parent' => true,
     'unverified parent' => false,
 ]);
+
+test('the enrollment show page formats the student date of birth as a plain date', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $student = Student::factory()->create(['date_of_birth' => '2005-10-16']);
+    $enrollment = Enrollment::factory()->create(['student_id' => $student->id]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollments.show', $enrollment))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('enrollment.student.date_of_birth', '2005-10-16')
+        );
+});
