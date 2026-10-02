@@ -1,17 +1,12 @@
 import { useState } from 'react';
+import { isValidLrn } from '../Components/LrnInput';
 
 function readCookie(name) {
-    const match = document.cookie.match(
-        new RegExp(`(?:^|; )${name}=([^;]*)`),
-    );
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-export default function VerifyLrnGate({
-    defaultLrn,
-    onMatched,
-    onNewChild,
-}) {
+export default function VerifyLrnGate({ defaultLrn, onMatched, onNewChild }) {
     const [lrn, setLrn] = useState(defaultLrn ?? '');
     const [checking, setChecking] = useState(false);
     const [notFound, setNotFound] = useState(false);
@@ -66,8 +61,8 @@ export default function VerifyLrnGate({
             </h2>
             <p className="mt-1 text-sm text-[#1F2A24]/70">
                 If this application is for a child already on file with us,
-                enter their LRN to skip straight to subjects and billing —
-                their information is already on record.
+                enter their LRN to skip straight to subjects and billing — their
+                information is already on record.
             </p>
 
             <form onSubmit={submit} className="mt-5">
@@ -90,12 +85,17 @@ export default function VerifyLrnGate({
                         setLrn(e.target.value.replace(/\D/g, '').slice(0, 14));
                         setNotFound(false);
                     }}
-                    placeholder="14-digit LRN"
-                    className="min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm tracking-wider text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                    placeholder="e.g. 45250112345678"
+                    className="min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm tracking-wider text-[#1F2A24] tabular-nums focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                 />
 
-                <p id="verify-lrn-hint" className="mt-1.5 text-xs text-[#1F2A24]/65">
-                    {lrn.length}/14 digits
+                <p
+                    id="verify-lrn-hint"
+                    className="mt-1.5 text-xs text-[#1F2A24]/65"
+                >
+                    {isValidLrn(lrn)
+                        ? `${lrn.length} digits ✓`
+                        : `${lrn.length} digits — use the 12-digit DepEd LRN (or 14 if EVIMS issued it).`}
                 </p>
 
                 {notFound && (
@@ -113,7 +113,7 @@ export default function VerifyLrnGate({
 
                 <button
                     type="submit"
-                    disabled={checking || lrn.length !== 14}
+                    disabled={checking || !isValidLrn(lrn)}
                     className="mt-4 min-h-11 w-full rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {checking ? 'Checking...' : 'Confirm LRN'}

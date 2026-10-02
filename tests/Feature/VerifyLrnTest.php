@@ -43,12 +43,27 @@ test('guests cannot use the lrn verification endpoint', function () {
         ->assertUnauthorized();
 });
 
-test('lrn must be 14 digits', function () {
+test('lrn must be 12 digits (DepEd) or 14 digits (EVIMS)', function (string $lrn) {
     $enrollee = EnrolleeUser::factory()->create();
 
     $this->actingAs($enrollee, 'enrollee')
-        ->postJson(route('admission.verify-lrn'), ['lrn' => '123'])
+        ->postJson(route('admission.verify-lrn'), ['lrn' => $lrn])
         ->assertJsonValidationErrors('lrn');
+})->with(['123', '12345678901', '1234567890123', '123456789012345', 'abcdefghijkl']);
+
+test('a returning child can be found by their 12-digit DepEd LRN', function () {
+    $enrollee = EnrolleeUser::factory()->create();
+    $student = Student::factory()->create(['lrn' => '123456789012']);
+    Enrollment::factory()->create([
+        'student_id' => $student->id,
+        'enrollee_user_id' => $enrollee->id,
+    ]);
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '1234-5678-9012'])
+        ->assertOk()
+        ->assertJsonPath('matched', true)
+        ->assertJsonPath('student.lrn', '123456789012');
 });
 
 test('returns no match when the lrn does not belong to one of this account\'s own students', function () {

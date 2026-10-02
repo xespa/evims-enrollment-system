@@ -28,6 +28,27 @@ class StoreEnrollmentRequest extends FormRequest
      */
     public const NO_LRN_GRADE_LEVEL = 'Nursery';
 
+    /**
+     * A DepEd LRN (12 digits — what transferees bring from their previous
+     * school) or one issued by EVIMS (14 digits, starting with 452501).
+     */
+    public const LRN_PATTERN = '/^(\d{12}|\d{14})$/';
+
+    public const LRN_MESSAGE = 'Enter the 12-digit LRN from DepEd (on the child’s Form 138 / report card), or the 14-digit LRN issued by EVIMS.';
+
+    /**
+     * Strips the spaces and dashes people type into an LRN; anything else is
+     * left alone so it still fails validation.
+     */
+    public static function normalizeLrn(mixed $input): mixed
+    {
+        if (! is_string($input) || ! preg_match('/^[\d\s\-]+$/', trim($input))) {
+            return $input;
+        }
+
+        return preg_replace('/\D/', '', $input);
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -44,6 +65,10 @@ class StoreEnrollmentRequest extends FormRequest
         // Applications are always for the newest open school year, never
         // whatever year the form sent.
         $this->merge(['school_year' => Curriculum::applicationSchoolYear()]);
+
+        if ($this->filled('lrn')) {
+            $this->merge(['lrn' => self::normalizeLrn($this->input('lrn'))]);
+        }
 
         foreach (self::MOBILE_NUMBER_FIELDS as $field) {
             if ($this->filled($field) && is_string($this->input($field))) {
@@ -161,8 +186,10 @@ class StoreEnrollmentRequest extends FormRequest
                 },
             ],
             'lrn' => [
+                // A transferee brings their LRN from their previous school.
+                'required_if:student_type,WITH_LRN',
                 'nullable',
-                'digits:14',
+                'regex:'.self::LRN_PATTERN,
                 function (string $attribute, mixed $value, Closure $fail) {
                     if (filled($value) && $this->isForNoLrnGradeLevel()) {
                         $fail('Nursery students don’t have an LRN yet. Leave this blank.');
@@ -253,6 +280,8 @@ class StoreEnrollmentRequest extends FormRequest
         return [
             'father_mobile_no.regex' => $mobileNumberMessage,
             'mother_mobile_no.regex' => $mobileNumberMessage,
+            'lrn.regex' => self::LRN_MESSAGE,
+            'lrn.required_if' => 'Transferees need their LRN — enter the 12-digit LRN from their previous school (on their Form 138 / report card).',
         ];
     }
 }

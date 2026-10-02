@@ -1,4 +1,5 @@
 import TextInput from '../Components/TextInput';
+import LrnInput from '../Components/LrnInput';
 import SelectInput from '../Components/SelectInput';
 
 // Pre-Elementary levels, with the age each one is for.
@@ -117,14 +118,12 @@ export default function StudentInfoStep({
                 />
             </div>
 
-            {data.student_type !== 'NO_LRN' && (
-                <TextInput
-                    label="LRN (14-digit)"
-                    name="lrn"
+            {data.student_type && data.student_type !== 'NO_LRN' && (
+                <LrnInput
                     value={data.lrn}
                     onChange={setData}
                     error={errors.lrn}
-                    maxLength={14}
+                    studentType={data.student_type}
                 />
             )}
 

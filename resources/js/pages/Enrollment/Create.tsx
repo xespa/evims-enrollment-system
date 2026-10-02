@@ -14,6 +14,7 @@ import {
     mobileNumberProblem,
 } from './Components/mobile-number';
 import AccountNotApprovedNotice from './Components/AccountNotApprovedNotice';
+import { isValidLrn } from './Components/LrnInput';
 import StepperNav, { STEP_LABELS } from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -67,6 +68,7 @@ const FIELD_LABELS = {
     age: 'Age',
     session_time_preference: 'Session Time Preference',
     email: 'Email Address',
+    lrn: 'LRN',
     barangay: 'Barangay',
     city_municipality: 'City/Municipality',
     province: 'Province',
@@ -423,6 +425,10 @@ export default function Create({
         if (fastTrack && step === 6) {
             required.push('session_time_preference');
         }
+        // Transferees bring the LRN their previous school gave them.
+        if (step === 1 && data.student_type === 'WITH_LRN') {
+            required.push('lrn');
+        }
         return required.filter((field) => {
             const value = data[field];
             if (Array.isArray(value)) return value.length === 0;
@@ -449,6 +455,16 @@ export default function Create({
                 !isValidMobileNumber(data[field]),
         );
 
+    // An LRN that's been typed must be a complete DepEd (12-digit) or
+    // EVIMS (14-digit) one before leaving the step.
+    const getLrnIssue = () =>
+        step === 1 &&
+        data.student_type !== 'NO_LRN' &&
+        data.lrn &&
+        !isValidLrn(String(data.lrn))
+            ? `The LRN has ${String(data.lrn).length} digits — a DepEd LRN has 12 (or 14 if EVIMS issued it).`
+            : null;
+
     // Once the flagged fields are actually filled in, drop the message
     // instead of leaving it stuck on screen.
     useEffect(() => {
@@ -456,7 +472,8 @@ export default function Create({
             nextBlockedReason &&
             getMissingFields().length === 0 &&
             !getSchoolYearIssue() &&
-            getUnfinishedMobileNumbers().length === 0
+            getUnfinishedMobileNumbers().length === 0 &&
+            !getLrnIssue()
         ) {
             setNextBlockedReason('');
         }
@@ -494,10 +511,12 @@ export default function Create({
         const missing = getMissingFields();
         const schoolYearIssue = getSchoolYearIssue();
         const unfinishedMobileNumbers = getUnfinishedMobileNumbers();
+        const lrnIssue = getLrnIssue();
         if (
             missing.length > 0 ||
             schoolYearIssue ||
-            unfinishedMobileNumbers.length > 0
+            unfinishedMobileNumbers.length > 0 ||
+            lrnIssue
         ) {
             const messages = [];
             if (missing.length > 0) {
@@ -514,12 +533,17 @@ export default function Create({
                         .join(' and ')} (or leave it blank).`,
                 );
             }
+            if (lrnIssue) {
+                messages.push(lrnIssue);
+            }
             if (schoolYearIssue) {
                 messages.push(schoolYearIssue);
             }
             setNextBlockedReason(messages.join(' '));
             focusField(
-                missing[0] ?? unfinishedMobileNumbers[0] ?? 'school_year',
+                missing[0] ??
+                    unfinishedMobileNumbers[0] ??
+                    (lrnIssue ? 'lrn' : 'school_year'),
             );
             return;
         }
@@ -632,6 +656,7 @@ export default function Create({
                   field,
                   mobileNumberProblem(data[field]),
               ]),
+              ...(getLrnIssue() ? [['lrn', getLrnIssue()]] : []),
           ])
         : {};
 

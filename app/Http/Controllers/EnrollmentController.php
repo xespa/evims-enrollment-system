@@ -73,8 +73,12 @@ class EnrollmentController extends Controller
      */
     public function verifyLrn(Request $request)
     {
+        $request->merge(['lrn' => StoreEnrollmentRequest::normalizeLrn($request->input('lrn'))]);
+
         $validated = $request->validate([
-            'lrn' => ['required', 'digits:14'],
+            'lrn' => ['required', 'regex:'.StoreEnrollmentRequest::LRN_PATTERN],
+        ], [
+            'lrn.regex' => StoreEnrollmentRequest::LRN_MESSAGE,
         ]);
 
         $enrollee = $request->user('enrollee');
