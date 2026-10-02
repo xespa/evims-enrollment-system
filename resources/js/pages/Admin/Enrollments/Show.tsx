@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import AssignLrnForm from '@/components/assign-lrn-form';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
@@ -10,7 +11,9 @@ import {
 
 /** "+63 917 123 4567"; anything saved before numbers were validated is shown as-is. */
 function displayMobileNumber(value) {
-    return value && isValidMobileNumber(value) ? formatMobileNumber(value) : value;
+    return value && isValidMobileNumber(value)
+        ? formatMobileNumber(value)
+        : value;
 }
 
 function InfoRow({ label, value }) {
@@ -83,8 +86,14 @@ function PaymentsSection({ enrollment }) {
             .filter((p) => p.status === 'COMPLETED')
             .reduce((s, p) => s + Number(p.amount), 0);
 
-    const totalDue = installments.reduce((sum, i) => sum + Number(i.amount_due), 0);
-    const totalPaid = installments.reduce((sum, i) => sum + installmentPaid(i), 0);
+    const totalDue = installments.reduce(
+        (sum, i) => sum + Number(i.amount_due),
+        0,
+    );
+    const totalPaid = installments.reduce(
+        (sum, i) => sum + installmentPaid(i),
+        0,
+    );
     const hasBalance = totalDue - totalPaid > 0.004;
 
     // Every active counter payment on one OR number is voided together.
@@ -93,7 +102,9 @@ function PaymentsSection({ enrollment }) {
         .filter((p) => p.method === 'CASH' && p.status === 'COMPLETED');
     const receiptParts = (payment) =>
         payment.receipt_number
-            ? activeCounterPayments.filter((p) => p.receipt_number === payment.receipt_number)
+            ? activeCounterPayments.filter(
+                  (p) => p.receipt_number === payment.receipt_number,
+              )
             : [payment];
 
     const openVoid = (payment) => {
@@ -110,15 +121,22 @@ function PaymentsSection({ enrollment }) {
                     </h2>
                     {billingContract && (
                         <span className="rounded-full bg-[#1F2A24]/5 px-2.5 py-0.5 text-xs font-medium text-[#1F2A24]/70">
-                            {paysAtCounter ? 'Pays at the school counter' : 'Pays online via GCash'}
+                            {paysAtCounter
+                                ? 'Pays at the school counter'
+                                : 'Pays online via GCash'}
                         </span>
                     )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="text-sm text-[#1F2A24]/70">
                         Paid{' '}
-                        <span className="font-semibold text-[#2F6F4E]">{formatCurrency(totalPaid)}</span>{' '}
-                        of <span className="font-semibold text-[#1F2A24]">{formatCurrency(totalDue)}</span>
+                        <span className="font-semibold text-[#2F6F4E]">
+                            {formatCurrency(totalPaid)}
+                        </span>{' '}
+                        of{' '}
+                        <span className="font-semibold text-[#1F2A24]">
+                            {formatCurrency(totalDue)}
+                        </span>
                     </div>
                     {hasBalance && (
                         <button
@@ -149,10 +167,12 @@ function PaymentsSection({ enrollment }) {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <span className="text-sm font-medium text-[#1F2A24]">
-                                        Installment #{installment.installment_number}
+                                        Installment #
+                                        {installment.installment_number}
                                     </span>
                                     <span className="ml-2 text-xs text-[#1F2A24]/70">
-                                        Due {formatShortDate(installment.due_date)}
+                                        Due{' '}
+                                        {formatShortDate(installment.due_date)}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
@@ -162,30 +182,49 @@ function PaymentsSection({ enrollment }) {
                                     <span
                                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${INSTALLMENT_STATUS_STYLES[installment.status]}`}
                                     >
-                                        {INSTALLMENT_STATUS_LABELS[installment.status] ?? installment.status}
+                                        {INSTALLMENT_STATUS_LABELS[
+                                            installment.status
+                                        ] ?? installment.status}
                                     </span>
                                 </div>
                             </div>
 
                             {paid > 0 && installment.status !== 'PAID' && (
                                 <p className="mt-1 text-xs text-[#1F2A24]/70">
-                                    {formatCurrency(paid)} paid so far, {formatCurrency(remaining)} remaining
+                                    {formatCurrency(paid)} paid so far,{' '}
+                                    {formatCurrency(remaining)} remaining
                                 </p>
                             )}
 
                             {shownPayments.length > 0 && (
                                 <ul className="mt-2 space-y-1.5 border-l-2 border-[#2F6F4E]/15 pl-3">
                                     {shownPayments.map((payment) => {
-                                        const isVoided = payment.status === 'VOIDED';
-                                        const canVoid = payment.method === 'CASH' && !isVoided;
+                                        const isVoided =
+                                            payment.status === 'VOIDED';
+                                        const canVoid =
+                                            payment.method === 'CASH' &&
+                                            !isVoided;
 
                                         return (
-                                            <li key={payment.id} className="text-xs text-[#1F2A24]/65">
+                                            <li
+                                                key={payment.id}
+                                                className="text-xs text-[#1F2A24]/65"
+                                            >
                                                 <div className="flex flex-wrap items-center justify-between gap-x-3">
-                                                    <span className={isVoided ? 'line-through' : undefined}>
-                                                        {METHOD_LABELS[payment.method] ?? payment.method}
-                                                        {payment.paid_at && ` · ${formatShortDate(payment.paid_at)}`}
-                                                        {payment.receipt_number && ` · OR ${payment.receipt_number}`}
+                                                    <span
+                                                        className={
+                                                            isVoided
+                                                                ? 'line-through'
+                                                                : undefined
+                                                        }
+                                                    >
+                                                        {METHOD_LABELS[
+                                                            payment.method
+                                                        ] ?? payment.method}
+                                                        {payment.paid_at &&
+                                                            ` · ${formatShortDate(payment.paid_at)}`}
+                                                        {payment.receipt_number &&
+                                                            ` · OR ${payment.receipt_number}`}
                                                     </span>
                                                     <span className="flex items-center gap-2">
                                                         {isVoided && (
@@ -193,13 +232,21 @@ function PaymentsSection({ enrollment }) {
                                                                 Voided
                                                             </span>
                                                         )}
-                                                        <span className={`tabular-nums ${isVoided ? 'line-through' : ''}`}>
-                                                            {formatCurrency(payment.amount)}
+                                                        <span
+                                                            className={`tabular-nums ${isVoided ? 'line-through' : ''}`}
+                                                        >
+                                                            {formatCurrency(
+                                                                payment.amount,
+                                                            )}
                                                         </span>
                                                         {canVoid && (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => openVoid(payment)}
+                                                                onClick={() =>
+                                                                    openVoid(
+                                                                        payment,
+                                                                    )
+                                                                }
                                                                 className="min-h-8 rounded-full px-2 font-medium text-[#A83A30] hover:bg-[#C6473B]/10"
                                                             >
                                                                 Void
@@ -210,9 +257,13 @@ function PaymentsSection({ enrollment }) {
                                                 {isVoided && (
                                                     <p className="mt-0.5 text-[#1F2A24]/55 italic">
                                                         Voided
-                                                        {payment.voided_by?.name && ` by ${payment.voided_by.name}`}
-                                                        {payment.voided_at && ` on ${formatShortDate(payment.voided_at)}`}
-                                                        {payment.void_reason && `: ${payment.void_reason}`}
+                                                        {payment.voided_by
+                                                            ?.name &&
+                                                            ` by ${payment.voided_by.name}`}
+                                                        {payment.voided_at &&
+                                                            ` on ${formatShortDate(payment.voided_at)}`}
+                                                        {payment.void_reason &&
+                                                            `: ${payment.void_reason}`}
                                                     </p>
                                                 )}
                                             </li>
@@ -225,7 +276,9 @@ function PaymentsSection({ enrollment }) {
                 })}
 
                 {installments.length === 0 && (
-                    <p className="py-3 text-sm text-[#1F2A24]/65">No installment schedule found.</p>
+                    <p className="py-3 text-sm text-[#1F2A24]/65">
+                        No installment schedule found.
+                    </p>
                 )}
             </div>
 
@@ -237,7 +290,11 @@ function PaymentsSection({ enrollment }) {
                         .map((installment) => ({
                             id: installment.id,
                             installment_number: installment.installment_number,
-                            owed: Math.max(0, Number(installment.amount_due) - installmentPaid(installment)),
+                            owed: Math.max(
+                                0,
+                                Number(installment.amount_due) -
+                                    installmentPaid(installment),
+                            ),
                         }))
                         .filter((installment) => installment.owed > 0.004)}
                     open={isRecording}
@@ -249,7 +306,10 @@ function PaymentsSection({ enrollment }) {
                 <VoidPaymentDialog
                     key={voidingPayment.id}
                     payment={voidingPayment}
-                    receiptTotal={receiptParts(voidingPayment).reduce((s, p) => s + Number(p.amount), 0)}
+                    receiptTotal={receiptParts(voidingPayment).reduce(
+                        (s, p) => s + Number(p.amount),
+                        0,
+                    )}
                     receiptParts={receiptParts(voidingPayment).length}
                     open={isVoiding}
                     onOpenChange={setIsVoiding}
@@ -432,7 +492,10 @@ function DocumentRow({
                             {processing ? 'Sending…' : 'Send Reminder'}
                         </button>
                         {(errors.reason || errors.note || errors.reminder) && (
-                            <span role="alert" className="text-xs text-[#C6473B]">
+                            <span
+                                role="alert"
+                                className="text-xs text-[#C6473B]"
+                            >
                                 {errors.reason ||
                                     errors.note ||
                                     errors.reminder}
@@ -448,8 +511,10 @@ function DocumentRow({
 export default function Show({ enrollment }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
+    const statusError = props.errors?.enrollment_status;
 
     const student = enrollment.student;
+    const isMissingLrn = !student.lrn;
     const verification = enrollment.office_verification;
     const missingDocuments = DOCUMENTS.filter(
         (doc) => !verification?.[doc.pathKey],
@@ -474,7 +539,8 @@ export default function Show({ enrollment }) {
         },
         PENDING: {
             title: 'Reset this application to pending?',
-            description: 'It will go back into the review queue. No email is sent.',
+            description:
+                'It will go back into the review queue. No email is sent.',
             confirmLabel: 'Reset to Pending',
         },
     };
@@ -577,13 +643,45 @@ export default function Show({ enrollment }) {
                         </div>
                     )}
 
+                    {isMissingLrn && (
+                        <div
+                            role="status"
+                            className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                        >
+                            <p>
+                                <span className="font-semibold">
+                                    LRN required.
+                                </span>{' '}
+                                {studentName} doesn't have a Learner Reference
+                                Number yet. Assign one before approving this
+                                application.
+                            </p>
+                            <AssignLrnForm studentId={student.id} />
+                        </div>
+                    )}
+
+                    {statusError && (
+                        <div
+                            role="alert"
+                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#C6473B]"
+                        >
+                            {statusError}
+                        </div>
+                    )}
+
                     {/* Approve/Reject actions */}
                     <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                         <button
                             type="button"
                             onClick={() => changeStatus('APPROVED')}
                             disabled={
-                                enrollment.enrollment_status === 'APPROVED'
+                                enrollment.enrollment_status === 'APPROVED' ||
+                                isMissingLrn
+                            }
+                            title={
+                                isMissingLrn
+                                    ? 'Assign an LRN before approving.'
+                                    : undefined
                             }
                             className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
                         >

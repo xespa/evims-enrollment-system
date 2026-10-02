@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Payments\RecordCounterPayment;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
 use App\Models\Enrollment;
 use App\Models\User;
@@ -58,11 +59,9 @@ class EnrollmentManagementController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Enrollment $enrollment)
+    public function updateStatus(UpdateEnrollmentStatusRequest $request, Enrollment $enrollment): RedirectResponse
     {
-        $validated = $request->validate([
-            'enrollment_status' => ['required', 'in:PENDING,APPROVED,REJECTED'],
-        ]);
+        $validated = $request->validated();
 
         $statusChanged = $enrollment->enrollment_status !== $validated['enrollment_status'];
 

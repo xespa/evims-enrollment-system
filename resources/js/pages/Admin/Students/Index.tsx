@@ -1,5 +1,6 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import AssignLrnForm from '@/components/assign-lrn-form';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 
 const STATUS_STYLES = {
@@ -14,105 +15,9 @@ const DOCUMENT_PATH_KEYS = [
     'good_moral_path',
 ];
 
-const LRN_PREFIX = '452501';
-
 function countMissingDocuments(enrollment) {
     const verification = enrollment?.office_verification;
     return DOCUMENT_PATH_KEYS.filter((key) => !verification?.[key]).length;
-}
-
-function generateLrn() {
-    let suffix = '';
-    for (let i = 0; i < 8; i++) {
-        suffix += Math.floor(Math.random() * 10);
-    }
-    return `${LRN_PREFIX}${suffix}`;
-}
-
-function AssignLrnCell({ studentId }) {
-    const [open, setOpen] = useState(false);
-    const { data, setData, patch, processing, errors, reset } = useForm({
-        lrn: '',
-    });
-
-    const toggleOpen = () => {
-        setOpen((o) => !o);
-        reset();
-    };
-
-    const submit = (e) => {
-        e.preventDefault();
-        patch(route('admin.students.lrn.update', studentId), {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                setOpen(false);
-                reset();
-            },
-        });
-    };
-
-    if (!open) {
-        return (
-            <button
-                type="button"
-                onClick={toggleOpen}
-                className="min-h-9 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
-            >
-                Assign LRN
-            </button>
-        );
-    }
-
-    return (
-        <form onSubmit={submit} className="min-w-[160px] space-y-1.5">
-            <input
-                type="text"
-                inputMode="numeric"
-                maxLength={14}
-                autoFocus
-                aria-label="Learner Reference Number (14 digits)"
-                aria-invalid={errors.lrn ? true : undefined}
-                placeholder="452501XXXXXXXX"
-                value={data.lrn}
-                onChange={(e) =>
-                    setData(
-                        'lrn',
-                        e.target.value.replace(/\D/g, '').slice(0, 14),
-                    )
-                }
-                className="min-h-9 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-xs text-[#1F2A24] tabular-nums focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
-            />
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => setData('lrn', generateLrn())}
-                    className="min-h-8 rounded-full px-1.5 text-xs font-medium text-[#2F6F4E] hover:underline"
-                >
-                    Generate
-                </button>
-                <button
-                    type="submit"
-                    disabled={processing}
-                    className="min-h-8 rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
-                >
-                    {processing ? 'Saving…' : 'Save'}
-                </button>
-                <button
-                    type="button"
-                    onClick={toggleOpen}
-                    className="min-h-8 rounded-full px-1.5 text-xs text-[#1F2A24]/70 hover:text-[#1F2A24]"
-                >
-                    Cancel
-                </button>
-            </div>
-            {errors.lrn && (
-                <p role="alert" className="text-xs text-[#C6473B]">
-                    {errors.lrn}
-                </p>
-            )}
-        </form>
-    );
 }
 
 const PAYMENT_STATUS = {
@@ -182,7 +87,12 @@ function PaymentCell({ enrollment, onRecord }) {
     );
 }
 
-export default function Index({ applications, gradeLevels, schoolYears, filters }) {
+export default function Index({
+    applications,
+    gradeLevels,
+    schoolYears,
+    filters,
+}) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
 
@@ -362,16 +272,14 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {student.lrn || (
-                                                    <AssignLrnCell
-                                                        studentId={
-                                                            student.id
-                                                        }
+                                                    <AssignLrnForm
+                                                        studentId={student.id}
                                                     />
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {enrollment.grade_level
-                                                    ?.name || '—'}
+                                                {enrollment.grade_level?.name ||
+                                                    '—'}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {enrollment.school_year}
@@ -459,7 +367,9 @@ export default function Index({ applications, gradeLevels, schoolYears, filters 
                     key={recordSession}
                     enrollmentId={recordingFor.id}
                     studentName={`${recordingFor.student.first_name} ${recordingFor.student.last_name}`}
-                    unpaidInstallments={recordingFor.payment.unpaid_installments}
+                    unpaidInstallments={
+                        recordingFor.payment.unpaid_installments
+                    }
                     open={isRecording}
                     onOpenChange={setIsRecording}
                 />
