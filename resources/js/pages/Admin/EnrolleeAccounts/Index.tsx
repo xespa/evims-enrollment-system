@@ -2,6 +2,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { IdCard, MailCheck, MailWarning } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import DocumentViewerDialog from '@/components/document-viewer-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
@@ -51,6 +52,7 @@ type EnrolleeAccount = {
     /** Null for accounts created before the type was asked for. */
     account_type: AccountType | null;
     has_valid_id: boolean;
+    valid_id_is_pdf: boolean;
     created_at: string;
     reviewer: { id: number; name: string } | null;
     enrollments: LinkedEnrollment[];
@@ -295,6 +297,15 @@ export default function Index({
     // Kept apart from `isRejecting` so the dialog doesn't blank out while closing.
     const [rejecting, setRejecting] = useState<EnrolleeAccount | null>(null);
     const [isRejecting, setIsRejecting] = useState(false);
+    const [viewingIdOf, setViewingIdOf] = useState<EnrolleeAccount | null>(
+        null,
+    );
+    const [isViewingId, setIsViewingId] = useState(false);
+
+    const openValidId = (account: EnrolleeAccount) => {
+        setViewingIdOf(account);
+        setIsViewingId(true);
+    };
 
     const applyFilters = (overrides: Partial<Props['filters']> = {}) => {
         router.get(
@@ -499,13 +510,11 @@ export default function Index({
                                                 </span>
                                             )}
                                             {account.has_valid_id ? (
-                                                <a
-                                                    href={route(
-                                                        'admin.enrollee-accounts.valid-id.show',
-                                                        account.id,
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        openValidId(account)
+                                                    }
                                                     className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#2F6F4E] hover:underline"
                                                 >
                                                     <IdCard
@@ -513,10 +522,7 @@ export default function Index({
                                                         aria-hidden="true"
                                                     />
                                                     View valid ID
-                                                    <span className="sr-only">
-                                                        (opens in a new tab)
-                                                    </span>
-                                                </a>
+                                                </button>
                                             ) : (
                                                 <span className="mt-1 block w-fit rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/65">
                                                     No ID on file
@@ -712,6 +718,19 @@ export default function Index({
                     </div>
                 </div>
             </div>
+
+            {viewingIdOf && (
+                <DocumentViewerDialog
+                    title={`${viewingIdOf.name} — Valid ID`}
+                    url={route(
+                        'admin.enrollee-accounts.valid-id.show',
+                        viewingIdOf.id,
+                    )}
+                    isPdf={viewingIdOf.valid_id_is_pdf}
+                    open={isViewingId}
+                    onOpenChange={setIsViewingId}
+                />
+            )}
 
             {rejecting && (
                 <RejectAccountDialog

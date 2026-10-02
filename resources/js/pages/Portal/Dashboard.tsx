@@ -9,6 +9,9 @@ import {
     Loader2,
     PartyPopper,
 } from 'lucide-react';
+import DocumentViewerDialog, {
+    isPdfPath,
+} from '@/components/document-viewer-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
 
 const STATUS_STYLES = {
@@ -114,6 +117,12 @@ export default function Dashboard({ enrollments }) {
     };
 
     const [uploadingDoc, setUploadingDoc] = useState(null);
+    // Kept apart from `isViewingDocument` so the viewer doesn't blank out while closing.
+    const [viewingDocument, setViewingDocument] = useState<{
+        title: string;
+        path: string;
+    } | null>(null);
+    const [isViewingDocument, setIsViewingDocument] = useState(false);
 
     const handleDocumentUpload = (enrollmentId, type) => (e) => {
         const file = e.target.files[0];
@@ -185,6 +194,15 @@ export default function Dashboard({ enrollments }) {
         <div className="mx-auto max-w-5xl px-4 pb-16">
             <Head title="My Profile" />
             {confirmDialog}
+            {viewingDocument && (
+                <DocumentViewerDialog
+                    title={viewingDocument.title}
+                    url={`/storage/${viewingDocument.path}`}
+                    isPdf={isPdfPath(viewingDocument.path)}
+                    open={isViewingDocument}
+                    onOpenChange={setIsViewingDocument}
+                />
+            )}
 
             {/* ---------------- Header banner ---------------- */}
             <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
@@ -764,22 +782,27 @@ export default function Dashboard({ enrollments }) {
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         {path && (
-                                                            <a
-                                                                href={`/storage/${path}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setViewingDocument(
+                                                                        {
+                                                                            title: doc.label,
+                                                                            path,
+                                                                        },
+                                                                    );
+                                                                    setIsViewingDocument(
+                                                                        true,
+                                                                    );
+                                                                }}
                                                                 className="inline-flex min-h-9 items-center rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
                                                             >
                                                                 View
                                                                 <span className="sr-only">
                                                                     {' '}
-                                                                    {
-                                                                        doc.label
-                                                                    }{' '}
-                                                                    (opens in a
-                                                                    new tab)
+                                                                    {doc.label}
                                                                 </span>
-                                                            </a>
+                                                            </button>
                                                         )}
                                                         {isApproved ? (
                                                             <span className="text-xs text-[#1F2A24]/65">

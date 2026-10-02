@@ -84,6 +84,20 @@ test('admins can view a parent\'s valid ID', function () {
         ->get(route('admin.enrollee-accounts.index'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('accounts.data.0.has_valid_id', true)
+            ->where('accounts.data.0.valid_id_is_pdf', false)
+            ->missing('accounts.data.0.valid_id_path'));
+});
+
+test('admins are told when a valid ID is a pdf so it can be previewed as one', function () {
+    Storage::fake('local');
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $path = UploadedFile::fake()->create('philsys.PDF', 100, 'application/pdf')->store('valid-ids', 'local');
+    EnrolleeUser::factory()->pending()->create(['valid_id_path' => $path]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollee-accounts.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('accounts.data.0.valid_id_is_pdf', true)
             ->missing('accounts.data.0.valid_id_path'));
 });
 

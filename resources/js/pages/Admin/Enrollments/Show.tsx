@@ -1,6 +1,9 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
+import DocumentViewerDialog, {
+    isPdfPath,
+} from '@/components/document-viewer-dialog';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
@@ -366,6 +369,7 @@ function DocumentRow({
 }) {
     const [open, setOpen] = useState(false);
     const [showNote, setShowNote] = useState(false);
+    const [isViewing, setIsViewing] = useState(false);
     const hasFile = !!verification?.[doc.pathKey];
     const { data, setData, post, processing, errors, reset } = useForm({
         reason: hasFile ? 'BLURRY' : 'NOT_SUBMITTED',
@@ -421,16 +425,23 @@ function DocumentRow({
             </div>
 
             <div className="ml-6 flex flex-wrap items-center">
-                {verification?.[doc.pathKey] ? (
-                    <a
-                        href={`/storage/${verification[doc.pathKey]}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
-                    >
-                        View uploaded file →
-                        <span className="sr-only"> (opens in a new tab)</span>
-                    </a>
+                {hasFile ? (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setIsViewing(true)}
+                            className="inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
+                        >
+                            View uploaded file →
+                        </button>
+                        <DocumentViewerDialog
+                            title={doc.label}
+                            url={`/storage/${verification[doc.pathKey]}`}
+                            isPdf={isPdfPath(verification[doc.pathKey])}
+                            open={isViewing}
+                            onOpenChange={setIsViewing}
+                        />
+                    </>
                 ) : (
                     <p className="text-xs text-[#1F2A24]/65">
                         No file uploaded yet

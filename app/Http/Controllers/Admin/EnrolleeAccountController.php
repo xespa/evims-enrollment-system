@@ -52,8 +52,11 @@ class EnrolleeAccountController extends Controller
             ->paginate(15)
             ->withQueryString()
             // The path itself stays hidden; the page only needs to know
-            // whether there's an ID to link to.
-            ->through(fn (EnrolleeUser $account) => $account->setAttribute('has_valid_id', $account->valid_id_path !== null));
+            // whether there's an ID to link to, and whether to preview it
+            // as a PDF or an image.
+            ->through(fn (EnrolleeUser $account) => $account
+                ->setAttribute('has_valid_id', $account->valid_id_path !== null)
+                ->setAttribute('valid_id_is_pdf', str_ends_with(strtolower((string) $account->valid_id_path), '.pdf')));
 
         return Inertia::render('Admin/EnrolleeAccounts/Index', [
             'accounts' => $accounts,
