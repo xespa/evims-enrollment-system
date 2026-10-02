@@ -86,8 +86,10 @@ class UpdateEnrollmentStatusRequest extends FormRequest
     }
 
     /**
-     * An application can't be approved until the student has an LRN —
-     * it's how the student is identified in DepEd's records.
+     * An application the parent cancelled can't be approved or rejected. And
+     * none can be approved until the student has an LRN — it's how the
+     * student is identified in DepEd's records — and every required document
+     * has a file uploaded.
      *
      * @return array<int, callable>
      */
@@ -97,12 +99,36 @@ class UpdateEnrollmentStatusRequest extends FormRequest
             function (Validator $validator): void {
                 /** @var Enrollment $enrollment */
                 $enrollment = $this->route('enrollment');
-                $enrollment->loadMissing('student');
 
-                if ($this->input('enrollment_status') === 'APPROVED' && blank($enrollment->student->lrn)) {
+                if ($enrollment->isCancelled() && in_array($this->input('enrollment_status'), ['APPROVED', 'REJECTED'], true)) {
                     $validator->errors()->add(
                         'enrollment_status',
-                        "{$enrollment->student->first_name} {$enrollment->student->last_name} doesn't have an LRN yet, so this application can't be approved. Assign an LRN first, then approve.",
+                        "This application was cancelled by the parent on {$enrollment->cancelled_at->timezone('Asia/Manila')->format('M j, Y')}, so it can't be approved or rejected.",
+                    );
+
+                    return;
+                }
+
+                if ($this->input('enrollment_status') !== 'APPROVED') {
+                    return;
+                }
+
+                $enrollment->loadMissing('student', 'officeVerification');
+                $studentName = "{$enrollment->student->first_name} {$enrollment->student->last_name}";
+
+                if (blank($enrollment->student->lrn)) {
+                    $validator->errors()->add(
+                        'enrollment_status',
+                        "{$studentName} doesn't have an LRN yet, so this application can't be approved. Assign an LRN first, then approve.",
+                    );
+                }
+
+                $missingDocuments = $enrollment->missingDocumentLabels();
+
+                if ($missingDocuments !== []) {
+                    $validator->errors()->add(
+                        'missing_documents',
+                        "This application can't be approved yet because these documents haven't been uploaded for {$studentName}: ".implode(', ', $missingDocuments).'. Upload them or remind the parent, then approve.',
                     );
                 }
             },

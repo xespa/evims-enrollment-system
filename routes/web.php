@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnrolleeAccountController;
 use App\Http\Controllers\Admin\EnrolleeAccountValidIdController;
+use App\Http\Controllers\Admin\EnrollmentArchiveController;
 use App\Http\Controllers\Admin\EnrollmentDocumentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
@@ -105,6 +106,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.lrn.update');
 
     Route::resource('enrollments', EnrollmentManagementController::class)->only(['show', 'destroy']);
+    Route::post('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'store'])->name('enrollments.archive.store');
+    Route::delete('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'destroy'])->name('enrollments.archive.destroy');
     Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
     Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
     Route::post('enrollments/{enrollment}/documents/{type}', [EnrollmentDocumentController::class, 'store'])

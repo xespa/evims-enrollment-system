@@ -9,7 +9,7 @@ test('approving an enrollment emails the applicant', function () {
     Mail::fake();
 
     $admin = User::factory()->create(['role' => 'ADMIN']);
-    $enrollment = Enrollment::factory()->create([
+    $enrollment = Enrollment::factory()->withDocuments()->create([
         'enrollment_status' => 'PENDING',
         'email' => 'parent@example.com',
     ]);

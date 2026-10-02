@@ -7,6 +7,38 @@ use App\Models\Student;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
+test('the enrollment show page shows which portal account the application came from', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = EnrolleeUser::factory()->create([
+        'name' => 'Maria Dela Cruz',
+        'email' => 'maria@example.com',
+        'account_type' => 'PARENT_GUARDIAN',
+    ]);
+    $enrollment = Enrollment::factory()->create(['enrollee_user_id' => $enrollee->id]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollments.show', $enrollment))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Enrollments/Show')
+            ->where('submittedFrom.id', $enrollee->id)
+            ->where('submittedFrom.name', 'Maria Dela Cruz')
+            ->where('submittedFrom.email', 'maria@example.com')
+            ->where('submittedFrom.account_type', 'Parent / Guardian')
+            ->where('submittedFrom.account_status', $enrollee->account_status->value)
+            ->where('submittedFrom.email_verified', $enrollee->email_verified_at !== null)
+            ->missing('submittedFrom.valid_id_path')
+            ->missing('submittedFrom.password'));
+});
+
+test('the enrollment show page has no submitting account for applications without one', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollment = Enrollment::factory()->create(['enrollee_user_id' => null]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollments.show', $enrollment))
+        ->assertInertia(fn (Assert $page) => $page->where('submittedFrom', null));
+});
+
 test('the enrollment show page includes the academic history', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
     $student = Student::factory()->create();

@@ -51,6 +51,9 @@ class StudentController extends Controller
             $query->where('enrollments.school_year', $schoolYear);
         }
 
+        $showArchived = $request->boolean('archived');
+        $query->archived($showArchived);
+
         if ($request->filled('grade_level_id')) {
             $query->where('enrollments.grade_level_id', $request->integer('grade_level_id'));
         }
@@ -74,6 +77,7 @@ class StudentController extends Controller
                 'search' => $request->string('search')->toString(),
                 'school_year' => $schoolYear,
                 'grade_level_id' => $request->string('grade_level_id')->toString(),
+                'archived' => $showArchived,
             ],
         ]);
     }

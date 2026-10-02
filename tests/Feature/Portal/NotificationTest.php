@@ -42,7 +42,7 @@ test('an enrollee only sees their own notifications', function () {
 test('approving an enrollment notifies the linked enrollee', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
     $enrollee = EnrolleeUser::factory()->create();
-    $enrollment = Enrollment::factory()->create([
+    $enrollment = Enrollment::factory()->withDocuments()->create([
         'enrollee_user_id' => $enrollee->id,
         'enrollment_status' => 'PENDING',
         'email' => null,

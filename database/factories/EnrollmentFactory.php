@@ -27,4 +27,18 @@ class EnrollmentFactory extends Factory
             'enrollment_status' => 'PENDING',
         ];
     }
+
+    /**
+     * Every required document has a file uploaded, so it can be approved.
+     */
+    public function withDocuments(): static
+    {
+        return $this->afterCreating(function (Enrollment $enrollment) {
+            $enrollment->officeVerification()->updateOrCreate([], [
+                'form_138_path' => 'documents/form-138.pdf',
+                'birth_certificate_path' => 'documents/birth-certificate.pdf',
+                'good_moral_path' => 'documents/good-moral.pdf',
+            ]);
+        });
+    }
 }

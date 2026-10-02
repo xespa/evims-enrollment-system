@@ -26,6 +26,7 @@ class Enrollment extends Model
         'date_of_application' => 'date',
         'rejection_reasons' => AsEnumCollection::class.':'.EnrollmentRejectionReason::class,
         'cancelled_at' => 'datetime',
+        'archived_at' => 'datetime',
     ];
 
     /**
@@ -184,6 +185,57 @@ class Enrollment extends Model
     public function isCancelled(): bool
     {
         return $this->cancelled_at !== null;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    public function archive(User $admin): void
+    {
+        $this->forceFill([
+            'archived_at' => now(),
+            'archived_by' => $admin->id,
+        ])->save();
+    }
+
+    public function restoreFromArchive(): void
+    {
+        $this->forceFill([
+            'archived_at' => null,
+            'archived_by' => null,
+        ])->save();
+    }
+
+    /**
+     * Only archived applications, or with `false`, only those not archived.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeArchived(Builder $query, bool $archived = true): void
+    {
+        if ($archived) {
+            $query->whereNotNull('enrollments.archived_at');
+        } else {
+            $query->whereNull('enrollments.archived_at');
+        }
+    }
+
+    /**
+     * Names of the required documents that have no file uploaded yet.
+     *
+     * @return array<int, string>
+     */
+    public function missingDocumentLabels(): array
+    {
+        $verification = $this->officeVerification;
+
+        return collect(OfficeVerification::DOCUMENT_COLUMNS)
+            ->filter(fn (array $document) => blank($verification?->{$document['path']}))
+            ->pluck('label')
+            ->values()
+            ->all();
     }
 
     /**

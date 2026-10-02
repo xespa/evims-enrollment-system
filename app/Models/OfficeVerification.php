@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class OfficeVerification extends Model
 {
     /**
-     * Each document type's file path column and its "verified" flag.
+     * Each document type's name, file path column and "verified" flag.
      *
-     * @var array<string, array{path: string, verified: string}>
+     * @var array<string, array{label: string, path: string, verified: string}>
      */
     public const DOCUMENT_COLUMNS = [
-        'form_138' => ['path' => 'form_138_path', 'verified' => 'has_form_138'],
-        'birth_certificate' => ['path' => 'birth_certificate_path', 'verified' => 'has_birth_certificate'],
-        'good_moral' => ['path' => 'good_moral_path', 'verified' => 'has_good_moral_certificate'],
+        'form_138' => ['label' => 'Form 138 (Report Card)', 'path' => 'form_138_path', 'verified' => 'has_form_138'],
+        'birth_certificate' => ['label' => 'PSA Birth Certificate', 'path' => 'birth_certificate_path', 'verified' => 'has_birth_certificate'],
+        'good_moral' => ['label' => 'Good Moral Certificate', 'path' => 'good_moral_path', 'verified' => 'has_good_moral_certificate'],
     ];
 
     protected $fillable = [

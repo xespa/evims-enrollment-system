@@ -529,17 +529,24 @@ function DocumentRow({
     );
 }
 
-export default function Show({ enrollment, rejectionReasons }) {
+export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
     const statusError = props.errors?.enrollment_status;
 
     const student = enrollment.student;
+    const isCancelled = !!enrollment.cancelled_at;
     const isMissingLrn = !student.lrn;
     const verification = enrollment.office_verification;
     const missingDocuments = DOCUMENTS.filter(
         (doc) => !verification?.[doc.pathKey],
     );
+    const missingDocumentsError = props.errors?.missing_documents;
+    const approveBlockers = [
+        isMissingLrn && 'assign an LRN',
+        missingDocuments.length > 0 &&
+            `upload the ${missingDocuments.map((doc) => doc.label).join(', ')}`,
+    ].filter(Boolean);
 
     const [confirm, confirmDialog] = useConfirm();
     const [isRejecting, setIsRejecting] = useState(false);
@@ -572,18 +579,24 @@ export default function Show({ enrollment, rejectionReasons }) {
         });
     };
 
-    const deleteApplication = async () => {
+    const archiveApplication = async () => {
         const confirmed = await confirm({
-            title: `Permanently delete ${studentName}'s application?`,
+            title: `Archive ${studentName}'s application?`,
             description:
-                "This cannot be undone — all of its documents, billing, and payment records will be deleted too. The student's own profile will NOT be deleted.",
-            confirmLabel: 'Delete Application',
-            destructive: true,
+                'It will be hidden from the Students list. Nothing is deleted — its documents, billing, and payment records are kept, and you can restore it anytime from the Archived view.',
+            confirmLabel: 'Archive',
         });
         if (!confirmed) {
             return;
         }
-        router.delete(route('admin.enrollments.destroy', enrollment.id));
+        router.post(route('admin.enrollments.archive.store', enrollment.id));
+    };
+
+    const restoreApplication = () => {
+        router.delete(
+            route('admin.enrollments.archive.destroy', enrollment.id),
+            { preserveScroll: true },
+        );
     };
 
     const toggleVerification = (field, currentValue) => {
@@ -642,12 +655,52 @@ export default function Show({ enrollment, rejectionReasons }) {
                             {student.last_name}, {student.first_name}{' '}
                             {student.middle_name}
                         </h1>
-                        <span
-                            className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                        >
-                            {enrollment.enrollment_status}
-                        </span>
+                        {isCancelled ? (
+                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
+                                CANCELLED
+                            </span>
+                        ) : (
+                            <span
+                                className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                            >
+                                {enrollment.enrollment_status}
+                            </span>
+                        )}
                     </div>
+
+                    {isCancelled && (
+                        <div
+                            role="status"
+                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#1F2A24]"
+                        >
+                            <span className="font-semibold text-[#C6473B]">
+                                Cancelled by the parent
+                            </span>{' '}
+                            on {formatShortDate(enrollment.cancelled_at)}. They
+                            withdrew this application, so it can no longer be
+                            approved or rejected.
+                        </div>
+                    )}
+
+                    {enrollment.archived_at && (
+                        <div
+                            role="status"
+                            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#1F2A24]/15 bg-[#1F2A24]/5 px-4 py-3 text-sm text-[#1F2A24]"
+                        >
+                            <p>
+                                <span className="font-semibold">Archived</span>{' '}
+                                on {formatShortDate(enrollment.archived_at)}.
+                                It's hidden from the Students list.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={restoreApplication}
+                                className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                            >
+                                Restore
+                            </button>
+                        </div>
+                    )}
 
                     {!enrollment.parent_email_verified && (
                         <div
@@ -668,7 +721,7 @@ export default function Show({ enrollment, rejectionReasons }) {
                         </div>
                     )}
 
-                    {isMissingLrn && (
+                    {isMissingLrn && !isCancelled && (
                         <div
                             role="status"
                             className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
@@ -684,6 +737,34 @@ export default function Show({ enrollment, rejectionReasons }) {
                             <AssignLrnForm studentId={student.id} />
                         </div>
                     )}
+
+                    {missingDocuments.length > 0 &&
+                        enrollment.enrollment_status !== 'APPROVED' &&
+                        !isCancelled && (
+                            <div
+                                role="status"
+                                className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                            >
+                                <p>
+                                    <span className="font-semibold">
+                                        Missing documents.
+                                    </span>{' '}
+                                    These files haven't been uploaded yet, so
+                                    this application can't be approved:
+                                </p>
+                                <ul className="mt-1 list-disc pl-5 font-medium">
+                                    {missingDocuments.map((doc) => (
+                                        <li key={doc.type}>{doc.label}</li>
+                                    ))}
+                                </ul>
+                                <a
+                                    href="#document-verification"
+                                    className="mt-2 inline-block font-semibold underline"
+                                >
+                                    Upload them or remind the parent ↓
+                                </a>
+                            </div>
+                        )}
 
                     {enrollment.enrollment_status === 'REJECTED' &&
                         (enrollment.rejection_reasons?.length > 0 ||
@@ -723,6 +804,15 @@ export default function Show({ enrollment, rejectionReasons }) {
                         </div>
                     )}
 
+                    {missingDocumentsError && (
+                        <div
+                            role="alert"
+                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#C6473B]"
+                        >
+                            {missingDocumentsError}
+                        </div>
+                    )}
+
                     {/* Approve/Reject actions */}
                     <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                         <button
@@ -730,12 +820,15 @@ export default function Show({ enrollment, rejectionReasons }) {
                             onClick={() => changeStatus('APPROVED')}
                             disabled={
                                 enrollment.enrollment_status === 'APPROVED' ||
-                                isMissingLrn
+                                isCancelled ||
+                                approveBlockers.length > 0
                             }
                             title={
-                                isMissingLrn
-                                    ? 'Assign an LRN before approving.'
-                                    : undefined
+                                isCancelled
+                                    ? 'The parent cancelled this application.'
+                                    : approveBlockers.length > 0
+                                      ? `Before approving, ${approveBlockers.join(' and ')}.`
+                                      : undefined
                             }
                             className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
                         >
@@ -745,33 +838,112 @@ export default function Show({ enrollment, rejectionReasons }) {
                             type="button"
                             onClick={() => setIsRejecting(true)}
                             disabled={
-                                enrollment.enrollment_status === 'REJECTED'
+                                enrollment.enrollment_status === 'REJECTED' ||
+                                isCancelled
+                            }
+                            title={
+                                isCancelled
+                                    ? 'The parent cancelled this application.'
+                                    : undefined
                             }
                             className="min-h-11 rounded-full bg-[#C6473B] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             Reject
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => changeStatus('PENDING')}
-                            disabled={
-                                enrollment.enrollment_status === 'PENDING'
-                            }
-                            className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            Reset to Pending
-                        </button>
+                        {enrollment.enrollment_status !== 'PENDING' && (
+                            <button
+                                type="button"
+                                onClick={() => changeStatus('PENDING')}
+                                className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                            >
+                                Reset to Pending
+                            </button>
+                        )}
 
-                        <button
-                            type="button"
-                            onClick={deleteApplication}
-                            className="min-h-11 rounded-full border border-[#C6473B]/30 bg-white px-4 py-2 text-sm font-semibold text-[#C6473B] transition-colors hover:bg-[#C6473B]/5 sm:ml-auto"
-                        >
-                            Delete Application
-                        </button>
+                        {!enrollment.archived_at && (
+                            <button
+                                type="button"
+                                onClick={archiveApplication}
+                                className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 sm:ml-auto"
+                            >
+                                Archive
+                            </button>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {/* Portal account the application came from */}
+                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                    Submitted From
+                                </h2>
+                                {submittedFrom && (
+                                    <Link
+                                        href={route(
+                                            'admin.enrollee-accounts.index',
+                                            {
+                                                status: submittedFrom.account_status,
+                                                search: submittedFrom.email,
+                                            },
+                                        )}
+                                        className="text-xs font-semibold text-[#2F6F4E] hover:underline"
+                                    >
+                                        View in Portal Accounts →
+                                    </Link>
+                                )}
+                            </div>
+                            {submittedFrom ? (
+                                <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                                    <InfoRow
+                                        label="Account Name"
+                                        value={submittedFrom.name}
+                                    />
+                                    <InfoRow
+                                        label="Account Email"
+                                        value={
+                                            <>
+                                                {submittedFrom.email}
+                                                {!submittedFrom.email_verified && (
+                                                    <span className="ml-2 rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                                                        Not verified
+                                                    </span>
+                                                )}
+                                            </>
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Account Type"
+                                        value={submittedFrom.account_type}
+                                    />
+                                    <InfoRow
+                                        label="Account Status"
+                                        value={
+                                            <span
+                                                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[submittedFrom.account_status]}`}
+                                            >
+                                                {submittedFrom.account_status}
+                                            </span>
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Registered"
+                                        value={
+                                            submittedFrom.registered_at &&
+                                            formatShortDate(
+                                                submittedFrom.registered_at,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            ) : (
+                                <p className="py-2 text-sm text-[#1F2A24]/65">
+                                    No linked portal account — this application
+                                    wasn't submitted from a signed-in account.
+                                </p>
+                            )}
+                        </div>
+
                         {/* Student info */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
                             <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
@@ -970,7 +1142,10 @@ export default function Show({ enrollment, rejectionReasons }) {
                         </div>
 
                         {/* Document verification checklist */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+                        <div
+                            id="document-verification"
+                            className="scroll-mt-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
+                        >
                             <div className="mb-2 flex items-center justify-between">
                                 <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                     Document Verification

@@ -121,6 +121,7 @@ export default function Index({
                 search,
                 school_year: schoolYear,
                 grade_level_id: gradeLevelId,
+                archived: filters.archived ? 1 : undefined,
                 ...overrides,
             },
             { preserveState: true, replace: true },
@@ -138,10 +139,38 @@ export default function Index({
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex items-center justify-between">
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                         <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
                             Students
                         </h1>
+                        <div
+                            role="group"
+                            aria-label="Show active or archived applications"
+                            className="inline-flex rounded-full border border-[#1F2A24]/15 bg-white p-1"
+                        >
+                            {[
+                                { label: 'Active', archived: false },
+                                { label: 'Archived', archived: true },
+                            ].map((option) => (
+                                <button
+                                    key={option.label}
+                                    type="button"
+                                    aria-pressed={
+                                        filters.archived === option.archived
+                                    }
+                                    onClick={() =>
+                                        applyFilters({
+                                            archived: option.archived
+                                                ? 1
+                                                : undefined,
+                                        })
+                                    }
+                                    className="min-h-9 rounded-full px-4 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:text-[#1F2A24] aria-pressed:bg-[#2F6F4E] aria-pressed:text-white"
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {flashSuccess && (
@@ -285,13 +314,22 @@ export default function Index({
                                                 {enrollment.school_year}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span
-                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                                                >
-                                                    {
-                                                        enrollment.enrollment_status
-                                                    }
-                                                </span>
+                                                {enrollment.cancelled_at ? (
+                                                    <span
+                                                        className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600"
+                                                        title="The parent cancelled this application."
+                                                    >
+                                                        CANCELLED
+                                                    </span>
+                                                ) : (
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                                                    >
+                                                        {
+                                                            enrollment.enrollment_status
+                                                        }
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {missingCount > 0 ? (

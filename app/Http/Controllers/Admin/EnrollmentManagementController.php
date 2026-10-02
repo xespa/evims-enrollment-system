@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
 use App\Models\Enrollment;
+use App\Models\OfficeVerification;
 use App\Models\User;
 use App\Notifications\DocumentReminder;
 use App\Notifications\EnrollmentStatusChanged;
@@ -20,18 +21,6 @@ use Inertia\Inertia;
 
 class EnrollmentManagementController extends Controller
 {
-    private const DOCUMENT_LABELS = [
-        'form_138_path' => 'Form 138 (Report Card)',
-        'birth_certificate_path' => 'PSA Birth Certificate',
-        'good_moral_path' => 'Good Moral Certificate',
-    ];
-
-    private const DOCUMENT_TYPES = [
-        'form_138' => 'form_138_path',
-        'birth_certificate' => 'birth_certificate_path',
-        'good_moral' => 'good_moral_path',
-    ];
-
     private const REMINDER_REASONS = [
         'NOT_SUBMITTED' => 'This document has not been submitted yet.',
         'BLURRY' => 'The uploaded image is blurry or hard to read.',
@@ -55,8 +44,20 @@ class EnrollmentManagementController extends Controller
         ]);
         $enrollment->loadParentEmailVerified();
 
+        $account = $enrollment->enrolleeUser()->first(['id', 'name', 'email', 'account_type', 'account_status', 'email_verified_at', 'created_at']);
+
         return Inertia::render('Admin/Enrollments/Show', [
             'enrollment' => $enrollment,
+            // The portal account the application was submitted from.
+            'submittedFrom' => $account ? [
+                'id' => $account->id,
+                'name' => $account->name,
+                'email' => $account->email,
+                'account_type' => $account->account_type?->label(),
+                'account_status' => $account->account_status->value,
+                'email_verified' => $account->email_verified_at !== null,
+                'registered_at' => $account->created_at?->toDateString(),
+            ] : null,
             'rejectionReasons' => array_map(
                 fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
                 EnrollmentRejectionReason::cases(),
@@ -118,7 +119,7 @@ class EnrollmentManagementController extends Controller
             return back()->withErrors(['reminder' => 'This application has no linked student portal account to notify.']);
         }
 
-        $documentLabel = self::DOCUMENT_LABELS[self::DOCUMENT_TYPES[$type]];
+        $documentLabel = OfficeVerification::DOCUMENT_COLUMNS[$type]['label'];
         $reasonText = self::REMINDER_REASONS[$validated['reason']] ?? $validated['note'];
         $note = $validated['reason'] === 'OTHER' ? null : ($validated['note'] ?? null);
 

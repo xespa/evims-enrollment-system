@@ -34,7 +34,7 @@ test('an application cannot be approved while the student has no lrn', function 
 test('an application can be approved once the student has an lrn', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
     $student = Student::factory()->create(['lrn' => '45250112345678']);
-    $enrollment = Enrollment::factory()->create([
+    $enrollment = Enrollment::factory()->withDocuments()->create([
         'student_id' => $student->id,
         'enrollment_status' => 'PENDING',
     ]);
