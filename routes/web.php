@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EnrolleeAccountController;
+use App\Http\Controllers\Admin\EnrolleeAccountValidIdController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
@@ -47,6 +49,7 @@ Route::inertia('student-services/guidance-counseling', 'Site/StudentServices/Gui
 Route::inertia('student-services/health-services', 'Site/StudentServices/HealthServices')->name('site.student-services.health-services');
 Route::inertia('student-services/library', 'Site/StudentServices/Library')->name('site.student-services.library');
 Route::inertia('contact', 'Site/Contact')->name('site.contact');
+Route::inertia('terms', 'Site/Terms')->name('site.terms');
 Route::get('events', function () {
     return inertia('Site/Events', [
         // Every event the school has posted — they don't expire — with the
@@ -54,12 +57,20 @@ Route::get('events', function () {
         'events' => Event::query()->orderByDesc('event_date')->orderByDesc('id')->get(),
     ]);
 })->name('site.events');
-Route::get('admission', [EnrollmentController::class, 'create'])->name('admission.create');
-Route::post('admission', [EnrollmentController::class, 'store'])->name('admission.store');
-Route::get('admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('admission.success');
-Route::post('admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])
-    ->middleware('auth:enrollee')
-    ->name('admission.verify-lrn');
+// Applying needs a portal account with a confirmed email, so every
+// application belongs to someone the school can reach.
+Route::middleware(['auth:enrollee', 'verified:portal.verification.notice'])->group(function () {
+    // Shown to every account, but unapproved ones only see a notice.
+    Route::get('admission', [EnrollmentController::class, 'create'])->name('admission.create');
+    Route::get('admission/{enrollment}/success', [EnrollmentController::class, 'success'])->name('admission.success');
+
+    // Only accounts the school has approved can apply, so nothing from an
+    // unverified account ever reaches the admin.
+    Route::middleware('enrollee.approved')->group(function () {
+        Route::post('admission', [EnrollmentController::class, 'store'])->name('admission.store');
+        Route::post('admission/verify-lrn', [EnrollmentController::class, 'verifyLrn'])->name('admission.verify-lrn');
+    });
+});
 
 Route::middleware('signed')->group(function () {
     Route::get('payments/{enrollment}', [PaymentController::class, 'show'])->name('payments.show');
@@ -101,6 +112,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
     // Student lookup for recording a counter payment from Transactions.
     Route::get('payable-enrollments', PayableEnrollmentController::class)->name('payable-enrollments.index');
+
+    // Parent portal accounts awaiting approval before they can use the portal and pay online.
+    Route::resource('enrollee-accounts', EnrolleeAccountController::class)
+        ->only(['index', 'update'])
+        ->parameters(['enrollee-accounts' => 'enrolleeUser']);
+    Route::get('enrollee-accounts/{enrolleeUser}/valid-id', EnrolleeAccountValidIdController::class)->name('enrollee-accounts.valid-id.show');
 
     Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show']);
     // Setting up a school year: store starts a draft, update saves it

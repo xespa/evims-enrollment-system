@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Curriculum;
+use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\User;
@@ -94,7 +95,8 @@ test('the enrollment form receives each open school year\'s fee breakdown and to
     $schoolYear = Enrollment::currentSchoolYear();
     $key = "curricula.{$schoolYear}.{$gradeLevel->id}";
 
-    $this->get(route('admission.create'))
+    $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee')
+        ->get(route('admission.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Enrollment/Create')
@@ -117,7 +119,8 @@ test('the enrollment form only offers the newest set-up school year', function (
         Curriculum::factory()->for($gradeLevel)->create(['school_year' => $year($offset)]);
     }
 
-    $this->get(route('admission.create'))
+    $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee')
+        ->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
             ->has('curricula', 1)
             ->has("curricula.{$year(1)}")
@@ -133,7 +136,8 @@ test('the enrollment form offers last school year while nothing newer is set up'
         Curriculum::factory()->for($gradeLevel)->create(['school_year' => $year($offset)]);
     }
 
-    $this->get(route('admission.create'))
+    $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee')
+        ->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page
             ->has('curricula', 1)
             ->has("curricula.{$year(-1)}")
@@ -145,6 +149,7 @@ test('the enrollment form offers no school year once they are all too old', func
     [$start] = explode('-', Enrollment::currentSchoolYear());
     Curriculum::factory()->for($gradeLevel)->create(['school_year' => ($start - 2).'-'.($start - 1)]);
 
-    $this->get(route('admission.create'))
+    $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee')
+        ->get(route('admission.create'))
         ->assertInertia(fn (Assert $page) => $page->where('curricula', []));
 });

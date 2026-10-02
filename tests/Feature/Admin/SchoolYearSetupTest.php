@@ -174,7 +174,8 @@ test('a draft school year is not offered to applicants', function () {
     $draft = Curriculum::factory()->for($gradeLevel)->create(['school_year' => $draftYear, 'is_draft' => true]);
     $draftSubject = Subject::factory()->for($draft)->create();
 
-    $this->get(route('admission.create'))
+    $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee')
+        ->get(route('admission.create'))
         ->assertInertia(fn ($page) => $page
             ->has('curricula.'.Enrollment::currentSchoolYear())
             ->missing("curricula.{$draftYear}"));

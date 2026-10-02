@@ -38,6 +38,37 @@ class SubmitEnrollmentApplication
     }
 
     /**
+     * The student an application is for, if they're already on record: an
+     * LRN match first (works even for guests), then one of the account's
+     * own children with the same name and birthday (covers No LRN children).
+     * Anyone else is a new child, so a family can enroll as many as they have.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    public function findExistingStudent(?EnrolleeUser $enrollee, array $input): ?Student
+    {
+        $lrn = $input['lrn'] ?? null;
+
+        if (filled($lrn) && is_scalar($lrn)) {
+            $student = Student::where('lrn', (string) $lrn)->first();
+
+            if ($student) {
+                return $student;
+            }
+        }
+
+        $firstName = $input['first_name'] ?? null;
+        $lastName = $input['last_name'] ?? null;
+        $dateOfBirth = $input['date_of_birth'] ?? null;
+
+        if (! $enrollee || ! is_string($firstName) || ! is_string($lastName) || ! is_string($dateOfBirth) || strtotime($dateOfBirth) === false) {
+            return null;
+        }
+
+        return $enrollee->findChild($firstName, $lastName, $dateOfBirth);
+    }
+
+    /**
      * Creates the full record set for one admission application: the student
      * (or reuses an existing one), address, parents, enrollment, subjects,
      * history, vital info, billing schedule and document paths.
@@ -48,20 +79,7 @@ class SubmitEnrollmentApplication
     public function handle(EnrolleeUser $enrollee, array $validated, array $documentPaths): Enrollment
     {
         return DB::transaction(function () use ($enrollee, $validated, $documentPaths) {
-            // Find by LRN first, falling back to the logged-in account's own
-            // existing student (covers NO_LRN cases).
-            $existingStudent = null;
-
-            if (! empty($validated['lrn'])) {
-                $existingStudent = Student::where('lrn', $validated['lrn'])->first();
-            }
-
-            if (! $existingStudent) {
-                $linkedStudentId = $enrollee->enrollments()->value('student_id');
-                if ($linkedStudentId) {
-                    $existingStudent = Student::find($linkedStudentId);
-                }
-            }
+            $existingStudent = $this->findExistingStudent($enrollee, $validated);
 
             // Only allow overwriting identity fields if the logged-in account is
             // actually the one linked to this student — otherwise someone typing

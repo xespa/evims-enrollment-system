@@ -305,6 +305,11 @@ class PaymentController extends Controller
     protected function ensureCanPayOnline(Enrollment $enrollment): void
     {
         abort_unless($enrollment->enrollment_status === 'APPROVED', 403, 'Payment is available once your application is approved.');
+        abort_if(
+            $enrollment->enrolleeUser && ! $enrollment->enrolleeUser->isApproved(),
+            403,
+            'Online payment is available once the school approves your portal account.',
+        );
         abort_unless(
             (bool) $enrollment->billingContract?->paysOnline(),
             403,

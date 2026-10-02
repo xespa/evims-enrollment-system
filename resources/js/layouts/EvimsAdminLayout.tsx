@@ -9,6 +9,7 @@ import {
     PanelLeftOpen,
     ReceiptText,
     Settings,
+    UserCheck,
     Users,
     X,
 } from 'lucide-react';
@@ -17,6 +18,11 @@ import { useEffect, useRef, useState } from 'react';
 const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
     { label: 'Students', route: 'admin.students.index', icon: Users },
+    {
+        label: 'Portal Accounts',
+        route: 'admin.enrollee-accounts.index',
+        icon: UserCheck,
+    },
     {
         label: 'Transactions',
         route: 'admin.transactions.index',

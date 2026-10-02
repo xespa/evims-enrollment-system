@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\Enrollment\SubmitEnrollmentApplication;
 use App\Models\BillingContract;
 use App\Models\Curriculum;
+use App\Models\EnrolleeUser;
 use App\Models\GradeLevel;
-use App\Models\Student;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -78,24 +79,17 @@ class StoreEnrollmentRequest extends FormRequest
     }
 
     /**
-     * Find the student this submission belongs to, if any:
-     * an LRN match takes priority (works even for guests), falling back
-     * to the logged-in account's existing student (for NO_LRN cases).
+     * The student this submission belongs to, if they're already on record,
+     * matched the same way the application will be saved.
      */
     protected function resolveExistingStudentId(): ?int
     {
-        $lrn = $this->input('lrn');
-
-        if ($lrn) {
-            $student = Student::where('lrn', $lrn)->first();
-            if ($student) {
-                return $student->id;
-            }
-        }
-
+        /** @var EnrolleeUser|null $enrollee */
         $enrollee = Auth::guard('enrollee')->user();
 
-        return $enrollee?->enrollments()->value('student_id');
+        return app(SubmitEnrollmentApplication::class)
+            ->findExistingStudent($enrollee, $this->all())
+            ?->id;
     }
 
     /**

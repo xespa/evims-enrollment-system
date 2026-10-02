@@ -2,15 +2,10 @@ import { useEffect, useState } from 'react';
 import { useForm, Head, usePage } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
 import {
-    DRAFT_FILE_FIELDS,
-    clearDraft,
-    loadDraft,
-    saveDraft,
-} from '@/lib/enrollment-draft';
-import {
     isValidMobileNumber,
     mobileNumberProblem,
 } from './Components/mobile-number';
+import AccountNotApprovedNotice from './Components/AccountNotApprovedNotice';
 import StepperNav from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -195,20 +190,13 @@ export default function Create({
     curricula,
     previousApplication,
     hasExistingRecord,
+    accountStatus,
 }) {
     const { props } = usePage();
     const enrollee = props.auth?.enrollee;
     const schoolYears = Object.keys(curricula).sort();
 
-    // The localStorage "resume where I left off" draft is a guest-only
-    // safety net — it exists because a guest has no account to fall back
-    // on if they navigate away mid-application. A logged-in enrollee's data
-    // already lives on the server, so every visit goes through the LRN
-    // fast-track gate fresh instead of trusting a stale local draft.
-    const [draft] = useState(() => (enrollee ? null : loadDraft()));
-    const restoredFromDraft = !!draft;
-
-    const [step, setStep] = useState(draft?.step ?? 1);
+    const [step, setStep] = useState(1);
     // Set when Next is clicked but a required field on this step is still
     // empty — without this, the button just silently did nothing, which
     // looked exactly like a broken button instead of a validation stop.
@@ -216,14 +204,10 @@ export default function Create({
     // Tracks the furthest step ever reached, separate from the current one —
     // so stepping back to review/edit an earlier step doesn't grey out the
     // later steps you've already filled in on the stepper nav.
-    const [maxStepReached, setMaxStepReached] = useState(
-        draft?.maxStepReached ?? 1,
-    );
+    const [maxStepReached, setMaxStepReached] = useState(1);
     // Gates the whole wizard behind an LRN check for returning families —
-    // resolved immediately (no gate shown) for guests and first-time
-    // accounts, since there's nothing on file to match against. Since the
-    // draft is never loaded for a logged-in enrollee (see above), this
-    // always re-evaluates fresh for them on every visit.
+    // resolved immediately (no gate shown) for first-time accounts, since
+    // there's nothing on file to match against.
     const [lrnGateResolved, setLrnGateResolved] = useState(
         () => !hasExistingRecord,
     );
@@ -307,14 +291,8 @@ export default function Create({
         payment_channel: '',
     };
 
-    const { data, setData, post, processing, errors } = useForm({
-        ...defaultFormData,
-        ...draft?.data,
-        // Always today — a draft from an earlier day can't keep its old date.
-        date_of_application: defaultFormData.date_of_application,
-        // Always the open school year — a draft may be from an earlier one.
-        school_year: defaultFormData.school_year,
-    });
+    const { data, setData, post, processing, errors } =
+        useForm(defaultFormData);
 
     // The grade levels (with fees and subjects) of the chosen school year.
     const gradeLevels = gradeLevelsForSchoolYear(
@@ -350,25 +328,6 @@ export default function Create({
     }, [data.school_year, data.grade_level_id]);
 
     const totalSteps = 9;
-
-    // Keep the browser's copy of the in-progress application up to date —
-    // this is what lets a guest's form survive a trip to another page and
-    // back. Skipped entirely for a logged-in enrollee, who relies on the
-    // LRN fast-track instead (see the draft-loading note above).
-    useEffect(() => {
-        if (enrollee) return;
-
-        const persistable = { ...data };
-        DRAFT_FILE_FIELDS.forEach((field) => delete persistable[field]);
-
-        saveDraft({
-            data: persistable,
-            step,
-            maxStepReached,
-            lrnGateResolved,
-            fastTrack,
-        });
-    }, [data, step, maxStepReached, lrnGateResolved, fastTrack]);
 
     const getMissingFields = () => {
         const required = [...STEP_REQUIRED_FIELDS[step]];
@@ -537,15 +496,6 @@ export default function Create({
 
         post(route('admission.store'), {
             forceFormData: true,
-            onSuccess: (page) => {
-                // A guest without an account gets redirected to register
-                // instead — the server holds their application until then,
-                // but keep the draft too in case they back out of signing
-                // up. The success page clears it once it's really submitted.
-                if (page.component === 'Enrollment/Success') {
-                    clearDraft();
-                }
-            },
             onError: (formErrors) => {
                 const errorFields = Object.keys(formErrors);
                 if (errorFields.length > 0) {
@@ -594,6 +544,10 @@ export default function Create({
             stepProps.errors[field] ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
         }`;
 
+    if (accountStatus !== 'APPROVED') {
+        return <AccountNotApprovedNotice status={accountStatus} />;
+    }
+
     if (schoolYears.length === 0) {
         return (
             <>
@@ -633,17 +587,6 @@ export default function Create({
                             A few short steps and your child's seat is reserved.
                         </p>
                     </div>
-
-                    {restoredFromDraft && (
-                        <div
-                            role="status"
-                            className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80"
-                        >
-                            Welcome back — we've restored your in-progress
-                            application right where you left off. Any files
-                            you'd already selected will need to be reattached.
-                        </div>
-                    )}
 
                     {!lrnGateResolved ? (
                         <VerifyLrnGate

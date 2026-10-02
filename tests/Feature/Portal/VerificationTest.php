@@ -3,17 +3,23 @@
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Notifications\VerifyEnrolleeEmail;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
 test('registering sends a verification email', function () {
     Notification::fake();
+    Storage::fake('local');
 
     $this->post(route('portal.register.store'), [
         'name' => 'Juan Dela Cruz',
         'email' => 'juan@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'valid_id' => UploadedFile::fake()->image('valid-id.jpg'),
+        'account_type' => 'PARENT_GUARDIAN',
+        'terms' => '1',
     ])->assertRedirect(route('portal.verification.notice'));
 
     $enrollee = EnrolleeUser::where('email', 'juan@example.com')->first();

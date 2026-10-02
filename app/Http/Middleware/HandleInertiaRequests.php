@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Curriculum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
@@ -46,6 +47,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'name' => config('app.name'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            // The school year applications are open for (null when closed),
+            // for the navbar's enroll button.
+            'enrollment' => [
+                'openSchoolYear' => fn () => Curriculum::applicationSchoolYear(),
+            ],
             'auth' => [
                 'user' => $request->user(),
                 'enrollee' => $enrollee,

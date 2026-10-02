@@ -2,54 +2,57 @@
 
 namespace App\Http\Controllers\Portal;
 
+use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Portal\StoreEnrolleeUserRequest;
 use App\Models\EnrolleeUser;
-use App\Services\PendingEnrollment;
+use App\Notifications\ConfirmEmailReminder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuthController extends Controller
 {
-    public function create(Request $request, PendingEnrollment $pendingEnrollment): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Portal/Register', [
-            'prefillName' => $request->query('name', ''),
-            'prefillEmail' => $request->query('email', ''),
-            'hasPendingApplication' => $pendingEnrollment->exists(),
+            'isApplying' => $this->isApplying($request),
+            'accountTypes' => array_map(
+                fn (AccountType $type) => ['value' => $type->value, 'label' => $type->label()],
+                AccountType::cases(),
+            ),
         ]);
     }
 
-    public function store(Request $request, PendingEnrollment $pendingEnrollment): RedirectResponse
+    public function store(StoreEnrolleeUserRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:enrollee_users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+        $enrollee = EnrolleeUser::create([
+            ...$request->safe()->only(['account_type', 'name', 'email', 'password']),
+            // A government ID is personal data, so it stays on the private
+            // disk and is only ever served to admins.
+            'valid_id_path' => $request->file('valid_id')->store('valid-ids', 'local'),
+            'terms_accepted_at' => now(),
         ]);
-
-        $enrollee = EnrolleeUser::create($validated);
 
         Auth::guard('enrollee')->login($enrollee);
 
         $enrollee->sendEmailVerificationNotification();
+        $enrollee->notify(new ConfirmEmailReminder);
 
-        return $this->submitPendingApplication($pendingEnrollment, $enrollee)
-            ?? redirect()->route('portal.verification.notice');
+        return redirect()->route('portal.verification.notice');
     }
 
-    public function showLogin(PendingEnrollment $pendingEnrollment): Response
+    public function showLogin(Request $request): Response
     {
         return Inertia::render('Portal/Login', [
-            'hasPendingApplication' => $pendingEnrollment->exists(),
+            'isApplying' => $this->isApplying($request),
         ]);
     }
 
-    public function login(Request $request, PendingEnrollment $pendingEnrollment): RedirectResponse
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -64,26 +67,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->submitPendingApplication($pendingEnrollment, Auth::guard('enrollee')->user())
-            ?? redirect()->intended(route('portal.dashboard'));
-    }
-
-    /**
-     * A guest who filled in the admission form before having an account was
-     * sent here to register or log in (see EnrollmentController::store) —
-     * submit that held application now that they're authenticated.
-     */
-    private function submitPendingApplication(PendingEnrollment $pendingEnrollment, EnrolleeUser $enrollee): ?RedirectResponse
-    {
-        $enrollment = $pendingEnrollment->submitFor($enrollee);
-
-        if (! $enrollment) {
-            return null;
-        }
-
-        return redirect()
-            ->route('admission.success', $enrollment->id)
-            ->with('success', 'Your account is ready and your application has been submitted.');
+        return redirect()->intended(route('portal.dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse
@@ -94,5 +78,14 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('portal.login');
+    }
+
+    /**
+     * Whether the visitor was sent here on their way to the admission form,
+     * which needs an account first.
+     */
+    private function isApplying(Request $request): bool
+    {
+        return str_starts_with((string) $request->session()->get('url.intended', ''), route('admission.create'));
     }
 }

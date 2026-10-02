@@ -1,15 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
-import { useEffect } from 'react';
-import { clearDraft } from '@/lib/enrollment-draft';
 
 export default function Success({ enrollment }) {
-    // A guest who submitted, then registered, lands here straight from the
-    // sign-up form — their browser draft is still around and is now stale.
-    useEffect(() => {
-        clearDraft();
-    }, []);
-
     return (
         <>
             <Head title="Application Submitted" />
@@ -39,6 +31,13 @@ export default function Success({ enrollment }) {
                         className="mt-6 flex min-h-11 w-full items-center justify-center rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
                     >
                         Go to Your Dashboard
+                    </Link>
+
+                    <Link
+                        href={route('admission.create')}
+                        className="mt-2 flex min-h-11 w-full items-center justify-center rounded-full border border-[#2F6F4E]/30 px-4 py-2.5 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                    >
+                        Enroll Another Child
                     </Link>
 
                     <Link href="/" className="mt-2 flex min-h-11 items-center justify-center text-sm font-medium text-[#2F6F4E] hover:underline">

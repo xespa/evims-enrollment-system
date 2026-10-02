@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Actions\Enrollment\SubmitEnrollmentApplication;
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Curriculum;
+use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
-use App\Services\PendingEnrollment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -24,6 +24,7 @@ class EnrollmentController extends Controller
     public function create()
     {
         $previousApplication = null;
+        /** @var EnrolleeUser $enrollee Admission routes require a portal account. */
         $enrollee = Auth::guard('enrollee')->user();
         $hasExistingRecord = false;
 
@@ -58,6 +59,9 @@ class EnrollmentController extends Controller
             // the "confirm your child's LRN" fast-track gate — guests and
             // first-time accounts always get the full blank form.
             'hasExistingRecord' => $hasExistingRecord,
+            // Unapproved accounts get a notice instead of the form; the
+            // store route refuses them as well.
+            'accountStatus' => $enrollee->account_status,
         ]);
     }
 
@@ -214,29 +218,14 @@ class EnrollmentController extends Controller
         return $next?->id ?? $currentGradeLevelId;
     }
 
-    public function store(
-        StoreEnrollmentRequest $request,
-        SubmitEnrollmentApplication $submitApplication,
-        PendingEnrollment $pendingEnrollment,
-    ): RedirectResponse {
-        $validated = $request->validated();
-
-        // Everything is filled in and valid — only an account stands between
-        // this and actually submitting. Hold the application (uploads
-        // included) in the session and send them to create one; it's
-        // submitted for them the moment they register or log in.
-        if (! Auth::guard('enrollee')->check()) {
-            $pendingEnrollment->stash($request, $validated);
-
-            return redirect()->route('portal.register', [
-                'name' => trim("{$validated['first_name']} {$validated['last_name']}"),
-                'email' => $validated['email'],
-            ]);
-        }
+    public function store(StoreEnrollmentRequest $request, SubmitEnrollmentApplication $submitApplication): RedirectResponse
+    {
+        /** @var EnrolleeUser $enrollee Admission routes require a portal account. */
+        $enrollee = Auth::guard('enrollee')->user();
 
         $enrollment = $submitApplication->handle(
-            Auth::guard('enrollee')->user(),
-            Arr::except($validated, array_keys(SubmitEnrollmentApplication::DOCUMENT_FIELDS)),
+            $enrollee,
+            Arr::except($request->validated(), array_keys(SubmitEnrollmentApplication::DOCUMENT_FIELDS)),
             $submitApplication->storeDocuments($request, 'public', 'documents'),
         );
 
@@ -245,6 +234,9 @@ class EnrollmentController extends Controller
 
     public function success(Enrollment $enrollment)
     {
+        // Only the account that applied may see its confirmation.
+        abort_unless($enrollment->enrollee_user_id === Auth::guard('enrollee')->id(), 403);
+
         $enrollment->load('student', 'gradeLevel');
 
         return Inertia::render('Enrollment/Success', [

@@ -22,7 +22,9 @@ class VerificationController extends Controller
             return redirect()->route('portal.dashboard');
         }
 
-        return Inertia::render('Portal/VerifyEmail');
+        return Inertia::render('Portal/VerifyEmail', [
+            'email' => $enrollee->email,
+        ]);
     }
 
     public function verify(Request $request, int $id, string $hash): RedirectResponse
@@ -42,7 +44,8 @@ class VerificationController extends Controller
                 ->update(['enrollee_user_id' => $enrollee->id]);
         }
 
-        return redirect()->route('portal.dashboard')->with('success', 'Email verified! Your applications have been linked to your account.');
+        // Back to where they were headed — usually the admission form.
+        return redirect()->intended(route('portal.dashboard'))->with('success', 'Email verified! Your applications have been linked to your account.');
     }
 
     public function resend(): RedirectResponse
@@ -55,6 +58,6 @@ class VerificationController extends Controller
 
         $enrollee->sendEmailVerificationNotification();
 
-        return back()->with('success', 'Verification link sent.');
+        return back()->with('success', "We sent a new link to {$enrollee->email}.");
     }
 }

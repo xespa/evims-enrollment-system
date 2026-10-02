@@ -3,9 +3,12 @@ import {
     Bell,
     BellOff,
     CheckCheck,
+    CircleAlert,
     CircleCheck,
     FileWarning,
     Info,
+    Mail,
+    MailCheck,
     ReceiptText,
     RotateCcw,
     Wallet,
@@ -47,6 +50,17 @@ function appearance(notification: Notification): {
             return { icon: Wallet, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
         case 'payment_voided':
             return { icon: RotateCcw, tone: 'bg-[#C6473B]/10 text-[#9A3329]' };
+        case 'confirm_email':
+            return { icon: Mail, tone: 'bg-[#E8A33D]/15 text-[#8A5A12]' };
+        case 'email_confirmed':
+            return { icon: MailCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+        case 'account_reviewed':
+            return notification.data.status === 'APPROVED'
+                ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' }
+                : {
+                      icon: CircleAlert,
+                      tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                  };
         default:
             return {
                 icon: ReceiptText,

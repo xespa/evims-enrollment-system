@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
@@ -28,7 +29,10 @@ class Student extends Model
         return $this->hasOne(ParentProfile::class);
     }
 
-    public function enrollments()
+    /**
+     * @return HasMany<Enrollment, $this>
+     */
+    public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
     }

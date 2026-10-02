@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Middleware\EnsureEnrolleeIsApproved;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RedirectIfEnrolleeAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,9 +26,15 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Families sign in on the portal; the Fortify login is for school staff.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->routeIs('portal.*', 'admission.*')
+            ? route('portal.login')
+            : route('login'));
+
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
-            'guest.enrollee' => \App\Http\Middleware\RedirectIfEnrolleeAuthenticated::class,
+            'admin' => EnsureUserIsAdmin::class,
+            'guest.enrollee' => RedirectIfEnrolleeAuthenticated::class,
+            'enrollee.approved' => EnsureEnrolleeIsApproved::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

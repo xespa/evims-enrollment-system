@@ -8,11 +8,9 @@ use App\Models\GradeLevel;
 use App\Models\Student;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('the admission page has no fast-track gate for guests', function () {
+test('guests are sent to log in before they reach the admission page', function () {
     $this->get(route('admission.create'))
-        ->assertInertia(fn (Assert $page) => $page
-            ->where('hasExistingRecord', false)
-        );
+        ->assertRedirect(route('portal.login'));
 });
 
 test('the admission page has no fast-track gate for a first-time enrollee account', function () {
