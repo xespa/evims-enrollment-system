@@ -1,12 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useForm, Head, usePage } from '@inertiajs/react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
+import { useForm, Head, router, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    ArrowRight,
+    CircleAlert,
+    Loader2,
+    Send,
+    UserRound,
+} from 'lucide-react';
 import {
     isValidMobileNumber,
     mobileNumberProblem,
 } from './Components/mobile-number';
 import AccountNotApprovedNotice from './Components/AccountNotApprovedNotice';
-import StepperNav from './Components/StepperNav';
+import StepperNav, { STEP_LABELS } from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
 import AddressStep from './Steps/AddressStep';
@@ -73,6 +81,13 @@ const FIELD_LABELS = {
 // Academic History, Vital Info, and Documents. They're still reachable by
 // clicking directly on the stepper nav, this only affects the linear flow.
 const FAST_TRACK_SKIP_STEPS = [2, 3, 4, 5, 7];
+
+/** The step a (possibly nested, e.g. "subject_ids.0") field lives on. */
+function stepForField(field: string): number {
+    const steps: Record<string, number> = FIELD_TO_STEP;
+
+    return steps[field] ?? steps[field.split('.')[0]] ?? 9;
+}
 
 // Optional, but must be a complete number when filled in.
 const MOBILE_NUMBER_FIELDS = {
@@ -291,8 +306,78 @@ export default function Create({
         payment_channel: '',
     };
 
-    const { data, setData, post, processing, errors } =
+    const { data, setData, post, processing, errors, isDirty } =
         useForm(defaultFormData);
+
+    // The stepper + form, scrolled to and focused whenever the step changes.
+    const formTopRef = useRef<HTMLDivElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+    const hasMountedRef = useRef(false);
+
+    useEffect(() => {
+        if (!hasMountedRef.current) {
+            hasMountedRef.current = true;
+            return;
+        }
+
+        formTopRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+
+        // Move focus to the new step's heading so screen readers announce it.
+        const heading = formRef.current?.querySelector('h2');
+        if (heading) {
+            heading.setAttribute('tabindex', '-1');
+            heading.focus({ preventScroll: true });
+        }
+    }, [step]);
+
+    // A long application is easy to lose: warn before closing the tab or
+    // following a link away while it's filled in but not yet submitted.
+    useEffect(() => {
+        if (!isDirty || processing) return;
+
+        const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnBeforeUnload);
+
+        const removeVisitGuard = router.on('before', (event) => {
+            if (event.detail.visit.method !== 'get') return;
+            if (
+                !window.confirm(
+                    "Leave this page? Your application hasn't been submitted, and what you've entered will be lost.",
+                )
+            ) {
+                event.preventDefault();
+            }
+        });
+
+        return () => {
+            window.removeEventListener('beforeunload', warnBeforeUnload);
+            removeVisitGuard();
+        };
+    }, [isDirty, processing]);
+
+    /** Puts the cursor in the first field that needs attention. */
+    const focusField = (field: string) => {
+        window.requestAnimationFrame(() => {
+            const element = formRef.current?.querySelector<HTMLElement>(
+                `[id="${field}"], [name="${field}"]`,
+            );
+            if (element) {
+                element.focus({ preventScroll: true });
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                formTopRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }
+        });
+    };
 
     // The grade levels (with fees and subjects) of the chosen school year.
     const gradeLevels = gradeLevelsForSchoolYear(
@@ -433,7 +518,9 @@ export default function Create({
                 messages.push(schoolYearIssue);
             }
             setNextBlockedReason(messages.join(' '));
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            focusField(
+                missing[0] ?? unfinishedMobileNumbers[0] ?? 'school_year',
+            );
             return;
         }
         setNextBlockedReason('');
@@ -442,20 +529,37 @@ export default function Create({
             setMaxStepReached((m) => Math.max(m, next));
             return next;
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const goBack = () => {
         setNextBlockedReason('');
         setStep((s) => prevReachableStep(s));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const goToStep = (stepNumber) => {
         setNextBlockedReason('');
         setStep(stepNumber);
         setMaxStepReached((m) => Math.max(m, stepNumber));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Enter moves to the next step instead of doing nothing (or, on the
+    // last step, submitting by accident from a text box).
+    const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+        const target = event.target as HTMLElement;
+        if (
+            event.key !== 'Enter' ||
+            target.tagName !== 'INPUT' ||
+            ['checkbox', 'radio', 'file'].includes(
+                (target as HTMLInputElement).type,
+            )
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        if (step < totalSteps) {
+            goNext();
+        }
     };
 
     const handleLrnMatched = (student, prevSchoolYear) => {
@@ -471,7 +575,6 @@ export default function Create({
         setLrnGateResolved(true);
         setStep(6);
         setMaxStepReached(9);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleNewChild = () => {
@@ -490,7 +593,6 @@ export default function Create({
             setNextBlockedReason(schoolYearIssue);
             setStep(6);
             setMaxStepReached((m) => Math.max(m, 6));
-            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
@@ -499,13 +601,15 @@ export default function Create({
             onError: (formErrors) => {
                 const errorFields = Object.keys(formErrors);
                 if (errorFields.length > 0) {
-                    const stepsWithErrors = errorFields.map(
-                        (f) => FIELD_TO_STEP[f] ?? totalSteps,
+                    const earliestStep = Math.min(
+                        ...errorFields.map(stepForField),
                     );
-                    const earliestStep = Math.min(...stepsWithErrors);
                     setStep(earliestStep);
                 }
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                formTopRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
             },
         });
     };
@@ -570,22 +674,60 @@ export default function Create({
         );
     }
 
+    const applicantName = [data.first_name, data.last_name]
+        .filter(Boolean)
+        .join(' ');
+    const selectedGradeName = gradeLevels.find(
+        (g: { id: number }) => String(g.id) === String(data.grade_level_id),
+    )?.name;
+
+    // Server-side problems, grouped by the step they're on, so each one
+    // can be jumped to directly.
+    const errorsByStep = Object.entries(errors).reduce<
+        Record<number, string[]>
+    >((groups, [field, message]) => {
+        const fieldStep = stepForField(field);
+        (groups[fieldStep] ??= []).push(String(message));
+        return groups;
+    }, {});
+    const nextStepLabel = STEP_LABELS[nextReachableStep(step) - 1];
+
     return (
         <>
             <Head title="Enrollment Application" />
 
-            <div className="min-h-screen bg-[#FBF8F2] px-4 py-12">
+            <div className="min-h-screen bg-[#FBF8F2] px-4 py-8 sm:py-10">
                 <div className="mx-auto max-w-5xl">
                     <div className="mb-6 text-center">
                         <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
                             School Year {data.school_year}
                         </span>
-                        <h1 className="mt-3 font-serif text-3xl font-semibold text-[#1F2A24]">
-                            EVIMS Enrollment Application
+                        <h1 className="mt-3 font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
+                            Enrollment Application
                         </h1>
-                        <p className="mt-1 text-sm text-[#1F2A24]/70">
-                            A few short steps and your child's seat is reserved.
-                        </p>
+                        {applicantName || selectedGradeName ? (
+                            <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm text-[#1F2A24]/80 shadow-sm ring-1 ring-[#1F2A24]/10">
+                                <UserRound
+                                    className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                    aria-hidden="true"
+                                />
+                                <span className="truncate">
+                                    Applying for{' '}
+                                    <span className="font-semibold text-[#1F2A24]">
+                                        {applicantName || 'your child'}
+                                    </span>
+                                    {selectedGradeName &&
+                                        ` · ${selectedGradeName}`}
+                                </span>
+                            </p>
+                        ) : (
+                            <p className="mt-1 text-sm text-[#1F2A24]/70">
+                                A few short steps and your child's seat is
+                                reserved. Fields marked{' '}
+                                <span className="text-[#C6473B]">*</span> are
+                                required.
+                            </p>
+                        )}
                     </div>
 
                     {!lrnGateResolved ? (
@@ -729,89 +871,178 @@ export default function Create({
                                 </div>
                             )}
 
-                            {nextBlockedReason && (
-                                <div
-                                    role="alert"
-                                    className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
-                                >
-                                    {nextBlockedReason}
-                                </div>
-                            )}
+                            <div ref={formTopRef} className="scroll-mt-24">
+                                <StepperNav
+                                    currentStep={step}
+                                    maxStepReached={maxStepReached}
+                                    onStepClick={goToStep}
+                                />
 
-                            {Object.keys(errors).length > 0 && (
-                                <div
-                                    role="alert"
-                                    className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
-                                >
-                                    Please fix the highlighted errors below
-                                    before submitting.
-                                </div>
-                            )}
-
-                            <StepperNav
-                                currentStep={step}
-                                maxStepReached={maxStepReached}
-                                onStepClick={goToStep}
-                            />
-
-                            <form
-                                onSubmit={handleSubmit}
-                                className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8"
-                            >
-                                {step === 1 && (
-                                    <StudentInfoStep {...stepProps} />
-                                )}
-                                {step === 2 && <AddressStep {...stepProps} />}
-                                {step === 3 && (
-                                    <ParentInfoStep {...stepProps} />
-                                )}
-                                {step === 4 && (
-                                    <AcademicHistoryStep {...stepProps} />
-                                )}
-                                {step === 5 && <VitalInfoStep {...stepProps} />}
-                                {step === 6 && <SubjectsStep {...stepProps} />}
-                                {step === 7 && <DocumentsStep {...stepProps} />}
-                                {step === 8 && <BillingStep {...stepProps} />}
-                                {step === 9 && <ReviewStep {...stepProps} />}
-
-                                <div className="mt-6 flex justify-between border-t border-[#1F2A24]/10 pt-5">
-                                    <button
-                                        type="button"
-                                        onClick={goBack}
-                                        disabled={step === 1}
-                                        className="min-h-11 rounded-full border border-[#1F2A24]/15 px-5 py-2 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                                {Object.keys(errorsByStep).length > 0 && (
+                                    <div
+                                        role="alert"
+                                        className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
                                     >
-                                        Back
-                                    </button>
+                                        <p className="flex items-center gap-2 font-semibold">
+                                            <CircleAlert
+                                                className="h-4 w-4 shrink-0"
+                                                aria-hidden="true"
+                                            />
+                                            Your application couldn't be
+                                            submitted yet. Please fix:
+                                        </p>
+                                        <ul className="mt-2 space-y-1.5">
+                                            {Object.entries(errorsByStep).map(
+                                                ([errorStep, messages]) => (
+                                                    <li
+                                                        key={errorStep}
+                                                        className="flex flex-wrap items-baseline gap-x-2"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                goToStep(
+                                                                    Number(
+                                                                        errorStep,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            className="font-semibold text-[#8a3128] underline underline-offset-2 hover:text-[#6b251e]"
+                                                        >
+                                                            {
+                                                                STEP_LABELS[
+                                                                    Number(
+                                                                        errorStep,
+                                                                    ) - 1
+                                                                ]
+                                                            }
+                                                        </button>
+                                                        <span>
+                                                            {messages.join(' ')}
+                                                        </span>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
 
-                                    {step < totalSteps ? (
+                                {nextBlockedReason && (
+                                    <div
+                                        role="alert"
+                                        className="mb-4 flex items-start gap-2 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
+                                    >
+                                        <CircleAlert
+                                            className="mt-0.5 h-4 w-4 shrink-0"
+                                            aria-hidden="true"
+                                        />
+                                        {nextBlockedReason}
+                                    </div>
+                                )}
+
+                                <form
+                                    ref={formRef}
+                                    onSubmit={handleSubmit}
+                                    onKeyDown={handleFormKeyDown}
+                                    noValidate
+                                    className="rounded-[2rem] border border-[#1F2A24]/10 bg-white shadow-xl shadow-[#1F2A24]/5 [&_h2:focus]:outline-none"
+                                >
+                                    <div className="p-6 sm:p-8">
+                                        {step === 1 && (
+                                            <StudentInfoStep {...stepProps} />
+                                        )}
+                                        {step === 2 && (
+                                            <AddressStep {...stepProps} />
+                                        )}
+                                        {step === 3 && (
+                                            <ParentInfoStep {...stepProps} />
+                                        )}
+                                        {step === 4 && (
+                                            <AcademicHistoryStep
+                                                {...stepProps}
+                                            />
+                                        )}
+                                        {step === 5 && (
+                                            <VitalInfoStep {...stepProps} />
+                                        )}
+                                        {step === 6 && (
+                                            <SubjectsStep {...stepProps} />
+                                        )}
+                                        {step === 7 && (
+                                            <DocumentsStep {...stepProps} />
+                                        )}
+                                        {step === 8 && (
+                                            <BillingStep {...stepProps} />
+                                        )}
+                                        {step === 9 && (
+                                            <ReviewStep {...stepProps} />
+                                        )}
+                                    </div>
+
+                                    {/* Where the buttons rest at the end of the step. */}
+                                    <div
+                                        aria-hidden="true"
+                                        className="h-[4.75rem] border-t border-[#1F2A24]/10"
+                                    />
+
+                                    {/* Back and Next float on their own (no bar
+                                        behind them) along the bottom of the
+                                        screen on long steps, then settle into
+                                        the row above. */}
+                                    <div className="pointer-events-none sticky bottom-4 z-10 -mt-[4.75rem] flex h-[4.75rem] items-center justify-between gap-3 px-6 sm:px-8">
                                         <button
                                             type="button"
-                                            onClick={goNext}
-                                            className="min-h-11 rounded-full bg-[#2F6F4E] px-6 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                            onClick={goBack}
+                                            disabled={step === 1}
+                                            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24] shadow-lg ring-4 shadow-[#1F2A24]/10 ring-white transition-colors hover:border-[#1F2A24]/30 hover:bg-[#F4F1EA] disabled:invisible sm:px-5"
                                         >
-                                            Next
+                                            <ArrowLeft
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            />
+                                            Back
                                         </button>
-                                    ) : (
-                                        <button
-                                            type="submit"
-                                            disabled={processing}
-                                            aria-busy={processing}
-                                            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-sm transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
-                                        >
-                                            {processing && (
-                                                <Loader2
-                                                    className="h-4 w-4 animate-spin"
+                                        {step < totalSteps ? (
+                                            <button
+                                                type="button"
+                                                onClick={goNext}
+                                                className="group pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-lg ring-4 shadow-[#2F6F4E]/30 ring-white transition-colors hover:bg-[#25573E] sm:px-6"
+                                            >
+                                                Next
+                                                <span className="hidden font-normal text-[#FBF8F2]/75 sm:inline">
+                                                    : {nextStepLabel}
+                                                </span>
+                                                <ArrowRight
+                                                    className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
                                                     aria-hidden="true"
                                                 />
-                                            )}
-                                            {processing
-                                                ? 'Submitting...'
-                                                : 'Submit Application'}
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="submit"
+                                                disabled={processing}
+                                                aria-busy={processing}
+                                                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-lg ring-4 shadow-[#E8A33D]/40 ring-white transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
+                                            >
+                                                {processing ? (
+                                                    <Loader2
+                                                        className="h-4 w-4 animate-spin"
+                                                        aria-hidden="true"
+                                                    />
+                                                ) : (
+                                                    <Send
+                                                        className="h-4 w-4"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                {processing
+                                                    ? 'Submitting…'
+                                                    : 'Submit Application'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
                         </>
                     )}
                 </div>
