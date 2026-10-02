@@ -4,6 +4,8 @@ import AssignLrnForm from '@/components/assign-lrn-form';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
+import RejectApplicationDialog from '@/pages/Admin/Enrollments/Components/RejectApplicationDialog';
+import UploadDocumentForm from '@/pages/Admin/Enrollments/Components/UploadDocumentForm';
 import {
     formatMobileNumber,
     isValidMobileNumber,
@@ -418,21 +420,29 @@ function DocumentRow({
                 )}
             </div>
 
-            {verification?.[doc.pathKey] ? (
-                <a
-                    href={`/storage/${verification[doc.pathKey]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-6 inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
-                >
-                    View uploaded file →
-                    <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-            ) : (
-                <p className="ml-6 text-xs text-[#1F2A24]/65">
-                    No file uploaded yet
-                </p>
-            )}
+            <div className="ml-6 flex flex-wrap items-center">
+                {verification?.[doc.pathKey] ? (
+                    <a
+                        href={`/storage/${verification[doc.pathKey]}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
+                    >
+                        View uploaded file →
+                        <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                ) : (
+                    <p className="text-xs text-[#1F2A24]/65">
+                        No file uploaded yet
+                    </p>
+                )}
+                <UploadDocumentForm
+                    enrollmentId={enrollmentId}
+                    documentType={doc.type}
+                    documentLabel={doc.label}
+                    hasFile={hasFile}
+                />
+            </div>
 
             {open && (
                 <form
@@ -508,7 +518,7 @@ function DocumentRow({
     );
 }
 
-export default function Show({ enrollment }) {
+export default function Show({ enrollment, rejectionReasons }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
     const statusError = props.errors?.enrollment_status;
@@ -521,7 +531,11 @@ export default function Show({ enrollment }) {
     );
 
     const [confirm, confirmDialog] = useConfirm();
+    const [isRejecting, setIsRejecting] = useState(false);
     const studentName = `${student.first_name} ${student.last_name}`;
+    const rejectionReasonLabels = Object.fromEntries(
+        rejectionReasons.map((reason) => [reason.value, reason.label]),
+    );
 
     const STATUS_CONFIRMATIONS = {
         APPROVED: {
@@ -529,13 +543,6 @@ export default function Show({ enrollment }) {
             description:
                 'The parent will be emailed and notified, and tuition payment opens in their portal.',
             confirmLabel: 'Approve',
-        },
-        REJECTED: {
-            title: `Reject ${studentName}'s application?`,
-            description:
-                'The parent will be emailed and notified that this application was rejected.',
-            confirmLabel: 'Reject',
-            destructive: true,
         },
         PENDING: {
             title: 'Reset this application to pending?',
@@ -593,6 +600,13 @@ export default function Show({ enrollment }) {
         <>
             <Head title={`${student.last_name}, ${student.first_name}`} />
             {confirmDialog}
+            <RejectApplicationDialog
+                enrollmentId={enrollment.id}
+                studentName={studentName}
+                reasons={rejectionReasons}
+                open={isRejecting}
+                onOpenChange={setIsRejecting}
+            />
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
@@ -660,6 +674,35 @@ export default function Show({ enrollment }) {
                         </div>
                     )}
 
+                    {enrollment.enrollment_status === 'REJECTED' &&
+                        (enrollment.rejection_reasons?.length > 0 ||
+                            enrollment.rejection_note) && (
+                            <div className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#1F2A24]">
+                                <p className="font-semibold text-[#C6473B]">
+                                    Rejected because:
+                                </p>
+                                <ul className="mt-1 list-disc pl-5">
+                                    {(enrollment.rejection_reasons ?? []).map(
+                                        (reason) => (
+                                            <li key={reason}>
+                                                {rejectionReasonLabels[
+                                                    reason
+                                                ] ?? reason}
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                                {enrollment.rejection_note && (
+                                    <p className="mt-1">
+                                        <span className="font-medium">
+                                            Note to the parent:
+                                        </span>{' '}
+                                        {enrollment.rejection_note}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                     {statusError && (
                         <div
                             role="alert"
@@ -689,7 +732,7 @@ export default function Show({ enrollment }) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => changeStatus('REJECTED')}
+                            onClick={() => setIsRejecting(true)}
                             disabled={
                                 enrollment.enrollment_status === 'REJECTED'
                             }

@@ -18,7 +18,15 @@ Please settle your tuition at the **school cashier** to secure your child's slot
 @elseif ($status === 'REJECTED')
 Thank you for your interest in enrolling **{{ $student->first_name }} {{ $student->last_name }}** for **{{ $gradeLevel->name }}** (School Year {{ $enrollment->school_year }}).
 
-After careful review, we are unable to approve this application at this time.
+After careful review, we are unable to approve this application at this time for the following reason(s):
+
+@foreach ($rejectionDetails as $detail)
+- **{{ $detail['label'] }}** — {{ $detail['guidance'] }}
+@endforeach
+
+@if ($rejectionNote)
+**Note from the school:** {{ $rejectionNote }}
+@endif
 
 If you have questions, please reach out to our registrar's office.
 @else

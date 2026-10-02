@@ -27,6 +27,8 @@ class EnrollmentStatusUpdated extends Mailable
                 'student' => $this->enrollment->student,
                 'gradeLevel' => $this->enrollment->gradeLevel,
                 'status' => $this->enrollment->enrollment_status,
+                'rejectionDetails' => $this->enrollment->rejectionDetails(),
+                'rejectionNote' => $this->enrollment->rejection_note,
                 // Counter payers get cashier instructions, not a payment link.
                 'paymentUrl' => $isApproved && $paysOnline
                     ? URL::signedRoute('payments.show', $this->enrollment->id)

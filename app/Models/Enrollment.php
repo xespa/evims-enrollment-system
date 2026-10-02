@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\EnrollmentRejectionReason;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,11 +19,12 @@ class Enrollment extends Model
     protected $fillable = [
         'student_id', 'enrollee_user_id', 'grade_level_id', 'school_year', 'student_type',
         'date_of_application', 'age', 'session_time_preference', 'email', 'applicant_name',
-        'enrollment_status', 'cancelled_at',
+        'enrollment_status', 'rejection_reasons', 'rejection_note', 'cancelled_at',
     ];
 
     protected $casts = [
         'date_of_application' => 'date',
+        'rejection_reasons' => AsEnumCollection::class.':'.EnrollmentRejectionReason::class,
         'cancelled_at' => 'datetime',
     ];
 
@@ -181,6 +184,52 @@ class Enrollment extends Model
     public function isCancelled(): bool
     {
         return $this->cancelled_at !== null;
+    }
+
+    /**
+     * Rejects the application, recording why so the parent can be told.
+     *
+     * @param  array<int, EnrollmentRejectionReason>  $reasons
+     */
+    public function reject(array $reasons, ?string $note): void
+    {
+        $this->update([
+            'enrollment_status' => 'REJECTED',
+            'rejection_reasons' => $reasons,
+            'rejection_note' => $note,
+        ]);
+    }
+
+    /**
+     * Sets any status other than rejected, clearing an earlier rejection's reasons.
+     */
+    public function changeStatus(string $status): void
+    {
+        $this->update([
+            'enrollment_status' => $status,
+            'rejection_reasons' => null,
+            'rejection_note' => null,
+        ]);
+    }
+
+    /**
+     * The rejection reasons as the parent sees them.
+     *
+     * @return array<int, array{label: string, guidance: string}>
+     */
+    public function rejectionDetails(): array
+    {
+        if (! $this->rejection_reasons) {
+            return [];
+        }
+
+        return $this->rejection_reasons
+            ->map(fn (EnrollmentRejectionReason $reason) => [
+                'label' => $reason->label(),
+                'guidance' => $reason->guidance(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

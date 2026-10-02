@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnrolleeAccountController;
 use App\Http\Controllers\Admin\EnrolleeAccountValidIdController;
+use App\Http\Controllers\Admin\EnrollmentDocumentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\PaymentController;
 use App\Models\Curriculum;
 use App\Models\Event;
 use App\Models\GradeLevel;
+use App\Models\OfficeVerification;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
@@ -105,6 +107,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('enrollments', EnrollmentManagementController::class)->only(['show', 'destroy']);
     Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
     Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
+    Route::post('enrollments/{enrollment}/documents/{type}', [EnrollmentDocumentController::class, 'store'])
+        ->whereIn('type', array_keys(OfficeVerification::DOCUMENT_COLUMNS))
+        ->name('enrollments.documents.store');
     Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
         ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
         ->name('enrollments.documents.remind');

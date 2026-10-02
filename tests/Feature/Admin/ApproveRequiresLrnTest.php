@@ -56,7 +56,10 @@ test('an application without an lrn can still be rejected', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch(route('admin.enrollments.status.update', $enrollment), ['enrollment_status' => 'REJECTED'])
+        ->patch(route('admin.enrollments.status.update', $enrollment), [
+            'enrollment_status' => 'REJECTED',
+            'rejection_reasons' => ['INCOMPLETE_GRADES'],
+        ])
         ->assertSessionHasNoErrors();
 
     expect($enrollment->fresh()->enrollment_status)->toBe('REJECTED');

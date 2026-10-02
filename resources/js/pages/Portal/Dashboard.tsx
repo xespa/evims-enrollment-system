@@ -136,7 +136,10 @@ export default function Dashboard({ enrollments }) {
     };
 
     const handleTabKeyDown = (event: ReactKeyboardEvent) => {
-        const offsets: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
+        const offsets: Record<string, number> = {
+            ArrowRight: 1,
+            ArrowLeft: -1,
+        };
         if (!(event.key in offsets)) return;
         event.preventDefault();
         const nextIndex =
@@ -444,6 +447,52 @@ export default function Dashboard({ enrollments }) {
                                         </div>
                                     </div>
 
+                                    {enrollment.enrollment_status ===
+                                        'REJECTED' &&
+                                        !enrollment.cancelled_at &&
+                                        (enrollment.rejection_details.length >
+                                            0 ||
+                                            enrollment.rejection_note) && (
+                                            <div className="mt-4 rounded-md border border-[#C6473B]/20 bg-[#C6473B]/5 p-4 text-sm text-[#1F2A24]">
+                                                <p className="font-medium text-[#C6473B]">
+                                                    Why this application was not
+                                                    approved
+                                                </p>
+                                                <ul className="mt-2 list-disc space-y-1 pl-5">
+                                                    {enrollment.rejection_details.map(
+                                                        (detail) => (
+                                                            <li
+                                                                key={
+                                                                    detail.label
+                                                                }
+                                                            >
+                                                                <span className="font-medium">
+                                                                    {
+                                                                        detail.label
+                                                                    }
+                                                                </span>{' '}
+                                                                —{' '}
+                                                                {
+                                                                    detail.guidance
+                                                                }
+                                                            </li>
+                                                        ),
+                                                    )}
+                                                </ul>
+                                                {enrollment.rejection_note && (
+                                                    <p className="mt-2">
+                                                        <span className="font-medium">
+                                                            Note from the
+                                                            school:
+                                                        </span>{' '}
+                                                        {
+                                                            enrollment.rejection_note
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
                                     <div className="mt-4 border-t border-[#1F2A24]/10 pt-4">
                                         {!isApproved &&
                                             !enrollment.cancelled_at && (
@@ -505,8 +554,8 @@ export default function Dashboard({ enrollments }) {
                                                                 className="h-4 w-4 shrink-0 text-[#2F6F4E]"
                                                                 aria-hidden="true"
                                                             />
-                                                            You're approved!
-                                                            You can now pay your
+                                                            You're approved! You
+                                                            can now pay your
                                                             tuition.
                                                         </p>
                                                         <p className="text-sm text-[#1F2A24]/70">
@@ -724,7 +773,9 @@ export default function Dashboard({ enrollments }) {
                                                                 View
                                                                 <span className="sr-only">
                                                                     {' '}
-                                                                    {doc.label}{' '}
+                                                                    {
+                                                                        doc.label
+                                                                    }{' '}
                                                                     (opens in a
                                                                     new tab)
                                                                 </span>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Payments\RecordCounterPayment;
+use App\Enums\EnrollmentRejectionReason;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
@@ -56,18 +57,26 @@ class EnrollmentManagementController extends Controller
 
         return Inertia::render('Admin/Enrollments/Show', [
             'enrollment' => $enrollment,
+            'rejectionReasons' => array_map(
+                fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
+                EnrollmentRejectionReason::cases(),
+            ),
         ]);
     }
 
     public function updateStatus(UpdateEnrollmentStatusRequest $request, Enrollment $enrollment): RedirectResponse
     {
-        $validated = $request->validated();
+        $status = $request->string('enrollment_status')->toString();
 
-        $statusChanged = $enrollment->enrollment_status !== $validated['enrollment_status'];
+        $statusChanged = $enrollment->enrollment_status !== $status;
 
-        $enrollment->update($validated);
+        if ($status === 'REJECTED') {
+            $enrollment->reject($request->rejectionReasons(), $request->rejectionNote());
+        } else {
+            $enrollment->changeStatus($status);
+        }
 
-        if ($statusChanged && in_array($validated['enrollment_status'], ['APPROVED', 'REJECTED'])) {
+        if ($statusChanged && in_array($status, ['APPROVED', 'REJECTED'])) {
             if ($enrollment->email) {
                 Mail::to($enrollment->email)->send(new EnrollmentStatusUpdated($enrollment));
             }

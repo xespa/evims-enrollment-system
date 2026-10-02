@@ -26,15 +26,28 @@ class EnrollmentStatusChanged extends Notification
             'status' => $status,
             'title' => match ($status) {
                 'APPROVED' => 'Application approved',
-                'REJECTED' => 'Application update',
+                'REJECTED' => 'Application not approved',
                 default => 'Application status updated',
             },
             'message' => match ($status) {
                 'APPROVED' => "{$student->first_name}'s enrollment application has been approved. You can now proceed with payment.",
-                'REJECTED' => "There's an update on {$student->first_name}'s enrollment application. Please check the details.",
+                'REJECTED' => $this->rejectionMessage($student->first_name),
                 default => "{$student->first_name}'s enrollment application status changed to {$status}.",
             },
             'url' => '/portal/dashboard',
         ];
+    }
+
+    private function rejectionMessage(string $firstName): string
+    {
+        $reasons = array_column($this->enrollment->rejectionDetails(), 'label');
+        $message = "{$firstName}'s enrollment application was not approved";
+        $message .= $reasons ? ': '.implode('; ', $reasons).'.' : '.';
+
+        if ($this->enrollment->rejection_note) {
+            $message .= " Note from the school: {$this->enrollment->rejection_note}";
+        }
+
+        return $message;
     }
 }
