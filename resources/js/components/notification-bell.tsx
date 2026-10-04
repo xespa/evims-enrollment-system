@@ -8,12 +8,16 @@ import {
     CheckCheck,
     CircleAlert,
     CircleCheck,
+    FilePlus2,
+    FileUp,
     FileWarning,
+    FileX2,
     Info,
     Mail,
     MailCheck,
     ReceiptText,
     RotateCcw,
+    UserRoundCheck,
     Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -53,9 +57,10 @@ const SCOPES = {
         read: 'admin.notifications.read',
         readAll: 'admin.notifications.read-all',
         fallback: 'admin.dashboard',
-        emptyUnread: 'New enrollment reminders will show here.',
+        emptyUnread:
+            'New applications, online payments, and uploads will show here.',
         emptyAll:
-            "We'll remind you here when enrollment is about to open or close.",
+            "We'll let you know here when parents apply, pay online, upload documents, or need their account reviewed, and when enrollment is about to open or close.",
     },
 } as const;
 
@@ -85,7 +90,28 @@ function appearance(notification: Notification): {
                 tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
             };
         case 'payment_received':
+        case 'online_payment_received':
             return { icon: Wallet, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+        case 'application_submitted':
+            return {
+                icon: FilePlus2,
+                tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+            };
+        case 'application_cancelled':
+            return {
+                icon: FileX2,
+                tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+            };
+        case 'document_uploaded':
+            return {
+                icon: FileUp,
+                tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+            };
+        case 'account_awaiting_review':
+            return {
+                icon: UserRoundCheck,
+                tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+            };
         case 'payment_voided':
             return { icon: RotateCcw, tone: 'bg-[#C6473B]/10 text-[#9A3329]' };
         case 'confirm_email':

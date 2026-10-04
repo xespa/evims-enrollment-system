@@ -5,6 +5,8 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Installment;
 use App\Models\Payment;
+use App\Models\User;
+use App\Notifications\OnlinePaymentReceived;
 use App\Notifications\PaymentReceived;
 use App\Services\PayMongoService;
 use Illuminate\Support\Facades\Notification;
@@ -132,6 +134,38 @@ test('the parent is emailed a receipt once a GCash payment goes through', functi
             && str_contains($body, 'GCash')
             && str_contains($body, '₱9,000.00');
     });
+});
+
+test('admins are notified once of an online payment, however often the webhook is retried', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $staff = User::factory()->create(['role' => 'STAFF']);
+    $payment = pendingGcashPayment($this->installment);
+
+    $this->mock(PayMongoService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('createPaymentFromSource')->once()->andReturn(['id' => 'pay_test_1']);
+    });
+
+    sendChargeableWebhook('src_test_1')->assertOk();
+    sendChargeableWebhook('src_test_1')->assertOk();
+
+    Notification::assertSentToTimes($admin, OnlinePaymentReceived::class, 1);
+    Notification::assertSentTo($admin, OnlinePaymentReceived::class, function (OnlinePaymentReceived $notification) use ($admin, $payment) {
+        $data = $notification->toArray($admin);
+
+        return $data['amount'] === '1000.00'
+            && $data['url'] === route('admin.transactions.show', $payment, false);
+    });
+    Notification::assertNotSentTo($staff, OnlinePaymentReceived::class);
+});
+
+test('admins are notified of a simulated online payment', function () {
+    config(['services.paymongo.sandbox_mode' => true]);
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $payment = pendingGcashPayment($this->installment, 'src_sandbox_1');
+
+    $this->post(route('payments.sandbox.confirm', $payment))->assertRedirect();
+
+    Notification::assertSentToTimes($admin, OnlinePaymentReceived::class, 1);
 });
 
 test('a webhook with a bad signature is rejected', function () {

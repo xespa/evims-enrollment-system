@@ -3,7 +3,10 @@
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\OfficeVerification;
+use App\Models\User;
+use App\Notifications\DocumentUploaded;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 test('owner can upload a document for their pending enrollment', function () {
@@ -110,4 +113,44 @@ test('a different account cannot upload a document for someone elses enrollment'
             'file' => UploadedFile::fake()->create('form138.pdf', 200, 'application/pdf'),
         ])
         ->assertForbidden();
+});
+
+test('admins are notified to verify a document a parent uploaded', function () {
+    Storage::fake('public');
+    Notification::fake();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = EnrolleeUser::factory()->create();
+    $enrollment = Enrollment::factory()->create([
+        'enrollee_user_id' => $enrollee->id,
+        'enrollment_status' => 'PENDING',
+    ]);
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'birth_certificate']), [
+            'file' => UploadedFile::fake()->create('psa.pdf', 200, 'application/pdf'),
+        ])
+        ->assertSessionHasNoErrors();
+
+    Notification::assertSentTo($admin, DocumentUploaded::class, function (DocumentUploaded $notification) use ($admin) {
+        return str_contains($notification->toArray($admin)['message'], 'PSA Birth Certificate');
+    });
+});
+
+test('admins are not notified of an upload that fails validation', function () {
+    Storage::fake('public');
+    Notification::fake();
+    User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = EnrolleeUser::factory()->create();
+    $enrollment = Enrollment::factory()->create([
+        'enrollee_user_id' => $enrollee->id,
+        'enrollment_status' => 'PENDING',
+    ]);
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'birth_certificate']), [
+            'file' => UploadedFile::fake()->create('psa.exe', 200),
+        ])
+        ->assertSessionHasErrors('file');
+
+    Notification::assertNothingSent();
 });

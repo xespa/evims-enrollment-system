@@ -8,8 +8,11 @@ use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portal\ReapplyEnrolleeUserRequest;
 use App\Models\EnrolleeUser;
+use App\Models\User;
+use App\Notifications\EnrolleeAccountAwaitingReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,6 +62,8 @@ class ReapplicationController extends Controller
             $request->safe()->only(['account_type', 'name', 'password']),
             $path,
         );
+
+        Notification::send(User::query()->admins()->get(), new EnrolleeAccountAwaitingReview($enrolleeUser, isResubmission: true));
 
         Auth::guard('enrollee')->login($enrolleeUser);
         $request->session()->regenerate();

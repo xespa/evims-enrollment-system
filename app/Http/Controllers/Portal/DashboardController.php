@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Portal;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\OfficeVerification;
+use App\Models\User;
+use App\Notifications\ApplicationCancelled;
+use App\Notifications\DocumentUploaded;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -71,6 +75,8 @@ class DashboardController extends Controller
 
         $enrollment->update(['cancelled_at' => now()]);
 
+        Notification::send(User::query()->admins()->get(), new ApplicationCancelled($enrollment));
+
         return back()->with('success', 'Your application has been cancelled.');
     }
 
@@ -112,6 +118,8 @@ class DashboardController extends Controller
             // prior verification so the registrar knows to re-check it.
             $verifiedColumn => false,
         ]);
+
+        Notification::send(User::query()->admins()->get(), new DocumentUploaded($enrollment, $type));
 
         return back()->with('success', 'Document uploaded. The registrar will review it shortly.');
     }

@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Payment;
+use App\Models\User;
+use App\Notifications\OnlinePaymentReceived;
 use App\Notifications\PaymentReceived;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * Keeps a GCash Payment record in step with its PayMongo source.
@@ -43,7 +46,7 @@ class GcashPaymentSync
         });
 
         if ($completed) {
-            $this->notifyParent($payment->fresh());
+            $this->announceCompleted($payment->fresh());
         }
 
         $payment->refresh();
@@ -101,7 +104,7 @@ class GcashPaymentSync
         });
 
         if ($completed) {
-            $this->notifyParent($payment->fresh());
+            $this->announceCompleted($payment->fresh());
         }
     }
 
@@ -116,9 +119,14 @@ class GcashPaymentSync
         $payment->installment->refreshStatus();
     }
 
-    protected function notifyParent(Payment $payment): void
+    /**
+     * Confirms the payment to the parent and lets the admins know it came in.
+     */
+    public function announceCompleted(Payment $payment): void
     {
         $payment->loadMissing('enrollment.student', 'enrollment.enrolleeUser');
         $payment->enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
+
+        Notification::send(User::query()->admins()->get(), new OnlinePaymentReceived($payment));
     }
 }

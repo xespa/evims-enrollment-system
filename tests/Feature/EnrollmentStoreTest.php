@@ -8,9 +8,12 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\OfficeVerification;
 use App\Models\Subject;
+use App\Models\User;
 use App\Models\VitalInformation;
+use App\Notifications\ApplicationSubmitted;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 function actingAsEnrollee(): EnrolleeUser
@@ -400,3 +403,33 @@ test('pre-K students can apply with an LRN', function (string $gradeName) {
     expect(Enrollment::sole()->student_type)->toBe('WITH_LRN')
         ->and(Enrollment::sole()->student->lrn)->toBe('45250112345678');
 })->with(['Pre-K 1', 'Pre-K 2']);
+
+test('admins see a new application in their notification bell', function () {
+    Storage::fake('public');
+    actingAsEnrollee();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
+
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel))->assertSessionHasNoErrors();
+
+    $enrollment = Enrollment::sole();
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.notifications.index'))
+        ->assertOk()
+        ->assertJsonPath('unread_count', 1)
+        ->assertJsonPath('notifications.0.data.type', ApplicationSubmitted::TYPE)
+        ->assertJsonPath('notifications.0.data.url', route('admin.enrollments.show', $enrollment, false));
+});
+
+test('a rejected application does not notify the admins', function () {
+    actingAsEnrollee();
+    Notification::fake();
+    User::factory()->create(['role' => 'ADMIN']);
+
+    $this->post(route('admission.store'), [])->assertSessionHasErrors();
+
+    Notification::assertNothingSent();
+});

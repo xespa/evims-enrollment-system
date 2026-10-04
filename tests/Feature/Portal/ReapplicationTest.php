@@ -6,8 +6,10 @@ use App\Enums\AccountType;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\User;
+use App\Notifications\EnrolleeAccountAwaitingReview;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -145,4 +147,14 @@ test('accounts that are no longer rejected cannot be redone from an old link', f
 
     $this->get($url)->assertRedirect(route('portal.login'));
     $this->post($action, reapplicationPayload())->assertForbidden();
+});
+
+test('admins are notified when a rejected account registers again', function () {
+    Notification::fake();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = rejectedAccount();
+
+    $this->post(reapplyActionFor($enrollee), reapplicationPayload())->assertSessionHasNoErrors();
+
+    Notification::assertSentTo($admin, EnrolleeAccountAwaitingReview::class, fn (EnrolleeAccountAwaitingReview $notification) => $notification->isResubmission);
 });

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Portal;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portal\UpdateValidIdRequest;
 use App\Models\EnrolleeUser;
+use App\Models\User;
+use App\Notifications\EnrolleeAccountAwaitingReview;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
 
 class ValidIdController extends Controller
 {
@@ -25,6 +28,8 @@ class ValidIdController extends Controller
         }
 
         $enrollee->resubmitValidId($path);
+
+        Notification::send(User::query()->admins()->get(), new EnrolleeAccountAwaitingReview($enrollee, isResubmission: true));
 
         return redirect()
             ->route('portal.account-status')

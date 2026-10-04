@@ -6,6 +6,7 @@ use App\Models\Enrollment;
 use App\Models\Installment;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\OnlinePaymentReceived;
 use App\Notifications\PaymentReceived;
 use App\Notifications\PaymentVoided;
 use Illuminate\Support\Carbon;
@@ -136,6 +137,15 @@ test('the parent is emailed a receipt for a counter payment', function () {
             && str_contains($body, 'OR-12345')
             && str_contains($body, '₱7,500.00');
     });
+});
+
+test('admins are not notified of payments made at the counter', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 2500, 'receipt_number' => 'OR-12345']);
+
+    Notification::assertNotSentTo($this->admin, OnlinePaymentReceived::class);
 });
 
 test('the receipt email says when the enrollment is fully paid', function () {

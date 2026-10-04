@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Enrollment;
 use App\Models\Installment;
 use App\Models\Payment;
-use App\Notifications\PaymentReceived;
 use App\Services\GcashPaymentSync;
 use App\Services\PayMongoService;
 use Illuminate\Http\Request;
@@ -271,8 +270,7 @@ class PaymentController extends Controller
 
             $payment->installment->refreshStatus();
 
-            $payment->loadMissing('enrollment.student', 'enrollment.enrolleeUser');
-            $payment->enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
+            $this->gcash->announceCompleted($payment);
         }
 
         return redirect(URL::signedRoute('payments.show', $payment->enrollment_id))

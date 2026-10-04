@@ -25,7 +25,7 @@ class SendEnrollmentPeriodReminders extends Command
 {
     public function handle(): int
     {
-        $admins = User::query()->where('role', 'ADMIN')->get();
+        $admins = User::query()->admins()->get();
 
         foreach (EnrollmentPeriodMilestone::cases() as $milestone) {
             $periods = EnrollmentPeriod::query()->dueFor($milestone)->get();

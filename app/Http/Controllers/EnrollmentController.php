@@ -9,10 +9,13 @@ use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
+use App\Models\User;
+use App\Notifications\ApplicationSubmitted;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class EnrollmentController extends Controller
@@ -259,6 +262,8 @@ class EnrollmentController extends Controller
             Arr::except($request->validated(), array_keys(SubmitEnrollmentApplication::DOCUMENT_FIELDS)),
             $submitApplication->storeDocuments($request, 'public', 'documents'),
         );
+
+        Notification::send(User::query()->admins()->get(), new ApplicationSubmitted($enrollment));
 
         return redirect()->route('admission.success', $enrollment->id);
     }

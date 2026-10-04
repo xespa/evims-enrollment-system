@@ -4,7 +4,9 @@ use App\Enums\AccountRejectionReason;
 use App\Enums\AccountStatus;
 use App\Models\EnrolleeUser;
 use App\Models\User;
+use App\Notifications\EnrolleeAccountAwaitingReview;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -134,4 +136,15 @@ test('a name mismatch cannot be fixed by only uploading a new ID', function () {
         ->assertForbidden();
 
     expect($enrollee->fresh()->account_status)->toBe(AccountStatus::Rejected);
+});
+
+test('admins are notified when a rejected account sends a new ID', function () {
+    Notification::fake();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = rejectedEnrolleeWithStoredId();
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->put(route('portal.valid-id.update'), ['valid_id' => UploadedFile::fake()->image('clear.jpg')]);
+
+    Notification::assertSentTo($admin, EnrolleeAccountAwaitingReview::class, fn (EnrolleeAccountAwaitingReview $notification) => $notification->isResubmission);
 });

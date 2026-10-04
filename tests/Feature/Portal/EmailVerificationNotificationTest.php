@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\EnrolleeUser;
+use App\Models\User;
 use App\Notifications\ConfirmEmailReminder;
 use App\Notifications\EmailConfirmed;
+use App\Notifications\EnrolleeAccountAwaitingReview;
 use App\Notifications\VerifyEnrolleeEmail;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -111,4 +113,32 @@ test('resending is rate limited', function () {
     $this->actingAs($enrollee, 'enrollee')
         ->post(route('portal.verification.send'))
         ->assertTooManyRequests();
+});
+
+test('admins are notified once a new account confirms its email', function () {
+    Notification::fake();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $enrollee = EnrolleeUser::factory()->unverified()->pending()->create();
+
+    $this->actingAs($enrollee, 'enrollee')->get(verificationUrlFor($enrollee));
+
+    Notification::assertSentTo($admin, EnrolleeAccountAwaitingReview::class, fn (EnrolleeAccountAwaitingReview $notification) => ! $notification->isResubmission);
+});
+
+test('admins are not notified when a new account registers before confirming its email', function () {
+    Storage::fake('local');
+    Notification::fake();
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    $this->post(route('portal.register.store'), [
+        'account_type' => 'PARENT_GUARDIAN',
+        'name' => 'Ana Reyes',
+        'email' => 'ana@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+        'valid_id' => UploadedFile::fake()->image('id.jpg'),
+        'terms' => '1',
+    ]);
+
+    Notification::assertNotSentTo($admin, EnrolleeAccountAwaitingReview::class);
 });
