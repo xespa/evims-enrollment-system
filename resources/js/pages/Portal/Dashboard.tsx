@@ -738,6 +738,7 @@ export default function Dashboard({ enrollments }) {
                             const verification = enrollment.office_verification;
                             const isApproved =
                                 enrollment.enrollment_status === 'APPROVED';
+                            const isCancelled = !!enrollment.cancelled_at;
 
                             return (
                                 <div
@@ -811,9 +812,12 @@ export default function Dashboard({ enrollments }) {
                                                                 </span>
                                                             </button>
                                                         )}
-                                                        {isUploadedBySchool ? null : isApproved ? (
+                                                        {isUploadedBySchool ? null : isApproved ||
+                                                          isCancelled ? (
                                                             <span className="text-xs text-[#1F2A24]/65">
-                                                                Locked
+                                                                {isCancelled
+                                                                    ? 'Cancelled'
+                                                                    : 'Locked'}
                                                             </span>
                                                         ) : (
                                                             <label className="relative inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-[#1F2A24]/15 px-4 text-xs font-semibold text-[#1F2A24]/80 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-1 hover:bg-[#1F2A24]/5">

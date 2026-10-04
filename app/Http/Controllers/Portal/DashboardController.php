@@ -80,6 +80,10 @@ class DashboardController extends Controller
             return back()->withErrors(['document' => 'This application is already approved; documents can no longer be changed.']);
         }
 
+        if ($enrollment->isCancelled()) {
+            return back()->withErrors(['document' => 'This application was cancelled; documents can no longer be uploaded.']);
+        }
+
         if ($type === 'form_138' && $enrollment->isReturning()) {
             return back()->withErrors(['document' => 'The registrar attaches the latest Form 138 for returning students, so there’s no need to upload it.']);
         }

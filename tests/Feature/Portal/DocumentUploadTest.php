@@ -78,6 +78,25 @@ test('documents cannot be uploaded once the enrollment is approved', function ()
     expect(OfficeVerification::where('enrollment_id', $enrollment->id)->exists())->toBeFalse();
 });
 
+test('documents cannot be uploaded once the enrollment is cancelled', function () {
+    Storage::fake('public');
+
+    $enrollee = EnrolleeUser::factory()->create();
+    $enrollment = Enrollment::factory()->create([
+        'enrollee_user_id' => $enrollee->id,
+        'enrollment_status' => 'PENDING',
+        'cancelled_at' => now(),
+    ]);
+
+    $this->actingAs($enrollee, 'enrollee')
+        ->post(route('portal.enrollments.documents.store', [$enrollment, 'birth_certificate']), [
+            'file' => UploadedFile::fake()->create('psa.pdf', 200, 'application/pdf'),
+        ])
+        ->assertSessionHasErrors(['document' => 'This application was cancelled; documents can no longer be uploaded.']);
+
+    expect(OfficeVerification::where('enrollment_id', $enrollment->id)->exists())->toBeFalse();
+});
+
 test('a different account cannot upload a document for someone elses enrollment', function () {
     $owner = EnrolleeUser::factory()->create();
     $intruder = EnrolleeUser::factory()->create();
