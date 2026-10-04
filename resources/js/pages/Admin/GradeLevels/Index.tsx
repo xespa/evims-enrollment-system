@@ -397,19 +397,20 @@ export default function Index({
 
     return (
         <>
-            <Head title="Grade Levels" />
+            <Head title="School Year Setup" />
             {confirmDialog}
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 max-w-2xl">
                         <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
-                            Grade Levels
+                            School Year Setup
                         </h1>
                         <p className="mt-1 text-sm text-[#1F2A24]/70">
-                            Each school year has its own fees and subjects per
-                            grade level, so next year's curriculum can change
-                            without touching this year's students or bills.
+                            Set up each school year's enrollment period and
+                            every grade level's fees and subjects. Each year is
+                            kept separate, so next year's changes never touch
+                            this year's students or bills.
                         </p>
                     </div>
 
