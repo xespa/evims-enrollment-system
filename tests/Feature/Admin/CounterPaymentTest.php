@@ -121,6 +121,36 @@ test('the parent is notified once, for the whole amount', function () {
     );
 });
 
+test('the parent is emailed a receipt for a counter payment', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 2500, 'receipt_number' => 'OR-12345']);
+
+    Notification::assertSentTo($enrollment->enrolleeUser, PaymentReceived::class, function (PaymentReceived $notification, array $channels) use ($enrollment) {
+        $body = (string) $notification->toMail($enrollment->enrolleeUser)->render();
+
+        return in_array('mail', $channels)
+            && str_contains($body, '₱2,500.00')
+            && str_contains($body, 'Cash at the school cashier')
+            && str_contains($body, 'OR-12345')
+            && str_contains($body, '₱7,500.00');
+    });
+});
+
+test('the receipt email says when the enrollment is fully paid', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 10000, 'receipt_number' => 'OR-54321']);
+
+    Notification::assertSentTo($enrollment->enrolleeUser, PaymentReceived::class, function (PaymentReceived $notification) use ($enrollment) {
+        $body = (string) $notification->toMail($enrollment->enrolleeUser)->render();
+
+        return str_contains($body, 'fully paid') && ! str_contains($body, 'Remaining balance');
+    });
+});
+
 test('invalid counter payments are rejected', function (array $input, string $field, string $message) {
     $enrollment = counterPayingEnrollment();
 

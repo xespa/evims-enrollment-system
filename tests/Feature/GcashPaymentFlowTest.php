@@ -111,6 +111,29 @@ test('a webhook completes the payment and a duplicate webhook does not charge ag
     Notification::assertSentToTimes($parent, PaymentReceived::class, 1);
 });
 
+test('the parent is emailed a receipt once a GCash payment goes through', function () {
+    $parent = EnrolleeUser::factory()->create();
+    $this->enrollment->update(['enrollee_user_id' => $parent->id]);
+    pendingGcashPayment($this->installment);
+
+    $this->mock(PayMongoService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('createPaymentFromSource')->once()->andReturn(['id' => 'pay_test_1']);
+    });
+
+    sendChargeableWebhook('src_test_1')->assertOk();
+
+    Notification::assertSentTo($parent, PaymentReceived::class, function (PaymentReceived $notification, array $channels) use ($parent) {
+        $mail = $notification->toMail($parent);
+        $body = (string) $mail->render();
+
+        return in_array('mail', $channels)
+            && $mail->subject === "Payment Received for {$this->enrollment->student->first_name}'s Enrollment"
+            && str_contains($body, '₱1,000.00')
+            && str_contains($body, 'GCash')
+            && str_contains($body, '₱9,000.00');
+    });
+});
+
 test('a webhook with a bad signature is rejected', function () {
     $payment = pendingGcashPayment($this->installment);
 
