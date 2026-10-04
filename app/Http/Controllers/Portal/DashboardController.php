@@ -20,7 +20,13 @@ class DashboardController extends Controller
         $enrollee = Auth::guard('enrollee')->user();
 
         $enrollments = $enrollee->enrollments()
-            ->with('student', 'gradeLevel', 'billingContract.installments.payments', 'officeVerification')
+            ->with(
+                'student',
+                'gradeLevel',
+                'billingContract.installments.payments',
+                'officeVerification',
+                'documentAppointment:id,enrollment_id,scheduled_on,scheduled_time,documents,note',
+            )
             ->latest()
             ->get()
             ->map(function (Enrollment $enrollment) {

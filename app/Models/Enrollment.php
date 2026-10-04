@@ -78,6 +78,14 @@ class Enrollment extends Model
     }
 
     /**
+     * @return HasOne<DocumentAppointment, $this>
+     */
+    public function documentAppointment(): HasOne
+    {
+        return $this->hasOne(DocumentAppointment::class);
+    }
+
+    /**
      * @return BelongsToMany<Subject, $this>
      */
     public function subjects(): BelongsToMany

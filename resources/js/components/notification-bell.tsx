@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import {
     Bell,
     BellOff,
+    CalendarCheck,
     CalendarClock,
     CalendarX,
     CheckCheck,
@@ -72,6 +73,16 @@ function appearance(notification: Notification): {
             return {
                 icon: FileWarning,
                 tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+            };
+        case 'document_appointment':
+            return {
+                icon: CalendarCheck,
+                tone: 'bg-[#2E8057]/12 text-[#22613F]',
+            };
+        case 'document_appointment_cancelled':
+            return {
+                icon: CalendarX,
+                tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
             };
         case 'payment_received':
             return { icon: Wallet, tone: 'bg-[#2E8057]/12 text-[#22613F]' };

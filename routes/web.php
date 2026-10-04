@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DocumentAppointmentController;
 use App\Http\Controllers\Admin\EnrolleeAccountController;
 use App\Http\Controllers\Admin\EnrolleeAccountValidIdController;
 use App\Http\Controllers\Admin\EnrollmentArchiveController;
@@ -118,6 +119,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
         ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
         ->name('enrollments.documents.remind');
+    Route::put('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'update'])->name('enrollments.document-appointment.update');
+    Route::delete('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'destroy'])->name('enrollments.document-appointment.destroy');
     Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
     Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
     // Student lookup for recording a counter payment from Transactions.

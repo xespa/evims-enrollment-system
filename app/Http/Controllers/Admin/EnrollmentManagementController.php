@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
 use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
 use App\Models\OfficeVerification;
 use App\Models\User;
 use App\Notifications\DocumentReminder;
@@ -41,6 +42,7 @@ class EnrollmentManagementController extends Controller
             'vitalInformation',
             'billingContract.installments.payments.voidedBy:id,name',
             'officeVerification',
+            'documentAppointment:id,enrollment_id,scheduled_on,scheduled_time,documents,note',
         ]);
         $enrollment->loadParentEmailVerified();
 
@@ -61,6 +63,8 @@ class EnrollmentManagementController extends Controller
             // A returning student's latest Form 138 comes from the school, so
             // the registrar is reminded to upload it instead of the parent.
             'previousSchoolYear' => $enrollment->previousApprovedEnrollment()?->school_year,
+            // The earliest date an in-person document appointment can be set.
+            'today' => EnrollmentPeriod::today()->toDateString(),
             'rejectionReasons' => array_map(
                 fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
                 EnrollmentRejectionReason::cases(),

@@ -7,6 +7,8 @@ import DocumentViewerDialog, {
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
+import { formatAppointment } from '@/lib/document-appointment';
+import DocumentAppointment from '@/pages/Admin/Enrollments/Components/DocumentAppointment';
 import RejectApplicationDialog from '@/pages/Admin/Enrollments/Components/RejectApplicationDialog';
 import UploadDocumentForm from '@/pages/Admin/Enrollments/Components/UploadDocumentForm';
 import {
@@ -537,6 +539,7 @@ export default function Show({
     submittedFrom,
     previousSchoolYear,
     rejectionReasons,
+    today,
 }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
@@ -799,11 +802,23 @@ export default function Show({
                                         <li key={doc.type}>{doc.label}</li>
                                     ))}
                                 </ul>
+                                {enrollment.document_appointment && (
+                                    <p className="mt-1">
+                                        The parent is bringing documents in on{' '}
+                                        <span className="font-semibold">
+                                            {formatAppointment(
+                                                enrollment.document_appointment,
+                                            )}
+                                        </span>
+                                        .
+                                    </p>
+                                )}
                                 <a
                                     href="#document-verification"
                                     className="mt-2 inline-block font-semibold underline"
                                 >
-                                    Upload them or remind the parent ↓
+                                    Upload them, remind the parent, or set a
+                                    date ↓
                                 </a>
                             </div>
                         )}
@@ -1206,6 +1221,27 @@ export default function Show({
                                         reminders can't be sent for this
                                         application.
                                     </p>
+                                )}
+
+                            {(missingDocuments.length > 0 ||
+                                enrollment.document_appointment) &&
+                                enrollment.enrollment_status !== 'APPROVED' &&
+                                !isCancelled && (
+                                    <DocumentAppointment
+                                        enrollmentId={enrollment.id}
+                                        appointment={
+                                            enrollment.document_appointment
+                                        }
+                                        documents={DOCUMENTS}
+                                        missingTypes={missingDocuments.map(
+                                            (doc) => doc.type,
+                                        )}
+                                        today={today}
+                                        hasEnrollee={
+                                            !!enrollment.enrollee_user_id
+                                        }
+                                        confirm={confirm}
+                                    />
                                 )}
 
                             {DOCUMENTS.map((doc) => (

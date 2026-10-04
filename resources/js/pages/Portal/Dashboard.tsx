@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
     BadgeCheck,
+    CalendarCheck,
     Camera,
     CheckCircle2,
     Landmark,
@@ -13,6 +14,7 @@ import DocumentViewerDialog, {
     isPdfPath,
 } from '@/components/document-viewer-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
+import { formatAppointment } from '@/lib/document-appointment';
 
 const STATUS_STYLES = {
     PENDING: 'bg-yellow-100 text-yellow-800',
@@ -753,6 +755,57 @@ export default function Dashboard({ enrollments }) {
                                             {enrollment.school_year}
                                         </span>
                                     </p>
+
+                                    {enrollment.document_appointment &&
+                                        !isApproved &&
+                                        !isCancelled && (
+                                            <div
+                                                role="note"
+                                                className="mb-4 flex gap-2 rounded-lg border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-3 text-sm text-[#1F2A24]"
+                                            >
+                                                <CalendarCheck
+                                                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                                    aria-hidden="true"
+                                                />
+                                                <div>
+                                                    <p className="font-semibold">
+                                                        Bring documents to the
+                                                        registrar's office on{' '}
+                                                        {formatAppointment(
+                                                            enrollment.document_appointment,
+                                                        )}
+                                                    </p>
+                                                    <p className="text-xs text-[#1F2A24]/70">
+                                                        Please bring:{' '}
+                                                        {enrollment.document_appointment.documents
+                                                            .map(
+                                                                (type) =>
+                                                                    DOCUMENTS.find(
+                                                                        (doc) =>
+                                                                            doc.type ===
+                                                                            type,
+                                                                    )?.label ??
+                                                                    type,
+                                                            )
+                                                            .join(', ')}
+                                                    </p>
+                                                    {enrollment
+                                                        .document_appointment
+                                                        .note && (
+                                                        <p className="mt-1 text-xs text-[#1F2A24]/70">
+                                                            Note from the
+                                                            registrar: “
+                                                            {
+                                                                enrollment
+                                                                    .document_appointment
+                                                                    .note
+                                                            }
+                                                            ”
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
 
                                     <ul className="space-y-3">
                                         {DOCUMENTS.map((doc) => {
