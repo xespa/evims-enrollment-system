@@ -123,6 +123,23 @@ class EnrollmentPeriod extends Model
     }
 
     /**
+     * Whether the closing date has passed. A closed period can be reopened
+     * for the same school year by moving its closing date later.
+     */
+    public function isClosed(): bool
+    {
+        return $this->closes_on->lt(self::today());
+    }
+
+    /**
+     * Whether applications are being accepted today.
+     */
+    public function isOpen(): bool
+    {
+        return $this->opens_on->lte(self::today()) && ! $this->isClosed();
+    }
+
+    /**
      * Whole days from today until the given date (0 when it's today).
      */
     public function daysUntil(CarbonImmutable $date): int

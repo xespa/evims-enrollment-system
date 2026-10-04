@@ -41,8 +41,8 @@ Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
 Route::get('/', function () {
     return inertia('Site/Home', [
         'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
-        // The school year applications are open for, or null if none is.
-        'openSchoolYear' => Curriculum::applicationSchoolYear(),
+        // Whether enrollment is open, upcoming or closed, for the banner.
+        'enrollmentStatus' => Curriculum::enrollmentStatus(),
     ]);
 })->name('home');
 Route::inertia('about', 'Site/About')->name('site.about');

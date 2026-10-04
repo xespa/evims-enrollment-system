@@ -65,6 +65,9 @@ class GradeLevelController extends Controller
                 ->first(['opens_on', 'closes_on'])
                 ?->toArray(),
             'today' => EnrollmentPeriod::today()->toDateString(),
+            // The one year parents can apply for right now, so a year whose
+            // own dates look open but isn't taking applications says so.
+            'applicationSchoolYear' => Curriculum::applicationSchoolYear(),
             // The only year that can be set up next: the one after the
             // latest, copied from it.
             'nextSchoolYear' => $latestSchoolYear

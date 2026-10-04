@@ -19,13 +19,18 @@ class EnrollmentPeriodController extends Controller
         $this->ensureSchoolYearExists($schoolYear);
 
         $period = EnrollmentPeriod::firstOrNew(['school_year' => $schoolYear]);
+        $wasClosed = $period->exists && $period->isClosed();
         $period->fill($request->validated())->save();
 
         $opensOn = $period->opens_on->format('M j, Y');
         $closesOn = $period->closes_on->format('M j, Y');
 
+        $message = $wasClosed && $period->isOpen()
+            ? "Enrollment for {$schoolYear} is reopened until {$closesOn}."
+            : "Enrollment for {$schoolYear} is set from {$opensOn} to {$closesOn}.";
+
         return to_route('admin.grade-levels.index', ['school_year' => $schoolYear])
-            ->with('success', "Enrollment for {$schoolYear} is set from {$opensOn} to {$closesOn}.");
+            ->with('success', $message);
     }
 
     /**

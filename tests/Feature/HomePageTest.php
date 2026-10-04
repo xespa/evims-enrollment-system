@@ -2,6 +2,7 @@
 
 use App\Models\Curriculum;
 use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
 use App\Models\Event;
 use App\Models\GradeLevel;
 use Illuminate\Support\Carbon;
@@ -17,16 +18,44 @@ test('the home page shows the school year enrollment is open for', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Site/Home')
-            ->where('openSchoolYear', $nextSchoolYear)
+            ->where('enrollmentStatus', [
+                'school_year' => $nextSchoolYear,
+                'status' => 'open',
+                'opens_on' => null,
+                'closes_on' => null,
+            ])
             ->where('gradeLevels.0.name', 'Grade 1')
         );
 });
 
-test('the home page says enrollment opens soon when no school year is open', function () {
+test('the home page says enrollment opens soon when no school year is set up', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('openSchoolYear', null));
+        ->assertInertia(fn (Assert $page) => $page->where('enrollmentStatus', null));
 });
+
+test('the home page shows whether the school year\'s enrollment is open, upcoming or closed', function (int $opensInDays, int $closesInDays, string $status) {
+    $this->travelTo(Carbon::parse('2026-10-04 09:00', 'Asia/Manila'));
+    GradeLevel::factory()->withCurriculum()->create();
+    $period = EnrollmentPeriod::factory()->create([
+        'school_year' => Enrollment::currentSchoolYear(),
+        'opens_on' => EnrollmentPeriod::today()->addDays($opensInDays),
+        'closes_on' => EnrollmentPeriod::today()->addDays($closesInDays),
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('enrollmentStatus', [
+            'school_year' => Enrollment::currentSchoolYear(),
+            'status' => $status,
+            'opens_on' => $period->opens_on->toDateString(),
+            'closes_on' => $period->closes_on->toDateString(),
+        ]));
+})->with([
+    'open' => [-10, 20, 'open'],
+    'not open yet' => [5, 30, 'upcoming'],
+    'closed' => [-30, -1, 'closed'],
+]);
 
 test('the home page banner image is in place', function () {
     expect(public_path('images/evims-banner.jpg'))->toBeFile();

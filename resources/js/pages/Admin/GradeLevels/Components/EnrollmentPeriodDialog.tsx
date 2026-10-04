@@ -8,7 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { formatDate, periodStatus } from './period';
+import { formatDate, isPeriodClosed, periodStatus } from './period';
 import { INPUT_CLASS, REMINDER_DAYS_AHEAD } from './types';
 import type { EnrollmentPeriod } from './types';
 
@@ -66,7 +66,8 @@ function DateInput({
 
 /**
  * Sets when applications for one school year open and close. Remount it
- * for each opening so the form starts from the saved dates.
+ * for each opening so the form starts from the saved dates. Once closed,
+ * it reopens the same school year: only a new closing date is needed.
  */
 export default function EnrollmentPeriodDialog({
     schoolYear,
@@ -78,10 +79,12 @@ export default function EnrollmentPeriodDialog({
     const status = enrollmentPeriod
         ? periodStatus(enrollmentPeriod, today)
         : null;
+    const isReopening = isPeriodClosed(enrollmentPeriod, today);
 
     const { data, setData, put, processing, errors, isDirty } = useForm({
         opens_on: enrollmentPeriod?.opens_on ?? '',
-        closes_on: enrollmentPeriod?.closes_on ?? '',
+        // Reopening starts with no closing date so a new one is picked.
+        closes_on: isReopening ? '' : (enrollmentPeriod?.closes_on ?? ''),
     });
 
     const save = (e: FormEvent) => {
@@ -101,7 +104,10 @@ export default function EnrollmentPeriodDialog({
                 <form onSubmit={save}>
                     <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
-                            Enrollment dates · {schoolYear}
+                            {isReopening
+                                ? 'Reopen enrollment'
+                                : 'Enrollment dates'}{' '}
+                            · {schoolYear}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -159,7 +165,11 @@ export default function EnrollmentPeriodDialog({
                                 id="enrollment-closes-on"
                                 label="Closes on"
                                 value={data.closes_on}
-                                min={data.opens_on || undefined}
+                                min={
+                                    isReopening
+                                        ? today
+                                        : data.opens_on || undefined
+                                }
                                 error={errors.closes_on}
                                 onChange={(value) =>
                                     setData('closes_on', value)
@@ -168,8 +178,9 @@ export default function EnrollmentPeriodDialog({
                         </div>
 
                         <p className="text-sm text-[#1F2A24]/70">
-                            Parents can apply from the opening date through the
-                            end of the closing date.
+                            {isReopening
+                                ? `Enrollment for ${schoolYear} has closed. Pick a new closing date to accept applications for the same school year again, through the end of that day.`
+                                : 'Parents can apply from the opening date through the end of the closing date.'}
                         </p>
 
                         <p className="flex gap-2 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2.5 text-xs leading-relaxed text-[#1F2A24]/80">
@@ -205,7 +216,7 @@ export default function EnrollmentPeriodDialog({
                                     aria-hidden="true"
                                 />
                             )}
-                            Save dates
+                            {isReopening ? 'Reopen enrollment' : 'Save dates'}
                         </button>
                     </div>
                 </form>

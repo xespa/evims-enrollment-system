@@ -163,9 +163,70 @@ test('parents cannot apply once enrollment has closed', function () {
     $enrollee = EnrolleeUser::factory()->create();
 
     $this->get(route('home'))
-        ->assertInertia(fn (Assert $page) => $page->where('openSchoolYear', null));
+        ->assertInertia(fn (Assert $page) => $page->where('enrollmentStatus.status', 'closed'));
 
     $this->actingAs($enrollee, 'enrollee')
         ->post(route('admission.store'), [])
         ->assertSessionHasErrors('school_year');
+});
+
+test('a closed school year can be reopened by moving its closing date', function () {
+    $period = EnrollmentPeriod::factory()->create([
+        'school_year' => $this->schoolYear,
+        'opens_on' => EnrollmentPeriod::today()->subDays(30),
+        'closes_on' => EnrollmentPeriod::today()->subDay(),
+    ]);
+    expect($period->refresh()->closed_notice_sent_at)->not->toBeNull()
+        ->and(Curriculum::applicationSchoolYear())->toBeNull();
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.school-years.enrollment-period.update', $this->schoolYear), [
+            'opens_on' => $period->opens_on->toDateString(),
+            'closes_on' => '2026-10-31',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', "Enrollment for {$this->schoolYear} is reopened until Oct 31, 2026.");
+
+    $period->refresh();
+
+    expect(EnrollmentPeriod::count())->toBe(1)
+        ->and($period->closes_on->toDateString())->toBe('2026-10-31')
+        ->and($period->closing_reminder_sent_at)->toBeNull()
+        ->and($period->closed_notice_sent_at)->toBeNull()
+        ->and(Curriculum::applicationSchoolYear())->toBe($this->schoolYear);
+});
+
+test('enrollment can be closed and reopened again within the same school year', function () {
+    EnrollmentPeriod::factory()->create([
+        'school_year' => $this->schoolYear,
+        'opens_on' => EnrollmentPeriod::today()->subDays(30),
+        'closes_on' => EnrollmentPeriod::today()->addDays(30),
+    ]);
+
+    foreach (['2026-10-03' => null, '2026-11-15' => $this->schoolYear, '2026-10-01' => null, '2026-12-01' => $this->schoolYear] as $closesOn => $openSchoolYear) {
+        $this->actingAs($this->admin)
+            ->put(route('admin.school-years.enrollment-period.update', $this->schoolYear), [
+                'opens_on' => '2026-09-04',
+                'closes_on' => $closesOn,
+            ])
+            ->assertSessionHasNoErrors();
+
+        expect(Curriculum::applicationSchoolYear())->toBe($openSchoolYear);
+    }
+});
+
+test('the school year setup page shows which year is taking applications', function () {
+    $nextSchoolYear = Curriculum::nextSchoolYear($this->schoolYear);
+    Curriculum::factory()->create(['school_year' => $nextSchoolYear]);
+    EnrollmentPeriod::factory()->create([
+        'school_year' => $this->schoolYear,
+        'opens_on' => EnrollmentPeriod::today()->subDay(),
+        'closes_on' => EnrollmentPeriod::today(),
+    ]);
+
+    // This year's own dates are open, but the newer year without dates is
+    // the one parents are applying for.
+    $this->actingAs($this->admin)
+        ->get(route('admin.grade-levels.index', ['school_year' => $this->schoolYear]))
+        ->assertInertia(fn (Assert $page) => $page->where('applicationSchoolYear', $nextSchoolYear));
 });

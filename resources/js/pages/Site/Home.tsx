@@ -13,10 +13,55 @@ import {
 
 type GradeLevel = { id: number | string; name: string };
 
+/** Mirrors Curriculum::enrollmentStatus(). Dates are Y-m-d. */
+type EnrollmentStatus = {
+    school_year: string;
+    status: 'open' | 'upcoming' | 'closed';
+    opens_on: string | null;
+    closes_on: string | null;
+} | null;
+
 type Props = {
     gradeLevels: GradeLevel[];
-    openSchoolYear: string | null;
+    enrollmentStatus: EnrollmentStatus;
 };
+
+const BADGE_TONES = {
+    open: {
+        badge: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+        dot: 'animate-pulse bg-[#2F6F4E] motion-reduce:animate-none',
+    },
+    upcoming: { badge: 'bg-[#E8A33D]/15 text-[#8A5A12]', dot: 'bg-[#E8A33D]' },
+    closed: { badge: 'bg-[#C6473B]/10 text-[#9A3329]', dot: 'bg-[#C6473B]' },
+};
+
+function formatShortDate(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
+/** The badge's wording and colours for where enrollment stands. */
+function enrollmentBadge(enrollmentStatus: EnrollmentStatus) {
+    if (!enrollmentStatus) {
+        return { label: 'Enrollment opens soon', tone: BADGE_TONES.upcoming };
+    }
+
+    const { status, opens_on, closes_on } = enrollmentStatus;
+    const schoolYear = `S.Y. ${formatSchoolYear(enrollmentStatus.school_year)}`;
+    const labels = {
+        open: closes_on
+            ? `${schoolYear} enrollment is open until ${formatShortDate(closes_on)}`
+            : `${schoolYear} enrollment is open`,
+        upcoming: opens_on
+            ? `${schoolYear} enrollment opens ${formatShortDate(opens_on)}`
+            : `${schoolYear} enrollment opens soon`,
+        closed: `${schoolYear} enrollment is closed`,
+    };
+
+    return { label: labels[status], tone: BADGE_TONES[status] };
+}
 
 const HIGHLIGHTS = [
     {
@@ -106,14 +151,14 @@ function SectionLabel({ children }: { children: string }) {
     );
 }
 
-export default function Home({ gradeLevels, openSchoolYear }: Props) {
+export default function Home({ gradeLevels, enrollmentStatus }: Props) {
     const grades = gradeLevels?.length > 0 ? gradeLevels : FALLBACK_GRADES;
     const programs = PROGRAMS.map((program) => ({
         ...program,
         grades: grades.filter((grade) => program.includes(grade.name)),
     })).filter((program) => program.grades.length > 0);
 
-    const schoolYear = openSchoolYear ? formatSchoolYear(openSchoolYear) : null;
+    const badge = enrollmentBadge(enrollmentStatus);
 
     return (
         <>
@@ -138,23 +183,13 @@ export default function Home({ gradeLevels, openSchoolYear }: Props) {
                 <div className="mx-auto -mt-6 flex max-w-5xl flex-col gap-5 rounded-2xl border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/10 sm:-mt-10 md:flex-row md:items-center md:justify-between md:p-8">
                     <div>
                         <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${
-                                schoolYear
-                                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                                    : 'bg-[#E8A33D]/15 text-[#8A5A12]'
-                            }`}
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${badge.tone.badge}`}
                         >
                             <span
-                                className={`h-2 w-2 rounded-full ${
-                                    schoolYear
-                                        ? 'animate-pulse bg-[#2F6F4E] motion-reduce:animate-none'
-                                        : 'bg-[#E8A33D]'
-                                }`}
+                                className={`h-2 w-2 rounded-full ${badge.tone.dot}`}
                                 aria-hidden="true"
                             />
-                            {schoolYear
-                                ? `S.Y. ${schoolYear} enrollment is open`
-                                : 'Enrollment opens soon'}
+                            {badge.label}
                         </span>
                         <h1 className="mt-3 font-serif text-2xl leading-tight font-semibold text-[#1F2A24] sm:text-3xl">
                             Be part of something{' '}
@@ -377,9 +412,11 @@ export default function Home({ gradeLevels, openSchoolYear }: Props) {
                                     Ready to reserve your child's seat?
                                 </h2>
                                 <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
-                                    {schoolYear
-                                        ? `Applications for School Year ${schoolYear} are open for new, returning, and transferee students.`
-                                        : 'Applications for the next school year open soon — you can start your application as soon as they do.'}
+                                    {enrollmentStatus?.status === 'open'
+                                        ? `Applications for School Year ${formatSchoolYear(enrollmentStatus.school_year)} are open for new, returning, and transferee students.`
+                                        : enrollmentStatus?.status === 'closed'
+                                          ? `Applications for School Year ${formatSchoolYear(enrollmentStatus.school_year)} are closed. Contact the school if you'd like to ask about a late application.`
+                                          : 'Applications for the next school year open soon — you can start your application as soon as they do.'}
                                 </p>
                             </div>
                         </div>

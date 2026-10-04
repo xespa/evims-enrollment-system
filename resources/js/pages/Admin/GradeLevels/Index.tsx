@@ -6,6 +6,7 @@ import {
     FilePen,
     Loader2,
     Pencil,
+    RotateCcw,
     Save,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -16,7 +17,7 @@ import {
 } from '@/pages/Enrollment/Components/fees';
 import EditFeesDialog from './Components/EditFeesDialog';
 import EnrollmentPeriodDialog from './Components/EnrollmentPeriodDialog';
-import { formatDate, periodStatus } from './Components/period';
+import { formatDate, isPeriodClosed, periodStatus } from './Components/period';
 import ManageSubjectsDialog from './Components/ManageSubjectsDialog';
 import { MONTHLY_FEES, ONE_TIME_FEES } from './Components/types';
 import type {
@@ -38,6 +39,8 @@ type Props = {
     enrollmentPeriod: EnrollmentPeriod | null;
     /** Today's date at the school (Y-m-d). */
     today: string;
+    /** The one school year parents can apply for right now, if any. */
+    applicationSchoolYear: string | null;
 };
 
 const STAGES = [
@@ -81,16 +84,37 @@ function EnrollmentPeriodCard({
     schoolYear,
     period,
     today,
+    applicationSchoolYear,
     onEdit,
     onRemove,
 }: {
     schoolYear: string;
     period: EnrollmentPeriod | null;
     today: string;
+    applicationSchoolYear: string | null;
     onEdit: () => void;
     onRemove: () => void;
 }) {
-    const status = period ? periodStatus(period, today) : null;
+    const isClosed = isPeriodClosed(period, today);
+    const isUpcoming = !!period && today < period.opens_on;
+    // Only the newest open year takes applications, so this year's own
+    // dates can look open while parents are applying for a newer one.
+    const isTakingApplications = schoolYear === applicationSchoolYear;
+    const isSuperseded = !isTakingApplications && !isClosed && !isUpcoming;
+
+    const status = isSuperseded
+        ? {
+              label: 'Not taking applications',
+              tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+          }
+        : period
+          ? periodStatus(period, today)
+          : isTakingApplications
+            ? {
+                  label: 'Taking applications',
+                  tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+              }
+            : null;
 
     return (
         <section
@@ -116,8 +140,18 @@ function EnrollmentPeriodCard({
                     <p className="text-sm text-[#1F2A24]/70">
                         {period
                             ? `${formatDate(period.opens_on)} – ${formatDate(period.closes_on)}`
-                            : `Not set. Parents can apply for ${schoolYear} once it's saved, until a newer year opens.`}
+                            : isTakingApplications
+                              ? `No dates set, so Parents/Guardian or Students can apply for ${schoolYear} until you set a closing date or a newer year opens.`
+                              : `Not set. Parents/Guardian or Students can apply for ${schoolYear} once it's saved, until a newer year opens.`}
                     </p>
+                    {isSuperseded && applicationSchoolYear && (
+                        <p className="mt-1 text-sm text-[#a4670f]">
+                            Parents/Guardian or Students are applying for S.Y.{' '}
+                            {applicationSchoolYear} instead, since it's the
+                            newest open school year. Set its dates to control
+                            when enrollment closes.
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -131,14 +165,25 @@ function EnrollmentPeriodCard({
                         Remove dates
                     </button>
                 )}
-                <button
-                    type="button"
-                    onClick={onEdit}
-                    className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
-                >
-                    <Pencil className="h-4 w-4" aria-hidden="true" />
-                    {period ? 'Change dates' : 'Set dates'}
-                </button>
+                {isClosed ? (
+                    <button
+                        type="button"
+                        onClick={onEdit}
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                    >
+                        <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                        Reopen enrollment
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={onEdit}
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                    >
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                        {period ? 'Change dates' : 'Set dates'}
+                    </button>
+                )}
             </div>
         </section>
     );
@@ -253,6 +298,7 @@ export default function Index({
     manageGradeLevelId,
     enrollmentPeriod,
     today,
+    applicationSchoolYear,
 }: Props) {
     const { props } = usePage();
     const [confirm, confirmDialog] = useConfirm();
@@ -556,6 +602,7 @@ export default function Index({
                             schoolYear={schoolYear}
                             period={enrollmentPeriod}
                             today={today}
+                            applicationSchoolYear={applicationSchoolYear}
                             onEdit={openPeriod}
                             onRemove={removePeriod}
                         />

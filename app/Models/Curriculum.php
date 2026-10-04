@@ -133,15 +133,56 @@ class Curriculum extends Model
      */
     public static function applicationSchoolYear(): ?string
     {
-        $startYear = (int) explode('-', Enrollment::currentSchoolYear())[0] - 1;
-
         $schoolYear = self::query()
             ->published()
-            ->where('school_year', '>=', $startYear.'-'.($startYear + 1))
+            ->where('school_year', '>=', self::oldestApplicableSchoolYear())
             ->whereNotIn('school_year', EnrollmentPeriod::query()->closedOn(EnrollmentPeriod::today())->select('school_year'))
             ->max('school_year');
 
         return $schoolYear === null ? null : (string) $schoolYear;
+    }
+
+    /**
+     * Where enrollment stands, for the public site: the school year that's
+     * open, or else the newest published one and whether its enrollment
+     * is still to open or has closed. Null when no recent year is published.
+     *
+     * @return array{school_year: string, status: 'open'|'upcoming'|'closed', opens_on: ?string, closes_on: ?string}|null
+     */
+    public static function enrollmentStatus(): ?array
+    {
+        $openSchoolYear = self::applicationSchoolYear();
+        $schoolYear = $openSchoolYear ?? self::query()
+            ->published()
+            ->where('school_year', '>=', self::oldestApplicableSchoolYear())
+            ->max('school_year');
+
+        if ($schoolYear === null) {
+            return null;
+        }
+
+        $period = EnrollmentPeriod::query()->where('school_year', $schoolYear)->first();
+
+        return [
+            'school_year' => (string) $schoolYear,
+            'status' => match (true) {
+                $openSchoolYear !== null => 'open',
+                $period !== null && $period->opens_on->gt(EnrollmentPeriod::today()) => 'upcoming',
+                default => 'closed',
+            },
+            'opens_on' => $period?->opens_on->toDateString(),
+            'closes_on' => $period?->closes_on->toDateString(),
+        ];
+    }
+
+    /**
+     * Applications are never for a school year older than last school year.
+     */
+    private static function oldestApplicableSchoolYear(): string
+    {
+        $startYear = (int) explode('-', Enrollment::currentSchoolYear())[0] - 1;
+
+        return $startYear.'-'.($startYear + 1);
     }
 
     /**

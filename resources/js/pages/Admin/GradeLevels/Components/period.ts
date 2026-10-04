@@ -26,6 +26,11 @@ function inDays(days: number) {
     return `in ${days} days`;
 }
 
+/** Whether the closing date has passed. Mirrors EnrollmentPeriod::isClosed(). */
+export function isPeriodClosed(period: EnrollmentPeriod | null, today: string) {
+    return !!period && today > period.closes_on;
+}
+
 /** A short label (and colours) for where today falls in the period. */
 export function periodStatus(period: EnrollmentPeriod, today: string) {
     if (today < period.opens_on) {
@@ -40,7 +45,8 @@ export function periodStatus(period: EnrollmentPeriod, today: string) {
     }
 
     return {
-        label: `Open · closes ${inDays(daysBetween(today, period.closes_on))}`,
+        // The closing date is the last day applications are taken.
+        label: `Open · last day ${inDays(daysBetween(today, period.closes_on))}`,
         tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
     };
 }
