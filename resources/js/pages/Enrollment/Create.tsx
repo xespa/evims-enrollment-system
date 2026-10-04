@@ -80,9 +80,11 @@ const FIELD_LABELS = {
 
 // Steps skipped automatically (via Next/Back) once a returning student's LRN
 // is confirmed, since their info is already on file — Address, Parents,
-// Academic History, Vital Info, and Documents. They're still reachable by
-// clicking directly on the stepper nav, this only affects the linear flow.
-const FAST_TRACK_SKIP_STEPS = [2, 3, 4, 5, 7];
+// Academic History, and Vital Info. They're still reachable by clicking
+// directly on the stepper nav, this only affects the linear flow. Documents
+// isn't skipped: it tells the parent what's kept on file and when the PSA
+// needs a new copy.
+const FAST_TRACK_SKIP_STEPS = [2, 3, 4, 5];
 
 /** The step a (possibly nested, e.g. "subject_ids.0") field lives on. */
 function stepForField(field: string): number {
@@ -233,6 +235,9 @@ export default function Create({
     // used to stop a second application for a year they've already applied
     // for, before the next school year has opened.
     const [previousSchoolYear, setPreviousSchoolYear] = useState(null);
+    // A returning student's documents from their last approved year, kept
+    // so they needn't be uploaded again. Null for everyone else.
+    const [documentsOnFile, setDocumentsOnFile] = useState(null);
 
     const defaultFormData = {
         // Student
@@ -586,15 +591,18 @@ export default function Create({
         }
     };
 
-    const handleLrnMatched = (student, prevSchoolYear) => {
+    const handleLrnMatched = (student, prevSchoolYear, documentsKept) => {
         setData((prev) => ({
             ...prev,
             ...student,
+            // The registrar attaches a returning student's latest Form 138.
+            form_138: documentsKept ? null : prev.form_138,
             age: student.date_of_birth
                 ? calculateAge(student.date_of_birth)
                 : prev.age,
         }));
         setPreviousSchoolYear(prevSchoolYear ?? null);
+        setDocumentsOnFile(documentsKept ?? null);
         setFastTrack(true);
         setLrnGateResolved(true);
         setStep(6);
@@ -602,6 +610,7 @@ export default function Create({
     };
 
     const handleNewChild = () => {
+        setDocumentsOnFile(null);
         setFastTrack(false);
         setLrnGateResolved(true);
     };
@@ -666,6 +675,7 @@ export default function Create({
         errors: { ...missingFieldErrors, ...errors },
         gradeLevels,
         schoolYears,
+        documentsOnFile,
     };
 
     const fastTrackSelectClass = (field: string) =>

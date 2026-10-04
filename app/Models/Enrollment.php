@@ -242,6 +242,51 @@ class Enrollment extends Model
     }
 
     /**
+     * Applications of returning students: the same student was approved for
+     * an earlier school year. The school issues their Form 138, so the
+     * registrar uploads it instead of the parent.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeReturning(Builder $query): void
+    {
+        $query->whereExists(fn ($previous) => $previous
+            ->from('enrollments as previous')
+            ->whereColumn('previous.student_id', 'enrollments.student_id')
+            ->whereColumn('previous.school_year', '<', 'enrollments.school_year')
+            ->where('previous.enrollment_status', 'APPROVED')
+            ->whereNull('previous.cancelled_at'));
+    }
+
+    /**
+     * Pending returning-student applications whose latest Form 138 the
+     * registrar hasn't uploaded yet.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeAwaitingSchoolForm138(Builder $query): void
+    {
+        $query->returning()
+            ->archived(false)
+            ->withStatus('PENDING')
+            ->whereDoesntHave('officeVerification', fn (Builder $verification) => $verification->whereNotNull('form_138_path'));
+    }
+
+    public function isReturning(): bool
+    {
+        return $this->previousApprovedEnrollment() !== null;
+    }
+
+    /**
+     * The same student's approved enrollment from the school year before
+     * this one, if they're a returning student.
+     */
+    public function previousApprovedEnrollment(): ?self
+    {
+        return $this->student?->lastApprovedEnrollmentBefore($this->school_year);
+    }
+
+    /**
      * Names of the required documents that have no file uploaded yet.
      *
      * @return array<int, string>

@@ -32,6 +32,7 @@ class DashboardController extends Controller
                     : null;
 
                 $enrollment->setAttribute('rejection_details', $enrollment->rejectionDetails());
+                $enrollment->setAttribute('is_returning', $enrollment->isReturning());
 
                 if ($enrollment->billingContract) {
                     $totalBilled = (float) $enrollment->billingContract->total_fee;
@@ -77,6 +78,10 @@ class DashboardController extends Controller
 
         if ($enrollment->enrollment_status === 'APPROVED') {
             return back()->withErrors(['document' => 'This application is already approved; documents can no longer be changed.']);
+        }
+
+        if ($type === 'form_138' && $enrollment->isReturning()) {
+            return back()->withErrors(['document' => 'The registrar attaches the latest Form 138 for returning students, so there’s no need to upload it.']);
         }
 
         $request->validate([

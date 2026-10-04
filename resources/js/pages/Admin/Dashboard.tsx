@@ -48,6 +48,12 @@ type Props = {
         student: { first_name: string; last_name: string };
         grade_level: { name: string };
     }[];
+    awaitingForm138: {
+        id: number;
+        school_year: string;
+        student: { first_name: string; last_name: string };
+        grade_level: { name: string };
+    }[];
     recentPayments: {
         id: number;
         amount: string | number;
@@ -223,6 +229,7 @@ export default function Dashboard({
     schoolYears,
     stats,
     recentEnrollments,
+    awaitingForm138,
     recentPayments,
 }: Props) {
     const schoolYear = filters.school_year;
@@ -294,6 +301,44 @@ export default function Dashboard({
                             </select>
                         </div>
                     </div>
+
+                    {awaitingForm138.length > 0 && (
+                        <div
+                            role="status"
+                            className="mb-6 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                        >
+                            <p className="flex items-start gap-2">
+                                <AlertTriangle
+                                    className="mt-0.5 h-4 w-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <span>
+                                    <span className="font-semibold">
+                                        Upload the latest Form 138.
+                                    </span>{' '}
+                                    {awaitingForm138.length === 1
+                                        ? 'This returning student needs'
+                                        : `These ${awaitingForm138.length} returning students need`}{' '}
+                                    their report card from EVIMS attached before
+                                    their application can be approved:
+                                </span>
+                            </p>
+                            <ul className="mt-2 flex flex-wrap gap-2 pl-6">
+                                {awaitingForm138.map((enrollment) => (
+                                    <li key={enrollment.id}>
+                                        <Link
+                                            href={`${route('admin.enrollments.show', enrollment.id)}#document-verification`}
+                                            className="inline-flex min-h-8 items-center rounded-full bg-white/70 px-3 text-xs font-semibold underline-offset-2 hover:underline"
+                                        >
+                                            {enrollment.student.last_name},{' '}
+                                            {enrollment.student.first_name} ·{' '}
+                                            {enrollment.grade_level.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     {/* Headline numbers */}
                     <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -58,6 +58,9 @@ class EnrollmentManagementController extends Controller
                 'email_verified' => $account->email_verified_at !== null,
                 'registered_at' => $account->created_at?->toDateString(),
             ] : null,
+            // A returning student's latest Form 138 comes from the school, so
+            // the registrar is reminded to upload it instead of the parent.
+            'previousSchoolYear' => $enrollment->previousApprovedEnrollment()?->school_year,
             'rejectionReasons' => array_map(
                 fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
                 EnrollmentRejectionReason::cases(),
@@ -117,6 +120,10 @@ class EnrollmentManagementController extends Controller
 
         if (! $enrollment->enrolleeUser) {
             return back()->withErrors(['reminder' => 'This application has no linked student portal account to notify.']);
+        }
+
+        if ($type === 'form_138' && $enrollment->isReturning()) {
+            return back()->withErrors(['reminder' => 'This is a returning student, so their latest Form 138 is uploaded by the registrar, not the parent.']);
         }
 
         $documentLabel = OfficeVerification::DOCUMENT_COLUMNS[$type]['label'];

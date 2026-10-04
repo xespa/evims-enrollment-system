@@ -100,11 +100,23 @@ class EnrollmentController extends Controller
             ->latest()
             ->first();
 
+        $applicationSchoolYear = Curriculum::applicationSchoolYear();
+        $lastApprovedEnrollment = $applicationSchoolYear
+            ? $student->lastApprovedEnrollmentBefore($applicationSchoolYear)?->load('officeVerification')
+            : null;
+
         return response()->json([
             'matched' => true,
             // Lets the frontend stop a returning student from applying again
             // for the year they last applied for, before the next one opens.
             'previousSchoolYear' => $latestEnrollment?->school_year,
+            // A returning student keeps last year's documents (except Form
+            // 138, which the registrar uploads), so the form can say so.
+            'documentsOnFile' => $lastApprovedEnrollment ? [
+                'schoolYear' => $lastApprovedEnrollment->school_year,
+                'birth_certificate' => filled($lastApprovedEnrollment->officeVerification?->birth_certificate_path),
+                'good_moral_certificate' => filled($lastApprovedEnrollment->officeVerification?->good_moral_path),
+            ] : null,
             'student' => [
                 // Student
                 'last_name' => $student->last_name,

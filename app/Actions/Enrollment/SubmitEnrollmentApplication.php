@@ -5,9 +5,12 @@ namespace App\Actions\Enrollment;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
+use App\Models\OfficeVerification;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SubmitEnrollmentApplication
 {
@@ -19,6 +22,19 @@ class SubmitEnrollmentApplication
         'birth_certificate' => 'birth_certificate_path',
         'good_moral_certificate' => 'good_moral_path',
     ];
+
+    /**
+     * Documents a returning student keeps from their last approved year,
+     * keyed like OfficeVerification::DOCUMENT_COLUMNS. Form 138 isn't one:
+     * it's a new report card every year, which the school uploads itself.
+     */
+    public const RETAINED_DOCUMENTS = ['birth_certificate', 'good_moral'];
+
+    /**
+     * Student fields printed on the PSA birth certificate. Changing any of
+     * them means the copy on file no longer matches, so a new one is needed.
+     */
+    private const PSA_FIELDS = ['psa_birth_cert_no', 'last_name', 'first_name', 'middle_name', 'extension_name', 'date_of_birth', 'sex'];
 
     /**
      * @return array{form_138_path: ?string, birth_certificate_path: ?string, good_moral_path: ?string}
@@ -86,6 +102,13 @@ class SubmitEnrollmentApplication
             // in a different family's LRN could silently edit that student's identity.
             $isOwner = $existingStudent
                 && $enrollee->enrollments()->where('student_id', $existingStudent->id)->exists();
+
+            // Only the family's own returning student keeps documents on file,
+            // never someone else's child matched by LRN.
+            $previousEnrollment = $isOwner
+                ? $existingStudent->lastApprovedEnrollmentBefore($validated['school_year'])
+                : null;
+            $psaDetailsChanged = $existingStudent && $this->psaDetailsChanged($existingStudent, $validated);
 
             if ($existingStudent) {
                 $student = $existingStudent;
@@ -199,9 +222,73 @@ class SubmitEnrollmentApplication
 
             $billingContract->generateInstallments();
 
-            $enrollment->officeVerification()->create($documentPaths);
+            $enrollment->officeVerification()->create(
+                $previousEnrollment
+                    ? $this->withRetainedDocuments($previousEnrollment, $documentPaths, $psaDetailsChanged)
+                    : $documentPaths,
+            );
 
             return $enrollment;
         });
+    }
+
+    /**
+     * Whether the submission changes anything printed on the PSA birth
+     * certificate compared with the student's record.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function psaDetailsChanged(Student $student, array $validated): bool
+    {
+        foreach (self::PSA_FIELDS as $field) {
+            $current = $field === 'date_of_birth'
+                ? $student->date_of_birth->format('Y-m-d')
+                : $student->{$field};
+            $submitted = $field === 'date_of_birth' && is_string($validated[$field] ?? null)
+                ? date('Y-m-d', (int) strtotime($validated[$field]))
+                : ($validated[$field] ?? null);
+
+            if (blank($current) !== blank($submitted) || (filled($current) && (string) $current !== (string) $submitted)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Fills each document the parent didn't upload again with a copy of the
+     * one from the student's last approved year, keeping its verification.
+     * The PSA isn't kept when its details changed. Files are copied, not
+     * shared, so replacing one year's file never deletes the other's.
+     *
+     * @param  array{form_138_path: ?string, birth_certificate_path: ?string, good_moral_path: ?string}  $documentPaths
+     * @return array<string, string|bool|null>
+     */
+    private function withRetainedDocuments(Enrollment $previousEnrollment, array $documentPaths, bool $psaDetailsChanged): array
+    {
+        $previousVerification = $previousEnrollment->officeVerification;
+        $attributes = $documentPaths;
+
+        foreach (self::RETAINED_DOCUMENTS as $type) {
+            $columns = OfficeVerification::DOCUMENT_COLUMNS[$type];
+            $previousPath = $previousVerification?->{$columns['path']};
+
+            if (filled($attributes[$columns['path']]) || blank($previousPath) || ($type === 'birth_certificate' && $psaDetailsChanged)) {
+                continue;
+            }
+
+            if (! Storage::disk('public')->exists($previousPath)) {
+                continue;
+            }
+
+            $copyPath = 'documents/'.Str::random(40).'.'.pathinfo($previousPath, PATHINFO_EXTENSION);
+            Storage::disk('public')->copy($previousPath, $copyPath);
+
+            $attributes[$columns['path']] = $copyPath;
+            $attributes[$columns['verified']] = (bool) $previousVerification->{$columns['verified']};
+        }
+
+        return $attributes;
     }
 }

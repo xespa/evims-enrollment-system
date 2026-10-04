@@ -102,6 +102,14 @@ class DashboardController extends Controller
                 ->latest()
                 ->limit(5)
                 ->get(),
+            // Returning students whose latest report card the school still
+            // has to attach; their applications can't be approved until then.
+            'awaitingForm138' => Enrollment::query()
+                ->tap($inSchoolYear)
+                ->awaitingSchoolForm138()
+                ->with('student:id,first_name,last_name', 'gradeLevel:id,name')
+                ->oldest()
+                ->get(['id', 'student_id', 'grade_level_id', 'school_year', 'created_at']),
             'recentPayments' => $completedPayments()
                 ->with('enrollment.student')
                 ->latest('paid_at')

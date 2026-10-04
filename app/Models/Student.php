@@ -42,6 +42,20 @@ class Student extends Model
         return $this->hasOne(Enrollment::class)->latestOfMany();
     }
 
+    /**
+     * The student's most recent approved enrollment in a school year before
+     * the given one. Its documents are what a returning student keeps.
+     */
+    public function lastApprovedEnrollmentBefore(string $schoolYear): ?Enrollment
+    {
+        return $this->enrollments()
+            ->where('enrollment_status', 'APPROVED')
+            ->whereNull('cancelled_at')
+            ->where('school_year', '<', $schoolYear)
+            ->orderByDesc('school_year')
+            ->first();
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->last_name}, {$this->first_name} {$this->middle_name} {$this->extension_name}");

@@ -14,7 +14,14 @@ function ReviewRow({ label, value }) {
     );
 }
 
-export default function ReviewStep({ data, gradeLevels }) {
+export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
+    // What a returning student's document shows when nothing new is chosen.
+    const documentValue = (field) =>
+        data[field]?.name ??
+        (documentsOnFile?.[field]
+            ? `On file from S.Y. ${documentsOnFile.schoolYear}`
+            : null);
+
     const selectedGrade = gradeLevels.find(
         (g) => String(g.id) === String(data.grade_level_id),
     );
@@ -100,14 +107,21 @@ export default function ReviewStep({ data, gradeLevels }) {
                 <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
                     Documents
                 </h3>
-                <ReviewRow label="Form 138" value={data.form_138?.name} />
+                <ReviewRow
+                    label="Form 138"
+                    value={
+                        documentsOnFile
+                            ? 'Attached by the registrar'
+                            : data.form_138?.name
+                    }
+                />
                 <ReviewRow
                     label="PSA Birth Certificate"
-                    value={data.birth_certificate?.name}
+                    value={documentValue('birth_certificate')}
                 />
                 <ReviewRow
                     label="Good Moral Certificate"
-                    value={data.good_moral_certificate?.name}
+                    value={documentValue('good_moral_certificate')}
                 />
             </div>
 

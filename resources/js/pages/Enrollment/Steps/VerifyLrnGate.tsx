@@ -41,7 +41,11 @@ export default function VerifyLrnGate({ defaultLrn, onMatched, onNewChild }) {
             const result = await response.json();
 
             if (result.matched) {
-                onMatched(result.student, result.previousSchoolYear);
+                onMatched(
+                    result.student,
+                    result.previousSchoolYear,
+                    result.documentsOnFile,
+                );
             } else {
                 setNotFound(true);
             }

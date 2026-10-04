@@ -365,6 +365,7 @@ function DocumentRow({
     doc,
     verification,
     hasEnrollee,
+    isUploadedBySchool,
     onToggleVerification,
 }) {
     const [open, setOpen] = useState(false);
@@ -412,7 +413,7 @@ function DocumentRow({
                         )
                     }
                 />
-                {hasEnrollee && (
+                {hasEnrollee && !isUploadedBySchool && (
                     <button
                         type="button"
                         onClick={toggleOpen}
@@ -444,7 +445,9 @@ function DocumentRow({
                     </>
                 ) : (
                     <p className="text-xs text-[#1F2A24]/65">
-                        No file uploaded yet
+                        {isUploadedBySchool
+                            ? 'Returning student — upload their latest report card'
+                            : 'No file uploaded yet'}
                     </p>
                 )}
                 <UploadDocumentForm
@@ -529,7 +532,12 @@ function DocumentRow({
     );
 }
 
-export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
+export default function Show({
+    enrollment,
+    submittedFrom,
+    previousSchoolYear,
+    rejectionReasons,
+}) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
     const statusError = props.errors?.enrollment_status;
@@ -540,6 +548,14 @@ export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
     const verification = enrollment.office_verification;
     const missingDocuments = DOCUMENTS.filter(
         (doc) => !verification?.[doc.pathKey],
+    );
+    // A returning student's Form 138 comes from the school, so it's the
+    // registrar's job to upload it — called out on its own, not as missing
+    // from the parent.
+    const isReturning = !!previousSchoolYear;
+    const isAwaitingSchoolForm138 = isReturning && !verification?.form_138_path;
+    const missingFromParent = missingDocuments.filter(
+        (doc) => !(isReturning && doc.type === 'form_138'),
     );
     const missingDocumentsError = props.errors?.missing_documents;
     const approveBlockers = [
@@ -738,7 +754,33 @@ export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
                         </div>
                     )}
 
-                    {missingDocuments.length > 0 &&
+                    {isAwaitingSchoolForm138 &&
+                        enrollment.enrollment_status !== 'APPROVED' &&
+                        !isCancelled && (
+                            <div
+                                role="status"
+                                className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                            >
+                                <p>
+                                    <span className="font-semibold">
+                                        Upload the latest Form 138.
+                                    </span>{' '}
+                                    {studentName} is a returning student
+                                    (enrolled S.Y. {previousSchoolYear}). Their
+                                    other documents carry over, but the school
+                                    issues their report card, so attach it
+                                    before approving.
+                                </p>
+                                <a
+                                    href="#document-verification"
+                                    className="mt-2 inline-block font-semibold underline"
+                                >
+                                    Upload Form 138 ↓
+                                </a>
+                            </div>
+                        )}
+
+                    {missingFromParent.length > 0 &&
                         enrollment.enrollment_status !== 'APPROVED' &&
                         !isCancelled && (
                             <div
@@ -753,7 +795,7 @@ export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
                                     this application can't be approved:
                                 </p>
                                 <ul className="mt-1 list-disc pl-5 font-medium">
-                                    {missingDocuments.map((doc) => (
+                                    {missingFromParent.map((doc) => (
                                         <li key={doc.type}>{doc.label}</li>
                                     ))}
                                 </ul>
@@ -1173,6 +1215,9 @@ export default function Show({ enrollment, submittedFrom, rejectionReasons }) {
                                     doc={doc}
                                     verification={verification}
                                     hasEnrollee={!!enrollment.enrollee_user_id}
+                                    isUploadedBySchool={
+                                        isReturning && doc.type === 'form_138'
+                                    }
                                     onToggleVerification={toggleVerification}
                                 />
                             ))}

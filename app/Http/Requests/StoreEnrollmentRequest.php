@@ -7,6 +7,7 @@ use App\Models\BillingContract;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\GradeLevel;
+use App\Models\Student;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -137,6 +138,19 @@ class StoreEnrollmentRequest extends FormRequest
             ->first();
     }
 
+    /**
+     * Whether the student was approved at EVIMS in an earlier school year,
+     * so the school (not the parent) provides their latest Form 138.
+     */
+    private function isReturningStudent(?int $existingStudentId): bool
+    {
+        $schoolYear = $this->input('school_year');
+
+        return $existingStudentId !== null
+            && is_string($schoolYear)
+            && Student::findOrFail($existingStudentId)->lastApprovedEnrollmentBefore($schoolYear) !== null;
+    }
+
     private function isForNoLrnGradeLevel(): bool
     {
         $gradeLevelId = $this->input('grade_level_id');
@@ -149,6 +163,7 @@ class StoreEnrollmentRequest extends FormRequest
     {
         $existingStudentId = $this->resolveExistingStudentId();
         $curriculum = $this->curriculum();
+        $isReturningStudent = $this->isReturningStudent($existingStudentId);
 
         $schoolYearRules = [
             'required',
@@ -264,7 +279,15 @@ class StoreEnrollmentRequest extends FormRequest
             'payment_channel' => ['required', Rule::in(BillingContract::CHANNELS)],
 
             // Documents
-            'form_138' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'form_138' => [
+                'nullable',
+                // The registrar uploads a returning student's latest report
+                // card, since the school is the one that issues it.
+                Rule::prohibitedIf($isReturningStudent),
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:10240',
+            ],
             'birth_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'good_moral_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
@@ -281,6 +304,7 @@ class StoreEnrollmentRequest extends FormRequest
             'father_mobile_no.regex' => $mobileNumberMessage,
             'mother_mobile_no.regex' => $mobileNumberMessage,
             'lrn.regex' => self::LRN_MESSAGE,
+            'form_138.prohibited' => 'Returning students don’t need to upload a Form 138 — the registrar will attach their latest report card from EVIMS.',
             'lrn.required_if' => 'Transferees need their LRN — enter the 12-digit LRN from their previous school (on their Form 138 / report card).',
         ];
     }

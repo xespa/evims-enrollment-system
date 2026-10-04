@@ -760,6 +760,11 @@ export default function Dashboard({ enrollments }) {
                                             const path =
                                                 verification?.[doc.pathKey];
                                             const key = `${enrollment.id}:${doc.type}`;
+                                            // The registrar attaches a returning
+                                            // student's latest report card.
+                                            const isUploadedBySchool =
+                                                enrollment.is_returning &&
+                                                doc.type === 'form_138';
 
                                             return (
                                                 <li
@@ -777,7 +782,9 @@ export default function Dashboard({ enrollments }) {
                                                                 ? 'Verified'
                                                                 : path
                                                                   ? 'Pending review'
-                                                                  : 'Not uploaded yet'}
+                                                                  : isUploadedBySchool
+                                                                    ? 'The registrar will attach this'
+                                                                    : 'Not uploaded yet'}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-3">
@@ -804,7 +811,7 @@ export default function Dashboard({ enrollments }) {
                                                                 </span>
                                                             </button>
                                                         )}
-                                                        {isApproved ? (
+                                                        {isUploadedBySchool ? null : isApproved ? (
                                                             <span className="text-xs text-[#1F2A24]/65">
                                                                 Locked
                                                             </span>
