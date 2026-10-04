@@ -172,7 +172,7 @@ test('another family\'s documents are never carried over', function () {
 });
 
 test('the LRN check tells the form which documents are on file', function () {
-    approvedLastYear();
+    $lastYear = approvedLastYear()->officeVerification;
 
     $this->actingAs($this->enrollee, 'enrollee')
         ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678'])
@@ -181,7 +181,42 @@ test('the LRN check tells the form which documents are on file', function () {
             'schoolYear' => '2025-2026',
             'birth_certificate' => true,
             'good_moral_certificate' => true,
+            'files' => [
+                'birth_certificate' => $lastYear->birth_certificate_path,
+                'good_moral_certificate' => $lastYear->good_moral_path,
+            ],
         ]);
+});
+
+test('the LRN check shows documents approved for the school year that is open', function () {
+    $thisYear = approvedLastYear(['school_year' => '2026-2027'])->officeVerification;
+
+    $this->actingAs($this->enrollee, 'enrollee')
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678'])
+        ->assertOk()
+        ->assertJsonPath('documentsOnFile.schoolYear', '2026-2027')
+        ->assertJsonPath('documentsOnFile.files.birth_certificate', $thisYear->birth_certificate_path);
+});
+
+test('the LRN check marks a document missing from last year as not on file', function () {
+    approvedLastYear()->officeVerification->update(['good_moral_path' => null]);
+
+    $this->actingAs($this->enrollee, 'enrollee')
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678'])
+        ->assertOk()
+        ->assertJsonPath('documentsOnFile.good_moral_certificate', false)
+        ->assertJsonPath('documentsOnFile.files.good_moral_certificate', null)
+        ->assertJsonPath('documentsOnFile.birth_certificate', true);
+});
+
+test('the LRN check never shows another family\'s documents', function () {
+    approvedLastYear(['enrollee_user_id' => EnrolleeUser::factory()->create()->id]);
+
+    $this->actingAs($this->enrollee, 'enrollee')
+        ->postJson(route('admission.verify-lrn'), ['lrn' => '45250112345678'])
+        ->assertOk()
+        ->assertJsonPath('matched', false)
+        ->assertJsonMissingPath('documentsOnFile');
 });
 
 test('the LRN check has no documents on file without an approved earlier year', function () {

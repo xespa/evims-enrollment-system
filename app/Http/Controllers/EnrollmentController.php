@@ -100,9 +100,19 @@ class EnrollmentController extends Controller
             ->latest()
             ->first();
 
+        // The child's latest approved year with this account, up to and
+        // including the one that's open, so the parent can always view the
+        // documents they last submitted.
         $applicationSchoolYear = Curriculum::applicationSchoolYear();
         $lastApprovedEnrollment = $applicationSchoolYear
-            ? $student->lastApprovedEnrollmentBefore($applicationSchoolYear)?->load('officeVerification')
+            ? $student->enrollments()
+                ->where('enrollee_user_id', $enrollee->id)
+                ->where('enrollment_status', 'APPROVED')
+                ->whereNull('cancelled_at')
+                ->where('school_year', '<=', $applicationSchoolYear)
+                ->orderByDesc('school_year')
+                ->with('officeVerification')
+                ->first()
             : null;
 
         return response()->json([
@@ -111,11 +121,16 @@ class EnrollmentController extends Controller
             // for the year they last applied for, before the next one opens.
             'previousSchoolYear' => $latestEnrollment?->school_year,
             // A returning student keeps last year's documents (except Form
-            // 138, which the registrar uploads), so the form can say so.
+            // 138, which the registrar uploads), so the form can say so and
+            // let the parent view the copies on file.
             'documentsOnFile' => $lastApprovedEnrollment ? [
                 'schoolYear' => $lastApprovedEnrollment->school_year,
                 'birth_certificate' => filled($lastApprovedEnrollment->officeVerification?->birth_certificate_path),
                 'good_moral_certificate' => filled($lastApprovedEnrollment->officeVerification?->good_moral_path),
+                'files' => [
+                    'birth_certificate' => $lastApprovedEnrollment->officeVerification?->birth_certificate_path,
+                    'good_moral_certificate' => $lastApprovedEnrollment->officeVerification?->good_moral_path,
+                ],
             ] : null,
             'student' => [
                 // Student
