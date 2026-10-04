@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\IndexStudentRequest;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class StudentController extends Controller
 {
-    public function index(Request $request)
+    public function index(IndexStudentRequest $request): Response
     {
         $latestSchoolYear = Enrollment::max('school_year');
 
@@ -58,6 +60,11 @@ class StudentController extends Controller
             $query->where('enrollments.grade_level_id', $request->integer('grade_level_id'));
         }
 
+        $query
+            ->when($request->filled('sex'), fn ($query) => $query->where('students.sex', $request->string('sex')->toString()))
+            ->when($request->filled('status'), fn ($query) => $query->withStatus($request->string('status')->toString()))
+            ->when($request->filled('student_type'), fn ($query) => $query->where('enrollments.student_type', $request->string('student_type')->toString()));
+
         $applications = $query->paginate(15)->withQueryString()
             ->through(function (Enrollment $enrollment) {
                 $enrollment->setAttribute('payment', $enrollment->paymentSummary());
@@ -77,6 +84,9 @@ class StudentController extends Controller
                 'search' => $request->string('search')->toString(),
                 'school_year' => $schoolYear,
                 'grade_level_id' => $request->string('grade_level_id')->toString(),
+                'sex' => $request->string('sex')->toString(),
+                'status' => $request->string('status')->toString(),
+                'student_type' => $request->string('student_type')->toString(),
                 'archived' => $showArchived,
             ],
         ]);

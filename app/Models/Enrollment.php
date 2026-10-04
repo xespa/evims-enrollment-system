@@ -223,6 +223,25 @@ class Enrollment extends Model
     }
 
     /**
+     * Applications with the given status as the admin sees it: CANCELLED
+     * (withdrawn by the parent) takes the place of the review status, so
+     * PENDING, APPROVED and REJECTED only match applications still active.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeWithStatus(Builder $query, string $status): void
+    {
+        if ($status === 'CANCELLED') {
+            $query->whereNotNull('enrollments.cancelled_at');
+
+            return;
+        }
+
+        $query->whereNull('enrollments.cancelled_at')
+            ->where('enrollments.enrollment_status', $status);
+    }
+
+    /**
      * Names of the required documents that have no file uploaded yet.
      *
      * @return array<int, string>

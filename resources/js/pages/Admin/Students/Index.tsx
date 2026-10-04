@@ -29,6 +29,36 @@ const PAYMENT_STATUS = {
     PAID: { label: 'Fully paid', className: 'bg-green-100 text-green-800' },
 };
 
+const SEX_OPTIONS = [
+    { value: 'MALE', label: 'Male' },
+    { value: 'FEMALE', label: 'Female' },
+];
+
+const STATUS_OPTIONS = [
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'APPROVED', label: 'Approved' },
+    { value: 'REJECTED', label: 'Rejected' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+];
+
+const STUDENT_TYPE_OPTIONS = [
+    { value: 'NO_LRN', label: 'No LRN' },
+    { value: 'WITH_LRN', label: 'With LRN' },
+    { value: 'RETURNEE', label: 'Returnee' },
+];
+
+/** The dropdown filters, in the order they're shown. */
+const SELECT_FILTER_KEYS = [
+    'school_year',
+    'grade_level_id',
+    'sex',
+    'status',
+    'student_type',
+];
+
+const SELECT_CLASS =
+    'min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+
 function formatPeso(value) {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -97,7 +127,6 @@ export default function Index({
     const flashSuccess = props.flash?.success;
 
     const [search, setSearch] = useState(filters.search ?? '');
-    const [schoolYear, setSchoolYear] = useState(filters.school_year ?? '');
     // The application whose counter payment is being recorded; kept apart
     // from `isRecording` so the dialog doesn't blank out while closing.
     const [recordingFor, setRecordingFor] = useState(null);
@@ -110,22 +139,70 @@ export default function Index({
         setIsRecording(true);
     };
 
-    const [gradeLevelId, setGradeLevelId] = useState(
-        filters.grade_level_id ?? '',
+    const [selected, setSelected] = useState(() =>
+        Object.fromEntries(
+            SELECT_FILTER_KEYS.map((key) => [key, filters[key] ?? '']),
+        ),
     );
+
+    const selectOptions = {
+        school_year: {
+            label: 'school year',
+            allLabel: 'All School Years',
+            options: schoolYears.map((year) => ({ value: year, label: year })),
+        },
+        grade_level_id: {
+            label: 'grade level',
+            allLabel: 'All Grade Levels',
+            options: gradeLevels.map((g) => ({
+                value: String(g.id),
+                label: g.name,
+            })),
+        },
+        sex: { label: 'sex', allLabel: 'All Sex', options: SEX_OPTIONS },
+        status: {
+            label: 'status',
+            allLabel: 'All Statuses',
+            options: STATUS_OPTIONS,
+        },
+        student_type: {
+            label: 'student type',
+            allLabel: 'All Student Types',
+            options: STUDENT_TYPE_OPTIONS,
+        },
+    };
 
     const applyFilters = (overrides = {}) => {
         router.get(
             route('admin.students.index'),
             {
                 search,
-                school_year: schoolYear,
-                grade_level_id: gradeLevelId,
+                ...selected,
                 archived: filters.archived ? 1 : undefined,
                 ...overrides,
             },
             { preserveState: true, replace: true },
         );
+    };
+
+    const changeFilter = (key, value) => {
+        setSelected((current) => ({ ...current, [key]: value }));
+        applyFilters({ [key]: value });
+    };
+
+    // "All school years" is an explicit choice (an empty school_year), so
+    // clearing goes back to that rather than to the default year.
+    const hasActiveFilters =
+        search !== '' || SELECT_FILTER_KEYS.some((key) => selected[key] !== '');
+
+    const clearFilters = () => {
+        const cleared = Object.fromEntries(
+            SELECT_FILTER_KEYS.map((key) => [key, '']),
+        );
+
+        setSearch('');
+        setSelected(cleared);
+        applyFilters({ search: '', ...cleared });
     };
 
     const handleSearchSubmit = (e) => {
@@ -198,43 +275,35 @@ export default function Index({
                                 className="min-h-10 min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
                             />
 
-                            <select
-                                aria-label="Filter by school year"
-                                value={schoolYear}
-                                onChange={(e) => {
-                                    setSchoolYear(e.target.value);
-                                    applyFilters({
-                                        school_year: e.target.value,
-                                    });
-                                }}
-                                className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
-                            >
-                                <option value="">All School Years</option>
-                                {schoolYears.map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
+                            {SELECT_FILTER_KEYS.map((key) => (
+                                <select
+                                    key={key}
+                                    aria-label={`Filter by ${selectOptions[key].label}`}
+                                    value={selected[key]}
+                                    onChange={(e) =>
+                                        changeFilter(key, e.target.value)
+                                    }
+                                    className={`${SELECT_CLASS} ${
+                                        selected[key] !== ''
+                                            ? 'border-[#2F6F4E]/50 bg-[#2F6F4E]/5'
+                                            : ''
+                                    }`}
+                                >
+                                    <option value="">
+                                        {selectOptions[key].allLabel}
                                     </option>
-                                ))}
-                            </select>
-
-                            <select
-                                aria-label="Filter by grade level"
-                                value={gradeLevelId}
-                                onChange={(e) => {
-                                    setGradeLevelId(e.target.value);
-                                    applyFilters({
-                                        grade_level_id: e.target.value,
-                                    });
-                                }}
-                                className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
-                            >
-                                <option value="">All Grade Levels</option>
-                                {gradeLevels.map((g) => (
-                                    <option key={g.id} value={g.id}>
-                                        {g.name}
-                                    </option>
-                                ))}
-                            </select>
+                                    {selectOptions[key].options.map(
+                                        (option) => (
+                                            <option
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            ))}
 
                             <button
                                 type="submit"
@@ -243,6 +312,25 @@ export default function Index({
                                 Search
                             </button>
                         </form>
+
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-[#1F2A24]/65">
+                            <p aria-live="polite">
+                                {applications.total}{' '}
+                                {applications.total === 1
+                                    ? 'application'
+                                    : 'applications'}{' '}
+                                found
+                            </p>
+                            {hasActiveFilters && (
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="min-h-9 rounded-full px-3 font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    Clear filters
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Table */}
