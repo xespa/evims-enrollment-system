@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarClock,
     CalendarPlus,
     FilePen,
     Loader2,
@@ -14,9 +15,15 @@ import {
     formatCurrency,
 } from '@/pages/Enrollment/Components/fees';
 import EditFeesDialog from './Components/EditFeesDialog';
+import EnrollmentPeriodDialog from './Components/EnrollmentPeriodDialog';
+import { formatDate, periodStatus } from './Components/period';
 import ManageSubjectsDialog from './Components/ManageSubjectsDialog';
 import { MONTHLY_FEES, ONE_TIME_FEES } from './Components/types';
-import type { Curriculum, GradeLevel } from './Components/types';
+import type {
+    Curriculum,
+    EnrollmentPeriod,
+    GradeLevel,
+} from './Components/types';
 
 type Props = {
     gradeLevels: GradeLevel[];
@@ -27,6 +34,10 @@ type Props = {
     draftSchoolYear: string | null;
     nextSchoolYear: string;
     manageGradeLevelId: number | null;
+    /** When applications for the selected year open and close, if set. */
+    enrollmentPeriod: EnrollmentPeriod | null;
+    /** Today's date at the school (Y-m-d). */
+    today: string;
 };
 
 const STAGES = [
@@ -64,6 +75,73 @@ function yearLabel(
     if (schoolYear === currentSchoolYear) return 'Current';
 
     return schoolYear > currentSchoolYear ? 'Upcoming' : 'Past';
+}
+
+function EnrollmentPeriodCard({
+    schoolYear,
+    period,
+    today,
+    onEdit,
+    onRemove,
+}: {
+    schoolYear: string;
+    period: EnrollmentPeriod | null;
+    today: string;
+    onEdit: () => void;
+    onRemove: () => void;
+}) {
+    const status = period ? periodStatus(period, today) : null;
+
+    return (
+        <section
+            aria-label={`Enrollment dates for ${schoolYear}`}
+            className="mb-6 flex flex-col gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+            <div className="flex gap-3">
+                <CalendarClock
+                    className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                    aria-hidden="true"
+                />
+                <div>
+                    <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#1F2A24]">
+                        Enrollment dates
+                        {status && (
+                            <span
+                                className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.tone}`}
+                            >
+                                {status.label}
+                            </span>
+                        )}
+                    </p>
+                    <p className="text-sm text-[#1F2A24]/70">
+                        {period
+                            ? `${formatDate(period.opens_on)} – ${formatDate(period.closes_on)}`
+                            : `Not set. Parents can apply for ${schoolYear} once it's saved, until a newer year opens.`}
+                    </p>
+                </div>
+            </div>
+
+            <div className="flex shrink-0 flex-wrap gap-2">
+                {period && (
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="min-h-10 rounded-full px-4 text-sm font-medium text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                    >
+                        Remove dates
+                    </button>
+                )}
+                <button
+                    type="button"
+                    onClick={onEdit}
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                >
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                    {period ? 'Change dates' : 'Set dates'}
+                </button>
+            </div>
+        </section>
+    );
 }
 
 function GradeLevelCard({
@@ -173,6 +251,8 @@ export default function Index({
     draftSchoolYear,
     nextSchoolYear,
     manageGradeLevelId,
+    enrollmentPeriod,
+    today,
 }: Props) {
     const { props } = usePage();
     const [confirm, confirmDialog] = useConfirm();
@@ -194,6 +274,31 @@ export default function Index({
     const [isSubjectsOpen, setIsSubjectsOpen] = useState(
         manageGradeLevelId !== null,
     );
+
+    const [isPeriodOpen, setIsPeriodOpen] = useState(false);
+    // Bumped on every open so the date form starts from the saved dates.
+    const [periodSession, setPeriodSession] = useState(0);
+
+    const openPeriod = () => {
+        setPeriodSession((n) => n + 1);
+        setIsPeriodOpen(true);
+    };
+
+    const removePeriod = async () => {
+        const confirmed = await confirm({
+            title: `Remove the enrollment dates for ${schoolYear}?`,
+            description: `Parents will be able to apply for ${schoolYear} whenever it's saved and is the newest school year, and no more reminders will be sent for it.`,
+            confirmLabel: 'Remove dates',
+            destructive: true,
+        });
+
+        if (!confirmed) return;
+
+        router.delete(
+            route('admin.school-years.enrollment-period.destroy', schoolYear),
+            { preserveScroll: true },
+        );
+    };
 
     // Looked up from the latest props, so the modals reflect each save.
     const feesGradeLevel = gradeLevels.find((g) => g.id === feesId);
@@ -224,7 +329,7 @@ export default function Index({
         const confirmed = await confirm({
             title: `Set up ${nextSchoolYear}?`,
             description: latestSchoolYear
-                ? `This creates a draft of ${nextSchoolYear} with every grade level's fees and subjects copied from ${latestSchoolYear}. Review and edit it, then Save to open enrollment — or Cancel to discard it. ${latestSchoolYear} isn't affected either way.`
+                ? `This creates a draft of ${nextSchoolYear} with every grade level's fees and subjects copied from ${latestSchoolYear}, and its enrollment dates (if set) moved a year later. Review and edit it, then Save to open enrollment — or Cancel to discard it. ${latestSchoolYear} isn't affected either way.`
                 : `This creates a draft of ${nextSchoolYear} with no subjects and ₱0 fees. Fill it in, then Save to open enrollment — or Cancel to discard it.`,
             confirmLabel: `Set up ${nextSchoolYear}`,
         });
@@ -287,7 +392,7 @@ export default function Index({
     const flashSuccess = props.flash?.success;
     const setUpError = (props.errors as Record<string, string> | undefined)
         ?.school_year;
-    const anyModalOpen = isFeesOpen || isSubjectsOpen;
+    const anyModalOpen = isFeesOpen || isSubjectsOpen || isPeriodOpen;
     const hasSchoolYears = schoolYears.length > 0;
 
     return (
@@ -445,6 +550,16 @@ export default function Index({
                         </div>
                     )}
 
+                    {hasSchoolYears && (
+                        <EnrollmentPeriodCard
+                            schoolYear={schoolYear}
+                            period={enrollmentPeriod}
+                            today={today}
+                            onEdit={openPeriod}
+                            onRemove={removePeriod}
+                        />
+                    )}
+
                     {setUpError && (
                         <div
                             role="alert"
@@ -517,6 +632,15 @@ export default function Index({
                     )}
                 </div>
             </div>
+
+            <EnrollmentPeriodDialog
+                key={`${schoolYear}-${periodSession}`}
+                schoolYear={schoolYear}
+                enrollmentPeriod={enrollmentPeriod}
+                today={today}
+                open={isPeriodOpen}
+                onOpenChange={setIsPeriodOpen}
+            />
 
             {feesGradeLevel?.curriculum && (
                 <EditFeesDialog

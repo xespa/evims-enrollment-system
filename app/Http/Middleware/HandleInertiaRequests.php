@@ -56,6 +56,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'enrollee' => $enrollee,
                 'unreadNotificationsCount' => $enrollee ? fn () => $enrollee->unreadNotifications()->count() : 0,
+                // Kept apart from the enrollee's, since both can be signed in at once.
+                'userUnreadNotificationsCount' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
             ],
         ];
     }

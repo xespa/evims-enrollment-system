@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
 use App\Models\GradeLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,6 +58,13 @@ class GradeLevelController extends Controller
             // A newly set-up year awaiting Save or Cancel; hidden from
             // applicants until saved.
             'draftSchoolYear' => Curriculum::draftSchoolYear(),
+            // When applications for the selected year open and close; null
+            // when no dates are set.
+            'enrollmentPeriod' => EnrollmentPeriod::query()
+                ->where('school_year', $schoolYear)
+                ->first(['opens_on', 'closes_on'])
+                ?->toArray(),
+            'today' => EnrollmentPeriod::today()->toDateString(),
             // The only year that can be set up next: the one after the
             // latest, copied from it.
             'nextSchoolYear' => $latestSchoolYear

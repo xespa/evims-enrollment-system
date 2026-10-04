@@ -14,6 +14,7 @@ import {
     X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import NotificationBell from '@/components/notification-bell';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
@@ -292,29 +293,32 @@ export default function EvimsAdminLayout({ children }) {
                         EVIMS
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setMobileOpen(true)}
-                    className="-mr-2 rounded-md p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
-                    aria-label="Open menu"
-                    aria-expanded={mobileOpen}
-                    aria-controls="admin-sidebar"
-                >
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                <div className="flex items-center gap-1">
+                    <NotificationBell scope="admin" />
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen(true)}
+                        className="-mr-2 rounded-md p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                        aria-label="Open menu"
+                        aria-expanded={mobileOpen}
+                        aria-controls="admin-sidebar"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4 6h16M4 12h16M4 18h16"
-                        />
-                    </svg>
-                </button>
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Mobile overlay */}
@@ -345,6 +349,9 @@ export default function EvimsAdminLayout({ children }) {
                 scroll-region=""
                 className="min-w-0 flex-1 pt-16 focus:outline-none lg:h-full lg:overflow-y-auto lg:overscroll-contain lg:pt-0"
             >
+                <div className="sticky top-0 z-20 hidden justify-end border-b border-[#1F2A24]/10 bg-[#FBF8F2]/90 px-6 py-2 backdrop-blur lg:flex">
+                    <NotificationBell scope="admin" />
+                </div>
                 {children}
             </main>
         </div>

@@ -28,6 +28,15 @@ export type GradeLevel = {
     curriculum: Curriculum | null;
 };
 
+/** When applications for a school year open and close (Y-m-d, inclusive). */
+export type EnrollmentPeriod = {
+    opens_on: string;
+    closes_on: string;
+};
+
+/** Mirrors EnrollmentPeriod::REMINDER_DAYS_AHEAD. */
+export const REMINDER_DAYS_AHEAD = 3;
+
 export type FeeName =
     | 'registration_fee'
     | 'miscellaneous_fee'

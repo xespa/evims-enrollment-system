@@ -7,8 +7,10 @@ use App\Http\Controllers\Admin\EnrolleeAccountValidIdController;
 use App\Http\Controllers\Admin\EnrollmentArchiveController;
 use App\Http\Controllers\Admin\EnrollmentDocumentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
+use App\Http\Controllers\Admin\EnrollmentPeriodController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -134,6 +136,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->only(['store', 'update', 'destroy'])
         ->parameters(['school-years' => 'schoolYear'])
         ->where(['schoolYear' => '\d{4}-\d{4}']);
+    // When applications for a school year open and close.
+    Route::put('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'update'])
+        ->where('schoolYear', '\d{4}-\d{4}')
+        ->name('school-years.enrollment-period.update');
+    Route::delete('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'destroy'])
+        ->where('schoolYear', '\d{4}-\d{4}')
+        ->name('school-years.enrollment-period.destroy');
     // A curriculum is one grade level's fees + subjects for one school year.
     Route::resource('curricula', CurriculumController::class)->only(['update']);
     Route::resource('curricula.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
@@ -144,6 +153,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Creating and editing happen in a modal on the index page.
     Route::resource('events', EventController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('notifications/{notification}/read', [AdminNotificationController::class, 'read'])->name('notifications.read');
 
     Route::redirect('settings', '/admin/settings/profile');
     Route::get('settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');

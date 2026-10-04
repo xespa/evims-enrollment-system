@@ -3,6 +3,7 @@
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
 use App\Models\GradeLevel;
 use App\Models\Subject;
 use App\Models\User;
@@ -209,4 +210,61 @@ test('non-admin users cannot save or cancel a draft', function () {
     $this->actingAs($staff)->delete(route('admin.school-years.destroy', '2027-2028'))->assertForbidden();
 
     expect(Curriculum::draftSchoolYear())->toBe('2027-2028');
+});
+
+test('the next school year gets the latest year\'s enrollment dates, a year later', function () {
+    $this->travelTo(now('Asia/Manila')->setDate(2026, 10, 4));
+    Curriculum::factory()->create(['school_year' => '2026-2027']);
+    EnrollmentPeriod::factory()->create([
+        'school_year' => '2026-2027',
+        'opens_on' => '2026-06-01',
+        'closes_on' => '2026-08-31',
+    ]);
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.school-years.store'), ['school_year' => '2027-2028'])
+        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees and subjects, then save it to open enrollment. Its enrollment dates were carried over a year later (Jun 1, 2027 to Aug 31, 2027); change them if needed.');
+
+    $period = EnrollmentPeriod::query()->where('school_year', '2027-2028')->sole();
+
+    expect($period->opens_on->toDateString())->toBe('2027-06-01')
+        ->and($period->closes_on->toDateString())->toBe('2027-08-31')
+        // Still in the future, so its reminders will be sent.
+        ->and($period->opening_reminder_sent_at)->toBeNull()
+        ->and($period->closing_reminder_sent_at)->toBeNull()
+        // The year it was copied from keeps its own dates.
+        ->and(EnrollmentPeriod::query()->where('school_year', '2026-2027')->sole()->opens_on->toDateString())->toBe('2026-06-01');
+});
+
+test('carried-over dates that fall on Feb 29 move to Feb 28', function () {
+    Curriculum::factory()->create(['school_year' => '2027-2028']);
+    EnrollmentPeriod::factory()->create([
+        'school_year' => '2027-2028',
+        'opens_on' => '2028-02-01',
+        'closes_on' => '2028-02-29',
+    ]);
+
+    $this->actingAs($this->admin)->post(route('admin.school-years.store'), ['school_year' => '2028-2029']);
+
+    expect(EnrollmentPeriod::query()->where('school_year', '2028-2029')->sole()->closes_on->toDateString())->toBe('2029-02-28');
+});
+
+test('no enrollment dates are carried over when the latest year has none', function () {
+    Curriculum::factory()->create(['school_year' => '2026-2027']);
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.school-years.store'), ['school_year' => '2027-2028'])
+        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees and subjects, then save it to open enrollment.');
+
+    expect(EnrollmentPeriod::count())->toBe(0);
+});
+
+test('cancelling the draft discards its carried-over enrollment dates', function () {
+    Curriculum::factory()->create(['school_year' => '2026-2027']);
+    EnrollmentPeriod::factory()->create(['school_year' => '2026-2027']);
+    $this->actingAs($this->admin)->post(route('admin.school-years.store'), ['school_year' => '2027-2028']);
+
+    $this->actingAs($this->admin)->delete(route('admin.school-years.destroy', '2027-2028'));
+
+    expect(EnrollmentPeriod::pluck('school_year')->all())->toBe(['2026-2027']);
 });

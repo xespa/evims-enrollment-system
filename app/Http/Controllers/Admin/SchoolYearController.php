@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
 use App\Models\GradeLevel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -45,7 +46,7 @@ class SchoolYearController extends Controller
             'school_year.in' => "The next school year to set up is {$nextSchoolYear}.",
         ]);
 
-        DB::transaction(function () use ($validated, $latestSchoolYear) {
+        $period = DB::transaction(function () use ($validated, $latestSchoolYear) {
             foreach (GradeLevel::orderBy('level_order')->get() as $gradeLevel) {
                 $source = $latestSchoolYear
                     ? $gradeLevel->curricula()->with('subjects')->orderByDesc('school_year')->first()
@@ -61,11 +62,17 @@ class SchoolYearController extends Controller
                     $curriculum->subjects()->create($subject->only(['name', 'code']));
                 }
             }
+
+            return $latestSchoolYear ? $this->copyEnrollmentPeriod($latestSchoolYear, $validated['school_year']) : null;
         });
 
         $message = $latestSchoolYear
             ? "Draft of {$validated['school_year']} created from {$latestSchoolYear}. Review its fees and subjects, then save it to open enrollment."
             : "Draft of {$validated['school_year']} created. Add its fees and subjects, then save it to open enrollment.";
+
+        if ($period) {
+            $message .= " Its enrollment dates were carried over a year later ({$period->opens_on->format('M j, Y')} to {$period->closes_on->format('M j, Y')}); change them if needed.";
+        }
 
         return to_route('admin.grade-levels.index', ['school_year' => $validated['school_year']])
             ->with('success', $message);
@@ -83,15 +90,41 @@ class SchoolYearController extends Controller
     }
 
     /**
-     * Cancels the draft: its fees and subjects are discarded. Nobody can
-     * have applied for it, since drafts aren't offered to applicants.
+     * Cancels the draft: its fees, subjects and enrollment dates are
+     * discarded. Nobody can have applied for it, since drafts aren't
+     * offered to applicants.
      */
     public function destroy(string $schoolYear): RedirectResponse
     {
-        $this->draftCurricula($schoolYear)->delete();
+        $draftCurricula = $this->draftCurricula($schoolYear);
+
+        DB::transaction(function () use ($draftCurricula, $schoolYear) {
+            $draftCurricula->delete();
+            EnrollmentPeriod::query()->where('school_year', $schoolYear)->delete();
+        });
 
         return to_route('admin.grade-levels.index')
             ->with('success', "Setting up {$schoolYear} was cancelled. Nothing was changed.");
+    }
+
+    /**
+     * Gives the new school year the same enrollment dates as the one it was
+     * copied from, a year later (Feb 29 becomes Feb 28). Nothing is copied
+     * when that year has no dates.
+     */
+    private function copyEnrollmentPeriod(string $fromSchoolYear, string $toSchoolYear): ?EnrollmentPeriod
+    {
+        $source = EnrollmentPeriod::query()->where('school_year', $fromSchoolYear)->first();
+
+        if (! $source) {
+            return null;
+        }
+
+        return EnrollmentPeriod::create([
+            'school_year' => $toSchoolYear,
+            'opens_on' => $source->opens_on->addYearNoOverflow(),
+            'closes_on' => $source->closes_on->addYearNoOverflow(),
+        ]);
     }
 
     /**

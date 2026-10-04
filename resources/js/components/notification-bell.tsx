@@ -2,6 +2,8 @@ import { router, usePage } from '@inertiajs/react';
 import {
     Bell,
     BellOff,
+    CalendarClock,
+    CalendarX,
     CheckCheck,
     CircleAlert,
     CircleCheck,
@@ -31,6 +33,31 @@ type Notification = {
 
 type Filter = 'all' | 'unread';
 
+type Scope = 'portal' | 'admin';
+
+/** Where each bell loads its notifications from, and what it says when empty. */
+const SCOPES = {
+    portal: {
+        index: 'portal.notifications.index',
+        read: 'portal.notifications.read',
+        readAll: 'portal.notifications.read-all',
+        fallback: 'portal.dashboard',
+        emptyUnread:
+            'New updates about your application and payments will show here.',
+        emptyAll:
+            "We'll let you know when there's news about your application or payments.",
+    },
+    admin: {
+        index: 'admin.notifications.index',
+        read: 'admin.notifications.read',
+        readAll: 'admin.notifications.read-all',
+        fallback: 'admin.dashboard',
+        emptyUnread: 'New enrollment reminders will show here.',
+        emptyAll:
+            "We'll remind you here when enrollment is about to open or close.",
+    },
+} as const;
+
 /** Icon and colours for each kind of notification. */
 function appearance(notification: Notification): {
     icon: LucideIcon;
@@ -54,6 +81,24 @@ function appearance(notification: Notification): {
             return { icon: Mail, tone: 'bg-[#E8A33D]/15 text-[#8A5A12]' };
         case 'email_confirmed':
             return { icon: MailCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+        case 'enrollment_period':
+            switch (notification.data.status) {
+                case 'OPENING_SOON':
+                    return {
+                        icon: CalendarClock,
+                        tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                    };
+                case 'CLOSING_SOON':
+                    return {
+                        icon: CalendarClock,
+                        tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+                    };
+                default:
+                    return {
+                        icon: CalendarX,
+                        tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                    };
+            }
         case 'account_reviewed':
             return notification.data.status === 'APPROVED'
                 ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' }
@@ -190,23 +235,36 @@ function LoadingRows() {
     );
 }
 
-export default function NotificationBell() {
+/**
+ * The portal bell (for the signed-in enrollee) or, with scope="admin", the
+ * admin panel's (for the signed-in staff user).
+ */
+export default function NotificationBell({
+    scope = 'portal',
+}: {
+    scope?: Scope;
+}) {
     const { props } = usePage<{
         auth?: {
+            user?: { id: number } | null;
             enrollee?: { id: number } | null;
             unreadNotificationsCount?: number;
+            userUnreadNotificationsCount?: number;
         };
     }>();
-    const enrollee = props.auth?.enrollee;
+    const routes = SCOPES[scope];
+    const owner = scope === 'admin' ? props.auth?.user : props.auth?.enrollee;
+    const sharedUnreadCount =
+        (scope === 'admin'
+            ? props.auth?.userUnreadNotificationsCount
+            : props.auth?.unreadNotificationsCount) ?? 0;
 
     const [open, setOpen] = useState(false);
     const [filter, setFilter] = useState<Filter>('all');
     const [notifications, setNotifications] = useState<Notification[] | null>(
         null,
     );
-    const [unreadCount, setUnreadCount] = useState(
-        props.auth?.unreadNotificationsCount ?? 0,
-    );
+    const [unreadCount, setUnreadCount] = useState(sharedUnreadCount);
     const [loadFailed, setLoadFailed] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -214,8 +272,8 @@ export default function NotificationBell() {
     const panelId = useId();
 
     useEffect(() => {
-        setUnreadCount(props.auth?.unreadNotificationsCount ?? 0);
-    }, [props.auth?.unreadNotificationsCount]);
+        setUnreadCount(sharedUnreadCount);
+    }, [sharedUnreadCount]);
 
     const close = (returnFocus = false) => {
         setOpen(false);
@@ -247,7 +305,7 @@ export default function NotificationBell() {
 
     const load = () => {
         setLoadFailed(false);
-        fetch(route('portal.notifications.index'), {
+        fetch(route(routes.index), {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
         })
@@ -286,12 +344,10 @@ export default function NotificationBell() {
                         : n,
                 ),
             );
-            postInBackground(
-                route('portal.notifications.read', notification.id),
-            );
+            postInBackground(route(routes.read, notification.id));
         }
 
-        router.visit(notification.data.url ?? route('portal.dashboard'));
+        router.visit(notification.data.url ?? route(routes.fallback));
     };
 
     const markAllRead = () => {
@@ -302,10 +358,10 @@ export default function NotificationBell() {
                 read_at: n.read_at ?? new Date().toISOString(),
             })),
         );
-        postInBackground(route('portal.notifications.read-all'));
+        postInBackground(route(routes.readAll));
     };
 
-    if (!enrollee) return null;
+    if (!owner) return null;
 
     const visible = (notifications ?? []).filter(
         (n) => filter === 'all' || !n.read_at,
@@ -442,8 +498,8 @@ export default function NotificationBell() {
                                 </p>
                                 <p className="mt-1 max-w-xs text-sm text-[#1F2A24]/60">
                                     {filter === 'unread'
-                                        ? 'New updates about your application and payments will show here.'
-                                        : "We'll let you know when there's news about your application or payments."}
+                                        ? routes.emptyUnread
+                                        : routes.emptyAll}
                                 </p>
                             </div>
                         )}

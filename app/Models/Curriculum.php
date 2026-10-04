@@ -128,7 +128,8 @@ class Curriculum extends Model
 
     /**
      * The one school year new applications are for: the newest the school
-     * has published, as long as it isn't older than last school year.
+     * has published, as long as it isn't older than last school year and
+     * today falls within its enrollment period (when it has one).
      */
     public static function applicationSchoolYear(): ?string
     {
@@ -137,6 +138,7 @@ class Curriculum extends Model
         $schoolYear = self::query()
             ->published()
             ->where('school_year', '>=', $startYear.'-'.($startYear + 1))
+            ->whereNotIn('school_year', EnrollmentPeriod::query()->closedOn(EnrollmentPeriod::today())->select('school_year'))
             ->max('school_year');
 
         return $schoolYear === null ? null : (string) $schoolYear;
