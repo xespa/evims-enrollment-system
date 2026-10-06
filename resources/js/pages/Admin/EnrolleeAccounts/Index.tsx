@@ -278,6 +278,198 @@ function RejectAccountDialog({
     );
 }
 
+/** Who the account belongs to, whether it's confirmed, and its valid ID. */
+function AccountSummary({
+    account,
+    onViewId,
+}: {
+    account: EnrolleeAccount;
+    onViewId: () => void;
+}) {
+    return (
+        <>
+            <span className="block font-medium break-words">
+                {account.name}
+            </span>
+            <span className="mt-0.5 block w-fit rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
+                {account.account_type
+                    ? ACCOUNT_TYPE_LABELS[account.account_type]
+                    : 'Type not given'}
+            </span>
+            <span className="block break-all text-[#1F2A24]/70">
+                {account.email}
+            </span>
+            {account.email_verified_at ? (
+                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
+                    <MailCheck className="h-3 w-3" aria-hidden="true" />
+                    Email confirmed
+                </span>
+            ) : (
+                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                    <MailWarning className="h-3 w-3" aria-hidden="true" />
+                    Email not confirmed
+                </span>
+            )}
+            {account.has_valid_id ? (
+                <button
+                    type="button"
+                    onClick={onViewId}
+                    className="mt-1 flex min-h-9 items-center gap-1 text-xs font-medium text-[#2F6F4E] hover:underline"
+                >
+                    <IdCard className="h-3.5 w-3.5" aria-hidden="true" />
+                    View valid ID
+                </button>
+            ) : (
+                <span className="mt-1 block w-fit rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/65">
+                    No ID on file
+                </span>
+            )}
+        </>
+    );
+}
+
+function LinkedApplications({
+    enrollments,
+}: {
+    enrollments: LinkedEnrollment[];
+}) {
+    if (enrollments.length === 0) {
+        return <>—</>;
+    }
+
+    return (
+        <ul className="space-y-1">
+            {enrollments.map((enrollment) => (
+                <li key={enrollment.id}>
+                    <Link
+                        href={route('admin.enrollments.show', enrollment.id)}
+                        className="font-medium text-[#2F6F4E] hover:underline"
+                    >
+                        {enrollment.student?.first_name}{' '}
+                        {enrollment.student?.last_name}
+                    </Link>{' '}
+                    <span className="text-xs">
+                        · {enrollment.grade_level?.name ?? '—'} ·{' '}
+                        {enrollment.school_year}
+                    </span>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+/** When and by whom the account was reviewed, and why it was rejected. */
+function ReviewDetails({
+    account,
+    reasonLabels,
+}: {
+    account: EnrolleeAccount;
+    reasonLabels: Record<RejectionReason, string>;
+}) {
+    if (!account.reviewed_at) {
+        return <>Not reviewed yet</>;
+    }
+
+    return (
+        <>
+            <span className="block whitespace-nowrap">
+                {formatDate(account.reviewed_at)}
+                {account.reviewer && ` by ${account.reviewer.name}`}
+            </span>
+            {account.account_status === 'PENDING' && (
+                <span className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                    New ID sent — review again
+                </span>
+            )}
+            {account.rejection_reasons?.length ? (
+                <ul className="mt-1 max-w-xs list-disc pl-4 text-xs">
+                    {account.rejection_reasons.map((reason) => (
+                        <li key={reason}>{reasonLabels[reason] ?? reason}</li>
+                    ))}
+                </ul>
+            ) : null}
+            {account.rejection_reason && (
+                <span className="mt-1 block max-w-xs text-xs italic">
+                    “{account.rejection_reason}”
+                </span>
+            )}
+        </>
+    );
+}
+
+/**
+ * Approve / reject (or revoke) buttons. `idPrefix` keeps the hint's id
+ * unique, since each account is rendered both as a card and a table row.
+ */
+function AccountActions({
+    account,
+    idPrefix,
+    isStacked = false,
+    onApprove,
+    onReject,
+}: {
+    account: EnrolleeAccount;
+    idPrefix: string;
+    isStacked?: boolean;
+    onApprove: () => void;
+    onReject: () => void;
+}) {
+    const blockedHintId = `${idPrefix}-approve-blocked-${account.id}`;
+    const isApprovalBlocked =
+        account.account_status !== 'APPROVED' && !account.email_verified_at;
+    const buttonSize = isStacked
+        ? 'min-h-11 flex-1 px-4 text-sm'
+        : 'min-h-9 px-4 text-xs';
+
+    return (
+        <>
+            <div className="flex flex-wrap gap-2">
+                {account.account_status !== 'APPROVED' &&
+                    (account.email_verified_at ? (
+                        <button
+                            type="button"
+                            onClick={onApprove}
+                            className={`${buttonSize} rounded-full bg-[#2F6F4E] font-semibold text-white hover:bg-[#25573E]`}
+                        >
+                            Approve
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled
+                            aria-describedby={blockedHintId}
+                            title="Can't approve until the email is confirmed"
+                            className={`${buttonSize} cursor-not-allowed rounded-full bg-[#1F2A24]/10 font-semibold text-[#1F2A24]/45`}
+                        >
+                            Approve
+                        </button>
+                    ))}
+                {account.account_status !== 'REJECTED' && (
+                    <button
+                        type="button"
+                        onClick={onReject}
+                        className={`${buttonSize} rounded-full border border-[#C6473B]/40 font-semibold text-[#C6473B] hover:bg-[#C6473B]/5`}
+                    >
+                        {account.account_status === 'APPROVED'
+                            ? 'Revoke'
+                            : 'Reject'}
+                    </button>
+                )}
+            </div>
+            {isApprovalBlocked && (
+                <p
+                    id={blockedHintId}
+                    className={`mt-1.5 text-xs leading-snug text-[#a4670f] ${
+                        isStacked ? '' : 'max-w-[12rem]'
+                    }`}
+                >
+                    Can't approve yet — waiting for them to confirm their email.
+                </p>
+            )}
+        </>
+    );
+}
+
 export default function Index({
     accounts,
     counts,
@@ -396,7 +588,7 @@ export default function Index({
                     <div
                         role="tablist"
                         aria-label="Account status"
-                        className="mb-4 flex flex-wrap gap-2"
+                        className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0"
                     >
                         {TABS.map((tab) => {
                             const isActive = filters.status === tab.status;
@@ -410,7 +602,7 @@ export default function Index({
                                     onClick={() =>
                                         applyFilters({ status: tab.status })
                                     }
-                                    className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
+                                    className={`min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap ${
                                         isActive
                                             ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
                                             : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
@@ -440,18 +632,84 @@ export default function Index({
                                 placeholder="Search by name or email..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="min-h-10 min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="min-h-11 w-full min-w-0 flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:min-h-10 sm:w-auto sm:min-w-[200px]"
                             />
                             <button
                                 type="submit"
-                                className="min-h-10 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                                className="min-h-11 w-full rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:min-h-10 sm:w-auto"
                             >
                                 Search
                             </button>
                         </form>
                     </div>
 
-                    <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
+                    {/* Cards (phones) */}
+                    <ul className="space-y-3 md:hidden">
+                        {accounts.data.map((account) => (
+                            <li
+                                key={account.id}
+                                className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4 text-sm text-[#1F2A24]"
+                            >
+                                <AccountSummary
+                                    account={account}
+                                    onViewId={() => openValidId(account)}
+                                />
+
+                                <dl className="mt-3 space-y-3 border-t border-[#1F2A24]/10 pt-3 text-[#1F2A24]/70">
+                                    <div>
+                                        <dt className="text-xs text-[#1F2A24]/55">
+                                            Applications
+                                        </dt>
+                                        <dd className="mt-0.5">
+                                            <LinkedApplications
+                                                enrollments={
+                                                    account.enrollments
+                                                }
+                                            />
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-xs text-[#1F2A24]/55">
+                                            Registered
+                                        </dt>
+                                        <dd className="mt-0.5">
+                                            {formatDate(account.created_at)}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-xs text-[#1F2A24]/55">
+                                            Review
+                                        </dt>
+                                        <dd className="mt-0.5">
+                                            <ReviewDetails
+                                                account={account}
+                                                reasonLabels={reasonLabels}
+                                            />
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                <div className="mt-4">
+                                    <AccountActions
+                                        account={account}
+                                        idPrefix="card"
+                                        isStacked
+                                        onApprove={() => approve(account)}
+                                        onReject={() => openReject(account)}
+                                    />
+                                </div>
+                            </li>
+                        ))}
+
+                        {accounts.data.length === 0 && (
+                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-8 text-center text-sm text-[#1F2A24]/65">
+                                No accounts found.
+                            </li>
+                        )}
+                    </ul>
+
+                    {/* Table (tablets and up) */}
+                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
                         <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
                             <thead className="bg-[#2F6F4E]/5">
                                 <tr>
@@ -479,210 +737,40 @@ export default function Index({
                                         className="align-top hover:bg-[#2F6F4E]/5"
                                     >
                                         <td className="px-4 py-3 text-[#1F2A24]">
-                                            <span className="block font-medium">
-                                                {account.name}
-                                            </span>
-                                            <span className="mt-0.5 block w-fit rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
-                                                {account.account_type
-                                                    ? ACCOUNT_TYPE_LABELS[
-                                                          account.account_type
-                                                      ]
-                                                    : 'Type not given'}
-                                            </span>
-                                            <span className="block text-[#1F2A24]/70">
-                                                {account.email}
-                                            </span>
-                                            {account.email_verified_at ? (
-                                                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
-                                                    <MailCheck
-                                                        className="h-3 w-3"
-                                                        aria-hidden="true"
-                                                    />
-                                                    Email confirmed
-                                                </span>
-                                            ) : (
-                                                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
-                                                    <MailWarning
-                                                        className="h-3 w-3"
-                                                        aria-hidden="true"
-                                                    />
-                                                    Email not confirmed
-                                                </span>
-                                            )}
-                                            {account.has_valid_id ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        openValidId(account)
-                                                    }
-                                                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#2F6F4E] hover:underline"
-                                                >
-                                                    <IdCard
-                                                        className="h-3.5 w-3.5"
-                                                        aria-hidden="true"
-                                                    />
-                                                    View valid ID
-                                                </button>
-                                            ) : (
-                                                <span className="mt-1 block w-fit rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/65">
-                                                    No ID on file
-                                                </span>
-                                            )}
+                                            <AccountSummary
+                                                account={account}
+                                                onViewId={() =>
+                                                    openValidId(account)
+                                                }
+                                            />
                                         </td>
                                         <td className="px-4 py-3 text-[#1F2A24]/70">
-                                            {account.enrollments.length ===
-                                            0 ? (
-                                                '—'
-                                            ) : (
-                                                <ul className="space-y-1">
-                                                    {account.enrollments.map(
-                                                        (enrollment) => (
-                                                            <li
-                                                                key={
-                                                                    enrollment.id
-                                                                }
-                                                            >
-                                                                <Link
-                                                                    href={route(
-                                                                        'admin.enrollments.show',
-                                                                        enrollment.id,
-                                                                    )}
-                                                                    className="font-medium text-[#2F6F4E] hover:underline"
-                                                                >
-                                                                    {
-                                                                        enrollment
-                                                                            .student
-                                                                            ?.first_name
-                                                                    }{' '}
-                                                                    {
-                                                                        enrollment
-                                                                            .student
-                                                                            ?.last_name
-                                                                    }
-                                                                </Link>{' '}
-                                                                <span className="text-xs">
-                                                                    ·{' '}
-                                                                    {enrollment
-                                                                        .grade_level
-                                                                        ?.name ??
-                                                                        '—'}{' '}
-                                                                    ·{' '}
-                                                                    {
-                                                                        enrollment.school_year
-                                                                    }
-                                                                </span>
-                                                            </li>
-                                                        ),
-                                                    )}
-                                                </ul>
-                                            )}
+                                            <LinkedApplications
+                                                enrollments={
+                                                    account.enrollments
+                                                }
+                                            />
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-[#1F2A24]/70">
                                             {formatDate(account.created_at)}
                                         </td>
                                         <td className="px-4 py-3 text-[#1F2A24]/70">
-                                            {account.reviewed_at ? (
-                                                <>
-                                                    <span className="block whitespace-nowrap">
-                                                        {formatDate(
-                                                            account.reviewed_at,
-                                                        )}
-                                                        {account.reviewer &&
-                                                            ` by ${account.reviewer.name}`}
-                                                    </span>
-                                                    {account.account_status ===
-                                                        'PENDING' && (
-                                                        <span className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
-                                                            New ID sent — review
-                                                            again
-                                                        </span>
-                                                    )}
-                                                    {account.rejection_reasons
-                                                        ?.length ? (
-                                                        <ul className="mt-1 max-w-xs list-disc pl-4 text-xs">
-                                                            {account.rejection_reasons.map(
-                                                                (reason) => (
-                                                                    <li
-                                                                        key={
-                                                                            reason
-                                                                        }
-                                                                    >
-                                                                        {reasonLabels[
-                                                                            reason
-                                                                        ] ??
-                                                                            reason}
-                                                                    </li>
-                                                                ),
-                                                            )}
-                                                        </ul>
-                                                    ) : null}
-                                                    {account.rejection_reason && (
-                                                        <span className="mt-1 block max-w-xs text-xs italic">
-                                                            “
-                                                            {
-                                                                account.rejection_reason
-                                                            }
-                                                            ”
-                                                        </span>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                'Not reviewed yet'
-                                            )}
+                                            <ReviewDetails
+                                                account={account}
+                                                reasonLabels={reasonLabels}
+                                            />
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="flex flex-wrap gap-2">
-                                                {account.account_status !==
-                                                    'APPROVED' &&
-                                                    (account.email_verified_at ? (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                approve(account)
-                                                            }
-                                                            className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white hover:bg-[#25573E]"
-                                                        >
-                                                            Approve
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            type="button"
-                                                            disabled
-                                                            aria-describedby={`approve-blocked-${account.id}`}
-                                                            title="Can't approve until the email is confirmed"
-                                                            className="min-h-9 cursor-not-allowed rounded-full bg-[#1F2A24]/10 px-4 text-xs font-semibold text-[#1F2A24]/45"
-                                                        >
-                                                            Approve
-                                                        </button>
-                                                    ))}
-                                                {account.account_status !==
-                                                    'REJECTED' && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            openReject(account)
-                                                        }
-                                                        className="min-h-9 rounded-full border border-[#C6473B]/40 px-4 text-xs font-semibold text-[#C6473B] hover:bg-[#C6473B]/5"
-                                                    >
-                                                        {account.account_status ===
-                                                        'APPROVED'
-                                                            ? 'Revoke'
-                                                            : 'Reject'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                            {account.account_status !==
-                                                'APPROVED' &&
-                                                !account.email_verified_at && (
-                                                    <p
-                                                        id={`approve-blocked-${account.id}`}
-                                                        className="mt-1.5 max-w-[12rem] text-xs leading-snug text-[#a4670f]"
-                                                    >
-                                                        Can't approve yet —
-                                                        waiting for them to
-                                                        confirm their email.
-                                                    </p>
-                                                )}
+                                            <AccountActions
+                                                account={account}
+                                                idPrefix="row"
+                                                onApprove={() =>
+                                                    approve(account)
+                                                }
+                                                onReject={() =>
+                                                    openReject(account)
+                                                }
+                                            />
                                         </td>
                                     </tr>
                                 ))}
@@ -708,7 +796,7 @@ export default function Index({
                                 href={link.url ?? '#'}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                 preserveScroll
-                                className={`rounded-full border px-3 py-1.5 text-sm ${
+                                className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                     link.active
                                         ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
                                         : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'

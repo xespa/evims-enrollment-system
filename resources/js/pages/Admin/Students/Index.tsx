@@ -117,6 +117,147 @@ function PaymentCell({ enrollment, onRecord }) {
     );
 }
 
+type ApplicationStatus = keyof typeof STATUS_STYLES;
+
+/** The fields of a listed application that the card and badges read. */
+type ApplicationRow = {
+    id: number;
+    school_year: string;
+    enrollment_status: ApplicationStatus;
+    cancelled_at: string | null;
+    parent_email_verified: boolean;
+    grade_level: { name: string } | null;
+    student: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        lrn: string | null;
+    };
+};
+
+function ApplicationStatusBadge({
+    enrollment,
+}: {
+    enrollment: Pick<ApplicationRow, 'cancelled_at' | 'enrollment_status'>;
+}) {
+    if (enrollment.cancelled_at) {
+        return (
+            <span
+                className="inline-block rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-gray-600"
+                title="The parent cancelled this application."
+            >
+                CANCELLED
+            </span>
+        );
+    }
+
+    return (
+        <span
+            className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${STATUS_STYLES[enrollment.enrollment_status]}`}
+        >
+            {enrollment.enrollment_status}
+        </span>
+    );
+}
+
+function DocumentsBadge({ missingCount }: { missingCount: number }) {
+    return missingCount > 0 ? (
+        <span className="inline-block rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-[#a4670f]">
+            {missingCount} missing
+        </span>
+    ) : (
+        <span className="inline-block rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-green-800">
+            Complete
+        </span>
+    );
+}
+
+function EmailNotVerifiedBadge() {
+    return (
+        <span
+            className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]"
+            title="The student portal account's email address hasn't been confirmed yet."
+        >
+            Email not verified
+        </span>
+    );
+}
+
+/** One application as a card, standing in for a table row on phones. */
+function ApplicationCard({
+    enrollment,
+    onRecordPayment,
+}: {
+    enrollment: ApplicationRow;
+    onRecordPayment: () => void;
+}) {
+    const student = enrollment.student;
+
+    return (
+        <li className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="font-medium break-words text-[#1F2A24]">
+                        {student.last_name}, {student.first_name}
+                    </p>
+                    {!enrollment.parent_email_verified && (
+                        <EmailNotVerifiedBadge />
+                    )}
+                </div>
+                <ApplicationStatusBadge enrollment={enrollment} />
+            </div>
+
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div>
+                    <dt className="text-xs text-[#1F2A24]/55">Grade Level</dt>
+                    <dd className="mt-0.5 text-[#1F2A24]/80">
+                        {enrollment.grade_level?.name || '—'}
+                    </dd>
+                </div>
+                <div>
+                    <dt className="text-xs text-[#1F2A24]/55">School Year</dt>
+                    <dd className="mt-0.5 text-[#1F2A24]/80">
+                        {enrollment.school_year}
+                    </dd>
+                </div>
+                <div>
+                    <dt className="text-xs text-[#1F2A24]/55">Documents</dt>
+                    <dd className="mt-1">
+                        <DocumentsBadge
+                            missingCount={countMissingDocuments(enrollment)}
+                        />
+                    </dd>
+                </div>
+                {/* Full width when empty, so the Assign LRN form has room. */}
+                <div className={student.lrn ? '' : 'col-span-2'}>
+                    <dt className="text-xs text-[#1F2A24]/55">LRN</dt>
+                    <dd className="mt-0.5 text-[#1F2A24]/80 tabular-nums">
+                        {student.lrn || (
+                            <AssignLrnForm studentId={student.id} />
+                        )}
+                    </dd>
+                </div>
+                <div className="col-span-2 border-t border-[#1F2A24]/10 pt-3">
+                    <dt className="text-xs text-[#1F2A24]/55">Payment</dt>
+                    <dd className="mt-1">
+                        <PaymentCell
+                            enrollment={enrollment}
+                            onRecord={onRecordPayment}
+                        />
+                    </dd>
+                </div>
+            </dl>
+
+            <Link
+                href={route('admin.enrollments.show', enrollment.id)}
+                className="mt-4 flex min-h-11 items-center justify-center rounded-full border border-[#2F6F4E]/30 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+            >
+                View application
+            </Link>
+        </li>
+    );
+}
+
 export default function Index({
     applications,
     gradeLevels,
@@ -264,7 +405,7 @@ export default function Index({
                         <form
                             onSubmit={handleSearchSubmit}
                             role="search"
-                            className="flex flex-wrap gap-3"
+                            className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap"
                         >
                             <input
                                 type="search"
@@ -272,7 +413,7 @@ export default function Index({
                                 placeholder="Search by name or LRN..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="min-h-10 min-w-[200px] flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:min-h-10 sm:min-w-[200px]"
                             />
 
                             {SELECT_FILTER_KEYS.map((key) => (
@@ -283,7 +424,7 @@ export default function Index({
                                     onChange={(e) =>
                                         changeFilter(key, e.target.value)
                                     }
-                                    className={`${SELECT_CLASS} ${
+                                    className={`${SELECT_CLASS} w-full min-w-0 last-of-type:col-span-2 sm:w-auto ${
                                         selected[key] !== ''
                                             ? 'border-[#2F6F4E]/50 bg-[#2F6F4E]/5'
                                             : ''
@@ -307,7 +448,7 @@ export default function Index({
 
                             <button
                                 type="submit"
-                                className="min-h-10 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                                className="col-span-2 min-h-11 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:min-h-10"
                             >
                                 Search
                             </button>
@@ -333,8 +474,27 @@ export default function Index({
                         </div>
                     </div>
 
-                    {/* Table */}
-                    <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
+                    {/* Cards (phones) */}
+                    <ul className="space-y-3 md:hidden">
+                        {applications.data.map((enrollment) => (
+                            <ApplicationCard
+                                key={enrollment.id}
+                                enrollment={enrollment}
+                                onRecordPayment={() =>
+                                    openRecordPayment(enrollment)
+                                }
+                            />
+                        ))}
+
+                        {applications.data.length === 0 && (
+                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-8 text-center text-sm text-[#1F2A24]/65">
+                                No applications found.
+                            </li>
+                        )}
+                    </ul>
+
+                    {/* Table (tablets and up) */}
+                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
                         <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
                             <thead className="bg-[#2F6F4E]/5">
                                 <tr>
@@ -379,12 +539,7 @@ export default function Index({
                                                 {student.last_name},{' '}
                                                 {student.first_name}
                                                 {!enrollment.parent_email_verified && (
-                                                    <span
-                                                        className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]"
-                                                        title="The student portal account's email address hasn't been confirmed yet."
-                                                    >
-                                                        Email not verified
-                                                    </span>
+                                                    <EmailNotVerifiedBadge />
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
@@ -402,33 +557,14 @@ export default function Index({
                                                 {enrollment.school_year}
                                             </td>
                                             <td className="px-4 py-3">
-                                                {enrollment.cancelled_at ? (
-                                                    <span
-                                                        className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600"
-                                                        title="The parent cancelled this application."
-                                                    >
-                                                        CANCELLED
-                                                    </span>
-                                                ) : (
-                                                    <span
-                                                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                                                    >
-                                                        {
-                                                            enrollment.enrollment_status
-                                                        }
-                                                    </span>
-                                                )}
+                                                <ApplicationStatusBadge
+                                                    enrollment={enrollment}
+                                                />
                                             </td>
                                             <td className="px-4 py-3">
-                                                {missingCount > 0 ? (
-                                                    <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold text-[#a4670f]">
-                                                        {missingCount} missing
-                                                    </span>
-                                                ) : (
-                                                    <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
-                                                        Complete
-                                                    </span>
-                                                )}
+                                                <DocumentsBadge
+                                                    missingCount={missingCount}
+                                                />
                                             </td>
                                             <td className="px-4 py-3">
                                                 <PaymentCell
@@ -477,7 +613,7 @@ export default function Index({
                                 href={link.url ?? '#'}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                 preserveScroll
-                                className={`rounded-full border px-3 py-1.5 text-sm ${
+                                className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                     link.active
                                         ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
                                         : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
