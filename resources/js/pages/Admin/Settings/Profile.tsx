@@ -249,7 +249,7 @@ export default function Profile() {
                     description="The name and email address you sign in with and that staff see."
                 >
                     <form onSubmit={submitProfile} noValidate>
-                        <div className="space-y-5 px-6 py-5">
+                        <div className="grid gap-5 px-6 py-5 md:grid-cols-2">
                             <SettingsField
                                 id="name"
                                 label="Full name"

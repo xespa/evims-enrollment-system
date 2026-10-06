@@ -96,9 +96,7 @@ export default function AdminSettingsShell({
                         </nav>
                     </aside>
 
-                    <div className="max-w-2xl min-w-0 flex-1 space-y-6">
-                        {children}
-                    </div>
+                    <div className="min-w-0 flex-1 space-y-6">{children}</div>
                 </div>
             </div>
         </div>

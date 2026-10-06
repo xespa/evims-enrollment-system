@@ -132,157 +132,164 @@ export default function Security({ passwordRules }: { passwordRules: string }) {
                     description="Use a long, unique password that you don't use anywhere else."
                 >
                     <form onSubmit={submitPassword} noValidate>
-                        <div className="space-y-5 px-6 py-5">
-                            <SettingsField
-                                id="current_password"
-                                label="Current password"
-                                error={errors.current_password}
-                            >
-                                <PasswordInput
+                        <div className="grid gap-6 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
+                            <div className="space-y-5">
+                                <SettingsField
                                     id="current_password"
-                                    value={data.current_password}
-                                    onChange={(e) =>
-                                        passwordForm.setData(
-                                            'current_password',
-                                            e.target.value,
-                                        )
-                                    }
-                                    autoComplete="current-password"
-                                    aria-invalid={!!errors.current_password}
-                                    aria-describedby={
-                                        errors.current_password
-                                            ? 'current_password-error'
-                                            : undefined
-                                    }
-                                    className={settingsInputClass}
-                                />
-                            </SettingsField>
-
-                            <SettingsField
-                                id="password"
-                                label="New password"
-                                error={errors.password}
-                            >
-                                <PasswordInput
-                                    id="password"
-                                    value={data.password}
-                                    onChange={(e) =>
-                                        passwordForm.setData(
-                                            'password',
-                                            e.target.value,
-                                        )
-                                    }
-                                    autoComplete="new-password"
-                                    passwordrules={passwordRules}
-                                    aria-invalid={!!errors.password}
-                                    aria-describedby={
-                                        errors.password
-                                            ? 'password-error'
-                                            : 'password-requirements'
-                                    }
-                                    className={settingsInputClass}
-                                />
-                            </SettingsField>
-
-                            {requirements.length > 0 && (
-                                <ul
-                                    id="password-requirements"
-                                    aria-label="Password requirements"
-                                    className="-mt-2 grid gap-1.5 rounded-lg bg-[#FBF8F2] px-4 py-3 text-xs sm:grid-cols-2"
+                                    label="Current password"
+                                    error={errors.current_password}
                                 >
-                                    {requirements.map((requirement) => {
-                                        const isMet = requirement.isMet(
-                                            data.password,
-                                        );
+                                    <PasswordInput
+                                        id="current_password"
+                                        value={data.current_password}
+                                        onChange={(e) =>
+                                            passwordForm.setData(
+                                                'current_password',
+                                                e.target.value,
+                                            )
+                                        }
+                                        autoComplete="current-password"
+                                        aria-invalid={!!errors.current_password}
+                                        aria-describedby={
+                                            errors.current_password
+                                                ? 'current_password-error'
+                                                : undefined
+                                        }
+                                        className={settingsInputClass}
+                                    />
+                                </SettingsField>
 
-                                        return (
-                                            <li
-                                                key={requirement.label}
-                                                className={`flex items-center gap-2 transition-colors ${
-                                                    isMet
+                                <SettingsField
+                                    id="password"
+                                    label="New password"
+                                    error={errors.password}
+                                >
+                                    <PasswordInput
+                                        id="password"
+                                        value={data.password}
+                                        onChange={(e) =>
+                                            passwordForm.setData(
+                                                'password',
+                                                e.target.value,
+                                            )
+                                        }
+                                        autoComplete="new-password"
+                                        passwordrules={passwordRules}
+                                        aria-invalid={!!errors.password}
+                                        aria-describedby={
+                                            errors.password
+                                                ? 'password-error'
+                                                : 'password-requirements'
+                                        }
+                                        className={settingsInputClass}
+                                    />
+                                </SettingsField>
+
+                                <SettingsField
+                                    id="password_confirmation"
+                                    label="Confirm new password"
+                                    error={errors.password_confirmation}
+                                    hint={
+                                        hasPassword &&
+                                        hasConfirmation && (
+                                            <span
+                                                aria-live="polite"
+                                                className={`inline-flex items-center gap-1.5 ${
+                                                    passwordsMatch
                                                         ? 'text-[#2F6F4E]'
-                                                        : 'text-[#1F2A24]/60'
+                                                        : 'text-[#C6473B]'
                                                 }`}
                                             >
-                                                {isMet ? (
+                                                {passwordsMatch ? (
                                                     <Check
-                                                        className="size-3.5 shrink-0"
+                                                        className="size-3.5"
                                                         aria-hidden="true"
                                                     />
                                                 ) : (
-                                                    <Circle
-                                                        className="size-3.5 shrink-0"
+                                                    <X
+                                                        className="size-3.5"
                                                         aria-hidden="true"
                                                     />
                                                 )}
-                                                {requirement.label}
-                                                <span className="sr-only">
-                                                    {isMet
-                                                        ? '(met)'
-                                                        : '(not met)'}
-                                                </span>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
-
-                            <SettingsField
-                                id="password_confirmation"
-                                label="Confirm new password"
-                                error={errors.password_confirmation}
-                                hint={
-                                    hasPassword &&
-                                    hasConfirmation && (
-                                        <span
-                                            aria-live="polite"
-                                            className={`inline-flex items-center gap-1.5 ${
-                                                passwordsMatch
-                                                    ? 'text-[#2F6F4E]'
-                                                    : 'text-[#C6473B]'
-                                            }`}
-                                        >
-                                            {passwordsMatch ? (
-                                                <Check
-                                                    className="size-3.5"
-                                                    aria-hidden="true"
-                                                />
-                                            ) : (
-                                                <X
-                                                    className="size-3.5"
-                                                    aria-hidden="true"
-                                                />
-                                            )}
-                                            {passwordsMatch
-                                                ? 'Passwords match'
-                                                : "Passwords don't match"}
-                                        </span>
-                                    )
-                                }
-                            >
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    value={data.password_confirmation}
-                                    onChange={(e) =>
-                                        passwordForm.setData(
-                                            'password_confirmation',
-                                            e.target.value,
+                                                {passwordsMatch
+                                                    ? 'Passwords match'
+                                                    : "Passwords don't match"}
+                                            </span>
                                         )
                                     }
-                                    autoComplete="new-password"
-                                    passwordrules={passwordRules}
-                                    aria-invalid={
-                                        !!errors.password_confirmation ||
-                                        (hasConfirmation && !passwordsMatch)
-                                    }
-                                    aria-describedby={
-                                        errors.password_confirmation
-                                            ? 'password_confirmation-error'
-                                            : undefined
-                                    }
-                                    className={settingsInputClass}
-                                />
-                            </SettingsField>
+                                >
+                                    <PasswordInput
+                                        id="password_confirmation"
+                                        value={data.password_confirmation}
+                                        onChange={(e) =>
+                                            passwordForm.setData(
+                                                'password_confirmation',
+                                                e.target.value,
+                                            )
+                                        }
+                                        autoComplete="new-password"
+                                        passwordrules={passwordRules}
+                                        aria-invalid={
+                                            !!errors.password_confirmation ||
+                                            (hasConfirmation && !passwordsMatch)
+                                        }
+                                        aria-describedby={
+                                            errors.password_confirmation
+                                                ? 'password_confirmation-error'
+                                                : undefined
+                                        }
+                                        className={settingsInputClass}
+                                    />
+                                </SettingsField>
+                            </div>
+
+                            {requirements.length > 0 && (
+                                <div className="self-start rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-4">
+                                    <p className="text-sm font-medium text-[#1F2A24]/85">
+                                        Your new password needs
+                                    </p>
+                                    <ul
+                                        id="password-requirements"
+                                        aria-label="Password requirements"
+                                        className="mt-3 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-1"
+                                    >
+                                        {requirements.map((requirement) => {
+                                            const isMet = requirement.isMet(
+                                                data.password,
+                                            );
+
+                                            return (
+                                                <li
+                                                    key={requirement.label}
+                                                    className={`flex items-center gap-2 transition-colors ${
+                                                        isMet
+                                                            ? 'text-[#2F6F4E]'
+                                                            : 'text-[#1F2A24]/60'
+                                                    }`}
+                                                >
+                                                    {isMet ? (
+                                                        <Check
+                                                            className="size-3.5 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                    ) : (
+                                                        <Circle
+                                                            className="size-3.5 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                    )}
+                                                    {requirement.label}
+                                                    <span className="sr-only">
+                                                        {isMet
+                                                            ? '(met)'
+                                                            : '(not met)'}
+                                                    </span>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
 
                         <SettingsFormFooter
