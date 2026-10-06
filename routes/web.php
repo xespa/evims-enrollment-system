@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
+use App\Http\Controllers\Admin\ProfilePhotoController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentController;
@@ -164,6 +165,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::redirect('settings', '/admin/settings/profile');
     Route::get('settings/profile', [SettingsController::class, 'editProfile'])->name('settings.profile.edit');
     Route::patch('settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::put('settings/profile-photo', [ProfilePhotoController::class, 'update'])->name('settings.profile-photo.update');
+    Route::delete('settings/profile-photo', [ProfilePhotoController::class, 'destroy'])->name('settings.profile-photo.destroy');
     Route::get('settings/security', [SettingsController::class, 'editSecurity'])->name('settings.security.edit');
     Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
     Route::delete('settings', [SettingsController::class, 'destroy'])->name('settings.destroy');

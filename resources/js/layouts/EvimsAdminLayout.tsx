@@ -14,6 +14,7 @@ import {
     X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import AdminAvatar from '@/components/admin-avatar';
 import NotificationBell from '@/components/notification-bell';
 
 const NAV_ITEMS = [
@@ -234,9 +235,14 @@ export default function EvimsAdminLayout({ children }) {
                             type="button"
                             onClick={() => setCredentialsOpen((open) => !open)}
                             aria-expanded={credentialsOpen}
-                            className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-left transition hover:bg-[#1F2A24]/5"
+                            className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition hover:bg-[#1F2A24]/5"
                         >
-                            <span className="min-w-0">
+                            <AdminAvatar
+                                name={user.name}
+                                photoUrl={user.profile_photo_url}
+                                className="size-9 text-xs"
+                            />
+                            <span className="min-w-0 flex-1">
                                 <span className="block truncate text-sm font-medium text-[#1F2A24]">
                                     {user.name}
                                 </span>
@@ -251,6 +257,20 @@ export default function EvimsAdminLayout({ children }) {
                             />
                         </button>
                     </div>
+                )}
+                {user && collapsed && (
+                    <Link
+                        href={route('admin.settings.profile.edit')}
+                        title={`${user.name} — Profile settings`}
+                        className="mb-2 hidden justify-center rounded-md py-1.5 hover:bg-[#1F2A24]/5 lg:flex"
+                    >
+                        <AdminAvatar
+                            name={user.name}
+                            photoUrl={user.profile_photo_url}
+                            className="size-9 text-xs"
+                        />
+                        <span className="sr-only">Profile settings</span>
+                    </Link>
                 )}
                 <Link
                     href={route('logout')}

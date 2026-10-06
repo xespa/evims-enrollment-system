@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests cannot view the admin settings pages', function () {
@@ -36,7 +37,10 @@ test('admins can view the security settings page', function () {
     $this->actingAs($admin)
         ->get(route('admin.settings.security.edit'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Admin/Settings/Security'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Settings/Security')
+            ->where('passwordRules', Password::defaults()->toPasswordRulesString())
+        );
 });
 
 test('admins can update their profile without leaving the admin panel', function () {
