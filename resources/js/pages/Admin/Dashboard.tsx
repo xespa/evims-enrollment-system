@@ -517,27 +517,31 @@ export default function Dashboard({
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     </div>
-                                    <table className="sr-only">
-                                        <caption>
-                                            Money collected per month
-                                        </caption>
-                                        <tbody>
-                                            {stats.monthlyCollections.map(
-                                                (m) => (
-                                                    <tr key={m.month}>
-                                                        <th scope="row">
-                                                            {m.label}
-                                                        </th>
-                                                        <td>
-                                                            {formatCurrency(
-                                                                m.total,
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
+                                    {/* A div, not the table, is hidden: a table can't
+                                        shrink to sr-only's 1px, so it would stretch the page. */}
+                                    <div className="sr-only">
+                                        <table>
+                                            <caption>
+                                                Money collected per month
+                                            </caption>
+                                            <tbody>
+                                                {stats.monthlyCollections.map(
+                                                    (m) => (
+                                                        <tr key={m.month}>
+                                                            <th scope="row">
+                                                                {m.label}
+                                                            </th>
+                                                            <td>
+                                                                {formatCurrency(
+                                                                    m.total,
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </>
                             ) : (
                                 <EmptyNote>
@@ -694,21 +698,23 @@ export default function Dashboard({
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
-                                    <table className="sr-only">
-                                        <caption>
-                                            Applications per grade level
-                                        </caption>
-                                        <tbody>
-                                            {gradeRows.map((row) => (
-                                                <tr key={row.name}>
-                                                    <th scope="row">
-                                                        {row.name}
-                                                    </th>
-                                                    <td>{row.count}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    <div className="sr-only">
+                                        <table>
+                                            <caption>
+                                                Applications per grade level
+                                            </caption>
+                                            <tbody>
+                                                {gradeRows.map((row) => (
+                                                    <tr key={row.name}>
+                                                        <th scope="row">
+                                                            {row.name}
+                                                        </th>
+                                                        <td>{row.count}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </>
                             ) : (
                                 <EmptyNote>No applications yet.</EmptyNote>

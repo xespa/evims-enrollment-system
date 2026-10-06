@@ -489,7 +489,10 @@ export default function EvimsAdminLayout({
         // On desktop the layout is exactly one screen tall: the sidebar stays
         // put and only the main content scrolls. On smaller screens the page
         // scrolls under the fixed top bar, and the sidebar is a drawer.
-        <div className="evims-admin flex min-h-screen bg-[#FBF8F2] lg:h-dvh lg:overflow-hidden">
+        // `relative` keeps stray absolutely positioned content (like an
+        // sr-only element) inside this box, so it can't make the window
+        // itself scroll and drag the sidebar along.
+        <div className="evims-admin relative flex min-h-screen bg-[#FBF8F2] lg:h-dvh lg:overflow-hidden">
             <a
                 href="#main-content"
                 className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
