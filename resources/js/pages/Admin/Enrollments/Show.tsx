@@ -7,6 +7,7 @@ import DocumentViewerDialog, {
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
 import { useConfirm } from '@/hooks/use-confirm';
+import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 import { formatAppointment } from '@/lib/document-appointment';
 import DocumentAppointment from '@/pages/Admin/Enrollments/Components/DocumentAppointment';
 import RejectApplicationDialog from '@/pages/Admin/Enrollments/Components/RejectApplicationDialog';
@@ -34,14 +35,17 @@ function InfoRow({ label, value }) {
     );
 }
 
-function CheckboxField({ label, checked, onChange }) {
+function CheckboxField({ label, checked, onChange, disabled = false }) {
     return (
-        <label className="flex cursor-pointer items-center gap-2 py-1.5">
+        <label
+            className={`flex items-center gap-2 py-1.5 ${disabled ? '' : 'cursor-pointer'}`}
+        >
             <input
                 type="checkbox"
                 checked={!!checked}
                 onChange={onChange}
-                className="h-4 w-4 rounded border-[#1F2A24]/20 text-[#2F6F4E] focus:ring-[#2F6F4E]"
+                disabled={disabled}
+                className="h-4 w-4 rounded border-[#1F2A24]/20 text-[#2F6F4E] focus:ring-[#2F6F4E] disabled:opacity-60"
             />
             <span className="text-sm text-[#1F2A24]/80">{label}</span>
         </label>
@@ -78,6 +82,7 @@ function formatShortDate(value) {
 const METHOD_LABELS = { CASH: 'Counter', GCASH: 'GCash' };
 
 function PaymentsSection({ enrollment }) {
+    const { handlePayments } = useStaffAbilities();
     const [isRecording, setIsRecording] = useState(false);
     // Remounts the dialog per opening so it starts from the latest balance.
     const [recordSession, setRecordSession] = useState(0);
@@ -145,7 +150,7 @@ function PaymentsSection({ enrollment }) {
                             {formatCurrency(totalDue)}
                         </span>
                     </div>
-                    {hasBalance && (
+                    {hasBalance && handlePayments && (
                         <button
                             type="button"
                             onClick={() => {
@@ -209,6 +214,7 @@ function PaymentsSection({ enrollment }) {
                                         const isVoided =
                                             payment.status === 'VOIDED';
                                         const canVoid =
+                                            handlePayments &&
                                             payment.method === 'CASH' &&
                                             !isVoided;
 
@@ -370,6 +376,7 @@ function DocumentRow({
     isUploadedBySchool,
     onToggleVerification,
 }) {
+    const can = useStaffAbilities();
     const [open, setOpen] = useState(false);
     const [showNote, setShowNote] = useState(false);
     const [isViewing, setIsViewing] = useState(false);
@@ -408,6 +415,7 @@ function DocumentRow({
                 <CheckboxField
                     label={doc.label}
                     checked={verification?.[doc.verifiedKey]}
+                    disabled={!can.reviewApplications}
                     onChange={() =>
                         onToggleVerification(
                             doc.verifiedKey,
@@ -415,16 +423,18 @@ function DocumentRow({
                         )
                     }
                 />
-                {hasEnrollee && !isUploadedBySchool && (
-                    <button
-                        type="button"
-                        onClick={toggleOpen}
-                        aria-expanded={open}
-                        className="min-h-9 shrink-0 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
-                    >
-                        {open ? 'Cancel' : 'Remind'}
-                    </button>
-                )}
+                {can.reviewApplications &&
+                    hasEnrollee &&
+                    !isUploadedBySchool && (
+                        <button
+                            type="button"
+                            onClick={toggleOpen}
+                            aria-expanded={open}
+                            className="min-h-9 shrink-0 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                        >
+                            {open ? 'Cancel' : 'Remind'}
+                        </button>
+                    )}
             </div>
 
             <div className="ml-6 flex flex-wrap items-center">
@@ -452,12 +462,14 @@ function DocumentRow({
                             : 'No file uploaded yet'}
                     </p>
                 )}
-                <UploadDocumentForm
-                    enrollmentId={enrollmentId}
-                    documentType={doc.type}
-                    documentLabel={doc.label}
-                    hasFile={hasFile}
-                />
+                {can.uploadDocumentTypes.includes(doc.type) && (
+                    <UploadDocumentForm
+                        enrollmentId={enrollmentId}
+                        documentType={doc.type}
+                        documentLabel={doc.label}
+                        hasFile={hasFile}
+                    />
+                )}
             </div>
 
             {open && (
@@ -542,6 +554,7 @@ export default function Show({
     today,
 }) {
     const { props } = usePage();
+    const can = useStaffAbilities();
     const flashSuccess = props.flash?.success;
     const statusError = props.errors?.enrollment_status;
 
@@ -711,13 +724,15 @@ export default function Show({
                                 on {formatShortDate(enrollment.archived_at)}.
                                 It's hidden from the Students list.
                             </p>
-                            <button
-                                type="button"
-                                onClick={restoreApplication}
-                                className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
-                            >
-                                Restore
-                            </button>
+                            {can.reviewApplications && (
+                                <button
+                                    type="button"
+                                    onClick={restoreApplication}
+                                    className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                                >
+                                    Restore
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -753,7 +768,9 @@ export default function Show({
                                 Number yet. Assign one before approving this
                                 application.
                             </p>
-                            <AssignLrnForm studentId={student.id} />
+                            {can.reviewApplications && (
+                                <AssignLrnForm studentId={student.id} />
+                            )}
                         </div>
                     )}
 
@@ -871,62 +888,65 @@ export default function Show({
                     )}
 
                     {/* Approve/Reject actions */}
-                    <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                        <button
-                            type="button"
-                            onClick={() => changeStatus('APPROVED')}
-                            disabled={
-                                enrollment.enrollment_status === 'APPROVED' ||
-                                isCancelled ||
-                                approveBlockers.length > 0
-                            }
-                            title={
-                                isCancelled
-                                    ? 'The parent cancelled this application.'
-                                    : approveBlockers.length > 0
-                                      ? `Before approving, ${approveBlockers.join(' and ')}.`
-                                      : undefined
-                            }
-                            className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            Approve
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsRejecting(true)}
-                            disabled={
-                                enrollment.enrollment_status === 'REJECTED' ||
-                                isCancelled
-                            }
-                            title={
-                                isCancelled
-                                    ? 'The parent cancelled this application.'
-                                    : undefined
-                            }
-                            className="min-h-11 rounded-full bg-[#C6473B] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            Reject
-                        </button>
-                        {enrollment.enrollment_status !== 'PENDING' && (
+                    {can.reviewApplications && (
+                        <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
                             <button
                                 type="button"
-                                onClick={() => changeStatus('PENDING')}
-                                className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                                onClick={() => changeStatus('APPROVED')}
+                                disabled={
+                                    enrollment.enrollment_status ===
+                                        'APPROVED' ||
+                                    isCancelled ||
+                                    approveBlockers.length > 0
+                                }
+                                title={
+                                    isCancelled
+                                        ? 'The parent cancelled this application.'
+                                        : approveBlockers.length > 0
+                                          ? `Before approving, ${approveBlockers.join(' and ')}.`
+                                          : undefined
+                                }
+                                className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                Reset to Pending
+                                Approve
                             </button>
-                        )}
+                            <button
+                                type="button"
+                                onClick={() => setIsRejecting(true)}
+                                disabled={
+                                    enrollment.enrollment_status ===
+                                        'REJECTED' || isCancelled
+                                }
+                                title={
+                                    isCancelled
+                                        ? 'The parent cancelled this application.'
+                                        : undefined
+                                }
+                                className="min-h-11 rounded-full bg-[#C6473B] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Reject
+                            </button>
+                            {enrollment.enrollment_status !== 'PENDING' && (
+                                <button
+                                    type="button"
+                                    onClick={() => changeStatus('PENDING')}
+                                    className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                                >
+                                    Reset to Pending
+                                </button>
+                            )}
 
-                        {!enrollment.archived_at && (
-                            <button
-                                type="button"
-                                onClick={archiveApplication}
-                                className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 sm:ml-auto"
-                            >
-                                Archive
-                            </button>
-                        )}
-                    </div>
+                            {!enrollment.archived_at && (
+                                <button
+                                    type="button"
+                                    onClick={archiveApplication}
+                                    className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 sm:ml-auto"
+                                >
+                                    Archive
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {/* Portal account the application came from */}
@@ -935,7 +955,7 @@ export default function Show({
                                 <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                     Submitted From
                                 </h2>
-                                {submittedFrom && (
+                                {submittedFrom && can.reviewApplications && (
                                     <Link
                                         href={route(
                                             'admin.enrollee-accounts.index',
@@ -1223,8 +1243,9 @@ export default function Show({
                                     </p>
                                 )}
 
-                            {(missingDocuments.length > 0 ||
-                                enrollment.document_appointment) &&
+                            {can.reviewApplications &&
+                                (missingDocuments.length > 0 ||
+                                    enrollment.document_appointment) &&
                                 enrollment.enrollment_status !== 'APPROVED' &&
                                 !isCancelled && (
                                     <DocumentAppointment

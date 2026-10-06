@@ -29,7 +29,7 @@ class ValidIdController extends Controller
 
         $enrollee->resubmitValidId($path);
 
-        Notification::send(User::query()->admins()->get(), new EnrolleeAccountAwaitingReview($enrollee, isResubmission: true));
+        Notification::send(User::query()->applicationReviewers()->get(), new EnrolleeAccountAwaitingReview($enrollee, isResubmission: true));
 
         return redirect()
             ->route('portal.account-status')

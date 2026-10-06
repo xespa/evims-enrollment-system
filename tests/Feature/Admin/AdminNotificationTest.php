@@ -70,9 +70,9 @@ test('admin pages share the unread count', function () {
         ->assertInertia(fn (Assert $page) => $page->where('auth.userUnreadNotificationsCount', 1));
 });
 
-test('only admins can use the admin notifications', function () {
+test('only active staff can use the admin notifications', function () {
     $this->getJson(route('admin.notifications.index'))->assertUnauthorized();
-    $this->actingAs(User::factory()->create(['role' => 'STAFF']))
+    $this->actingAs(User::factory()->deactivated()->create())
         ->getJson(route('admin.notifications.index'))
         ->assertForbidden();
 });

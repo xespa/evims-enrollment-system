@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,6 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
@@ -20,7 +22,9 @@ use Illuminate\Support\Facades\Storage;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
- * @property string $role
+ * @property UserRole $role
+ * @property Carbon|null $invited_at
+ * @property Carbon|null $deactivated_at
  * @property string|null $profile_photo_path
  * @property-read string|null $profile_photo_url
  * @property string|null $two_factor_secret
@@ -36,7 +40,7 @@ use Illuminate\Support\Facades\Storage;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -48,6 +52,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
+            'invited_at' => 'datetime',
+            'deactivated_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -62,22 +70,61 @@ class User extends Authenticatable
     }
 
     /**
-     * The accounts that can use the admin panel, and so get its notifications.
+     * Accounts that haven't been deactivated.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->whereNull('deactivated_at');
+    }
+
+    /**
+     * Active administrators, who set up school years and manage staff.
      *
      * @param  Builder<self>  $query
      */
     public function scopeAdmins(Builder $query): void
     {
-        $query->where('role', 'ADMIN');
+        $query->active()->where('role', UserRole::Admin);
+    }
+
+    /**
+     * Active staff who review applications and portal accounts, and so get
+     * notified about them.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeApplicationReviewers(Builder $query): void
+    {
+        $query->active()->whereIn('role', UserRole::applicationReviewers());
+    }
+
+    /**
+     * Active staff who handle payments, and so get notified about them.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopePaymentHandlers(Builder $query): void
+    {
+        $query->active()->whereIn('role', UserRole::paymentHandlers());
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'ADMIN';
+        return $this->role === UserRole::Admin;
     }
 
-    public function isStaff(): bool
+    public function isActive(): bool
     {
-        return in_array($this->role, ['ADMIN', 'STAFF']);
+        return $this->deactivated_at === null;
+    }
+
+    /**
+     * Invited, but hasn't set a password through the invitation link yet.
+     */
+    public function hasPendingInvitation(): bool
+    {
+        return $this->invited_at !== null && $this->email_verified_at === null;
     }
 }

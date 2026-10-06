@@ -64,7 +64,7 @@ test('guests and non-admin staff cannot view transactions', function () {
     $this->get(route('admin.transactions.index'))->assertRedirect(route('login'));
     $this->get(route('admin.transactions.show', $payment))->assertRedirect(route('login'));
 
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'TEACHER']);
     $this->actingAs($staff)->get(route('admin.transactions.index'))->assertForbidden();
     $this->actingAs($staff)->get(route('admin.transactions.show', $payment))->assertForbidden();
 });

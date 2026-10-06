@@ -21,10 +21,22 @@ export type Enrollee = {
     [key: string]: unknown;
 };
 
+/** What the signed-in staff member may do; mirrors App\Enums\UserRole. */
+export type StaffAbilities = {
+    viewDashboard: boolean;
+    reviewApplications: boolean;
+    handlePayments: boolean;
+    manageSchool: boolean;
+    manageStaff: boolean;
+    uploadDocumentTypes: string[];
+};
+
 export type Auth = {
     user: User;
     enrollee: Enrollee | null;
     unreadNotificationsCount: number;
+    roleLabel: string | null;
+    can: StaffAbilities | null;
 };
 
 /* @chisel-passkeys */

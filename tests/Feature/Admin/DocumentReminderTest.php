@@ -14,7 +14,7 @@ test('guests cannot send a document reminder', function () {
 });
 
 test('non-admins cannot send a document reminder', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $enrollment = Enrollment::factory()->create();
 
     $this->actingAs($staff)

@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
+import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 
 const STATUS_STYLES = {
     PENDING: 'bg-yellow-100 text-yellow-800',
@@ -71,6 +72,7 @@ function formatPeso(value) {
  * counter payment once it's approved.
  */
 function PaymentCell({ enrollment, onRecord }) {
+    const { handlePayments } = useStaffAbilities();
     const payment = enrollment.payment;
 
     if (!payment) {
@@ -79,6 +81,7 @@ function PaymentCell({ enrollment, onRecord }) {
 
     const status = PAYMENT_STATUS[payment.status];
     const canRecord =
+        handlePayments &&
         enrollment.enrollment_status === 'APPROVED' &&
         !enrollment.cancelled_at &&
         payment.balance > 0;
@@ -183,6 +186,21 @@ function EmailNotVerifiedBadge() {
     );
 }
 
+/** The LRN, or a way to assign one for staff who review applications. */
+function LrnValue({ student }: { student: ApplicationRow['student'] }) {
+    const { reviewApplications } = useStaffAbilities();
+
+    if (student.lrn) {
+        return <>{student.lrn}</>;
+    }
+
+    return reviewApplications ? (
+        <AssignLrnForm studentId={student.id} />
+    ) : (
+        <span className="text-[#1F2A24]/50">Not assigned</span>
+    );
+}
+
 /** One application as a card, standing in for a table row on phones. */
 function ApplicationCard({
     enrollment,
@@ -232,9 +250,7 @@ function ApplicationCard({
                 <div className={student.lrn ? '' : 'col-span-2'}>
                     <dt className="text-xs text-[#1F2A24]/55">LRN</dt>
                     <dd className="mt-0.5 text-[#1F2A24]/80 tabular-nums">
-                        {student.lrn || (
-                            <AssignLrnForm studentId={student.id} />
-                        )}
+                        <LrnValue student={student} />
                     </dd>
                 </div>
                 <div className="col-span-2 border-t border-[#1F2A24]/10 pt-3">
@@ -543,11 +559,7 @@ export default function Index({
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
-                                                {student.lrn || (
-                                                    <AssignLrnForm
-                                                        studentId={student.id}
-                                                    />
-                                                )}
+                                                <LrnValue student={student} />
                                             </td>
                                             <td className="px-4 py-3 text-[#1F2A24]/70">
                                                 {enrollment.grade_level?.name ||

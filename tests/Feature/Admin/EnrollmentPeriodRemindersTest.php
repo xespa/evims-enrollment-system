@@ -18,7 +18,7 @@ beforeEach(function () {
 
 test('admins are reminded that enrollment opens soon', function () {
     Notification::fake();
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
     EnrollmentPeriod::factory()->opensIn(EnrollmentPeriod::REMINDER_DAYS_AHEAD)->create(['school_year' => $this->schoolYear]);
 
     $this->artisan('enrollment:send-period-reminders')->assertSuccessful();

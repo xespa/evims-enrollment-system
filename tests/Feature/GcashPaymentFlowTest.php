@@ -138,7 +138,7 @@ test('the parent is emailed a receipt once a GCash payment goes through', functi
 
 test('admins are notified once of an online payment, however often the webhook is retried', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'TEACHER']);
     $payment = pendingGcashPayment($this->installment);
 
     $this->mock(PayMongoService::class, function (MockInterface $mock) {

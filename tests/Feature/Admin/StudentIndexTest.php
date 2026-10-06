@@ -13,12 +13,20 @@ test('guests cannot view the admin students list', function () {
     $this->get(route('admin.students.index'))->assertRedirect(route('login'));
 });
 
-test('non-admin users cannot view the admin students list', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+test('every staff role can view the students list', function (string $role) {
+    $this->actingAs(User::factory()->create(['role' => $role]))
+        ->get(route('admin.students.index'))
+        ->assertOk();
+})->with(['REGISTRAR', 'TEACHER', 'CASHIER']);
+
+test('deactivated staff are signed out instead of seeing the students list', function () {
+    $staff = User::factory()->deactivated()->create();
 
     $this->actingAs($staff)
         ->get(route('admin.students.index'))
-        ->assertForbidden();
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
 });
 
 test('admins can view the applications list', function () {

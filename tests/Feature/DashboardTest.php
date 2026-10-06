@@ -10,10 +10,12 @@ test('admin users are redirected to the admin dashboard', function () {
     $response->assertRedirect(route('admin.dashboard'));
 });
 
-test('staff users see the regular dashboard', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
-    $this->actingAs($staff);
+test('staff without the dashboard are sent to the page they work from', function (string $role, string $home) {
+    $this->actingAs(User::factory()->create(['role' => $role]));
 
-    $response = $this->get(route('dashboard'));
-    $response->assertOk();
-});
+    $this->get(route('dashboard'))->assertRedirect(route($home));
+})->with([
+    'registrar' => ['REGISTRAR', 'admin.dashboard'],
+    'teacher' => ['TEACHER', 'admin.students.index'],
+    'cashier' => ['CASHIER', 'admin.transactions.index'],
+]);

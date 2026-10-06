@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureEnrolleeIsApproved;
-use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureStaffIsActive;
+use App\Http\Middleware\EnsureTwoFactorIsEnabled;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RedirectIfEnrolleeAuthenticated;
@@ -32,7 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
             : route('login'));
 
         $middleware->alias([
-            'admin' => EnsureUserIsAdmin::class,
+            'staff.active' => EnsureStaffIsActive::class,
+            'two-factor.required' => EnsureTwoFactorIsEnabled::class,
             'guest.enrollee' => RedirectIfEnrolleeAuthenticated::class,
             'enrollee.approved' => EnsureEnrolleeIsApproved::class,
         ]);

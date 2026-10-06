@@ -8,7 +8,7 @@ use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('non-admin users cannot manage subjects', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
     $curriculum = Curriculum::factory()->create();
     $subject = Subject::factory()->for($curriculum)->create();
 

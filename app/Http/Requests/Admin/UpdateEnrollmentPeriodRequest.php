@@ -15,7 +15,7 @@ class UpdateEnrollmentPeriodRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user instanceof User && $user->isAdmin();
+        return $user instanceof User && $user->can('manage-school');
     }
 
     /**

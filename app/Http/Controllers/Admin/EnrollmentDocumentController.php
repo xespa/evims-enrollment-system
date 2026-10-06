@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEnrollmentDocumentRequest;
+use App\Models\AuditLog;
 use App\Models\Enrollment;
 use App\Models\OfficeVerification;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class EnrollmentDocumentController extends Controller
@@ -26,12 +29,19 @@ class EnrollmentDocumentController extends Controller
         $verification = $enrollment->officeVerification()->firstOrCreate([]);
         $previousPath = $verification->{$columns['path']};
 
-        $verification->update([
-            $columns['path'] => $request->file('file')->store('documents', 'public'),
-            $columns['verified'] => true,
-            'verified_by' => $admin->id,
-            'verified_at' => now(),
-        ]);
+        DB::transaction(function () use ($verification, $columns, $request, $admin, $enrollment, $type, $previousPath): void {
+            $verification->update([
+                $columns['path'] => $request->file('file')->store('documents', 'public'),
+                $columns['verified'] => true,
+                'verified_by' => $admin->id,
+                'verified_at' => now(),
+            ]);
+
+            AuditLog::record(AuditAction::DocumentUploaded, $enrollment, [
+                'document' => $type,
+                'replaced' => $previousPath !== null,
+            ]);
+        });
 
         if ($previousPath) {
             Storage::disk('public')->delete($previousPath);

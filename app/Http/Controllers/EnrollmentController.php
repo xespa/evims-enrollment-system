@@ -263,7 +263,7 @@ class EnrollmentController extends Controller
             $submitApplication->storeDocuments($request, 'public', 'documents'),
         );
 
-        Notification::send(User::query()->admins()->get(), new ApplicationSubmitted($enrollment));
+        Notification::send(User::query()->applicationReviewers()->get(), new ApplicationSubmitted($enrollment));
 
         return redirect()->route('admission.success', $enrollment->id);
     }

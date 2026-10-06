@@ -118,7 +118,7 @@ test('guests and non-admins cannot view a valid ID', function () {
     $this->get(route('admin.enrollee-accounts.valid-id.show', $enrollee))
         ->assertRedirect(route('login'));
 
-    $this->actingAs(User::factory()->create(['role' => 'STAFF']))
+    $this->actingAs(User::factory()->create(['role' => 'CASHIER']))
         ->get(route('admin.enrollee-accounts.valid-id.show', $enrollee))
         ->assertForbidden();
 });

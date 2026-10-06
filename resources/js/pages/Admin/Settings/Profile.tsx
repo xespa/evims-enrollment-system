@@ -21,6 +21,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useConfirm } from '@/hooks/use-confirm';
+import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 import admin from '@/routes/admin';
 
 const memberSinceFormat = new Intl.DateTimeFormat(undefined, {
@@ -34,6 +35,7 @@ const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 export default function Profile() {
     const { auth } = usePage().props;
+    const can = useStaffAbilities();
     const user = auth.user;
     const [confirm, confirmDialog] = useConfirm();
 
@@ -190,9 +192,11 @@ export default function Profile() {
                                 <span className="truncate">{user.email}</span>
                             </p>
                             <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#1F2A24]/60">
-                                <span className="rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 font-semibold text-[#2F6F4E]">
-                                    Administrator
-                                </span>
+                                {auth.roleLabel && (
+                                    <span className="rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 font-semibold text-[#2F6F4E]">
+                                        {auth.roleLabel}
+                                    </span>
+                                )}
                                 <span>
                                     Member since{' '}
                                     {memberSinceFormat.format(
@@ -315,29 +319,32 @@ export default function Profile() {
                     </form>
                 </SettingsSection>
 
-                <SettingsSection
-                    title="Delete account"
-                    description="Permanently remove your administrator account."
-                    tone="danger"
-                >
-                    <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="flex gap-2 text-sm text-[#1F2A24]/75">
-                            <TriangleAlert
-                                className="mt-0.5 size-4 shrink-0 text-[#C6473B]"
-                                aria-hidden="true"
-                            />
-                            You'll be signed out immediately and won't be able
-                            to sign back in. This cannot be undone.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => setIsDeleteOpen(true)}
-                            className="min-h-11 shrink-0 rounded-full border border-[#C6473B]/40 bg-white px-5 text-sm font-semibold text-[#A3372D] transition-colors hover:bg-[#C6473B] hover:text-white focus-visible:ring-2 focus-visible:ring-[#C6473B]/40 focus-visible:outline-none"
-                        >
-                            Delete account
-                        </button>
-                    </div>
-                </SettingsSection>
+                {/* Other roles are deactivated by an admin instead. */}
+                {can.manageStaff && (
+                    <SettingsSection
+                        title="Delete account"
+                        description="Permanently remove your administrator account."
+                        tone="danger"
+                    >
+                        <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="flex gap-2 text-sm text-[#1F2A24]/75">
+                                <TriangleAlert
+                                    className="mt-0.5 size-4 shrink-0 text-[#C6473B]"
+                                    aria-hidden="true"
+                                />
+                                You'll be signed out immediately and won't be
+                                able to sign back in. This cannot be undone.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setIsDeleteOpen(true)}
+                                className="min-h-11 shrink-0 rounded-full border border-[#C6473B]/40 bg-white px-5 text-sm font-semibold text-[#A3372D] transition-colors hover:bg-[#C6473B] hover:text-white focus-visible:ring-2 focus-visible:ring-[#C6473B]/40 focus-visible:outline-none"
+                            >
+                                Delete account
+                            </button>
+                        </div>
+                    </SettingsSection>
+                )}
             </AdminSettingsShell>
 
             <Dialog open={isDeleteOpen} onOpenChange={changeDeleteOpen}>

@@ -129,7 +129,7 @@ test('cancelling when there is no appointment is not found', function () {
 });
 
 test('only admins can set or cancel appointments', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     DocumentAppointment::factory()->for($this->enrollment)->create();
 
     $this->actingAs($staff)

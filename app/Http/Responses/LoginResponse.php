@@ -2,12 +2,14 @@
 
 namespace App\Http\Responses;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
 
-class LoginResponse implements LoginResponseContract
+class LoginResponse implements LoginResponseContract, TwoFactorLoginResponseContract
 {
     /**
      * Create an HTTP response that represents the object.
@@ -18,12 +20,10 @@ class LoginResponse implements LoginResponseContract
             return response()->json(['two_factor' => false]);
         }
 
+        /** @var User $user */
         $user = Auth::user();
 
-        $redirectTo = $user?->isAdmin()
-            ? route('admin.dashboard')
-            : route('dashboard');
-
-        return redirect()->intended($redirectTo);
+        // Each role lands on the page it works from most.
+        return redirect()->intended(route($user->role->homeRoute()));
     }
 }

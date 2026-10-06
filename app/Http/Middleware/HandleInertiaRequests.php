@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\Curriculum;
+use App\Models\OfficeVerification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
@@ -58,7 +60,42 @@ class HandleInertiaRequests extends Middleware
                 'unreadNotificationsCount' => $enrollee ? fn () => $enrollee->unreadNotifications()->count() : 0,
                 // Kept apart from the enrollee's, since both can be signed in at once.
                 'userUnreadNotificationsCount' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
+                // The staff account is read from the web guard explicitly, as
+                // portal pages make the enrollee guard the default.
+                'roleLabel' => fn () => $this->staffUser($request)?->role->label(),
+                // What the signed-in staff member may do, so pages can hide
+                // what they can't use. The routes enforce it regardless.
+                'can' => fn () => $this->staffAbilities($this->staffUser($request)),
             ],
+        ];
+    }
+
+    private function staffUser(Request $request): ?User
+    {
+        $user = $request->user('web');
+
+        return $user instanceof User ? $user : null;
+    }
+
+    /**
+     * @return array{viewDashboard: bool, reviewApplications: bool, handlePayments: bool, manageSchool: bool, manageStaff: bool, uploadDocumentTypes: list<string>}|null
+     */
+    private function staffAbilities(?User $user): ?array
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        return [
+            'viewDashboard' => $user->can('view-dashboard'),
+            'reviewApplications' => $user->can('review-applications'),
+            'handlePayments' => $user->can('handle-payments'),
+            'manageSchool' => $user->can('manage-school'),
+            'manageStaff' => $user->can('manage-staff'),
+            'uploadDocumentTypes' => array_values(array_filter(
+                array_keys(OfficeVerification::DOCUMENT_COLUMNS),
+                fn (string $type): bool => $user->can('upload-document', $type),
+            )),
         ];
     }
 }

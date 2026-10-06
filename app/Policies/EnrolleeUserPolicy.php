@@ -12,7 +12,7 @@ class EnrolleeUserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->role->canReviewApplications();
     }
 
     /**
@@ -20,7 +20,7 @@ class EnrolleeUserPolicy
      */
     public function view(User $user, EnrolleeUser $enrolleeUser): bool
     {
-        return $user->isAdmin();
+        return $user->role->canReviewApplications();
     }
 
     /**
@@ -28,6 +28,6 @@ class EnrolleeUserPolicy
      */
     public function update(User $user, EnrolleeUser $enrolleeUser): bool
     {
-        return $user->isAdmin();
+        return $user->role->canReviewApplications();
     }
 }

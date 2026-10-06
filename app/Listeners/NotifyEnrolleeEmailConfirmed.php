@@ -34,7 +34,7 @@ class NotifyEnrolleeEmailConfirmed
 
         // Only now can the account be approved, so this is when admins hear of it.
         if ($enrollee->account_status === AccountStatus::Pending) {
-            Notification::send(User::query()->admins()->get(), new EnrolleeAccountAwaitingReview($enrollee));
+            Notification::send(User::query()->applicationReviewers()->get(), new EnrolleeAccountAwaitingReview($enrollee));
         }
     }
 }

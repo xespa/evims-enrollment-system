@@ -75,7 +75,7 @@ class DashboardController extends Controller
 
         $enrollment->update(['cancelled_at' => now()]);
 
-        Notification::send(User::query()->admins()->get(), new ApplicationCancelled($enrollment));
+        Notification::send(User::query()->applicationReviewers()->get(), new ApplicationCancelled($enrollment));
 
         return back()->with('success', 'Your application has been cancelled.');
     }
@@ -119,7 +119,7 @@ class DashboardController extends Controller
             $verifiedColumn => false,
         ]);
 
-        Notification::send(User::query()->admins()->get(), new DocumentUploaded($enrollment, $type));
+        Notification::send(User::query()->applicationReviewers()->get(), new DocumentUploaded($enrollment, $type));
 
         return back()->with('success', 'Document uploaded. The registrar will review it shortly.');
     }

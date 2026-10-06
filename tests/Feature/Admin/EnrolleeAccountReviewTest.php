@@ -13,7 +13,7 @@ test('guests cannot see parent accounts', function () {
 });
 
 test('non-admins cannot see or review parent accounts', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $enrollee = EnrolleeUser::factory()->pending()->create();
 
     $this->actingAs($staff)->get(route('admin.enrollee-accounts.index'))->assertForbidden();

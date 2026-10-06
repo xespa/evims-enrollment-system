@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DocumentAppointmentController;
@@ -16,17 +17,22 @@ use App\Http\Controllers\Admin\PayableEnrollmentController;
 use App\Http\Controllers\Admin\ProfilePhotoController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\StaffAccountController;
+use App\Http\Controllers\Admin\StaffAccountDeactivationController;
+use App\Http\Controllers\Admin\StaffInvitationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\VoidPaymentController;
 use App\Http\Controllers\Api\PhAddressController;
+use App\Http\Controllers\Auth\AcceptInvitationController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
 use App\Models\Curriculum;
 use App\Models\Event;
 use App\Models\GradeLevel;
 use App\Models\OfficeVerification;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/ph-address')->name('api.ph-address.')->group(function () {
@@ -96,67 +102,94 @@ Route::get('payments/sandbox/{payment}/checkout', [PaymentController::class, 'sa
 Route::post('payments/sandbox/{payment}/confirm', [PaymentController::class, 'sandboxConfirm'])->name('payments.sandbox.confirm');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Sends each role to the page it works from most.
     Route::get('dashboard', function () {
-        return auth()->user()->isAdmin()
-            ? redirect()->route('admin.dashboard')
-            : inertia('dashboard');
+        /** @var User $user */
+        $user = auth()->user();
+
+        return redirect()->route($user->role->homeRoute());
     })->name('dashboard');
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// The admin panel, for every staff role. Each section checks the ability it
+// needs (see App\Enums\UserRole for who has which).
+Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->middleware('can:view-dashboard')->name('dashboard');
 
+    // Every role can look students up and open their applications.
     Route::resource('students', StudentController::class)->only(['index']);
-    Route::patch('students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.lrn.update');
-
-    Route::resource('enrollments', EnrollmentManagementController::class)->only(['show', 'destroy']);
-    Route::post('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'store'])->name('enrollments.archive.store');
-    Route::delete('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'destroy'])->name('enrollments.archive.destroy');
-    Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
-    Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
+    Route::resource('enrollments', EnrollmentManagementController::class)->only(['show']);
     Route::post('enrollments/{enrollment}/documents/{type}', [EnrollmentDocumentController::class, 'store'])
         ->whereIn('type', array_keys(OfficeVerification::DOCUMENT_COLUMNS))
+        ->middleware('can:upload-document,type')
         ->name('enrollments.documents.store');
-    Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
-        ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
-        ->name('enrollments.documents.remind');
-    Route::put('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'update'])->name('enrollments.document-appointment.update');
-    Route::delete('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'destroy'])->name('enrollments.document-appointment.destroy');
-    Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
-    Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
-    // Student lookup for recording a counter payment from Transactions.
-    Route::get('payable-enrollments', PayableEnrollmentController::class)->name('payable-enrollments.index');
 
-    // Parent portal accounts awaiting approval before they can use the portal and pay online.
-    Route::resource('enrollee-accounts', EnrolleeAccountController::class)
-        ->only(['index', 'update'])
-        ->parameters(['enrollee-accounts' => 'enrolleeUser']);
-    Route::get('enrollee-accounts/{enrolleeUser}/valid-id', EnrolleeAccountValidIdController::class)->name('enrollee-accounts.valid-id.show');
+    Route::middleware('can:review-applications')->group(function () {
+        Route::patch('students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.lrn.update');
+        Route::post('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'store'])->name('enrollments.archive.store');
+        Route::delete('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'destroy'])->name('enrollments.archive.destroy');
+        Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
+        Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
+        Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
+            ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
+            ->name('enrollments.documents.remind');
+        Route::put('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'update'])->name('enrollments.document-appointment.update');
+        Route::delete('enrollments/{enrollment}/document-appointment', [DocumentAppointmentController::class, 'destroy'])->name('enrollments.document-appointment.destroy');
 
-    Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show']);
-    // Setting up a school year: store starts a draft, update saves it
-    // (opening enrollment), destroy cancels it.
-    Route::resource('school-years', SchoolYearController::class)
-        ->only(['store', 'update', 'destroy'])
-        ->parameters(['school-years' => 'schoolYear'])
-        ->where(['schoolYear' => '\d{4}-\d{4}']);
-    // When applications for a school year open and close.
-    Route::put('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'update'])
-        ->where('schoolYear', '\d{4}-\d{4}')
-        ->name('school-years.enrollment-period.update');
-    Route::delete('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'destroy'])
-        ->where('schoolYear', '\d{4}-\d{4}')
-        ->name('school-years.enrollment-period.destroy');
-    // A curriculum is one grade level's fees + subjects for one school year.
-    Route::resource('curricula', CurriculumController::class)->only(['update']);
-    Route::resource('curricula.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
+        // Parent portal accounts awaiting approval before they can use the portal and pay online.
+        Route::resource('enrollee-accounts', EnrolleeAccountController::class)
+            ->only(['index', 'update'])
+            ->parameters(['enrollee-accounts' => 'enrolleeUser']);
+        Route::get('enrollee-accounts/{enrolleeUser}/valid-id', EnrolleeAccountValidIdController::class)->name('enrollee-accounts.valid-id.show');
+    });
 
-    Route::resource('transactions', TransactionController::class)
-        ->only(['index', 'show'])
-        ->parameters(['transactions' => 'payment']);
+    Route::middleware('can:handle-payments')->group(function () {
+        Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
+        Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
+        // Student lookup for recording a counter payment from Transactions.
+        Route::get('payable-enrollments', PayableEnrollmentController::class)->name('payable-enrollments.index');
 
-    // Creating and editing happen in a modal on the index page.
-    Route::resource('events', EventController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('transactions', TransactionController::class)
+            ->only(['index', 'show'])
+            ->parameters(['transactions' => 'payment']);
+    });
+
+    Route::middleware('can:manage-school')->group(function () {
+        Route::resource('enrollments', EnrollmentManagementController::class)->only(['destroy']);
+
+        Route::resource('grade-levels', GradeLevelController::class)->only(['index', 'show']);
+        // Setting up a school year: store starts a draft, update saves it
+        // (opening enrollment), destroy cancels it.
+        Route::resource('school-years', SchoolYearController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->parameters(['school-years' => 'schoolYear'])
+            ->where(['schoolYear' => '\d{4}-\d{4}']);
+        // When applications for a school year open and close.
+        Route::put('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'update'])
+            ->where('schoolYear', '\d{4}-\d{4}')
+            ->name('school-years.enrollment-period.update');
+        Route::delete('school-years/{schoolYear}/enrollment-period', [EnrollmentPeriodController::class, 'destroy'])
+            ->where('schoolYear', '\d{4}-\d{4}')
+            ->name('school-years.enrollment-period.destroy');
+        // A curriculum is one grade level's fees + subjects for one school year.
+        Route::resource('curricula', CurriculumController::class)->only(['update']);
+        Route::resource('curricula.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
+
+        // Creating and editing happen in a modal on the index page.
+        Route::resource('events', EventController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
+
+    // Re-entering the password is required before touching staff accounts.
+    Route::middleware(['can:manage-staff', 'password.confirm'])->group(function () {
+        Route::resource('staff-accounts', StaffAccountController::class)
+            ->only(['index', 'store', 'update'])
+            ->parameters(['staff-accounts' => 'staffAccount']);
+        Route::post('staff-accounts/{staffAccount}/deactivation', [StaffAccountDeactivationController::class, 'store'])->name('staff-accounts.deactivation.store');
+        Route::delete('staff-accounts/{staffAccount}/deactivation', [StaffAccountDeactivationController::class, 'destroy'])->name('staff-accounts.deactivation.destroy');
+        Route::post('staff-accounts/{staffAccount}/invitation', [StaffInvitationController::class, 'store'])->name('staff-accounts.invitation.store');
+
+        Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    });
 
     Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -167,9 +200,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
     Route::put('settings/profile-photo', [ProfilePhotoController::class, 'update'])->name('settings.profile-photo.update');
     Route::delete('settings/profile-photo', [ProfilePhotoController::class, 'destroy'])->name('settings.profile-photo.destroy');
-    Route::get('settings/security', [SettingsController::class, 'editSecurity'])->name('settings.security.edit');
+    // Two-factor is managed here, so the password is asked for again first.
+    Route::get('settings/security', [SettingsController::class, 'editSecurity'])->middleware('password.confirm')->name('settings.security.edit');
     Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
-    Route::delete('settings', [SettingsController::class, 'destroy'])->name('settings.destroy');
+    // Only admins may delete an account, and never the last one.
+    Route::delete('settings', [SettingsController::class, 'destroy'])->middleware('can:manage-staff')->name('settings.destroy');
+});
+
+// Staff invited by an admin set their own password here.
+Route::middleware('guest')->group(function () {
+    Route::get('invitation/{token}', [AcceptInvitationController::class, 'create'])->name('invitation.create');
+    Route::post('invitation', [AcceptInvitationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('invitation.store');
 });
 
 require __DIR__.'/settings.php';

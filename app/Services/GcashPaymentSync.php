@@ -127,6 +127,6 @@ class GcashPaymentSync
         $payment->loadMissing('enrollment.student', 'enrollment.enrolleeUser');
         $payment->enrollment->enrolleeUser?->notify(new PaymentReceived($payment));
 
-        Notification::send(User::query()->admins()->get(), new OnlinePaymentReceived($payment));
+        Notification::send(User::query()->paymentHandlers()->get(), new OnlinePaymentReceived($payment));
     }
 }

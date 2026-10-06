@@ -17,15 +17,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        User::factory()->withoutTwoFactor()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
-        User::factory()->create([
+        // Sets up two-factor on first sign-in.
+        User::factory()->admin()->withoutTwoFactor()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
-            'role' => 'ADMIN',
         ]);
 
         $this->call([

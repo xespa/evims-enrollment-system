@@ -2,13 +2,11 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Responses\LoginResponse as StaffLoginResponse;
 use App\Models\User;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -17,12 +15,9 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-
-Event::listen(Login::class, function (Login $event) {
-    // only needed if STAFF and ADMIN shouldn't share a landing page
-});
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -31,11 +26,10 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
-        $this->app->singleton(
-            LoginResponse::class,
-            \App\Http\Responses\LoginResponse::class
-        );
+        // Both a password-only sign-in and one finished with a two-factor
+        // code land each role on its own home page.
+        $this->app->singleton(LoginResponse::class, StaffLoginResponse::class);
+        $this->app->singleton(TwoFactorLoginResponse::class, StaffLoginResponse::class);
     }
 
     /**
@@ -54,10 +48,8 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureActions(): void
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::createUsersUsing(CreateNewUser::class);
-        // This login screen is admin-only — staff accounts have no portal of
-        // their own to sign in to, so they're rejected here rather than let
-        // through with nowhere to go.
+        // This login screen is for school staff of every role; there is no
+        // public sign-up, as admins invite staff instead.
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', $request->email)->first();
 
@@ -65,9 +57,9 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if (! $user->isAdmin()) {
+            if (! $user->isActive()) {
                 throw ValidationException::withMessages([
-                    Fortify::username() => 'This account does not have admin access.',
+                    Fortify::username() => 'This account has been deactivated.',
                 ]);
             }
 
@@ -95,11 +87,9 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]));
-
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+
+        Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
     }
 
     /**
@@ -114,5 +104,9 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($throttleKey);
         });
 
+        // Limits guessing at the six-digit code after a correct password.
+        RateLimiter::for('two-factor', function (Request $request) {
+            return Limit::perMinute(5)->by($request->session()->get('login.id'));
+        });
     }
 }

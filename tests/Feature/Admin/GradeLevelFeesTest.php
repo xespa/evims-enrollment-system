@@ -75,7 +75,7 @@ test('fee breakdown values are required and cannot be negative', function () {
 });
 
 test('non-admin users cannot update fees', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
     $curriculum = Curriculum::factory()->create();
 
     $this->actingAs($staff)

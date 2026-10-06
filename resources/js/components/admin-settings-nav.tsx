@@ -21,7 +21,7 @@ const TABS: SettingsTab[] = [
     },
     {
         label: 'Security',
-        description: 'Password and sign-in',
+        description: 'Password and two-factor',
         href: admin.settings.security.edit.url(),
         icon: ShieldCheck,
     },

@@ -104,7 +104,7 @@ test('the lookup needs at least two characters', function () {
 test('only admins can use the lookup', function () {
     $this->getJson(route('admin.payable-enrollments.index', ['search' => 'Juan']))->assertUnauthorized();
 
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'TEACHER']);
     $this->actingAs($staff)
         ->getJson(route('admin.payable-enrollments.index', ['search' => 'Juan']))
         ->assertForbidden();

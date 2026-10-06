@@ -1,8 +1,10 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Check, Circle, X } from 'lucide-react';
+import { Check, Circle, ShieldAlert, X } from 'lucide-react';
 import { useMemo } from 'react';
 import type { FormEvent } from 'react';
 import AdminSettingsShell from '@/components/admin-settings-nav';
+import AdminTwoFactorSection from '@/components/admin-two-factor-section';
+import type { TwoFactorState } from '@/components/admin-two-factor-section';
 import {
     SettingsField,
     SettingsFormFooter,
@@ -76,7 +78,18 @@ function passwordRequirements(passwordRules: string): PasswordRequirement[] {
     return requirements;
 }
 
-export default function Security({ passwordRules }: { passwordRules: string }) {
+type Props = {
+    passwordRules: string;
+    twoFactor: TwoFactorState;
+    /** Only sent right after they're made, or when asked for. */
+    recoveryCodes?: string[];
+};
+
+export default function Security({
+    passwordRules,
+    twoFactor,
+    recoveryCodes,
+}: Props) {
     const requirements = useMemo(
         () => passwordRequirements(passwordRules),
         [passwordRules],
@@ -127,6 +140,30 @@ export default function Security({ passwordRules }: { passwordRules: string }) {
             <Head title="Security settings" />
 
             <AdminSettingsShell>
+                {twoFactor.isRequired && !twoFactor.isEnabled && (
+                    <div
+                        role="alert"
+                        className="flex items-start gap-2.5 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#1F2A24]"
+                    >
+                        <ShieldAlert
+                            className="mt-0.5 size-4 shrink-0 text-[#a4670f]"
+                            aria-hidden="true"
+                        />
+                        <p>
+                            <span className="font-semibold">
+                                Two-factor authentication is required for your
+                                role.
+                            </span>{' '}
+                            Turn it on below to keep using the admin panel.
+                        </p>
+                    </div>
+                )}
+
+                <AdminTwoFactorSection
+                    twoFactor={twoFactor}
+                    recoveryCodes={recoveryCodes}
+                />
+
                 <SettingsSection
                     title="Change password"
                     description="Use a long, unique password that you don't use anywhere else."

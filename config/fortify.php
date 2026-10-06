@@ -116,6 +116,7 @@ return [
 
     'limiters' => [
         'login' => 'login',
+        'two-factor' => 'two-factor',
     ],
 
     /*
@@ -143,8 +144,13 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No registration: admins invite staff from Staff Accounts.
         Features::resetPasswords(),
+        // Required for some roles; see UserRole::requiresTwoFactor().
+        Features::twoFactorAuthentication([
+            'confirm' => true,
+            'confirmPassword' => true,
+        ]),
     ],
 
 ];

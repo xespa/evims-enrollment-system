@@ -11,7 +11,7 @@ test('login screen can be rendered', function () {
 });
 
 test('admins can authenticate using the login screen', function () {
-    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $admin = User::factory()->withoutTwoFactor()->create(['role' => 'ADMIN']);
 
     $response = $this->post(route('login.store'), [
         'email' => $admin->email,
@@ -22,8 +22,23 @@ test('admins can authenticate using the login screen', function () {
     $response->assertRedirect(route('admin.dashboard', absolute: false));
 });
 
-test('non-admin users cannot authenticate using the login screen', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+test('every staff role can authenticate and lands on its own home page', function (string $role, string $home) {
+    $staff = User::factory()->withoutTwoFactor()->create(['role' => $role]);
+
+    $this->post(route('login.store'), [
+        'email' => $staff->email,
+        'password' => 'password',
+    ])->assertRedirect(route($home));
+
+    $this->assertAuthenticatedAs($staff);
+})->with([
+    'registrar' => ['REGISTRAR', 'admin.dashboard'],
+    'teacher' => ['TEACHER', 'admin.students.index'],
+    'cashier' => ['CASHIER', 'admin.transactions.index'],
+]);
+
+test('deactivated staff cannot authenticate using the login screen', function () {
+    $staff = User::factory()->deactivated()->create();
 
     $response = $this->post(route('login.store'), [
         'email' => $staff->email,
@@ -31,7 +46,7 @@ test('non-admin users cannot authenticate using the login screen', function () {
     ]);
 
     $this->assertGuest();
-    $response->assertSessionHasErrors('email');
+    $response->assertSessionHasErrors(['email' => 'This account has been deactivated.']);
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

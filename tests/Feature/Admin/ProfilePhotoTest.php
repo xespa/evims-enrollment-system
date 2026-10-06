@@ -86,6 +86,7 @@ test('admins can remove their profile photo', function () {
 test('deleting an admin account also deletes its profile photo', function () {
     $path = UploadedFile::fake()->image('me.jpg')->store('avatars', 'public');
     $admin = User::factory()->create(['role' => 'ADMIN', 'profile_photo_path' => $path]);
+    User::factory()->admin()->create();
 
     $this
         ->actingAs($admin)
@@ -107,19 +108,23 @@ test('the profile photo url is shared with admin pages', function () {
         );
 });
 
-test('guests and non-admins cannot change a profile photo', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+test('guests cannot change a profile photo', function () {
     $photo = UploadedFile::fake()->image('me.jpg');
 
     $this->put(route('admin.settings.profile-photo.update'), ['photo' => $photo])
         ->assertRedirect(route('login'));
     $this->delete(route('admin.settings.profile-photo.destroy'))
         ->assertRedirect(route('login'));
+});
+
+test('every staff role can change their own profile photo', function (string $role) {
+    $staff = User::factory()->create(['role' => $role]);
 
     $this->actingAs($staff)
-        ->put(route('admin.settings.profile-photo.update'), ['photo' => $photo])
-        ->assertForbidden();
-    $this->actingAs($staff)
-        ->delete(route('admin.settings.profile-photo.destroy'))
-        ->assertForbidden();
-});
+        ->put(route('admin.settings.profile-photo.update'), [
+            'photo' => UploadedFile::fake()->image('me.jpg'),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($staff->refresh()->profile_photo_path)->not->toBeNull();
+})->with(['REGISTRAR', 'TEACHER', 'CASHIER']);

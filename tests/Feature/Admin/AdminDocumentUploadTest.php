@@ -84,7 +84,7 @@ test('unknown document types are not found', function () {
 test('non-admin users cannot upload documents', function () {
     Storage::fake('public');
 
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $enrollment = Enrollment::factory()->create();
 
     $this->actingAs($staff)

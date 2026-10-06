@@ -11,7 +11,7 @@ test('guests cannot assign an lrn', function () {
 });
 
 test('non-admin users cannot assign an lrn', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $student = Student::factory()->create(['lrn' => null]);
 
     $this->actingAs($staff)

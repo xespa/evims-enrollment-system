@@ -105,8 +105,8 @@ test('only admins can change the enrollment dates', function () {
     $route = route('admin.school-years.enrollment-period.update', $this->schoolYear);
 
     $this->put($route, $dates)->assertRedirect(route('login'));
-    $this->actingAs(User::factory()->create(['role' => 'STAFF']))->put($route, $dates)->assertForbidden();
-    $this->actingAs(User::factory()->create(['role' => 'STAFF']))
+    $this->actingAs(User::factory()->create(['role' => 'REGISTRAR']))->put($route, $dates)->assertForbidden();
+    $this->actingAs(User::factory()->create(['role' => 'REGISTRAR']))
         ->delete(route('admin.school-years.enrollment-period.destroy', $this->schoolYear))
         ->assertForbidden();
 

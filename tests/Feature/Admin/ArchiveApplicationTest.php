@@ -74,7 +74,7 @@ test('an archived application can still be opened', function () {
 });
 
 test('non-admin users cannot archive or restore applications', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $enrollment = Enrollment::factory()->create();
 
     $this->actingAs($staff)

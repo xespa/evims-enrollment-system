@@ -6,14 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Fortify;
 
 class SettingsController extends Controller
 {
@@ -31,10 +35,34 @@ class SettingsController extends Controller
     /**
      * Show the admin's security settings page.
      */
-    public function editSecurity(Request $request): Response
+    public function editSecurity(TwoFactorAuthenticationRequest $request): Response
     {
+        // Clears a two-factor setup that was started but never confirmed.
+        $request->ensureStateIsValid();
+
+        /** @var User $user */
+        $user = $request->user();
+        $isPending = $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null;
+        $status = $request->session()->get('status');
+        // Shown once, right after they're made; otherwise only on request.
+        $justMadeRecoveryCodes = in_array($status, [
+            Fortify::TWO_FACTOR_AUTHENTICATION_CONFIRMED,
+            Fortify::RECOVERY_CODES_GENERATED,
+        ], true);
+
         return Inertia::render('Admin/Settings/Security', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'twoFactor' => [
+                'isEnabled' => $user->hasEnabledTwoFactorAuthentication(),
+                'isPending' => $isPending,
+                'isRequired' => $user->role->requiresTwoFactor(),
+                'qrCodeSvg' => $isPending ? $user->twoFactorQrCodeSvg() : null,
+                'setupKey' => $isPending ? decrypt($user->two_factor_secret) : null,
+            ],
+            'status' => $status,
+            'recoveryCodes' => $justMadeRecoveryCodes
+                ? $user->recoveryCodes()
+                : Inertia::optional(fn (): array => $user->hasEnabledTwoFactorAuthentication() ? $user->recoveryCodes() : []),
         ]);
     }
 
@@ -72,6 +100,12 @@ class SettingsController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        if ($user instanceof User && $user->isAdmin() && User::query()->admins()->count() === 1) {
+            throw ValidationException::withMessages([
+                'password' => "You're the only administrator. Make someone else an administrator before deleting your account.",
+            ]);
+        }
 
         Auth::logout();
 

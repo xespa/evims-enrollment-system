@@ -63,7 +63,7 @@ class ReapplicationController extends Controller
             $path,
         );
 
-        Notification::send(User::query()->admins()->get(), new EnrolleeAccountAwaitingReview($enrolleeUser, isResubmission: true));
+        Notification::send(User::query()->applicationReviewers()->get(), new EnrolleeAccountAwaitingReview($enrolleeUser, isResubmission: true));
 
         Auth::guard('enrollee')->login($enrolleeUser);
         $request->session()->regenerate();

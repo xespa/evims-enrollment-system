@@ -205,7 +205,7 @@ test('a payment recorded the same day keeps the time it was recorded', function 
 
 test('non-admin users cannot record counter payments', function () {
     $enrollment = counterPayingEnrollment();
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'TEACHER']);
 
     $this->actingAs($staff)
         ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 1000, 'receipt_number' => fake()->unique()->numerify('OR-#####')])
@@ -341,7 +341,7 @@ test('only counter payments still in effect can be voided', function (string $me
 test('non-admin users cannot void payments', function () {
     $enrollment = counterPayingEnrollment();
     $this->actingAs($this->admin)->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 1000, 'receipt_number' => 'OR-6']);
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'TEACHER']);
 
     $this->actingAs($staff)
         ->post(route('admin.payments.void', Payment::sole()), ['reason' => 'Trying to void this'])

@@ -8,33 +8,72 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     ReceiptText,
+    ScrollText,
     Settings,
     UserCheck,
+    UserCog,
     Users,
     X,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import AdminAvatar from '@/components/admin-avatar';
 import NotificationBell from '@/components/notification-bell';
+import { useStaffAbilities } from '@/hooks/use-staff-abilities';
+import type { StaffAbilities } from '@/types/auth';
 
-const NAV_ITEMS = [
-    { label: 'Dashboard', route: 'admin.dashboard', icon: LayoutDashboard },
+type NavItem = {
+    label: string;
+    route: string;
+    icon: LucideIcon;
+    /** Hides the item from roles that can't open it (see UserRole). */
+    ability?: Exclude<keyof StaffAbilities, 'uploadDocumentTypes'>;
+    matchPrefix?: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+    {
+        label: 'Dashboard',
+        route: 'admin.dashboard',
+        icon: LayoutDashboard,
+        ability: 'viewDashboard',
+    },
     { label: 'Students', route: 'admin.students.index', icon: Users },
     {
         label: 'Portal Accounts',
         route: 'admin.enrollee-accounts.index',
         icon: UserCheck,
+        ability: 'reviewApplications',
     },
     {
         label: 'Transactions',
         route: 'admin.transactions.index',
         icon: ReceiptText,
+        ability: 'handlePayments',
     },
-    { label: 'Events', route: 'admin.events.index', icon: Calendar },
+    {
+        label: 'Events',
+        route: 'admin.events.index',
+        icon: Calendar,
+        ability: 'manageSchool',
+    },
     {
         label: 'School Year Setup',
         route: 'admin.grade-levels.index',
         icon: GraduationCap,
+        ability: 'manageSchool',
+    },
+    {
+        label: 'Staff Accounts',
+        route: 'admin.staff-accounts.index',
+        icon: UserCog,
+        ability: 'manageStaff',
+    },
+    {
+        label: 'Audit Log',
+        route: 'admin.audit-logs.index',
+        icon: ScrollText,
+        ability: 'manageStaff',
     },
     {
         label: 'Settings',
@@ -47,6 +86,10 @@ const NAV_ITEMS = [
 export default function EvimsAdminLayout({ children }) {
     const { url, props } = usePage();
     const user = props.auth?.user;
+    const can = useStaffAbilities();
+    const navItems = NAV_ITEMS.filter(
+        (item) => !item.ability || can[item.ability],
+    );
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [credentialsOpen, setCredentialsOpen] = useState(false);
@@ -162,7 +205,7 @@ export default function EvimsAdminLayout({ children }) {
                 aria-label="Admin"
                 className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4"
             >
-                {NAV_ITEMS.map((item) => (
+                {navItems.map((item) => (
                     <Link
                         key={item.route}
                         href={route(item.route)}
@@ -218,13 +261,13 @@ export default function EvimsAdminLayout({ children }) {
                                             {user.email}
                                         </p>
                                     </div>
-                                    {user.role && (
+                                    {props.auth?.roleLabel && (
                                         <div>
                                             <p className="text-xs text-[#1F2A24]/65">
                                                 Role
                                             </p>
                                             <p className="truncate text-sm text-[#1F2A24]">
-                                                {user.role}
+                                                {props.auth.roleLabel}
                                             </p>
                                         </div>
                                     )}

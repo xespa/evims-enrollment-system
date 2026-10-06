@@ -16,7 +16,7 @@ test('guests cannot delete an application', function () {
 });
 
 test('non-admin users cannot delete an application', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
     $enrollment = Enrollment::factory()->create();
 
     $this->actingAs($staff)

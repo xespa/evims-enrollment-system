@@ -77,7 +77,7 @@ test('the status must be a known value', function () {
 });
 
 test('non-admin users cannot change an application status', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'CASHIER']);
     $enrollment = Enrollment::factory()->create(['enrollment_status' => 'PENDING']);
 
     $this->actingAs($staff)

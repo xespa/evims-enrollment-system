@@ -93,7 +93,7 @@ test('the first school year starts empty when nothing is set up yet', function (
 });
 
 test('non-admin users cannot set up a school year', function () {
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
 
     $this->actingAs($staff)
         ->post(route('admin.school-years.store'), ['school_year' => Enrollment::currentSchoolYear()])
@@ -204,7 +204,7 @@ test('the grade levels page shows which year is the draft', function () {
 
 test('non-admin users cannot save or cancel a draft', function () {
     Curriculum::factory()->create(['school_year' => '2027-2028', 'is_draft' => true]);
-    $staff = User::factory()->create(['role' => 'STAFF']);
+    $staff = User::factory()->create(['role' => 'REGISTRAR']);
 
     $this->actingAs($staff)->patch(route('admin.school-years.update', '2027-2028'))->assertForbidden();
     $this->actingAs($staff)->delete(route('admin.school-years.destroy', '2027-2028'))->assertForbidden();
