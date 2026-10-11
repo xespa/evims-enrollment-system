@@ -8,6 +8,7 @@ use App\Enums\PaymentForm;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
+use App\Mail\RegistrationFormIssued;
 use App\Models\Enrollment;
 use App\Models\EnrollmentPeriod;
 use App\Models\OfficeVerification;
@@ -92,6 +93,13 @@ class EnrollmentManagementController extends Controller
 
             $enrollment->loadMissing('student', 'enrolleeUser');
             $enrollment->enrolleeUser?->notify(new EnrollmentStatusChanged($enrollment));
+
+            // Goes to the portal account they applied with.
+            $registrationFormRecipient = $enrollment->enrolleeUser->email ?? $enrollment->email;
+
+            if ($status === 'APPROVED' && $registrationFormRecipient) {
+                Mail::to($registrationFormRecipient)->send(new RegistrationFormIssued($enrollment));
+            }
         }
 
         return back()->with('success', 'Enrollment status updated.');

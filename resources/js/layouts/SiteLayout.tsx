@@ -5,7 +5,9 @@ import SiteHeader from '@/components/site/site-header';
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="flex min-h-screen flex-col bg-[#FBF8F2] font-sans text-[#1F2A24]">
+        // The public site and portal are designed light-only; theme-light
+        // keeps shared components (buttons, inputs) readable in dark mode.
+        <div className="theme-light flex min-h-screen flex-col bg-[#FBF8F2] font-sans text-[#1F2A24]">
             <a
                 href="#main-content"
                 className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"

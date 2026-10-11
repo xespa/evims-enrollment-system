@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
+import { FileDown } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
 import DocumentViewerDialog, {
@@ -687,17 +688,36 @@ export default function Show({
                             {student.last_name}, {student.first_name}{' '}
                             {student.middle_name}
                         </h1>
-                        {isCancelled ? (
-                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
-                                CANCELLED
-                            </span>
-                        ) : (
-                            <span
-                                className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                            >
-                                {enrollment.enrollment_status}
-                            </span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {!isCancelled &&
+                                enrollment.enrollment_status === 'APPROVED' && (
+                                    // A plain link, since the browser downloads the PDF.
+                                    <a
+                                        href={route(
+                                            'admin.enrollments.registration-form.show',
+                                            enrollment.id,
+                                        )}
+                                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                    >
+                                        <FileDown
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                        Registration form
+                                    </a>
+                                )}
+                            {isCancelled ? (
+                                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
+                                    CANCELLED
+                                </span>
+                            ) : (
+                                <span
+                                    className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
+                                >
+                                    {enrollment.enrollment_status}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {isCancelled && (

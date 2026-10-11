@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Student extends Model
 {
@@ -19,12 +20,18 @@ class Student extends Model
         'date_of_birth' => 'date:Y-m-d',
     ];
 
-    public function address()
+    /**
+     * @return HasOne<Address, $this>
+     */
+    public function address(): HasOne
     {
         return $this->hasOne(Address::class);
     }
 
-    public function parentProfile()
+    /**
+     * @return HasOne<ParentProfile, $this>
+     */
+    public function parentProfile(): HasOne
     {
         return $this->hasOne(ParentProfile::class);
     }

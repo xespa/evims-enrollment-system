@@ -19,6 +19,11 @@ use Inertia\Response;
 class EnrolleeAccountController extends Controller
 {
     /**
+     * The status filter that lists every account, whatever its status.
+     */
+    private const ALL_STATUSES = 'ALL';
+
+    /**
      * Portal accounts for admins to review, pending ones first by default.
      */
     public function index(Request $request): Response
@@ -26,11 +31,12 @@ class EnrolleeAccountController extends Controller
         Gate::authorize('viewAny', EnrolleeUser::class);
 
         $validated = $request->validate([
-            'status' => ['nullable', Rule::enum(AccountStatus::class)],
+            'status' => ['nullable', Rule::in([self::ALL_STATUSES, ...array_column(AccountStatus::cases(), 'value')])],
             'search' => ['nullable', 'string', 'max:255'],
         ]);
 
         $status = $validated['status'] ?? AccountStatus::Pending->value;
+        $isAllStatuses = $status === self::ALL_STATUSES;
         $search = $validated['search'] ?? '';
 
         $accounts = EnrolleeUser::query()
@@ -41,13 +47,15 @@ class EnrolleeAccountController extends Controller
                 'enrollments.student:id,first_name,last_name',
                 'enrollments.gradeLevel:id,name',
             ])
-            ->where('account_status', $status)
+            ->when(! $isAllStatuses, fn ($query) => $query->where('account_status', $status))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
+            // Under "All", the ones still waiting on a review come first.
+            ->when($isAllStatuses, fn ($query) => $query->orderByRaw('account_status = ? desc', [AccountStatus::Pending->value]))
             ->oldest()
             ->paginate(15)
             ->withQueryString()

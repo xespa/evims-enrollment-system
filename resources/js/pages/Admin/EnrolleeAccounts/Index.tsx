@@ -63,13 +63,17 @@ type PaginationLink = { url: string | null; label: string; active: boolean };
 type Props = {
     accounts: { data: EnrolleeAccount[]; links: PaginationLink[] };
     counts: Partial<Record<AccountStatus, number>>;
-    filters: { status: AccountStatus; search: string };
+    filters: { status: StatusFilter; search: string };
     rejectionReasons: RejectionReasonOption[];
     /** Pending accounts that can't be approved until their email is confirmed. */
     awaitingEmailCount: number;
 };
 
-const TABS: { status: AccountStatus; label: string }[] = [
+/** A single status, or every account. */
+type StatusFilter = AccountStatus | 'ALL';
+
+const TABS: { status: StatusFilter; label: string }[] = [
+    { status: 'ALL', label: 'All' },
     { status: 'PENDING', label: 'Pending' },
     { status: 'APPROVED', label: 'Approved' },
     { status: 'REJECTED', label: 'Rejected' },
@@ -610,7 +614,15 @@ export default function Index({
                                 >
                                     {tab.label}{' '}
                                     <span className="tabular-nums opacity-80">
-                                        ({counts[tab.status] ?? 0})
+                                        (
+                                        {tab.status === 'ALL'
+                                            ? Object.values(counts).reduce(
+                                                  (sum, count) =>
+                                                      sum + Number(count ?? 0),
+                                                  0,
+                                              )
+                                            : (counts[tab.status] ?? 0)}
+                                        )
                                     </span>
                                 </button>
                             );

@@ -177,9 +177,12 @@ html:has(.theme-light) body {
     color-scheme: light;
 }
 
-.theme-light {
-    color: var(--foreground);
-    color-scheme: light;
+/* In the base layer, so a text colour utility on the same element wins. */
+@layer base {
+    .theme-light {
+        color: var(--foreground);
+        color-scheme: light;
+    }
 }
 
 /* Inputs under 16px make iOS Safari zoom the page on focus. Unlayered so it

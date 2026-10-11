@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
 use App\Http\Controllers\Admin\ProfilePhotoController;
+use App\Http\Controllers\Admin\RegistrationFormController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffAccountController;
@@ -120,6 +121,7 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     // Every role can look students up and open their applications.
     Route::resource('students', StudentController::class)->only(['index']);
     Route::resource('enrollments', EnrollmentManagementController::class)->only(['show']);
+    Route::get('enrollments/{enrollment}/registration-form', RegistrationFormController::class)->name('enrollments.registration-form.show');
     Route::post('enrollments/{enrollment}/documents/{type}', [EnrollmentDocumentController::class, 'store'])
         ->whereIn('type', array_keys(OfficeVerification::DOCUMENT_COLUMNS))
         ->middleware('can:upload-document,type')

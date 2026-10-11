@@ -6,6 +6,7 @@ import {
     CalendarCheck,
     Camera,
     CheckCircle2,
+    FileDown,
     Landmark,
     Loader2,
     PartyPopper,
@@ -619,6 +620,30 @@ export default function Dashboard({ enrollments }) {
                                                 yet for this enrollment. Please
                                                 check back soon.
                                             </p>
+                                        )}
+
+                                        {isApproved && (
+                                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                <p className="text-sm text-[#1F2A24]/70">
+                                                    Your registration form was
+                                                    emailed to you when this
+                                                    application was approved.
+                                                </p>
+                                                {/* A plain link, since the browser downloads the PDF. */}
+                                                <a
+                                                    href={route(
+                                                        'portal.enrollments.registration-form.show',
+                                                        enrollment.id,
+                                                    )}
+                                                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold whitespace-nowrap text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                                >
+                                                    <FileDown
+                                                        className="h-4 w-4"
+                                                        aria-hidden="true"
+                                                    />
+                                                    Download registration form
+                                                </a>
+                                            </div>
                                         )}
                                     </div>
 
