@@ -56,6 +56,46 @@ test('admin can filter accounts by status and search', function () {
             ->where('accounts.data.0.id', $match->id));
 });
 
+test('the all filter lists every account, those awaiting review first', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $approved = EnrolleeUser::factory()->create(['created_at' => now()->subDays(3)]);
+    $rejected = EnrolleeUser::factory()->rejected()->create(['created_at' => now()->subDays(2)]);
+    $pending = EnrolleeUser::factory()->pending()->create(['created_at' => now()->subDay()]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollee-accounts.index', ['status' => 'ALL']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.status', 'ALL')
+            ->has('accounts.data', 3)
+            ->where('accounts.data.0.id', $pending->id)
+            ->where('accounts.data.1.id', $approved->id)
+            ->where('accounts.data.2.id', $rejected->id));
+});
+
+test('the all filter still narrows by search', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+    $approvedMatch = EnrolleeUser::factory()->create(['name' => 'Maria Santos']);
+    $pendingMatch = EnrolleeUser::factory()->pending()->create(['name' => 'Ana Santos']);
+    EnrolleeUser::factory()->rejected()->create(['name' => 'Jose Rizal']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollee-accounts.index', ['status' => 'ALL', 'search' => 'Santos']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('accounts.data', 2)
+            ->where('accounts.data.0.id', $pendingMatch->id)
+            ->where('accounts.data.1.id', $approvedMatch->id));
+});
+
+test('an unknown status filter is rejected', function () {
+    $admin = User::factory()->create(['role' => 'ADMIN']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.enrollee-accounts.index', ['status' => 'EVERYTHING']))
+        ->assertSessionHasErrors('status');
+});
+
 test('admin can approve an account and the parent is notified', function () {
     Notification::fake();
 

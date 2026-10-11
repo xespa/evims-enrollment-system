@@ -5,10 +5,12 @@ import {
     ArrowLeft,
     ArrowRight,
     CircleAlert,
+    History,
     Loader2,
     Send,
     UserRound,
 } from 'lucide-react';
+import { clearDraft, readDraft, saveDraft } from '@/lib/form-drafts';
 import {
     isValidMobileNumber,
     mobileNumberProblem,
@@ -24,8 +26,41 @@ import AcademicHistoryStep from './Steps/AcademicHistoryStep';
 import VitalInfoStep from './Steps/VitalInfoStep';
 import SubjectsStep from './Steps/SubjectsStep';
 import DocumentsStep from './Steps/DocumentsStep';
+import type { DocumentsOnFile } from './Steps/DocumentsStep';
 import BillingStep from './Steps/BillingStep';
 import ReviewStep from './Steps/ReviewStep';
+
+/** Uploads can't be kept in a draft, so they have to be attached again. */
+const DOCUMENT_FIELDS = [
+    'form_138',
+    'birth_certificate',
+    'good_moral_certificate',
+] as const;
+
+/**
+ * Left out of the saved draft: files can't be stored, the application date
+ * is always the day it's submitted, and the email comes from the account.
+ */
+const UNSAVED_FIELDS: string[] = [
+    ...DOCUMENT_FIELDS,
+    'date_of_application',
+    'email',
+];
+
+const DRAFT_SAVE_DELAY_MS = 500;
+
+/** What's kept of an unfinished application: its answers and where they were. */
+type ApplicationDraft = {
+    fields: Record<string, unknown> & { school_year?: string };
+    wizard: {
+        step: number;
+        maxStepReached: number;
+        fastTrack: boolean;
+        lrnGateResolved: boolean;
+        previousSchoolYear: string | null;
+        documentsOnFile: DocumentsOnFile | null;
+    };
+};
 
 // Fields required to proceed past each step (client-side gatekeeping only —
 // the server re-validates everything again in StoreEnrollmentRequest).
@@ -234,10 +269,13 @@ export default function Create({
     // The matched child's last application's school year, e.g. "2026-2027" —
     // used to stop a second application for a year they've already applied
     // for, before the next school year has opened.
-    const [previousSchoolYear, setPreviousSchoolYear] = useState(null);
+    const [previousSchoolYear, setPreviousSchoolYear] = useState<string | null>(
+        null,
+    );
     // A returning student's documents from their last approved year, kept
     // so they needn't be uploaded again. Null for everyone else.
-    const [documentsOnFile, setDocumentsOnFile] = useState(null);
+    const [documentsOnFile, setDocumentsOnFile] =
+        useState<DocumentsOnFile | null>(null);
 
     const defaultFormData = {
         // Student
@@ -313,8 +351,101 @@ export default function Create({
         payment_channel: '',
     };
 
-    const { data, setData, post, processing, errors, isDirty } =
+    const { data, setData, post, processing, errors, isDirty, reset } =
         useForm(defaultFormData);
+
+    // Unfinished answers are kept on this device per parent account, so a
+    // reload or closed tab doesn't cost them the whole application.
+    const draftKey = enrollee ? `enrollment-application:${enrollee.id}` : null;
+    const [draftRestoredAt, setDraftRestoredAt] = useState<Date | null>(null);
+    // Saving waits until any existing draft has been loaded, so the empty
+    // form never overwrites it.
+    const [hasCheckedDraft, setHasCheckedDraft] = useState(false);
+    const hasAttachedDocument = DOCUMENT_FIELDS.some(
+        (field) => data[field] !== null,
+    );
+
+    // Read after mounting, since the page is first rendered on the server.
+    useEffect(() => {
+        const draft = draftKey ? readDraft<ApplicationDraft>(draftKey) : null;
+
+        if (draft) {
+            const { fields, wizard } = draft.value;
+
+            setData((prev) => ({
+                ...prev,
+                ...fields,
+                // Only offer a school year that's still open.
+                school_year:
+                    fields.school_year &&
+                    schoolYears.includes(fields.school_year)
+                        ? fields.school_year
+                        : prev.school_year,
+            }));
+            setStep(wizard.step);
+            setMaxStepReached(wizard.maxStepReached);
+            setFastTrack(wizard.fastTrack);
+            setLrnGateResolved(wizard.lrnGateResolved);
+            setPreviousSchoolYear(wizard.previousSchoolYear);
+            setDocumentsOnFile(wizard.documentsOnFile);
+            setDraftRestoredAt(draft.savedAt);
+        }
+
+        setHasCheckedDraft(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (!draftKey || !hasCheckedDraft || !isDirty || processing) return;
+
+        // Waits for a pause in typing rather than saving every keystroke.
+        const timer = window.setTimeout(() => {
+            const fields = Object.fromEntries(
+                Object.entries(data).filter(
+                    ([field]) => !UNSAVED_FIELDS.includes(field),
+                ),
+            );
+
+            saveDraft<ApplicationDraft>(draftKey, {
+                fields,
+                wizard: {
+                    step,
+                    maxStepReached,
+                    fastTrack,
+                    lrnGateResolved,
+                    previousSchoolYear,
+                    documentsOnFile,
+                },
+            });
+        }, DRAFT_SAVE_DELAY_MS);
+
+        return () => window.clearTimeout(timer);
+    }, [
+        draftKey,
+        hasCheckedDraft,
+        isDirty,
+        processing,
+        data,
+        step,
+        maxStepReached,
+        fastTrack,
+        lrnGateResolved,
+        previousSchoolYear,
+        documentsOnFile,
+    ]);
+
+    const startOver = () => {
+        if (draftKey) clearDraft(draftKey);
+        reset();
+        setStep(1);
+        setMaxStepReached(1);
+        setFastTrack(false);
+        setLrnGateResolved(!hasExistingRecord);
+        setPreviousSchoolYear(null);
+        setDocumentsOnFile(null);
+        setNextBlockedReason('');
+        setDraftRestoredAt(null);
+    };
 
     // The stepper + form, scrolled to and focused whenever the step changes.
     const formTopRef = useRef<HTMLDivElement>(null);
@@ -340,10 +471,11 @@ export default function Create({
         }
     }, [step]);
 
-    // A long application is easy to lose: warn before closing the tab or
-    // following a link away while it's filled in but not yet submitted.
+    // The answers are kept in the draft, but attached documents aren't:
+    // warn before closing the tab or following a link away while one is
+    // attached and the application isn't submitted yet.
     useEffect(() => {
-        if (!isDirty || processing) return;
+        if (!hasAttachedDocument || processing) return;
 
         const warnBeforeUnload = (event: BeforeUnloadEvent) => {
             event.preventDefault();
@@ -355,7 +487,7 @@ export default function Create({
             if (event.detail.visit.method !== 'get') return;
             if (
                 !window.confirm(
-                    "Leave this page? Your application hasn't been submitted, and what you've entered will be lost.",
+                    "Leave this page? Your answers are saved on this device, but you'll need to attach your documents again.",
                 )
             ) {
                 event.preventDefault();
@@ -366,7 +498,7 @@ export default function Create({
             window.removeEventListener('beforeunload', warnBeforeUnload);
             removeVisitGuard();
         };
-    }, [isDirty, processing]);
+    }, [hasAttachedDocument, processing]);
 
     /** Puts the cursor in the first field that needs attention. */
     const focusField = (field: string) => {
@@ -631,6 +763,9 @@ export default function Create({
 
         post(route('admission.store'), {
             forceFormData: true,
+            onSuccess: () => {
+                if (draftKey) clearDraft(draftKey);
+            },
             onError: (formErrors) => {
                 const errorFields = Object.keys(formErrors);
                 if (errorFields.length > 0) {
@@ -764,6 +899,41 @@ export default function Create({
                             </p>
                         )}
                     </div>
+
+                    {draftRestoredAt && (
+                        <div
+                            role="status"
+                            className="mb-4 flex flex-col gap-3 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <p className="flex items-start gap-2">
+                                <History
+                                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                    aria-hidden="true"
+                                />
+                                <span>
+                                    <span className="font-medium text-[#1F2A24]">
+                                        We kept your unfinished application
+                                    </span>{' '}
+                                    from{' '}
+                                    {draftRestoredAt.toLocaleString('en-PH', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                    })}
+                                    . Pick up where you left off. Any documents
+                                    need to be attached again.
+                                </span>
+                            </p>
+                            <button
+                                type="button"
+                                onClick={startOver}
+                                className="min-h-10 shrink-0 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-medium text-[#1F2A24]/80 transition-colors hover:bg-[#1F2A24]/5"
+                            >
+                                Start over
+                            </button>
+                        </div>
+                    )}
 
                     {!lrnGateResolved ? (
                         <VerifyLrnGate

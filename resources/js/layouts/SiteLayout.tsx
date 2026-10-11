@@ -1,9 +1,22 @@
+import { usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import CookieNotice from '@/components/site/cookie-notice';
 import SiteFooter from '@/components/site/site-footer';
 import SiteHeader from '@/components/site/site-header';
+import { clearAllDrafts } from '@/lib/form-drafts';
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
+    const isSignedIn = Boolean(usePage().props.auth?.enrollee);
+
+    // Saved form drafts hold a family's personal details, so they go as
+    // soon as nobody is signed in, e.g. on a shared computer after logout.
+    useEffect(() => {
+        if (!isSignedIn) {
+            clearAllDrafts();
+        }
+    }, [isSignedIn]);
+
     return (
         // The public site and portal are designed light-only; theme-light
         // keeps shared components (buttons, inputs) readable in dark mode.

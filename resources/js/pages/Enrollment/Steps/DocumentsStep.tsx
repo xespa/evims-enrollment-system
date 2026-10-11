@@ -15,7 +15,10 @@ type RetainedDocumentField = Exclude<DocumentField, 'form_138'>;
  * A returning student's documents from their last approved school year,
  * as sent by the LRN check.
  */
-interface DocumentsOnFile extends Record<RetainedDocumentField, boolean> {
+export interface DocumentsOnFile extends Record<
+    RetainedDocumentField,
+    boolean
+> {
     schoolYear: string;
     files: Record<RetainedDocumentField, string | null>;
 }
