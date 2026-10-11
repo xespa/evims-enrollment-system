@@ -1,150 +1,248 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    AlertCircle,
+    CheckCircle2,
+    ClipboardList,
+    Clock,
+    FolderOpen,
+    Wallet,
+    X,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import {
-    BadgeCheck,
-    CalendarCheck,
-    Camera,
-    CheckCircle2,
-    FileDown,
-    Landmark,
-    Loader2,
-    PartyPopper,
-} from 'lucide-react';
 import DocumentViewerDialog, {
     isPdfPath,
 } from '@/components/document-viewer-dialog';
+import ApplicationCard from '@/components/portal/application-card';
+import DocumentChecklist from '@/components/portal/document-checklist';
+import NextStepCard from '@/components/portal/next-step-card';
+import type { DashboardTab } from '@/components/portal/next-step-card';
+import PaymentHistory, {
+    paymentRows,
+} from '@/components/portal/payment-history';
+import ProfileHeader from '@/components/portal/profile-header';
 import { useConfirm } from '@/hooks/use-confirm';
-import { formatAppointment } from '@/lib/document-appointment';
+import {
+    MAX_DOCUMENT_BYTES,
+    MAX_PHOTO_BYTES,
+    formatFileSize,
+    hasOutstandingBalance,
+    missingDocuments,
+    studentName,
+} from '@/lib/portal-enrollment';
+import { formatCurrency } from '@/lib/transactions';
+import { cn } from '@/lib/utils';
+import { create as admissionCreate } from '@/routes/admission';
+import { logout } from '@/routes/portal';
+import { cancel as cancelEnrollment } from '@/routes/portal/enrollments';
+import { store as storeDocument } from '@/routes/portal/enrollments/documents';
+import { update as updatePhoto } from '@/routes/portal/profile/photo';
+import type { PortalDocumentType, PortalEnrollment } from '@/types/portal';
 
-const STATUS_STYLES = {
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    APPROVED: 'bg-green-100 text-green-800',
-    REJECTED: 'bg-red-100 text-red-800',
-};
+const TABS: DashboardTab[] = ['Applications', 'Payments', 'Documents'];
 
-const SESSION_LABELS = {
-    MORNING_SESSION: 'Morning Session',
-    AFTERNOON_SESSION: 'Afternoon Session',
-    SCHOOL_SERVICE: 'School Service',
-};
+const ALLOWED_DOCUMENT_EXTENSIONS = /\.(pdf|jpe?g|png)$/i;
 
-const DOCUMENTS = [
-    {
-        type: 'form_138',
-        label: 'Form 138 (Report Card)',
-        verifiedKey: 'has_form_138',
-        pathKey: 'form_138_path',
-    },
-    {
-        type: 'birth_certificate',
-        label: 'PSA Birth Certificate',
-        verifiedKey: 'has_birth_certificate',
-        pathKey: 'birth_certificate_path',
-    },
-    {
-        type: 'good_moral',
-        label: 'Good Moral Certificate',
-        verifiedKey: 'has_good_moral_certificate',
-        pathKey: 'good_moral_path',
-    },
-];
+function Metric({
+    icon: Icon,
+    label,
+    value,
+    emphasis = false,
+}: {
+    icon: LucideIcon;
+    label: string;
+    value: string | number;
+    emphasis?: boolean;
+}) {
+    return (
+        <div className="flex items-center gap-3 rounded-xl border border-[#1F2A24]/10 bg-white p-4 shadow-sm">
+            <span
+                aria-hidden="true"
+                className={cn(
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                    emphasis
+                        ? 'bg-[#C6473B]/10 text-[#A83A30]'
+                        : 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+                )}
+            >
+                <Icon className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+                <p
+                    className={cn(
+                        'truncate text-lg font-semibold tabular-nums',
+                        emphasis ? 'text-[#A83A30]' : 'text-[#1F2A24]',
+                    )}
+                >
+                    {value}
+                </p>
+                <p className="text-xs text-[#1F2A24]/65">{label}</p>
+            </div>
+        </div>
+    );
+}
 
-const PAYMENT_STATUS_STYLES = {
-    COMPLETED: 'bg-green-100 text-green-800',
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    FAILED: 'bg-red-100 text-red-800',
-    VOIDED: 'bg-gray-100 text-gray-600',
-};
+function EmptyState({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[#1F2A24]/20 bg-white px-6 py-10 text-center">
+            <FolderOpen
+                className="h-8 w-8 text-[#1F2A24]/30"
+                aria-hidden="true"
+            />
+            <p className="text-sm text-[#1F2A24]/65">{message}</p>
+            <Link
+                href={admissionCreate().url}
+                className="inline-flex min-h-11 items-center rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+            >
+                Start an application
+            </Link>
+        </div>
+    );
+}
 
-const METHOD_LABELS = {
-    GCASH: 'GCash',
-    CASH: 'Cash',
-};
-
-const TABS = ['Applications', 'Payments', 'Documents'];
-
-const formatCurrency = (value) =>
-    `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
-
-const initials = (name = '') =>
-    name
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase())
-        .join('');
-
-export default function Dashboard({ enrollments }) {
+export default function Dashboard({
+    enrollments,
+}: {
+    enrollments: PortalEnrollment[];
+}) {
     const { props } = usePage();
-    const enrollee = props.auth?.enrollee;
-    const [activeTab, setActiveTab] = useState('Applications');
-    const [uploading, setUploading] = useState(false);
-    const [confirm, confirmDialog] = useConfirm();
-
-    const cancel = async (enrollment) => {
-        const confirmed = await confirm({
-            title: 'Cancel this application?',
-            description: `The application for ${enrollment.student.first_name} ${enrollment.student.last_name} (${enrollment.grade_level.name}, SY ${enrollment.school_year}) will be withdrawn. You can submit a new one later.`,
-            confirmLabel: 'Cancel Application',
-            cancelLabel: 'Keep Application',
-            destructive: true,
-        });
-        if (!confirmed) return;
-        const enrollmentId = enrollment.id;
-        router.post(
-            route('portal.enrollments.cancel', enrollmentId),
-            {},
-            { preserveScroll: true },
-        );
-    };
-
-    const logout = () => {
-        router.post(route('portal.logout'));
-    };
-
-    const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setUploading(true);
-        router.post(
-            route('portal.profile.photo.update'),
-            { photo: file },
-            {
-                forceFormData: true,
-                preserveScroll: true,
-                onFinish: () => setUploading(false),
-            },
-        );
-    };
-
-    const [uploadingDoc, setUploadingDoc] = useState(null);
+    const enrollee = props.auth.enrollee;
+    const serverErrors = Object.values(props.errors ?? {});
+    const [activeTab, setActiveTab] = useState<DashboardTab>('Applications');
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const [uploadingDocumentKey, setUploadingDocumentKey] = useState<
+        string | null
+    >(null);
+    const [clientError, setClientError] = useState<string | null>(null);
     // Kept apart from `isViewingDocument` so the viewer doesn't blank out while closing.
     const [viewingDocument, setViewingDocument] = useState<{
         title: string;
         path: string;
     } | null>(null);
     const [isViewingDocument, setIsViewingDocument] = useState(false);
+    const [confirm, confirmDialog] = useConfirm();
 
-    const handleDocumentUpload = (enrollmentId, type) => (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const activeEnrollments = enrollments.filter(
+        (enrollment) => !enrollment.cancelled_at,
+    );
+    const approvedCount = activeEnrollments.filter(
+        (enrollment) => enrollment.enrollment_status === 'APPROVED',
+    ).length;
+    const underReviewCount = activeEnrollments.filter(
+        (enrollment) => enrollment.enrollment_status === 'PENDING',
+    ).length;
+    const outstandingBalance = activeEnrollments
+        .filter(hasOutstandingBalance)
+        .reduce(
+            (sum, enrollment) => sum + (enrollment.remaining_balance ?? 0),
+            0,
+        );
+    const missingDocumentCount = enrollments.reduce(
+        (sum, enrollment) => sum + missingDocuments(enrollment).length,
+        0,
+    );
+    const payments = paymentRows(enrollments);
 
-        const key = `${enrollmentId}:${type}`;
-        setUploadingDoc(key);
+    const tabCounts: Record<DashboardTab, number> = {
+        Applications: activeEnrollments.length,
+        Payments: payments.length,
+        Documents: missingDocumentCount,
+    };
+
+    const openTab = (tab: DashboardTab) => {
+        setActiveTab(tab);
+        document
+            .getElementById('portal-tabs')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById(`portal-tab-${tab}`)?.focus({
+            preventScroll: true,
+        });
+    };
+
+    const cancel = async (enrollment: PortalEnrollment) => {
+        const confirmed = await confirm({
+            title: 'Cancel this application?',
+            description: `The application for ${studentName(enrollment)} (${enrollment.grade_level.name}, SY ${enrollment.school_year}) will be withdrawn. You can submit a new one later.`,
+            confirmLabel: 'Cancel Application',
+            cancelLabel: 'Keep Application',
+            destructive: true,
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
         router.post(
-            route('portal.enrollments.documents.store', {
-                enrollment: enrollmentId,
-                type,
-            }),
+            cancelEnrollment.url(enrollment.id),
+            {},
+            { preserveScroll: true },
+        );
+    };
+
+    const uploadPhoto = (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            setClientError('Please choose an image file for your photo.');
+
+            return;
+        }
+
+        if (file.size > MAX_PHOTO_BYTES) {
+            setClientError(
+                `That photo is too large. Please choose one under ${formatFileSize(MAX_PHOTO_BYTES)}.`,
+            );
+
+            return;
+        }
+
+        setClientError(null);
+        setIsUploadingPhoto(true);
+        router.post(
+            updatePhoto.url(),
+            { photo: file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onFinish: () => setIsUploadingPhoto(false),
+            },
+        );
+    };
+
+    const uploadDocument = (
+        enrollment: PortalEnrollment,
+        type: PortalDocumentType,
+        file: File,
+    ) => {
+        if (!ALLOWED_DOCUMENT_EXTENSIONS.test(file.name)) {
+            setClientError('Documents must be a PDF, JPG or PNG file.');
+
+            return;
+        }
+
+        if (file.size > MAX_DOCUMENT_BYTES) {
+            setClientError(
+                `That file is too large. Please upload one under ${formatFileSize(MAX_DOCUMENT_BYTES)}.`,
+            );
+
+            return;
+        }
+
+        setClientError(null);
+        setUploadingDocumentKey(`${enrollment.id}:${type}`);
+        router.post(
+            storeDocument.url({ enrollment: enrollment.id, type }),
             { file },
             {
                 forceFormData: true,
                 preserveScroll: true,
-                onFinish: () => setUploadingDoc(null),
+                onFinish: () => setUploadingDocumentKey(null),
             },
         );
+    };
+
+    const viewDocument = (title: string, path: string) => {
+        setViewingDocument({ title, path });
+        setIsViewingDocument(true);
     };
 
     const handleTabKeyDown = (event: ReactKeyboardEvent) => {
@@ -152,46 +250,22 @@ export default function Dashboard({ enrollments }) {
             ArrowRight: 1,
             ArrowLeft: -1,
         };
-        if (!(event.key in offsets)) return;
+
+        if (!(event.key in offsets)) {
+            return;
+        }
+
         event.preventDefault();
-        const nextIndex =
-            (TABS.indexOf(activeTab) + offsets[event.key] + TABS.length) %
-            TABS.length;
-        setActiveTab(TABS[nextIndex]);
-        document.getElementById(`portal-tab-${TABS[nextIndex]}`)?.focus();
+        const nextTab =
+            TABS[
+                (TABS.indexOf(activeTab) + offsets[event.key] + TABS.length) %
+                    TABS.length
+            ];
+        setActiveTab(nextTab);
+        document.getElementById(`portal-tab-${nextTab}`)?.focus();
     };
 
-    // ---- Aggregate "social signal"-style metrics across all enrollments ----
-    const activeEnrollments = enrollments.filter((e) => !e.cancelled_at);
-    const approvedCount = activeEnrollments.filter(
-        (e) => e.enrollment_status === 'APPROVED',
-    ).length;
-    const outstandingBalance = activeEnrollments.reduce(
-        (sum, e) =>
-            sum +
-            (e.remaining_balance && e.remaining_balance > 0
-                ? e.remaining_balance
-                : 0),
-        0,
-    );
-
-    // ---- Flatten every payment, across every enrollment, for the Payments tab ----
-    const allTransactions = enrollments
-        .flatMap((enrollment) =>
-            (enrollment.billing_contract?.installments ?? []).flatMap(
-                (installment) =>
-                    installment.payments.map((payment) => ({
-                        ...payment,
-                        installment_number: installment.installment_number,
-                        student_name: `${enrollment.student.first_name} ${enrollment.student.last_name}`,
-                    })),
-            ),
-        )
-        .sort(
-            (a, b) =>
-                new Date(b.paid_at ?? b.created_at) -
-                new Date(a.paid_at ?? a.created_at),
-        );
+    const errorMessages = clientError ? [clientError] : serverErrors;
 
     return (
         <div className="mx-auto max-w-5xl px-4 pb-16">
@@ -207,740 +281,178 @@ export default function Dashboard({ enrollments }) {
                 />
             )}
 
-            {/* ---------------- Header banner ---------------- */}
-            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
+            <ProfileHeader
+                enrollee={enrollee}
+                isUploadingPhoto={isUploadingPhoto}
+                onPhotoSelected={uploadPhoto}
+                onLogout={() => router.post(logout.url())}
+            />
 
-            {/* ---------------- Identity block ---------------- */}
-            <div className="-mt-16 flex flex-col gap-4 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
-                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
-                    <div className="relative h-24 w-24 sm:h-32 sm:w-32">
-                        <label
-                            htmlFor="profile-photo-input"
-                            className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-full border-4 border-[#FBF8F2] shadow-sm focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-2"
-                        >
-                            {enrollee?.profile_photo_url ? (
-                                <img
-                                    src={enrollee.profile_photo_url}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                />
-                            ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-[#2F6F4E] text-2xl font-semibold text-white sm:text-3xl">
-                                    {initials(enrollee?.name)}
-                                </div>
-                            )}
-                            <span className="sr-only">
-                                Change profile photo
-                            </span>
-                            <div
-                                aria-hidden="true"
-                                className="absolute inset-0 hidden items-center justify-center bg-black/0 text-transparent transition-colors group-hover:bg-black/40 group-hover:text-white sm:flex"
-                            >
-                                <Camera className="h-6 w-6" />
-                            </div>
-                            {uploading && (
-                                <div
-                                    role="status"
-                                    className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"
-                                >
-                                    <Loader2
-                                        className="h-6 w-6 animate-spin"
-                                        aria-hidden="true"
-                                    />
-                                    <span className="sr-only">
-                                        Uploading photo…
-                                    </span>
-                                </div>
-                            )}
-                        </label>
-                        <input
-                            id="profile-photo-input"
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePhotoChange}
-                            disabled={uploading}
-                            className="sr-only"
-                        />
-                        {/* Always-visible camera badge: hover overlays
-                            never appear on touch screens. */}
-                        <span
+            <div className="mt-6 space-y-3">
+                {props.flash?.success && errorMessages.length === 0 && (
+                    <div
+                        role="status"
+                        className="flex items-start gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                    >
+                        <CheckCircle2
+                            className="mt-0.5 h-4 w-4 shrink-0"
                             aria-hidden="true"
-                            className="pointer-events-none absolute right-0.5 bottom-0.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FBF8F2] bg-[#2F6F4E] text-white shadow-sm sm:right-1.5 sm:bottom-1.5"
-                        >
-                            <Camera className="h-4 w-4" />
-                        </span>
+                        />
+                        {props.flash.success}
                     </div>
-                    <div className="pb-1 text-center sm:text-left">
-                        <div className="flex items-center justify-center gap-2 sm:justify-start">
-                            <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">
-                                {enrollee?.name}
-                            </h1>
-                            {enrollee?.email_verified_at && (
-                                <span
-                                    title="Verified email"
-                                    className="text-[#2F6F4E]"
-                                >
-                                    <BadgeCheck
-                                        className="h-5 w-5"
-                                        aria-hidden="true"
-                                    />
-                                    <span className="sr-only">
-                                        Verified email
-                                    </span>
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-sm text-[#1F2A24]/70">
-                            {enrollee?.email}
-                        </p>
-                        <p className="text-sm text-[#1F2A24]/65">
-                            Student Account
-                        </p>
-                    </div>
-                </div>
+                )}
 
-                <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
-                    <Link
-                        href={route('admission.create')}
-                        className="inline-flex min-h-11 items-center rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                {errorMessages.length > 0 && (
+                    <div
+                        role="alert"
+                        className="flex items-start gap-2 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A83A30]"
                     >
-                        + Apply for New Enrollment
-                    </Link>
-                    <button
-                        type="button"
-                        onClick={logout}
-                        className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
-                    >
-                        Log Out
-                    </button>
-                </div>
+                        <AlertCircle
+                            className="mt-0.5 h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <ul className="flex-1 space-y-1">
+                            {errorMessages.map((message) => (
+                                <li key={message}>{message}</li>
+                            ))}
+                        </ul>
+                        {clientError && (
+                            <button
+                                type="button"
+                                onClick={() => setClientError(null)}
+                                className="-m-1 rounded-full p-1 hover:bg-[#C6473B]/10"
+                            >
+                                <X className="h-4 w-4" aria-hidden="true" />
+                                <span className="sr-only">Dismiss</span>
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                <NextStepCard enrollments={enrollments} onOpenTab={openTab} />
             </div>
 
-            {props.flash?.success && (
-                <div
-                    role="status"
-                    className="mt-6 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
-                >
-                    {props.flash.success}
+            <section aria-label="Account summary" className="mt-4">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <Metric
+                        icon={ClipboardList}
+                        label="Applications"
+                        value={activeEnrollments.length}
+                    />
+                    <Metric
+                        icon={Clock}
+                        label="Under review"
+                        value={underReviewCount}
+                    />
+                    <Metric
+                        icon={CheckCircle2}
+                        label="Approved"
+                        value={approvedCount}
+                    />
+                    <Metric
+                        icon={Wallet}
+                        label="Outstanding balance"
+                        value={formatCurrency(outstandingBalance)}
+                        emphasis={outstandingBalance > 0}
+                    />
                 </div>
-            )}
+            </section>
 
-            {/* ---------------- Key metrics ("social signals") ---------------- */}
-            <div className="mt-6 grid grid-cols-3 divide-x divide-[#1F2A24]/10 rounded-lg border border-[#1F2A24]/10 bg-white shadow-sm">
-                <div className="px-2 py-4 text-center sm:px-4">
-                    <p className="text-lg font-semibold text-[#1F2A24] tabular-nums sm:text-xl">
-                        {activeEnrollments.length}
-                    </p>
-                    <p className="text-xs text-[#1F2A24]/65">Applications</p>
-                </div>
-                <div className="px-2 py-4 text-center sm:px-4">
-                    <p className="text-lg font-semibold text-[#1F2A24] tabular-nums sm:text-xl">
-                        {approvedCount}
-                    </p>
-                    <p className="text-xs text-[#1F2A24]/65">Approved</p>
-                </div>
-                <div className="px-2 py-4 text-center sm:px-4">
-                    <p
-                        className={`text-base font-semibold break-words tabular-nums sm:text-xl ${outstandingBalance > 0 ? 'text-[#C6473B]' : 'text-[#1F2A24]'}`}
-                    >
-                        {formatCurrency(outstandingBalance)}
-                    </p>
-                    <p className="text-xs text-[#1F2A24]/65">
-                        Outstanding Balance
-                    </p>
-                </div>
-            </div>
-
-            {/* ---------------- Tabs ---------------- */}
-            <div className="mt-8 border-b border-[#1F2A24]/10">
+            <div
+                id="portal-tabs"
+                className="mt-8 scroll-mt-24 overflow-x-auto border-b border-[#1F2A24]/10"
+            >
                 <div
                     role="tablist"
                     aria-label="Account sections"
                     className="-mb-px flex gap-6"
                 >
-                    {TABS.map((tab) => (
-                        <button
-                            key={tab}
-                            id={`portal-tab-${tab}`}
-                            type="button"
-                            role="tab"
-                            aria-selected={activeTab === tab}
-                            aria-controls="portal-tabpanel"
-                            tabIndex={activeTab === tab ? 0 : -1}
-                            onClick={() => setActiveTab(tab)}
-                            onKeyDown={handleTabKeyDown}
-                            className={`min-h-11 border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
-                                activeTab === tab
-                                    ? 'border-[#2F6F4E] text-[#2F6F4E]'
-                                    : 'border-transparent text-[#1F2A24]/65 hover:text-[#1F2A24]/80'
-                            }`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
+                    {TABS.map((tab) => {
+                        const isActive = activeTab === tab;
+                        const count = tabCounts[tab];
+                        const needsAttention = tab === 'Documents' && count > 0;
+
+                        return (
+                            <button
+                                key={tab}
+                                id={`portal-tab-${tab}`}
+                                type="button"
+                                role="tab"
+                                aria-selected={isActive}
+                                aria-controls="portal-tabpanel"
+                                tabIndex={isActive ? 0 : -1}
+                                onClick={() => setActiveTab(tab)}
+                                onKeyDown={handleTabKeyDown}
+                                className={cn(
+                                    'inline-flex min-h-11 items-center gap-2 border-b-2 px-1 pb-3 text-sm font-medium whitespace-nowrap transition-colors',
+                                    isActive
+                                        ? 'border-[#2F6F4E] text-[#2F6F4E]'
+                                        : 'border-transparent text-[#1F2A24]/65 hover:text-[#1F2A24]/80',
+                                )}
+                            >
+                                {tab}
+                                {count > 0 && (
+                                    <span
+                                        className={cn(
+                                            'rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold tabular-nums',
+                                            needsAttention
+                                                ? 'bg-[#E8A33D]/20 text-[#a4670f]'
+                                                : 'bg-[#1F2A24]/5 text-[#1F2A24]/65',
+                                        )}
+                                    >
+                                        {count}
+                                        <span className="sr-only">
+                                            {needsAttention
+                                                ? ' documents still needed'
+                                                : ''}
+                                        </span>
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* ---------------- Tab content ---------------- */}
             <div
                 id="portal-tabpanel"
                 role="tabpanel"
                 aria-labelledby={`portal-tab-${activeTab}`}
                 className="mt-6"
             >
-                {activeTab === 'Applications' && (
-                    <div className="space-y-4">
-                        {enrollments.length === 0 && (
-                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/65">
-                                You don't have any applications yet.
-                            </div>
-                        )}
-
-                        {enrollments.map((enrollment) => {
-                            const isApproved =
-                                enrollment.enrollment_status === 'APPROVED';
-                            const hasBalance =
-                                enrollment.remaining_balance !== null;
-                            const isFullyPaid =
-                                hasBalance && enrollment.remaining_balance <= 0;
-
-                            return (
-                                <div
+                {activeTab === 'Applications' &&
+                    (enrollments.length === 0 ? (
+                        <EmptyState message="You don't have any applications yet." />
+                    ) : (
+                        <div className="space-y-4">
+                            {enrollments.map((enrollment) => (
+                                <ApplicationCard
                                     key={enrollment.id}
-                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
-                                >
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="font-medium text-[#1F2A24]">
-                                                {enrollment.student.first_name}{' '}
-                                                {enrollment.student.last_name}
-                                            </p>
-                                            <p className="text-sm text-[#1F2A24]/70">
-                                                {enrollment.grade_level.name} ·
-                                                SY {enrollment.school_year}
-                                            </p>
-                                        </div>
-                                        {enrollment.cancelled_at ? (
-                                            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                                                CANCELLED
-                                            </span>
-                                        ) : (
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
-                                            >
-                                                {enrollment.enrollment_status}
-                                            </span>
-                                        )}
-                                    </div>
+                                    enrollment={enrollment}
+                                    onCancel={cancel}
+                                />
+                            ))}
+                        </div>
+                    ))}
 
-                                    <div className="mt-4 grid grid-cols-1 gap-3 border-t border-[#1F2A24]/10 pt-4 sm:grid-cols-3">
-                                        <div>
-                                            <p className="text-xs text-[#1F2A24]/65">
-                                                Grade Level
-                                            </p>
-                                            <p className="text-sm text-[#1F2A24]">
-                                                {enrollment.grade_level.name}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-[#1F2A24]/65">
-                                                Session Time Preference
-                                            </p>
-                                            <p className="text-sm text-[#1F2A24]">
-                                                {SESSION_LABELS[
-                                                    enrollment
-                                                        .session_time_preference
-                                                ] ??
-                                                    enrollment.session_time_preference}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-[#1F2A24]/65">
-                                                LRN
-                                            </p>
-                                            <p className="text-sm text-[#1F2A24]">
-                                                {enrollment.student.lrn ?? (
-                                                    <span className="text-[#1F2A24]/65 italic">
-                                                        Not yet assigned
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
+                {activeTab === 'Payments' && <PaymentHistory rows={payments} />}
 
-                                    {enrollment.enrollment_status ===
-                                        'REJECTED' &&
-                                        !enrollment.cancelled_at &&
-                                        (enrollment.rejection_details.length >
-                                            0 ||
-                                            enrollment.rejection_note) && (
-                                            <div className="mt-4 rounded-md border border-[#C6473B]/20 bg-[#C6473B]/5 p-4 text-sm text-[#1F2A24]">
-                                                <p className="font-medium text-[#C6473B]">
-                                                    Why this application was not
-                                                    approved
-                                                </p>
-                                                <ul className="mt-2 list-disc space-y-1 pl-5">
-                                                    {enrollment.rejection_details.map(
-                                                        (detail) => (
-                                                            <li
-                                                                key={
-                                                                    detail.label
-                                                                }
-                                                            >
-                                                                <span className="font-medium">
-                                                                    {
-                                                                        detail.label
-                                                                    }
-                                                                </span>{' '}
-                                                                —{' '}
-                                                                {
-                                                                    detail.guidance
-                                                                }
-                                                            </li>
-                                                        ),
-                                                    )}
-                                                </ul>
-                                                {enrollment.rejection_note && (
-                                                    <p className="mt-2">
-                                                        <span className="font-medium">
-                                                            Note from the
-                                                            school:
-                                                        </span>{' '}
-                                                        {
-                                                            enrollment.rejection_note
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-
-                                    <div className="mt-4 border-t border-[#1F2A24]/10 pt-4">
-                                        {!isApproved &&
-                                            !enrollment.cancelled_at && (
-                                                <p className="text-sm text-[#1F2A24]/65">
-                                                    Tuition payment will be
-                                                    available here once your
-                                                    application is approved.
-                                                </p>
-                                            )}
-
-                                        {isApproved &&
-                                            hasBalance &&
-                                            !isFullyPaid &&
-                                            !enrollment.payment_url && (
-                                                <div className="flex gap-3 rounded-md bg-[#2F6F4E]/5 p-4">
-                                                    <Landmark
-                                                        className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
-                                                        aria-hidden="true"
-                                                    />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-[#1F2A24]">
-                                                            You're approved!
-                                                            Please pay at the
-                                                            school cashier.
-                                                        </p>
-                                                        <p className="text-sm text-[#1F2A24]/70">
-                                                            Remaining balance:{' '}
-                                                            <span className="font-semibold text-[#2F6F4E]">
-                                                                {formatCurrency(
-                                                                    enrollment.remaining_balance,
-                                                                )}
-                                                            </span>{' '}
-                                                            of{' '}
-                                                            {formatCurrency(
-                                                                enrollment.total_billed,
-                                                            )}
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-[#1F2A24]/60">
-                                                            Bring reference no.{' '}
-                                                            <span className="font-semibold tabular-nums">
-                                                                #{enrollment.id}
-                                                            </span>
-                                                            . Your payment will
-                                                            show here once the
-                                                            cashier records it.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                        {isApproved &&
-                                            hasBalance &&
-                                            !isFullyPaid &&
-                                            enrollment.payment_url && (
-                                                <div className="flex flex-col gap-3 rounded-md bg-[#2F6F4E]/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                                                    <div>
-                                                        <p className="flex items-center gap-1.5 text-sm font-medium text-[#1F2A24]">
-                                                            <PartyPopper
-                                                                className="h-4 w-4 shrink-0 text-[#2F6F4E]"
-                                                                aria-hidden="true"
-                                                            />
-                                                            You're approved! You
-                                                            can now pay your
-                                                            tuition.
-                                                        </p>
-                                                        <p className="text-sm text-[#1F2A24]/70">
-                                                            Remaining balance:{' '}
-                                                            <span className="font-semibold text-[#2F6F4E]">
-                                                                {formatCurrency(
-                                                                    enrollment.remaining_balance,
-                                                                )}
-                                                            </span>{' '}
-                                                            of{' '}
-                                                            {formatCurrency(
-                                                                enrollment.total_billed,
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                    <Link
-                                                        href={
-                                                            enrollment.payment_url
-                                                        }
-                                                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
-                                                    >
-                                                        Pay Tuition
-                                                    </Link>
-                                                </div>
-                                            )}
-
-                                        {isApproved && isFullyPaid && (
-                                            <div className="flex items-center gap-2 rounded-md bg-[#2F6F4E]/5 p-4 text-sm font-medium text-[#2F6F4E]">
-                                                <CheckCircle2
-                                                    className="h-4 w-4 shrink-0"
-                                                    aria-hidden="true"
-                                                />
-                                                Fully paid — no outstanding
-                                                balance.
-                                            </div>
-                                        )}
-
-                                        {isApproved && !hasBalance && (
-                                            <p className="text-sm text-[#1F2A24]/65">
-                                                Billing details aren't set up
-                                                yet for this enrollment. Please
-                                                check back soon.
-                                            </p>
-                                        )}
-
-                                        {isApproved && (
-                                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                                <p className="text-sm text-[#1F2A24]/70">
-                                                    Your registration form was
-                                                    emailed to you when this
-                                                    application was approved.
-                                                </p>
-                                                {/* A plain link, since the browser downloads the PDF. */}
-                                                <a
-                                                    href={route(
-                                                        'portal.enrollments.registration-form.show',
-                                                        enrollment.id,
-                                                    )}
-                                                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold whitespace-nowrap text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
-                                                >
-                                                    <FileDown
-                                                        className="h-4 w-4"
-                                                        aria-hidden="true"
-                                                    />
-                                                    Download registration form
-                                                </a>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {!enrollment.cancelled_at &&
-                                        enrollment.enrollment_status ===
-                                            'PENDING' && (
-                                            <div className="mt-4 border-t border-[#1F2A24]/10 pt-4 text-right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        cancel(enrollment)
-                                                    }
-                                                    className="min-h-10 rounded-full px-3 text-sm font-medium text-[#C6473B] transition-colors hover:bg-[#C6473B]/5"
-                                                >
-                                                    Cancel Application
-                                                </button>
-                                            </div>
-                                        )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {activeTab === 'Payments' && (
-                    <div className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm">
-                        {allTransactions.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-[#1F2A24]/65">
-                                No transactions yet.
-                            </p>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm">
-                                    <thead>
-                                        <tr className="text-xs text-[#1F2A24]/65">
-                                            <th className="pb-2 font-medium">
-                                                Date
-                                            </th>
-                                            <th className="pb-2 font-medium">
-                                                Student
-                                            </th>
-                                            <th className="pb-2 font-medium">
-                                                Installment
-                                            </th>
-                                            <th className="pb-2 font-medium">
-                                                Method
-                                            </th>
-                                            <th className="pb-2 font-medium">
-                                                Amount
-                                            </th>
-                                            <th className="pb-2 font-medium">
-                                                Status
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-[#1F2A24]/5">
-                                        {allTransactions.map((payment) => (
-                                            <tr key={payment.id}>
-                                                <td className="py-2 text-[#1F2A24]/80">
-                                                    {payment.paid_at
-                                                        ? new Date(
-                                                              payment.paid_at,
-                                                          ).toLocaleDateString(
-                                                              'en-PH',
-                                                              {
-                                                                  year: 'numeric',
-                                                                  month: 'short',
-                                                                  day: 'numeric',
-                                                              },
-                                                          )
-                                                        : '—'}
-                                                </td>
-                                                <td className="py-2 text-[#1F2A24]/80">
-                                                    {payment.student_name}
-                                                </td>
-                                                <td className="py-2 text-[#1F2A24]/80">
-                                                    #
-                                                    {payment.installment_number}
-                                                </td>
-                                                <td className="py-2 text-[#1F2A24]/80">
-                                                    {METHOD_LABELS[
-                                                        payment.method
-                                                    ] ?? payment.method}
-                                                </td>
-                                                <td className="py-2 font-medium text-[#1F2A24]">
-                                                    {formatCurrency(
-                                                        payment.amount,
-                                                    )}
-                                                </td>
-                                                <td className="py-2">
-                                                    <span
-                                                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                            PAYMENT_STATUS_STYLES[
-                                                                payment.status
-                                                            ] ??
-                                                            'bg-gray-100 text-gray-600'
-                                                        }`}
-                                                    >
-                                                        {payment.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {activeTab === 'Documents' && (
-                    <div className="space-y-4">
-                        {enrollments.length === 0 && (
-                            <div className="rounded-lg border border-dashed border-[#1F2A24]/20 bg-white p-8 text-center text-sm text-[#1F2A24]/65">
-                                No applications to show documents for yet.
-                            </div>
-                        )}
-                        {enrollments.map((enrollment) => {
-                            const verification = enrollment.office_verification;
-                            const isApproved =
-                                enrollment.enrollment_status === 'APPROVED';
-                            const isCancelled = !!enrollment.cancelled_at;
-
-                            return (
-                                <div
+                {activeTab === 'Documents' &&
+                    (enrollments.length === 0 ? (
+                        <EmptyState message="No applications to show documents for yet." />
+                    ) : (
+                        <div className="space-y-4">
+                            {enrollments.map((enrollment) => (
+                                <DocumentChecklist
                                     key={enrollment.id}
-                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
-                                >
-                                    <p className="mb-3 text-sm font-medium text-[#1F2A24]">
-                                        {enrollment.student.first_name}{' '}
-                                        {enrollment.student.last_name}
-                                        <span className="ml-2 text-xs font-normal text-[#1F2A24]/65">
-                                            {enrollment.grade_level.name} · SY{' '}
-                                            {enrollment.school_year}
-                                        </span>
-                                    </p>
-
-                                    {enrollment.document_appointment &&
-                                        !isApproved &&
-                                        !isCancelled && (
-                                            <div
-                                                role="note"
-                                                className="mb-4 flex gap-2 rounded-lg border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-3 text-sm text-[#1F2A24]"
-                                            >
-                                                <CalendarCheck
-                                                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
-                                                    aria-hidden="true"
-                                                />
-                                                <div>
-                                                    <p className="font-semibold">
-                                                        Bring documents to the
-                                                        registrar's office on{' '}
-                                                        {formatAppointment(
-                                                            enrollment.document_appointment,
-                                                        )}
-                                                    </p>
-                                                    <p className="text-xs text-[#1F2A24]/70">
-                                                        Please bring:{' '}
-                                                        {enrollment.document_appointment.documents
-                                                            .map(
-                                                                (type) =>
-                                                                    DOCUMENTS.find(
-                                                                        (doc) =>
-                                                                            doc.type ===
-                                                                            type,
-                                                                    )?.label ??
-                                                                    type,
-                                                            )
-                                                            .join(', ')}
-                                                    </p>
-                                                    {enrollment
-                                                        .document_appointment
-                                                        .note && (
-                                                        <p className="mt-1 text-xs text-[#1F2A24]/70">
-                                                            Note from the
-                                                            registrar: “
-                                                            {
-                                                                enrollment
-                                                                    .document_appointment
-                                                                    .note
-                                                            }
-                                                            ”
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                    <ul className="space-y-3">
-                                        {DOCUMENTS.map((doc) => {
-                                            const isVerified =
-                                                verification?.[doc.verifiedKey];
-                                            const path =
-                                                verification?.[doc.pathKey];
-                                            const key = `${enrollment.id}:${doc.type}`;
-                                            // The registrar attaches a returning
-                                            // student's latest report card.
-                                            const isUploadedBySchool =
-                                                enrollment.is_returning &&
-                                                doc.type === 'form_138';
-
-                                            return (
-                                                <li
-                                                    key={doc.type}
-                                                    className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1F2A24]/5 pb-3 last:border-0 last:pb-0"
-                                                >
-                                                    <div>
-                                                        <p className="text-sm text-[#1F2A24]">
-                                                            {doc.label}
-                                                        </p>
-                                                        <p
-                                                            className={`text-xs font-medium ${isVerified ? 'text-[#2F6F4E]' : path ? 'text-[#a4670f]' : 'text-[#1F2A24]/65'}`}
-                                                        >
-                                                            {isVerified
-                                                                ? 'Verified'
-                                                                : path
-                                                                  ? 'Pending review'
-                                                                  : isUploadedBySchool
-                                                                    ? 'The registrar will attach this'
-                                                                    : 'Not uploaded yet'}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        {path && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setViewingDocument(
-                                                                        {
-                                                                            title: doc.label,
-                                                                            path,
-                                                                        },
-                                                                    );
-                                                                    setIsViewingDocument(
-                                                                        true,
-                                                                    );
-                                                                }}
-                                                                className="inline-flex min-h-9 items-center rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
-                                                            >
-                                                                View
-                                                                <span className="sr-only">
-                                                                    {' '}
-                                                                    {doc.label}
-                                                                </span>
-                                                            </button>
-                                                        )}
-                                                        {isUploadedBySchool ? null : isApproved ||
-                                                          isCancelled ? (
-                                                            <span className="text-xs text-[#1F2A24]/65">
-                                                                {isCancelled
-                                                                    ? 'Cancelled'
-                                                                    : 'Locked'}
-                                                            </span>
-                                                        ) : (
-                                                            <label className="relative inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-[#1F2A24]/15 px-4 text-xs font-semibold text-[#1F2A24]/80 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-1 hover:bg-[#1F2A24]/5">
-                                                                {uploadingDoc ===
-                                                                    key && (
-                                                                    <Loader2
-                                                                        className="h-3.5 w-3.5 animate-spin"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                )}
-                                                                {uploadingDoc ===
-                                                                key
-                                                                    ? 'Uploading...'
-                                                                    : path
-                                                                      ? 'Replace'
-                                                                      : 'Upload'}
-                                                                <span className="sr-only">
-                                                                    {' '}
-                                                                    {doc.label}
-                                                                </span>
-                                                                <input
-                                                                    type="file"
-                                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                                    className="sr-only"
-                                                                    disabled={
-                                                                        uploadingDoc ===
-                                                                        key
-                                                                    }
-                                                                    onChange={handleDocumentUpload(
-                                                                        enrollment.id,
-                                                                        doc.type,
-                                                                    )}
-                                                                />
-                                                            </label>
-                                                        )}
-                                                    </div>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                    enrollment={enrollment}
+                                    uploadingKey={uploadingDocumentKey}
+                                    onUpload={uploadDocument}
+                                    onView={viewDocument}
+                                />
+                            ))}
+                        </div>
+                    ))}
             </div>
         </div>
     );
