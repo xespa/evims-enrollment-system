@@ -2,6 +2,7 @@
 
 namespace App\Actions\Payments;
 
+use App\Enums\PaymentForm;
 use App\Models\Enrollment;
 use App\Models\Installment;
 use App\Models\Payment;
@@ -22,6 +23,7 @@ use InvalidArgumentException;
 class RecordCounterPayment
 {
     /**
+     * @param  array{received_from?: string|null, payment_form?: PaymentForm, check_bank?: string|null, check_number?: string|null, check_date?: CarbonInterface|null}  $receiptDetails  What else is written on the paper receipt.
      * @return Collection<int, Payment> One payment per installment the amount touched.
      *
      * @throws ValidationException When the OR number is already on an active payment.
@@ -32,13 +34,15 @@ class RecordCounterPayment
         string $receiptNumber,
         CarbonInterface $paidAt,
         User $recordedBy,
+        array $receiptDetails = [],
     ): Collection {
         $receiptNumber = Payment::normalizeReceiptNumber($receiptNumber);
+        $receiptDetails = $this->tenderDetails($receiptDetails);
 
         // Two cashiers (or a double-clicked button) submitting the same
         // receipt at once must not both get through the duplicate check.
         $payments = Cache::lock("counter-payment-receipt:{$receiptNumber}", 10)
-            ->block(5, fn () => $this->record($enrollment, $amount, $receiptNumber, $paidAt, $recordedBy));
+            ->block(5, fn () => $this->record($enrollment, $amount, $receiptNumber, $paidAt, $recordedBy, $receiptDetails));
 
         // One notification for the whole amount, not one per installment.
         $enrollment->loadMissing('student', 'enrolleeUser');
@@ -49,6 +53,27 @@ class RecordCounterPayment
     }
 
     /**
+     * Fills in the defaults and drops the check fields from a cash payment.
+     *
+     * @param  array{received_from?: string|null, payment_form?: PaymentForm, check_bank?: string|null, check_number?: string|null, check_date?: CarbonInterface|null}  $receiptDetails
+     * @return array{received_from: string|null, payment_form: PaymentForm, check_bank: string|null, check_number: string|null, check_date: CarbonInterface|null}
+     */
+    private function tenderDetails(array $receiptDetails): array
+    {
+        $paymentForm = $receiptDetails['payment_form'] ?? PaymentForm::Cash;
+        $isCheck = $paymentForm === PaymentForm::Check;
+
+        return [
+            'received_from' => ($receiptDetails['received_from'] ?? null) ?: null,
+            'payment_form' => $paymentForm,
+            'check_bank' => $isCheck ? ($receiptDetails['check_bank'] ?? null) : null,
+            'check_number' => $isCheck ? ($receiptDetails['check_number'] ?? null) : null,
+            'check_date' => $isCheck ? ($receiptDetails['check_date'] ?? null) : null,
+        ];
+    }
+
+    /**
+     * @param  array{received_from: string|null, payment_form: PaymentForm, check_bank: string|null, check_number: string|null, check_date: CarbonInterface|null}  $receiptDetails
      * @return Collection<int, Payment>
      */
     private function record(
@@ -57,8 +82,9 @@ class RecordCounterPayment
         string $receiptNumber,
         CarbonInterface $paidAt,
         User $recordedBy,
+        array $receiptDetails,
     ): Collection {
-        return DB::transaction(function () use ($enrollment, $amount, $receiptNumber, $paidAt, $recordedBy) {
+        return DB::transaction(function () use ($enrollment, $amount, $receiptNumber, $paidAt, $recordedBy, $receiptDetails) {
             $existing = Payment::query()->activeWithReceipt($receiptNumber)->with('enrollment.student')->first();
 
             if ($existing) {
@@ -102,6 +128,7 @@ class RecordCounterPayment
                     'amount' => $applied,
                     'method' => 'CASH',
                     'receipt_number' => $receiptNumber,
+                    ...$receiptDetails,
                     'status' => 'COMPLETED',
                     'recorded_by' => $recordedBy->id,
                     'paid_at' => $paidAt,

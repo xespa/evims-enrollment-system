@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PaymentForm;
 use App\Models\BillingContract;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
@@ -68,6 +69,115 @@ test('a counter payment for one installment marks it paid with its receipt', fun
         ->and($payment->paid_at->toDateString())->toBe('2026-09-28')
         ->and($payment->recorded_by)->toBe($this->admin->id)
         ->and(installmentStatuses($enrollment))->toBe(['PAID', ...array_fill(0, 9, 'UNPAID')]);
+});
+
+test('a cash payment keeps who paid and drops any check details', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), [
+            'amount' => 1000,
+            'receipt_number' => 'OR-0210',
+            'received_from' => '  Maria Dela Cruz ',
+            'payment_form' => 'CASH',
+            'check_bank' => 'BDO',
+            'check_number' => '000123',
+            'check_date' => '2026-09-28',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $payment = Payment::sole();
+
+    expect($payment->received_from)->toBe('Maria Dela Cruz')
+        ->and($payment->payment_form)->toBe(PaymentForm::Cash)
+        ->and($payment->check_bank)->toBeNull()
+        ->and($payment->check_number)->toBeNull()
+        ->and($payment->check_date)->toBeNull();
+});
+
+test('a payment without a payment form is recorded as cash', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 1000, 'receipt_number' => 'OR-1'])
+        ->assertSessionHasNoErrors();
+
+    expect(Payment::sole()->payment_form)->toBe(PaymentForm::Cash);
+});
+
+test('a check payment keeps the check details on every part of the receipt', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), [
+            'amount' => 1500,
+            'receipt_number' => 'OR-0211',
+            'received_from' => 'Juan Dela Cruz',
+            'payment_form' => 'CHECK',
+            'check_bank' => 'Landbank',
+            'check_number' => '0045678',
+            'check_date' => '2026-10-15',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Payment::count())->toBe(2);
+
+    Payment::all()->each(fn (Payment $payment) => expect($payment->payment_form)->toBe(PaymentForm::Check)
+        ->and($payment->received_from)->toBe('Juan Dela Cruz')
+        ->and($payment->check_bank)->toBe('Landbank')
+        ->and($payment->check_number)->toBe('0045678')
+        ->and($payment->check_date->toDateString())->toBe('2026-10-15'));
+});
+
+test('the receipt email says a check was paid at the cashier', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), [
+            'amount' => 1000,
+            'receipt_number' => 'OR-0212',
+            'payment_form' => 'CHECK',
+            'check_bank' => 'BPI',
+            'check_number' => '777',
+            'check_date' => '2026-10-01',
+        ]);
+
+    Notification::assertSentTo($enrollment->enrolleeUser, PaymentReceived::class, function (PaymentReceived $notification) use ($enrollment) {
+        return str_contains((string) $notification->toMail($enrollment->enrolleeUser)->render(), 'Check at the school cashier');
+    });
+});
+
+test('a check payment needs the check details', function (string $field, string $message) {
+    $enrollment = counterPayingEnrollment();
+    $input = [
+        'amount' => 1000,
+        'receipt_number' => 'OR-0213',
+        'payment_form' => 'CHECK',
+        'check_bank' => 'BDO',
+        'check_number' => '123',
+        'check_date' => '2026-10-01',
+    ];
+    unset($input[$field]);
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), $input)
+        ->assertSessionHasErrors([$field => $message]);
+
+    expect(Payment::count())->toBe(0);
+})->with([
+    'bank' => ['check_bank', 'Enter the bank the check is drawn on.'],
+    'check number' => ['check_number', 'Enter the check number.'],
+    'check date' => ['check_date', 'Enter the date written on the check.'],
+]);
+
+test('an unknown payment form is rejected', function () {
+    $enrollment = counterPayingEnrollment();
+
+    $this->actingAs($this->admin)
+        ->post(route('admin.enrollments.cash-payments.store', $enrollment), ['amount' => 1000, 'receipt_number' => 'OR-0214', 'payment_form' => 'BITCOIN'])
+        ->assertSessionHasErrors('payment_form');
+
+    expect(Payment::count())->toBe(0);
 });
 
 test('a larger payment is applied to the installments in order', function () {

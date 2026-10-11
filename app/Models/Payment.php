@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentForm;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     protected $fillable = [
-        'installment_id', 'enrollment_id', 'amount', 'method', 'receipt_number', 'status',
+        'installment_id', 'enrollment_id', 'amount', 'method', 'receipt_number', 'received_from',
+        'payment_form', 'check_bank', 'check_number', 'check_date', 'status',
         'recorded_by', 'paymongo_payment_intent_id', 'paymongo_source_id', 'paid_at',
         'voided_at', 'voided_by', 'void_reason',
     ];
@@ -18,6 +20,8 @@ class Payment extends Model
         'paid_at' => 'datetime',
         'voided_at' => 'datetime',
         'amount' => 'decimal:2',
+        'payment_form' => PaymentForm::class,
+        'check_date' => 'date:Y-m-d',
     ];
 
     /**

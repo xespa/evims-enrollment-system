@@ -8,6 +8,7 @@ import {
     STATUS_LABELS,
     STATUS_STYLES,
     formatCurrency,
+    formatDate,
     formatDateTime,
     referenceId,
 } from '@/lib/transactions';
@@ -24,6 +25,12 @@ type Props = {
         amount: string;
         method: 'GCASH' | 'CASH';
         receipt_number: string | null;
+        received_from: string | null;
+        /** Null for GCash payments and counter payments recorded before it was asked. */
+        payment_form: 'CASH' | 'CHECK' | null;
+        check_bank: string | null;
+        check_number: string | null;
+        check_date: string | null;
         status: TransactionStatus;
         paymongo_source_id: string | null;
         paymongo_payment_intent_id: string | null;
@@ -248,6 +255,32 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                         <Row label="OR / receipt no.">
                                             {payment.receipt_number ?? '—'}
                                         </Row>
+                                        <Row label="Received from">
+                                            {payment.received_from ?? '—'}
+                                        </Row>
+                                        <Row label="Paid in">
+                                            {payment.payment_form === 'CHECK'
+                                                ? 'Check'
+                                                : 'Cash'}
+                                        </Row>
+                                        {payment.payment_form === 'CHECK' && (
+                                            <>
+                                                <Row label="Bank">
+                                                    {payment.check_bank ?? '—'}
+                                                </Row>
+                                                <Row label="Check no.">
+                                                    {payment.check_number ??
+                                                        '—'}
+                                                </Row>
+                                                <Row label="Check date">
+                                                    {payment.check_date
+                                                        ? formatDate(
+                                                              payment.check_date,
+                                                          )
+                                                        : '—'}
+                                                </Row>
+                                            </>
+                                        )}
                                         <Row label="Recorded by">
                                             {payment.recorded_by?.name ?? '—'}
                                         </Row>

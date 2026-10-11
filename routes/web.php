@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\CounterPaymentHistoryController;
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DocumentAppointmentController;
@@ -144,6 +145,7 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     });
 
     Route::middleware('can:handle-payments')->group(function () {
+        Route::get('enrollments/{enrollment}/cash-payments', CounterPaymentHistoryController::class)->name('enrollments.cash-payments.index');
         Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
         Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');
         // Student lookup for recording a counter payment from Transactions.

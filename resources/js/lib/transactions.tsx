@@ -23,6 +23,99 @@ export function formatCurrency(value: number | string) {
     }).format(Number(value));
 }
 
+/** Formats a calendar date ("2026-10-01") without shifting it across time zones. */
+export function formatDate(value: string) {
+    return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString(
+        'en-PH',
+        { month: 'short', day: 'numeric', year: 'numeric' },
+    );
+}
+
+const ONES = [
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
+];
+const TENS = [
+    '',
+    '',
+    'Twenty',
+    'Thirty',
+    'Forty',
+    'Fifty',
+    'Sixty',
+    'Seventy',
+    'Eighty',
+    'Ninety',
+];
+const SCALES = ['', 'Thousand', 'Million', 'Billion'];
+
+function belowThousandInWords(n: number) {
+    const words: string[] = [];
+
+    if (n >= 100) {
+        words.push(`${ONES[Math.floor(n / 100)]} Hundred`);
+        n %= 100;
+    }
+
+    if (n >= 20) {
+        words.push(
+            n % 10
+                ? `${TENS[Math.floor(n / 10)]}-${ONES[n % 10]}`
+                : TENS[n / 10],
+        );
+    } else if (n > 0) {
+        words.push(ONES[n]);
+    }
+
+    return words.join(' ');
+}
+
+/**
+ * Spells out a peso amount the way it's written on a receipt's "the sum of"
+ * line, e.g. 2500.5 → "Two Thousand Five Hundred and 50/100".
+ */
+export function amountInWords(value: number) {
+    const cents = Math.round(value * 100);
+    let pesos = Math.floor(cents / 100);
+    const centavos = cents % 100;
+
+    const groups: string[] = [];
+    for (let scale = 0; pesos > 0; scale++, pesos = Math.floor(pesos / 1000)) {
+        const group = pesos % 1000;
+        if (group > 0) {
+            groups.unshift(
+                [belowThousandInWords(group), SCALES[scale]]
+                    .filter(Boolean)
+                    .join(' '),
+            );
+        }
+    }
+
+    const words = groups.join(' ') || 'Zero';
+
+    return centavos > 0
+        ? `${words} and ${String(centavos).padStart(2, '0')}/100`
+        : words;
+}
+
 export function formatDateTime(value: string) {
     return new Date(value).toLocaleString('en-PH', {
         month: 'short',

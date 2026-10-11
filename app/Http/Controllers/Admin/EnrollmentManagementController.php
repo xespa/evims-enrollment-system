@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Payments\RecordCounterPayment;
 use App\Enums\EnrollmentRejectionReason;
+use App\Enums\PaymentForm;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateEnrollmentStatusRequest;
 use App\Mail\EnrollmentStatusUpdated;
@@ -156,12 +157,20 @@ class EnrollmentManagementController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01', "max:{$remainingBalance}"],
             'receipt_number' => ['required', 'string', 'max:50'],
             'paid_on' => ['nullable', 'date', 'before_or_equal:today'],
+            'received_from' => ['nullable', 'string', 'max:150'],
+            'payment_form' => ['nullable', Rule::enum(PaymentForm::class)],
+            'check_bank' => ['exclude_unless:payment_form,CHECK', 'required', 'string', 'max:100'],
+            'check_number' => ['exclude_unless:payment_form,CHECK', 'required', 'string', 'max:50'],
+            'check_date' => ['exclude_unless:payment_form,CHECK', 'required', 'date'],
         ], [
             'amount.max' => $remainingBalance > 0
                 ? "The amount can't be more than the remaining balance of ₱{$formattedBalance}."
                 : 'This application is already fully paid.',
             'paid_on.before_or_equal' => "The payment date can't be in the future.",
             'receipt_number.required' => 'Enter the OR number from the official receipt you issued.',
+            'check_bank.required' => 'Enter the bank the check is drawn on.',
+            'check_number.required' => 'Enter the check number.',
+            'check_date.required' => 'Enter the date written on the check.',
         ]);
 
         $paidOn = isset($validated['paid_on']) ? Carbon::parse($validated['paid_on']) : today();
@@ -177,6 +186,13 @@ class EnrollmentManagementController extends Controller
             $validated['receipt_number'],
             $paidAt,
             $admin,
+            [
+                'received_from' => isset($validated['received_from']) ? trim($validated['received_from']) : null,
+                'payment_form' => PaymentForm::tryFrom($validated['payment_form'] ?? '') ?? PaymentForm::Cash,
+                'check_bank' => $validated['check_bank'] ?? null,
+                'check_number' => $validated['check_number'] ?? null,
+                'check_date' => isset($validated['check_date']) ? Carbon::parse($validated['check_date']) : null,
+            ],
         );
 
         $formattedAmount = number_format((float) $validated['amount'], 2);

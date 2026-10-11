@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\PaymentForm;
 use App\Models\EnrolleeUser;
 use App\Models\Payment;
 use Illuminate\Bus\Queueable;
@@ -43,7 +44,11 @@ class PaymentReceived extends Notification implements ShouldQueue
             ->greeting("Hello {$notifiable->name},")
             ->line("We've received your payment for {$student->first_name} {$student->last_name}'s enrollment for S.Y. {$enrollment->school_year}. Thank you!")
             ->line('**Amount:** ₱'.$this->formattedAmount())
-            ->line('**Paid via:** '.($this->payment->method === 'GCASH' ? 'GCash' : 'Cash at the school cashier'))
+            ->line('**Paid via:** '.match (true) {
+                $this->payment->method === 'GCASH' => 'GCash',
+                $this->payment->payment_form === PaymentForm::Check => 'Check at the school cashier',
+                default => 'Cash at the school cashier',
+            })
             ->line('**Date paid:** '.($this->payment->paid_at ?? now())->timezone('Asia/Manila')->format('F j, Y g:i A'));
 
         if ($this->payment->receipt_number) {
