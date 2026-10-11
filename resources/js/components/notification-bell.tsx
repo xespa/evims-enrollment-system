@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 type Notification = {
     id: string;
@@ -37,6 +38,9 @@ type Notification = {
 };
 
 type Filter = 'all' | 'unread';
+
+/** How often an open tab checks for new notifications. */
+const POLL_INTERVAL_MS = 30_000;
 
 type Scope = 'portal' | 'admin';
 
@@ -340,8 +344,19 @@ export default function NotificationBell({
         };
     }, [open]);
 
-    const load = () => {
-        setLoadFailed(false);
+    /**
+     * Notifications already seen in this tab, so a background check only
+     * announces ones that are actually new. Null until the first load.
+     */
+    const knownIdsRef = useRef<Set<string> | null>(null);
+
+    /**
+     * Fetches the latest notifications. A background check fails quietly
+     * (the next one retries) and pops up anything that's arrived since.
+     */
+    const load = ({ background = false } = {}) => {
+        if (!background) setLoadFailed(false);
+
         fetch(route(routes.index), {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
@@ -351,11 +366,71 @@ export default function NotificationBell({
                 return res.json();
             })
             .then((data) => {
-                setNotifications(data.notifications ?? []);
+                const latest: Notification[] = data.notifications ?? [];
+                const knownIds = knownIdsRef.current;
+
+                if (background && knownIds) {
+                    announce(
+                        latest.filter((n) => !n.read_at && !knownIds.has(n.id)),
+                    );
+                }
+                knownIdsRef.current = new Set(latest.map((n) => n.id));
+
+                setNotifications(latest);
                 setUnreadCount(data.unread_count ?? 0);
             })
-            .catch(() => setLoadFailed(true));
+            .catch(() => {
+                if (!background) setLoadFailed(true);
+            });
     };
+
+    /** A small pop-up for what's just arrived, linking to it. */
+    const announce = (arrived: Notification[]) => {
+        if (arrived.length === 0) return;
+
+        if (arrived.length === 1) {
+            const [notification] = arrived;
+
+            toast(notification.data.title, {
+                description: notification.data.message,
+                action: {
+                    label: 'View',
+                    onClick: () => openNotification(notification),
+                },
+            });
+
+            return;
+        }
+
+        toast(`${arrived.length} new notifications`, {
+            description: arrived[0].data.title,
+            action: { label: 'Show', onClick: () => setOpen(true) },
+        });
+    };
+
+    // Checks for new notifications every so often while this tab is in
+    // view, and straight away when coming back to it, so the badge and
+    // list stay current without reloading the page.
+    const hasOwner = Boolean(owner);
+    useEffect(() => {
+        if (!hasOwner) return;
+
+        const checkIfVisible = () => {
+            if (document.visibilityState === 'visible') {
+                load({ background: true });
+            }
+        };
+
+        checkIfVisible();
+        const timer = window.setInterval(checkIfVisible, POLL_INTERVAL_MS);
+        document.addEventListener('visibilitychange', checkIfVisible);
+
+        return () => {
+            window.clearInterval(timer);
+            document.removeEventListener('visibilitychange', checkIfVisible);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasOwner, scope]);
 
     const toggleOpen = () => {
         if (open) {
@@ -505,7 +580,7 @@ export default function NotificationBell({
                                 </p>
                                 <button
                                     type="button"
-                                    onClick={load}
+                                    onClick={() => load()}
                                     className="mt-3 inline-flex min-h-10 items-center rounded-full border border-[#1F2A24]/15 px-4 text-sm font-semibold text-[#1F2A24] hover:bg-[#1F2A24]/5"
                                 >
                                     Try again
