@@ -2,6 +2,7 @@
 
 use App\Models\BillingContract;
 use App\Models\Enrollment;
+use App\Models\GradeLevel;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
@@ -92,6 +93,36 @@ test('only approved, active applications that still owe money are offered', func
         ->assertOk()
         ->assertJsonCount(1, 'results')
         ->assertJsonPath('results.0.id', $payable->id);
+});
+
+test('without a search, everyone who still owes is listed by name', function () {
+    $santos = billedEnrollment('Maria', 'Santos');
+    $cruzJuan = billedEnrollment('Juan', 'Cruz');
+    $cruzAna = billedEnrollment('Ana', 'Cruz');
+    payInFull(billedEnrollment('Paid', 'Already'));
+    billedEnrollment('Not', 'Approved', ['enrollment_status' => 'PENDING']);
+
+    $this->actingAs($this->admin)
+        ->getJson(route('admin.payable-enrollments.index'))
+        ->assertOk()
+        ->assertJsonPath('total', 3)
+        ->assertJsonPath('results.*.id', [$cruzAna->id, $cruzJuan->id, $santos->id])
+        ->assertJsonPath('results.0.student_name', 'Ana Cruz')
+        ->assertJsonPath('results.0.lrn', $cruzAna->student->lrn);
+});
+
+test('the list without a search is capped, with the total so the cashier knows to search', function () {
+    $gradeLevel = GradeLevel::factory()->create();
+
+    foreach (range(1, 21) as $number) {
+        billedEnrollment('Student', "Number {$number}", ['grade_level_id' => $gradeLevel->id]);
+    }
+
+    $this->actingAs($this->admin)
+        ->getJson(route('admin.payable-enrollments.index'))
+        ->assertOk()
+        ->assertJsonCount(20, 'results')
+        ->assertJsonPath('total', 21);
 });
 
 test('the lookup needs at least two characters', function () {

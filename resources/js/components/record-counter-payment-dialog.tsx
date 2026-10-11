@@ -385,38 +385,84 @@ export default function RecordCounterPaymentDialog({
                                 <p className="bg-[#FBF8F2] px-3 py-2 text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
                                     In settlement of the following
                                 </p>
-                                <div className="flex justify-between gap-3 border-t border-[#1F2A24]/10 px-3 py-1.5 text-xs font-medium text-[#1F2A24]/55">
+                                <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-t border-[#1F2A24]/10 px-3 py-1.5 text-xs font-medium text-[#1F2A24]/55">
                                     <span>Particular</span>
-                                    <span>Amount</span>
+                                    <span className="w-20 text-right">
+                                        Unpaid
+                                    </span>
+                                    <span className="w-20 text-right">
+                                        This payment
+                                    </span>
                                 </div>
-                                {allocation.length > 0 && !exceedsBalance ? (
-                                    allocation.map(
-                                        ({ installment, applied, settles }) => (
-                                            <SettlementRow
-                                                key={installment.id}
-                                                label={
-                                                    <>
-                                                        Installment #
-                                                        {
-                                                            installment.installment_number
+                                <ul className="max-h-64 overflow-y-auto">
+                                    {unpaidInstallments.map(
+                                        (installment, index) => {
+                                            const share = exceedsBalance
+                                                ? undefined
+                                                : allocation.find(
+                                                      (a) =>
+                                                          a.installment.id ===
+                                                          installment.id,
+                                                  );
+                                            const owedThroughHere =
+                                                unpaidInstallments
+                                                    .slice(0, index + 1)
+                                                    .reduce(
+                                                        (s, i) => s + i.owed,
+                                                        0,
+                                                    );
+
+                                            return (
+                                                <li
+                                                    key={installment.id}
+                                                    className="border-t border-[#1F2A24]/10"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setData(
+                                                                'amount',
+                                                                owedThroughHere.toFixed(
+                                                                    2,
+                                                                ),
+                                                            )
                                                         }
-                                                        <span className="ml-2 text-xs text-[#1F2A24]/55">
-                                                            {settles
-                                                                ? '→ Paid'
-                                                                : '→ Partially paid'}
+                                                        title={`Pay ${formatCurrency(owedThroughHere)} to settle up to installment #${installment.installment_number}`}
+                                                        className={`grid w-full grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-[#2F6F4E]/5 focus-visible:bg-[#2F6F4E]/5 focus-visible:outline-none ${share ? '' : 'text-[#1F2A24]/55'}`}
+                                                    >
+                                                        <span>
+                                                            Installment #
+                                                            {
+                                                                installment.installment_number
+                                                            }
+                                                            {share && (
+                                                                <span className="ml-2 text-xs text-[#2F6F4E]">
+                                                                    {share.settles
+                                                                        ? '→ Paid'
+                                                                        : '→ Partially paid'}
+                                                                </span>
+                                                            )}
                                                         </span>
-                                                    </>
-                                                }
-                                            >
-                                                {formatCurrency(applied)}
-                                            </SettlementRow>
-                                        ),
-                                    )
-                                ) : (
-                                    <p className="border-t border-[#1F2A24]/10 px-3 py-3 text-sm text-[#1F2A24]/50">
-                                        Enter an amount to see what it pays.
-                                    </p>
-                                )}
+                                                        <span className="w-20 text-right tabular-nums">
+                                                            {formatCurrency(
+                                                                installment.owed,
+                                                            )}
+                                                        </span>
+                                                        <span
+                                                            className={`w-20 text-right tabular-nums ${share ? 'font-medium' : ''}`}
+                                                        >
+                                                            {share
+                                                                ? formatCurrency(
+                                                                      share.applied,
+                                                                  )
+                                                                : '—'}
+                                                        </span>
+                                                    </button>
+                                                </li>
+                                            );
+                                        },
+                                    )}
+                                </ul>
                                 <SettlementRow label="Amount due">
                                     {formatCurrency(fullBalance)}
                                 </SettlementRow>

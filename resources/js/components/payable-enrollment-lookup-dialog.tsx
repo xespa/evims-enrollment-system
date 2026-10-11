@@ -48,13 +48,15 @@ export default function PayableEnrollmentLookupDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
 
+    /** Payable applications in all, when listing without a search. */
+    const [total, setTotal] = useState<number | null>(null);
+
     const trimmed = search.trim();
+    // Below 2 characters, list everyone who owes instead of searching.
+    const query = trimmed.length >= 2 ? trimmed : '';
 
     useEffect(() => {
-        if (trimmed.length < 2) {
-            setResults([]);
-            setIsLoading(false);
-
+        if (!open) {
             return;
         }
 
@@ -63,45 +65,51 @@ export default function PayableEnrollmentLookupDialog({
         setIsLoading(true);
         setHasError(false);
 
-        const timer = setTimeout(async () => {
-            try {
-                const response = await fetch(
-                    route('admin.payable-enrollments.index', {
-                        search: trimmed,
-                    }),
-                    {
-                        headers: {
-                            Accept: 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
+        const timer = setTimeout(
+            async () => {
+                try {
+                    const response = await fetch(
+                        route(
+                            'admin.payable-enrollments.index',
+                            query ? { search: query } : {},
+                        ),
+                        {
+                            headers: {
+                                Accept: 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            signal: controller.signal,
                         },
-                        signal: controller.signal,
-                    },
-                );
+                    );
 
-                if (!response.ok) throw new Error(String(response.status));
+                    if (!response.ok) throw new Error(String(response.status));
 
-                const body = await response.json();
-                setResults(body.results ?? []);
-            } catch (error) {
-                if ((error as Error).name !== 'AbortError') {
-                    setHasError(true);
-                    setResults([]);
+                    const body = await response.json();
+                    setResults(body.results ?? []);
+                    setTotal(body.total ?? null);
+                } catch (error) {
+                    if ((error as Error).name !== 'AbortError') {
+                        setHasError(true);
+                        setResults([]);
+                    }
+                } finally {
+                    if (!controller.signal.aborted) setIsLoading(false);
                 }
-            } finally {
-                if (!controller.signal.aborted) setIsLoading(false);
-            }
-        }, SEARCH_DELAY_MS);
+            },
+            query ? SEARCH_DELAY_MS : 0,
+        );
 
         return () => {
             clearTimeout(timer);
             controller.abort();
         };
-    }, [trimmed]);
+    }, [open, query]);
 
     const close = (isOpen: boolean) => {
         if (!isOpen) {
             setSearch('');
             setResults([]);
+            setTotal(null);
             setHasError(false);
         }
         onOpenChange(isOpen);
@@ -152,21 +160,28 @@ export default function PayableEnrollmentLookupDialog({
                     aria-live="polite"
                     aria-busy={isLoading}
                 >
-                    {trimmed.length < 2 ? (
-                        <p className="px-6 py-8 text-center text-sm text-[#1F2A24]/55">
-                            Type at least 2 characters to search.
-                        </p>
-                    ) : hasError ? (
+                    {hasError ? (
                         <p className="px-6 py-8 text-center text-sm text-[#A83A30]">
-                            Couldn't search right now. Please try again.
+                            {query
+                                ? "Couldn't search right now. Please try again."
+                                : "Couldn't load the students right now. Try searching instead."}
                         </p>
                     ) : !isLoading && results.length === 0 ? (
                         <p className="px-6 py-8 text-center text-sm text-[#1F2A24]/55">
-                            No approved application with a balance matches “
-                            {trimmed}”.
+                            {query
+                                ? `No approved application with a balance matches “${query}”.`
+                                : 'No approved application has a balance to pay.'}
                         </p>
                     ) : (
                         <ul className="divide-y divide-[#1F2A24]/10">
+                            {!query && results.length > 0 && (
+                                <li className="bg-[#FBF8F2] px-6 py-2 text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                                    Students with a balance
+                                    {total !== null &&
+                                        total > results.length &&
+                                        ` · first ${results.length} of ${total}, search to find others`}
+                                </li>
+                            )}
                             {results.map((result) => (
                                 <li key={result.id}>
                                     <button
