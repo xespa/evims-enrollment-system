@@ -1,9 +1,42 @@
 <?php
 
+use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
+use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\GradeLevelSeeder;
+use Database\Seeders\StaffAccountSeeder;
 use Database\Seeders\SubjectSeeder;
+
+test('a full seed bills every grade level its total fee, not ₱0', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    $curricula = Curriculum::all();
+
+    expect($curricula)->toHaveCount(13)
+        ->and($curricula->every(fn (Curriculum $curriculum) => (float) $curriculum->tuition_fee === $curriculum->computeTotalFee()
+            && $curriculum->computeTotalFee() > 0))->toBeTrue();
+});
+
+test('a full seed creates one sign-in for every staff role', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    expect(User::orderBy('email')->pluck('role', 'email')->map->value->all())->toBe([
+        'admin@example.com' => 'ADMIN',
+        'cashier@example.com' => 'CASHIER',
+        'registrar@example.com' => 'REGISTRAR',
+        'teacher@example.com' => 'TEACHER',
+        'test@example.com' => 'CASHIER',
+    ]);
+});
+
+test('the staff accounts can be seeded again without duplicates', function () {
+    $this->seed(StaffAccountSeeder::class);
+    $this->seed(StaffAccountSeeder::class);
+
+    expect(User::count())->toBe(3);
+});
 
 test('the seeders create the pre-elementary levels with their fees and subjects', function () {
     $this->seed([GradeLevelSeeder::class, SubjectSeeder::class]);

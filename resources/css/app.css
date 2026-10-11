@@ -61,7 +61,10 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
+/* .theme-light keeps a light-only screen on the light palette even inside
+   .dark, so shared components (inputs, checkboxes) stay readable on it. */
+:root,
+.theme-light {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -167,8 +170,15 @@
    even when the device is in dark mode — otherwise the dark page shows
    through when scrolling past the top or bottom. */
 html:has(.evims-admin),
-html:has(.evims-admin) body {
+html:has(.evims-admin) body,
+html:has(.theme-light),
+html:has(.theme-light) body {
     background-color: #fbf8f2;
+    color-scheme: light;
+}
+
+.theme-light {
+    color: var(--foreground);
     color-scheme: light;
 }
 

@@ -14,6 +14,7 @@ import { home } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { login as portalLogin } from '@/routes/portal';
+import { terms } from '@/routes/site';
 
 type Props = {
     status?: string;
@@ -182,6 +183,15 @@ export default function Login({ status, canResetPassword }: Props) {
                     <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
                     Back to the EVIMS website
                 </Link>
+                <p className="text-xs text-[#1F2A24]/55">
+                    Signing in uses only essential cookies.{' '}
+                    <TextLink
+                        href={`${terms.url()}#cookies`}
+                        className={LINK_CLASS}
+                    >
+                        Cookie policy
+                    </TextLink>
+                </p>
             </div>
         </>
     );

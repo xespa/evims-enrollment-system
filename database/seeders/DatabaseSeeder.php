@@ -3,13 +3,14 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Model events stay on (no WithoutModelEvents): a curriculum works out its
+ * billed total (tuition_fee) when it's saved, so muting them seeds ₱0 bills.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            StaffAccountSeeder::class,
             GradeLevelSeeder::class,
             SubjectSeeder::class,
         ]);

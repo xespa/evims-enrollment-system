@@ -8,7 +8,8 @@ export default function AuthSimpleLayout({
     description,
 }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FBF8F2] px-4 py-12 sm:py-16">
+        // The staff sign-in screens are designed light-only.
+        <div className="theme-light flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FBF8F2] px-4 py-12 sm:py-16">
             <div className="w-full max-w-md">
                 <div className="mb-6 text-center">
                     <Link

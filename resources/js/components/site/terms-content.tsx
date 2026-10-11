@@ -180,7 +180,8 @@ const SECTIONS: Section[] = [
                     </li>
                     <li>
                         <strong>Preferences</strong>: your light or dark theme,
-                        and that you’ve seen this cookie notice. Kept for up to
+                        that you’ve seen this cookie notice and, for school
+                        staff, whether the admin sidebar is open. Kept for up to
                         a year.
                     </li>
                 </ul>
