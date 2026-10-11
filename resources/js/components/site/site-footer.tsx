@@ -176,6 +176,12 @@ export default function SiteFooter() {
                             Terms & Privacy
                         </Link>
                         <Link
+                            href={`${terms.url()}#cookies`}
+                            className="hover:text-[#FBF8F2] hover:underline"
+                        >
+                            Cookies
+                        </Link>
+                        <Link
                             href={staffLogin()}
                             className="hover:text-[#FBF8F2] hover:underline"
                         >
