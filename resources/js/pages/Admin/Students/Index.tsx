@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Printer } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
@@ -282,6 +283,7 @@ export default function Index({
 }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
+    const { viewDashboard } = useStaffAbilities();
 
     const [search, setSearch] = useState(filters.search ?? '');
     // The application whose counter payment is being recorded; kept apart
@@ -377,33 +379,57 @@ export default function Index({
                         <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
                             Students
                         </h1>
-                        <div
-                            role="group"
-                            aria-label="Show active or archived applications"
-                            className="inline-flex rounded-full border border-[#1F2A24]/15 bg-white p-1"
-                        >
-                            {[
-                                { label: 'Active', archived: false },
-                                { label: 'Archived', archived: true },
-                            ].map((option) => (
-                                <button
-                                    key={option.label}
-                                    type="button"
-                                    aria-pressed={
-                                        filters.archived === option.archived
-                                    }
-                                    onClick={() =>
-                                        applyFilters({
-                                            archived: option.archived
-                                                ? 1
-                                                : undefined,
-                                        })
-                                    }
-                                    className="min-h-9 rounded-full px-4 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:text-[#1F2A24] aria-pressed:bg-[#2F6F4E] aria-pressed:text-white"
+                        <div className="flex flex-wrap items-center gap-2">
+                            {viewDashboard && (
+                                // A plain link in a new tab, since the browser opens the PDF to print.
+                                <a
+                                    href={route(
+                                        'admin.enrollment-summary.show',
+                                        {
+                                            school_year:
+                                                selected.school_year ||
+                                                undefined,
+                                        },
+                                    )}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-white px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
                                 >
-                                    {option.label}
-                                </button>
-                            ))}
+                                    <Printer
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Print enrollment summary
+                                </a>
+                            )}
+                            <div
+                                role="group"
+                                aria-label="Show active or archived applications"
+                                className="inline-flex rounded-full border border-[#1F2A24]/15 bg-white p-1"
+                            >
+                                {[
+                                    { label: 'Active', archived: false },
+                                    { label: 'Archived', archived: true },
+                                ].map((option) => (
+                                    <button
+                                        key={option.label}
+                                        type="button"
+                                        aria-pressed={
+                                            filters.archived === option.archived
+                                        }
+                                        onClick={() =>
+                                            applyFilters({
+                                                archived: option.archived
+                                                    ? 1
+                                                    : undefined,
+                                            })
+                                        }
+                                        className="min-h-9 rounded-full px-4 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:text-[#1F2A24] aria-pressed:bg-[#2F6F4E] aria-pressed:text-white"
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 

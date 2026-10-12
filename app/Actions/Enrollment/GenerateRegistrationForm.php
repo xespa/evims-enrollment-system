@@ -2,6 +2,7 @@
 
 namespace App\Actions\Enrollment;
 
+use App\Concerns\EmbedsSchoolLogo;
 use App\Models\Enrollment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as RegistrationFormPdf;
@@ -15,6 +16,8 @@ use Illuminate\Support\Str;
  */
 class GenerateRegistrationForm
 {
+    use EmbedsSchoolLogo;
+
     private const STUDENT_TYPES = [
         'NO_LRN' => 'New student (no LRN yet)',
         'WITH_LRN' => 'New student (transferee)',
@@ -26,9 +29,6 @@ class GenerateRegistrationForm
         'AFTERNOON_SESSION' => 'Afternoon session',
         'SCHOOL_SERVICE' => 'School service',
     ];
-
-    /** Pixels; plenty for the 56px-wide logo to print sharply. */
-    private const LOGO_SIZE = 200;
 
     private const PAYMENT_OPTIONS = [
         'FULL_PAYMENT' => 'Full payment',
@@ -83,34 +83,5 @@ class GenerateRegistrationForm
         $enrollment->loadMissing('student');
 
         return 'registration-form-'.Str::slug("{$enrollment->school_year} {$enrollment->student->last_name} {$enrollment->student->first_name}").'.pdf';
-    }
-
-    /**
-     * Embedded so the PDF renderer never has to fetch it over the network,
-     * and scaled down from the 1000px original, which would otherwise make
-     * up most of the attachment's size.
-     */
-    private function logoDataUri(): ?string
-    {
-        $path = public_path('images/logoevims.png');
-        $original = is_file($path) ? imagecreatefrompng($path) : false;
-
-        if ($original === false) {
-            return null;
-        }
-
-        $logo = imagescale($original, self::LOGO_SIZE, self::LOGO_SIZE, IMG_BICUBIC);
-
-        if ($logo === false) {
-            return null;
-        }
-
-        imagealphablending($logo, false);
-        imagesavealpha($logo, true);
-
-        ob_start();
-        imagepng($logo, null, 9);
-
-        return 'data:image/png;base64,'.base64_encode((string) ob_get_clean());
     }
 }

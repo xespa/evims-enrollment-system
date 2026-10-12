@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\EnrollmentArchiveController;
 use App\Http\Controllers\Admin\EnrollmentDocumentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EnrollmentPeriodController;
+use App\Http\Controllers\Admin\EnrollmentSummaryController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
@@ -117,6 +118,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // needs (see App\Enums\UserRole for who has which).
 Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->middleware('can:view-dashboard')->name('dashboard');
+    // Enrolled boys and girls per level, printed for DepEd.
+    Route::get('enrollment-summary', EnrollmentSummaryController::class)->middleware('can:view-dashboard')->name('enrollment-summary.show');
 
     // Every role can look students up and open their applications.
     Route::resource('students', StudentController::class)->only(['index']);
