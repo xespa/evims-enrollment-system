@@ -1,5 +1,11 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, CircleDashed, XCircle } from 'lucide-react';
+import {
+    ArrowLeft,
+    CheckCircle2,
+    CircleDashed,
+    Printer,
+    XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import VoidPaymentDialog from '@/components/void-payment-dialog';
@@ -191,13 +197,33 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                 Payment
                             </p>
                             {canVoid && (
-                                <button
-                                    type="button"
-                                    onClick={() => setIsVoiding(true)}
-                                    className="min-h-9 rounded-full border border-[#C6473B]/30 px-4 text-xs font-semibold text-[#A83A30] transition-colors hover:bg-[#C6473B]/10"
-                                >
-                                    Void payment
-                                </button>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {payment.receipt_number && (
+                                        // A plain link in a new tab, since the browser opens the PDF to print.
+                                        <a
+                                            href={route(
+                                                'admin.payments.receipt.show',
+                                                payment.id,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener"
+                                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-xs font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                        >
+                                            <Printer
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            />
+                                            Print receipt
+                                        </a>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsVoiding(true)}
+                                        className="min-h-9 rounded-full border border-[#C6473B]/30 px-4 text-xs font-semibold text-[#A83A30] transition-colors hover:bg-[#C6473B]/10"
+                                    >
+                                        Void payment
+                                    </button>
+                                </div>
                             )}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3">

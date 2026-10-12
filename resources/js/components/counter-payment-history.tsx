@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Loader2, Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
     STATUS_LABELS,
@@ -151,11 +151,32 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
                                         ` · By ${receipt.recorded_by}`}
                                 </p>
                             </div>
-                            <span
-                                className={`tabular-nums ${receipt.status === 'VOIDED' ? 'line-through' : 'font-medium'}`}
-                            >
-                                {formatCurrency(receipt.amount)}
-                            </span>
+                            <div className="flex flex-col items-end gap-1">
+                                <span
+                                    className={`tabular-nums ${receipt.status === 'VOIDED' ? 'line-through' : 'font-medium'}`}
+                                >
+                                    {formatCurrency(receipt.amount)}
+                                </span>
+                                {receipt.status === 'COMPLETED' &&
+                                    receipt.receipt_number && (
+                                        <a
+                                            href={route(
+                                                'admin.payments.receipt.show',
+                                                receipt.id,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener"
+                                            aria-label={`Print OR ${receipt.receipt_number}`}
+                                            className="inline-flex items-center gap-1 text-xs font-medium text-[#2F6F4E] underline-offset-4 hover:text-[#25573E] hover:underline"
+                                        >
+                                            <Printer
+                                                className="h-3.5 w-3.5"
+                                                aria-hidden="true"
+                                            />
+                                            Print
+                                        </a>
+                                    )}
+                            </div>
                         </li>
                     ))}
                 </ul>
