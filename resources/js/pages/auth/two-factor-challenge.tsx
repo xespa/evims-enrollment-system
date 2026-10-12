@@ -76,7 +76,7 @@ export default function TwoFactorChallenge() {
                             onClick={() =>
                                 setIsUsingRecoveryCode((current) => !current)
                             }
-                            className="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                            className="text-center text-sm font-medium text-[#2F6F4E] underline-offset-4 hover:text-[#25573E] hover:underline"
                         >
                             {isUsingRecoveryCode
                                 ? 'Use the code from my authenticator app'
