@@ -125,18 +125,62 @@ test('the email attaches the registration form as a PDF', function () {
         ->and($attachments[0]->mime)->toBe('application/pdf');
 });
 
-test('the form shows the student, subjects, fees and payment schedule', function () {
+test('the form follows the paper enrollment form, in capital letters', function () {
+    $enrollment = registrableEnrollment(['enrollment_status' => 'APPROVED', 'student_type' => 'WITH_LRN']);
+    $enrollment->academicHistory()->create([
+        'last_grade_level_completed' => 'Kinder',
+        'last_school_year_completed' => '2025-2026',
+        'previous_school_name' => 'Borongan Central School',
+    ]);
+    $enrollment->vitalInformation()->create(['has_attended_summer_school' => true, 'special_health_problems' => 'Asthma']);
+
+    $html = view('pdf.registration-form', app(GenerateRegistrationForm::class)->viewData($enrollment))->render();
+    // Box-per-character fields (school year, LRN, birth date) are separate cells.
+    $text = strip_tags($html);
+
+    expect($html)
+        ->toContain('BASIC EDUCATION ENROLLMENT FORM')
+        ->toContain('DELA CRUZ')
+        ->toContain('JUAN')
+        ->toContain('12 SANTIAGO ST.')
+        ->toContain('BORONGAN CITY')
+        ->toContain('DELA CRUZ, PEDRO')
+        ->toContain('SANTOS, MARIA')
+        ->toContain('09171234567')
+        ->toContain('KINDER')
+        ->toContain('BORONGAN CENTRAL SCHOOL')
+        ->toContain('Asthma')
+        ->toContain(strtoupper($enrollment->gradeLevel->department()))
+        ->toContain('TUITION FEE CONTRACT AND WITHDRAWAL PROCEDURE')
+        ->toContain('NOTARY PUBLIC')
+        ->and($text)->toContain($enrollment->student->lrn)
+        ->and($text)->toContain('2026-2027');
+});
+
+test('the form ticks the boxes that apply to the application', function () {
+    $enrollment = registrableEnrollment(['enrollment_status' => 'APPROVED', 'student_type' => 'WITH_LRN']);
+
+    $data = app(GenerateRegistrationForm::class)->viewData($enrollment);
+    $html = view('pdf.registration-form', $data)->render();
+
+    expect($data['credentials'])->toBe([
+        'FORM 138' => true,
+        'BIRTH CERTIFICATE' => true,
+        'GOOD MORAL CERTIFICATE' => true,
+    ])
+        ->and($data['department'])->toBe($enrollment->gradeLevel->department())
+        ->and($html)->toMatch('/✓<\/span> with LRN/')
+        ->and($html)->toMatch('/MORNING SESSION<\/td>\s*<td><span class="box">✓/')
+        ->and($html)->toMatch('/✓<\/span> Bi-monthly/');
+});
+
+test('the form ends with the subjects, fees and payment schedule', function () {
     $enrollment = registrableEnrollment(['enrollment_status' => 'APPROVED']);
 
     $html = view('pdf.registration-form', app(GenerateRegistrationForm::class)->viewData($enrollment))->render();
 
     expect($html)
-        ->toContain('REGISTRATION FORM')
-        ->toContain('Dela Cruz, Juan')
-        ->toContain($enrollment->student->lrn)
-        ->toContain('12 Santiago St., Balud, Borongan City, Eastern Samar')
-        ->toContain('Pedro')
-        ->toContain('09171234567')
+        ->toContain('ASSESSMENT OF FEES')
         ->toContain('Mathematics')
         ->toContain('Science')
         ->toContain('Morning session')

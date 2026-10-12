@@ -56,15 +56,30 @@ class GenerateRegistrationForm
             'student.address',
             'student.parentProfile',
             'gradeLevel',
+            'academicHistory',
+            'vitalInformation',
+            'officeVerification',
             'subjects' => fn ($subjects) => $subjects->orderBy('name'),
             'billingContract.installments' => fn ($installments) => $installments->orderBy('installment_number'),
         ]);
+
+        $verification = $enrollment->officeVerification;
 
         return [
             'enrollment' => $enrollment,
             'student' => $enrollment->student,
             'address' => $enrollment->student->address,
             'parents' => $enrollment->student->parentProfile,
+            'academicHistory' => $enrollment->academicHistory,
+            'vitalInformation' => $enrollment->vitalInformation,
+            // A credential counts as presented once its file is uploaded or
+            // the registrar has ticked it off.
+            'credentials' => [
+                'FORM 138' => filled($verification?->form_138_path) || (bool) $verification?->has_form_138,
+                'BIRTH CERTIFICATE' => filled($verification?->birth_certificate_path) || (bool) $verification?->has_birth_certificate,
+                'GOOD MORAL CERTIFICATE' => filled($verification?->good_moral_path) || (bool) $verification?->has_good_moral_certificate,
+            ],
+            'department' => $enrollment->gradeLevel->department(),
             'billingContract' => $enrollment->billingContract,
             'curriculum' => $enrollment->gradeLevel->curriculumFor($enrollment->school_year),
             'studentType' => self::STUDENT_TYPES[$enrollment->student_type],

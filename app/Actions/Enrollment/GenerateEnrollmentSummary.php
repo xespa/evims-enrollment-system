@@ -49,7 +49,7 @@ class GenerateEnrollmentSummary
         $totals = ['male' => 0, 'female' => 0, 'total' => 0];
 
         foreach (GradeLevel::query()->orderBy('level_order')->get(['id', 'name']) as $gradeLevel) {
-            $department = $this->department($gradeLevel);
+            $department = strtoupper($gradeLevel->department());
             $male = $counts["{$gradeLevel->id}-MALE"] ?? 0;
             $female = $counts["{$gradeLevel->id}-FEMALE"] ?? 0;
 
@@ -89,28 +89,11 @@ class GenerateEnrollmentSummary
     }
 
     /**
-     * Grades 1–6 are Elementary and 7–10 Junior High; the levels before
-     * Grade 1 (Nursery, Pre-K) are Pre-Elementary.
-     */
-    private function department(GradeLevel $gradeLevel): string
-    {
-        if (preg_match('/^Grade (\d+)$/', $gradeLevel->name, $matches) !== 1) {
-            return 'PRE-ELEMENTARY';
-        }
-
-        return (int) $matches[1] <= 6 ? 'ELEMENTARY' : 'JUNIOR HIGHSCHOOL';
-    }
-
-    /**
      * The Montessori names the school reports under: Pre-Elementary levels
      * are lettered in order (Nursery is Level A), and Grade 4 is Level 4.
      */
     private function levelLabel(GradeLevel $gradeLevel, int $indexInDepartment): string
     {
-        if (preg_match('/^Grade (\d+)$/', $gradeLevel->name, $matches) === 1) {
-            return "LEVEL {$matches[1]}";
-        }
-
-        return 'LEVEL '.chr(ord('A') + $indexInDepartment);
+        return 'LEVEL '.($gradeLevel->gradeNumber() ?? chr(ord('A') + $indexInDepartment));
     }
 }
