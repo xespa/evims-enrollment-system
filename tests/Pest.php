@@ -91,5 +91,6 @@ function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): 
 
         'payment_option' => 'MONTHLY',
         'payment_channel' => 'COUNTER',
+        'tuition_terms_accepted' => true,
     ], $overrides);
 }

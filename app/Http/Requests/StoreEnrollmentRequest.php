@@ -277,6 +277,8 @@ class StoreEnrollmentRequest extends FormRequest
             // Billing
             'payment_option' => ['required', 'string'],
             'payment_channel' => ['required', Rule::in(BillingContract::CHANNELS)],
+            // The tuition fee contract and withdrawal procedure.
+            'tuition_terms_accepted' => ['accepted'],
 
             // Documents
             'form_138' => [
@@ -301,6 +303,7 @@ class StoreEnrollmentRequest extends FormRequest
         $mobileNumberMessage = 'Enter a valid mobile number with its country code. Philippine numbers are +63 followed by 10 digits starting with 9, e.g. +63 917 123 4567.';
 
         return [
+            'tuition_terms_accepted.accepted' => 'Please read and agree to the tuition fee contract and withdrawal procedure.',
             'father_mobile_no.regex' => $mobileNumberMessage,
             'mother_mobile_no.regex' => $mobileNumberMessage,
             'lrn.regex' => self::LRN_MESSAGE,

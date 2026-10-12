@@ -84,7 +84,7 @@ const STEP_REQUIRED_FIELDS = {
     5: [],
     6: ['subject_ids'],
     7: [],
-    8: ['payment_option', 'payment_channel'],
+    8: ['tuition_terms_accepted', 'payment_option', 'payment_channel'],
     9: [],
 };
 
@@ -111,6 +111,7 @@ const FIELD_LABELS = {
     subject_ids: 'at least one Subject',
     payment_option: 'Payment Option',
     payment_channel: 'Payment Channel',
+    tuition_terms_accepted: 'Agreement to the Tuition Fee Contract',
 };
 
 // Steps skipped automatically (via Next/Back) once a returning student's LRN
@@ -196,6 +197,7 @@ const FIELD_TO_STEP = {
 
     payment_option: 8,
     payment_channel: 8,
+    tuition_terms_accepted: 8,
 };
 
 // The server only sends the one school year applications are for (the
@@ -349,6 +351,7 @@ export default function Create({
         // Billing
         payment_option: '',
         payment_channel: '',
+        tuition_terms_accepted: false,
     };
 
     const { data, setData, post, processing, errors, isDirty, reset } =
@@ -569,7 +572,13 @@ export default function Create({
         return required.filter((field) => {
             const value = data[field];
             if (Array.isArray(value)) return value.length === 0;
-            return value === '' || value === null || value === undefined;
+            // An unticked agreement checkbox counts as not answered.
+            return (
+                value === '' ||
+                value === null ||
+                value === undefined ||
+                value === false
+            );
         });
     };
 

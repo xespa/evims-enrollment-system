@@ -218,6 +218,8 @@ class SubmitEnrollmentApplication
                 'payment_option' => $validated['payment_option'],
                 'payment_channel' => $validated['payment_channel'],
                 'total_fee' => $curriculum->tuition_fee,
+                // The request only passes once the parent has agreed.
+                'terms_accepted_at' => now(),
             ]);
 
             $billingContract->generateInstallments();

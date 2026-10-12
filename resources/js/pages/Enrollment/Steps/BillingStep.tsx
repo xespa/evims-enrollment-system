@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import SelectInput from '../Components/SelectInput';
 import {
     BILLABLE_MONTHS,
@@ -13,13 +14,111 @@ function FeeRow({ label, detail, amount }) {
             <span className="text-[#1F2A24]/75">
                 {label}
                 {detail && (
-                    <span className="ml-1 text-xs text-[#1F2A24]/65">{detail}</span>
+                    <span className="ml-1 text-xs text-[#1F2A24]/65">
+                        {detail}
+                    </span>
                 )}
             </span>
             <span className="font-medium text-[#1F2A24] tabular-nums">
                 {formatCurrency(amount)}
             </span>
         </div>
+    );
+}
+
+/**
+ * The school's tuition fee contract and withdrawal procedure, from the paper
+ * enrollment form. The parent agrees to it here instead of signing it.
+ */
+function TuitionAgreement({
+    accepted,
+    onChange,
+    error,
+}: {
+    accepted: boolean;
+    onChange: (accepted: boolean) => void;
+    error?: string;
+}) {
+    const parentName = usePage().props.auth?.enrollee?.name;
+
+    return (
+        <section
+            aria-labelledby="tuition-agreement-heading"
+            className={`mb-4 rounded-xl border bg-white px-4 py-3 ${error ? 'border-[#C6473B]' : 'border-[#1F2A24]/10'}`}
+        >
+            <h3
+                id="tuition-agreement-heading"
+                className="mb-2 text-sm font-semibold text-[#1F2A24]"
+            >
+                Tuition Fee Contract and Withdrawal Procedure
+            </h3>
+            <div className="space-y-2 text-sm leading-relaxed text-[#1F2A24]/80">
+                <p>
+                    This is to signify that I,{' '}
+                    {parentName ? (
+                        <span className="font-semibold text-[#1F2A24]">
+                            {parentName}
+                        </span>
+                    ) : (
+                        'the parent/guardian'
+                    )}
+                    , fully understand the tuition term of EVIMS. Furthermore, I
+                    attest that I fully comprehend that the registration and
+                    miscellaneous fees are non-refundable if I did not continue
+                    with my child's enrollment on this school.
+                </p>
+                <p>
+                    I also understand that I am subject to withdrawal rules and
+                    procedures of the school upon indicating my intention to
+                    enroll. In this regard, I acknowledge that:
+                </p>
+                <ul className="list-disc space-y-1 pl-5">
+                    <li>
+                        Withdrawing within the <strong>first two weeks</strong>{' '}
+                        of classes is charged <strong>10%</strong> of the total
+                        annual fee.
+                    </li>
+                    <li>
+                        Withdrawing on the <strong>third week</strong> of
+                        classes is charged <strong>30%</strong> of the total
+                        annual fee.
+                    </li>
+                    <li>
+                        Withdrawing on the <strong>fourth week</strong> of
+                        classes and onwards means I am responsible to pay the{' '}
+                        <strong>total annual fee</strong>.
+                    </li>
+                </ul>
+            </div>
+
+            <label className="mt-3 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-[#1F2A24]/10 bg-[#FBF8F2] p-3 focus-within:ring-2 focus-within:ring-[#2F6F4E]/30">
+                <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#2F6F4E]"
+                    checked={accepted}
+                    onChange={(e) => onChange(e.target.checked)}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={
+                        error ? 'tuition_terms_accepted-error' : undefined
+                    }
+                />
+                <span className="text-sm font-medium text-[#1F2A24]">
+                    I have read, understood and accepted the abovementioned
+                    terms and conditions.{' '}
+                    <span className="text-[#C6473B]" aria-hidden="true">
+                        *
+                    </span>
+                </span>
+            </label>
+            {error && (
+                <p
+                    id="tuition_terms_accepted-error"
+                    className="mt-1 text-sm text-[#C6473B]"
+                >
+                    {error}
+                </p>
+            )}
+        </section>
     );
 }
 
@@ -65,6 +164,14 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
             <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
                 Billing / Tuition Contract
             </h2>
+
+            <TuitionAgreement
+                accepted={data.tuition_terms_accepted}
+                onChange={(accepted) =>
+                    setData('tuition_terms_accepted', accepted)
+                }
+                error={errors.tuition_terms_accepted}
+            />
 
             <div className="mb-4 rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3">
                 <p className="mb-2 text-sm font-semibold text-[#1F2A24]">
@@ -160,11 +267,15 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
             <fieldset
                 className="mb-4"
                 aria-required="true"
-                aria-describedby={errors.payment_channel ? 'payment_channel-error' : undefined}
+                aria-describedby={
+                    errors.payment_channel ? 'payment_channel-error' : undefined
+                }
             >
                 <legend className="mb-2 block text-sm font-medium text-[#1F2A24]/80">
                     How will you pay?{' '}
-                    <span className="text-[#C6473B]" aria-hidden="true">*</span>
+                    <span className="text-[#C6473B]" aria-hidden="true">
+                        *
+                    </span>
                 </legend>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <label
@@ -226,7 +337,10 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                     </label>
                 </div>
                 {errors.payment_channel && (
-                    <p id="payment_channel-error" className="mt-1 text-sm text-[#C6473B]">
+                    <p
+                        id="payment_channel-error"
+                        className="mt-1 text-sm text-[#C6473B]"
+                    >
                         {errors.payment_channel}
                     </p>
                 )}

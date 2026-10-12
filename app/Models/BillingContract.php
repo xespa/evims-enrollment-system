@@ -17,10 +17,11 @@ class BillingContract extends Model
 
     public const CHANNELS = [self::CHANNEL_COUNTER, self::CHANNEL_GCASH];
 
-    protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee'];
+    protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee', 'terms_accepted_at'];
 
     protected $casts = [
         'total_fee' => 'decimal:2',
+        'terms_accepted_at' => 'datetime',
     ];
 
     /**
