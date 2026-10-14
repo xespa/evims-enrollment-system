@@ -174,11 +174,11 @@ export default function Show({ payment, canVoid, receipt }: Props) {
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-4xl">
                     <Link
-                        href={route('admin.transactions.index')}
+                        href={route('admin.transaction-history.index')}
                         className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#2F6F4E] hover:underline"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-                        Back to transactions
+                        Back to payment history
                     </Link>
 
                     {flashSuccess && !isVoiding && (

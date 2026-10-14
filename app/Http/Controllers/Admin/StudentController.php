@@ -32,7 +32,7 @@ class StudentController extends Controller
                 'student',
                 'gradeLevel',
                 'officeVerification',
-                ...Enrollment::paymentSummaryRelations(),
+                ...Enrollment::installmentScheduleRelations(),
             ])
             ->select('enrollments.*')
             ->withParentEmailVerified()
@@ -68,6 +68,7 @@ class StudentController extends Controller
         $applications = $query->paginate(15)->withQueryString()
             ->through(function (Enrollment $enrollment) {
                 $enrollment->setAttribute('payment', $enrollment->paymentSummary());
+                $enrollment->setAttribute('installments', $enrollment->installmentSchedule());
 
                 return $enrollment->unsetRelation('billingContract');
             });

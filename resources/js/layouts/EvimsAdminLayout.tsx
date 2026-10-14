@@ -92,10 +92,12 @@ const NAV_SECTIONS: NavSection[] = [
         label: 'Finance',
         items: [
             {
-                label: 'Transactions',
+                label: 'Billing & Collections',
                 href: admin.transactions.index.url(),
                 icon: ReceiptText,
                 ability: 'handlePayments',
+                // Payment history opens from Billing & Collections.
+                matchPrefix: '/admin/transaction-history',
             },
         ],
     },

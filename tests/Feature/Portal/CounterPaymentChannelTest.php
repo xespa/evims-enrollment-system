@@ -5,6 +5,7 @@ use App\Models\BillingContract;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
+use App\Models\Subject;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function approvedEnrollmentFor(EnrolleeUser $enrollee, string $channel): Enrollment
@@ -61,10 +62,13 @@ test('the approval email gives GCash payers the payment link', function () {
         ->assertDontSeeInHtml('school cashier');
 });
 
-test('an unknown payment channel is rejected when applying', function () {
+test('new applications are billed as cash until the parent chooses GCash', function () {
     $this->actingAs(EnrolleeUser::factory()->create(), 'enrollee');
     $gradeLevel = GradeLevel::factory()->totalFee(30000)->create();
+    Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
-    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['payment_channel' => 'BANK']))
-        ->assertSessionHasErrors('payment_channel');
+    $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel, ['payment_channel' => 'GCASH']))
+        ->assertSessionHasNoErrors();
+
+    expect(BillingContract::sole()->payment_channel)->toBe(BillingContract::CHANNEL_COUNTER);
 });

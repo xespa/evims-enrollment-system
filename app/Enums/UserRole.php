@@ -38,7 +38,7 @@ enum UserRole: string
             self::Admin => 'Everything, including school year setup and staff accounts.',
             self::Registrar => 'Reviews applications and portal accounts, uploads documents, and records payments.',
             self::Teacher => 'Views students and uploads their Form 138 (report card).',
-            self::Cashier => 'Records and voids counter payments and views transactions.',
+            self::Cashier => 'Records and voids counter payments and manages billing and collections.',
         };
     }
 

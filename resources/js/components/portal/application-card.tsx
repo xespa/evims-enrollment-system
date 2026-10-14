@@ -1,12 +1,17 @@
-import { Link } from '@inertiajs/react';
-import { CheckCircle2, FileDown, Landmark, PartyPopper } from 'lucide-react';
+import { CheckCircle2, FileDown, PartyPopper } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import ApplicationProgress from '@/components/portal/application-progress';
 import EnrollmentStatusBadge from '@/components/portal/enrollment-status-badge';
+import PayTuitionDialog from '@/components/portal/pay-tuition-dialog';
 import { SESSION_LABELS, studentName } from '@/lib/portal-enrollment';
 import { formatCurrency } from '@/lib/transactions';
 import { show as registrationFormShow } from '@/routes/portal/enrollments/registration-form';
-import type { PortalEnrollment } from '@/types/portal';
+import type {
+    PortalEnrollment,
+    PortalInstallment,
+    PortalPaymentMethod,
+} from '@/types/portal';
 
 function PaymentProgress({
     totalBilled,
@@ -52,6 +57,77 @@ function PaymentProgress({
     );
 }
 
+const INSTALLMENT_STATUS: Record<
+    PortalInstallment['status'],
+    { label: string; className: string }
+> = {
+    UNPAID: { label: 'Unpaid', className: 'bg-[#1F2A24]/5 text-[#1F2A24]/70' },
+    PARTIALLY_PAID: {
+        label: 'Partially paid',
+        className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+    },
+    PAID: { label: 'Paid', className: 'bg-[#2F6F4E]/10 text-[#2F6F4E]' },
+};
+
+/**
+ * Each installment and where it stands, so a payment the cashier records
+ * shows up against the right installment.
+ */
+function InstallmentSchedule({
+    installments,
+}: {
+    installments: PortalInstallment[];
+}) {
+    if (installments.length === 0) {
+        return null;
+    }
+
+    return (
+        <details className="group mt-3 rounded-lg border border-[#1F2A24]/10 bg-white">
+            <summary className="flex min-h-11 cursor-pointer items-center justify-between px-3 text-sm font-medium text-[#1F2A24]">
+                Installments
+                <span className="text-xs text-[#1F2A24]/60">
+                    {installments.filter((i) => i.status === 'PAID').length} of{' '}
+                    {installments.length} paid
+                </span>
+            </summary>
+            <ol className="divide-y divide-[#1F2A24]/5 border-t border-[#1F2A24]/10">
+                {installments.map((installment) => {
+                    const status = INSTALLMENT_STATUS[installment.status];
+
+                    return (
+                        <li
+                            key={installment.id}
+                            className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
+                        >
+                            <span className="text-[#1F2A24]/80">
+                                #{installment.installment_number} · Due{' '}
+                                {new Date(
+                                    installment.due_date,
+                                ).toLocaleDateString('en-PH', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                })}
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <span className="font-medium text-[#1F2A24] tabular-nums">
+                                    {formatCurrency(installment.amount_due)}
+                                </span>
+                                <span
+                                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}
+                                >
+                                    {status.label}
+                                </span>
+                            </span>
+                        </li>
+                    );
+                })}
+            </ol>
+        </details>
+    );
+}
+
 function Detail({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div>
@@ -63,11 +139,16 @@ function Detail({ label, children }: { label: string; children: ReactNode }) {
 
 export default function ApplicationCard({
     enrollment,
+    paymentMethods,
     onCancel,
 }: {
     enrollment: PortalEnrollment;
+    paymentMethods: PortalPaymentMethod[];
     onCancel: (enrollment: PortalEnrollment) => void;
 }) {
+    const [isPaying, setIsPaying] = useState(false);
+    // Remounts the dialog per opening so it starts from the saved method.
+    const [paySession, setPaySession] = useState(0);
     const isCancelled = Boolean(enrollment.cancelled_at);
     const isApproved = enrollment.enrollment_status === 'APPROVED';
     const isPending = enrollment.enrollment_status === 'PENDING';
@@ -171,22 +252,14 @@ export default function ApplicationCard({
                         <div className="rounded-lg bg-[#2F6F4E]/5 p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex gap-3">
-                                    {enrollment.payment_url ? (
-                                        <PartyPopper
-                                            className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
-                                            aria-hidden="true"
-                                        />
-                                    ) : (
-                                        <Landmark
-                                            className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
-                                            aria-hidden="true"
-                                        />
-                                    )}
+                                    <PartyPopper
+                                        className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                                        aria-hidden="true"
+                                    />
                                     <div>
                                         <p className="text-sm font-medium text-[#1F2A24]">
-                                            {enrollment.payment_url
-                                                ? "You're approved! You can now pay your tuition."
-                                                : "You're approved! Please pay at the school cashier."}
+                                            You're approved! You can now pay
+                                            your tuition.
                                         </p>
                                         <p className="text-sm text-[#1F2A24]/70">
                                             Remaining balance:{' '}
@@ -196,30 +269,35 @@ export default function ApplicationCard({
                                                 )}
                                             </span>
                                         </p>
-                                        {!enrollment.payment_url && (
-                                            <p className="mt-1 text-xs text-[#1F2A24]/60">
-                                                Bring reference no.{' '}
-                                                <span className="font-semibold tabular-nums">
-                                                    #{enrollment.id}
-                                                </span>
-                                                . Your payment will show here
-                                                once the cashier records it.
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
-                                {enrollment.payment_url && (
-                                    <Link
-                                        href={enrollment.payment_url}
-                                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
-                                    >
-                                        Pay Tuition
-                                    </Link>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPaySession((n) => n + 1);
+                                        setIsPaying(true);
+                                    }}
+                                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                >
+                                    Pay Tuition
+                                </button>
                             </div>
                             <PaymentProgress
                                 totalBilled={billing.total}
                                 remainingBalance={billing.remaining}
+                            />
+                            <InstallmentSchedule
+                                installments={
+                                    enrollment.billing_contract?.installments ??
+                                    []
+                                }
+                            />
+                            <PayTuitionDialog
+                                key={paySession}
+                                enrollment={enrollment}
+                                paymentMethods={paymentMethods}
+                                open={isPaying}
+                                onOpenChange={setIsPaying}
                             />
                         </div>
                     )}

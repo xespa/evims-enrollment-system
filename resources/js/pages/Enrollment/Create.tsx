@@ -84,7 +84,7 @@ const STEP_REQUIRED_FIELDS = {
     5: [],
     6: ['subject_ids'],
     7: [],
-    8: ['tuition_terms_accepted', 'payment_option', 'payment_channel'],
+    8: ['tuition_terms_accepted', 'payment_option'],
     9: [],
 };
 
@@ -110,7 +110,6 @@ const FIELD_LABELS = {
     country: 'Country',
     subject_ids: 'at least one Subject',
     payment_option: 'Payment Option',
-    payment_channel: 'Payment Channel',
     tuition_terms_accepted: 'Agreement to the Tuition Fee Contract',
 };
 
@@ -196,7 +195,6 @@ const FIELD_TO_STEP = {
     good_moral_certificate: 7,
 
     payment_option: 8,
-    payment_channel: 8,
     tuition_terms_accepted: 8,
 };
 
@@ -350,7 +348,6 @@ export default function Create({
 
         // Billing
         payment_option: '',
-        payment_channel: '',
         tuition_terms_accepted: false,
     };
 

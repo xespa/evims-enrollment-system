@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EnrollmentRejectionReason;
+use App\Enums\PaymentMethod;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Enrollment extends Model
@@ -67,6 +70,22 @@ class Enrollment extends Model
     public function billingContract(): HasOne
     {
         return $this->hasOne(BillingContract::class);
+    }
+
+    /**
+     * @return HasManyThrough<Installment, BillingContract, $this>
+     */
+    public function installments(): HasManyThrough
+    {
+        return $this->hasManyThrough(Installment::class, BillingContract::class);
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 
     /**
@@ -142,7 +161,7 @@ class Enrollment extends Model
         return [
             'billingContract:id,enrollment_id,payment_channel,total_fee',
             'billingContract.installments' => fn ($installments) => $installments
-                ->select(['id', 'billing_contract_id', 'installment_number', 'amount_due'])
+                ->select(['id', 'billing_contract_id', 'installment_number', 'amount_due', 'due_date', 'status'])
                 ->withSum(['payments as paid_amount' => fn ($payments) => $payments->where('status', 'COMPLETED')], 'amount')
                 ->orderBy('installment_number'),
         ];
@@ -153,7 +172,7 @@ class Enrollment extends Model
      * each unpaid installment still owes. Null when there's no bill yet.
      * Load paymentSummaryRelations() first so this doesn't query per row.
      *
-     * @return array{status: string, channel: string, total: float, paid: float, balance: float, unpaid_installments: list<array{id: int, installment_number: int, owed: float}>}|null
+     * @return array{status: string, channel: string, channel_label: string, total: float, paid: float, balance: float, unpaid_installments: list<array{id: int, installment_number: int, owed: float}>}|null
      */
     public function paymentSummary(): ?array
     {
@@ -183,11 +202,64 @@ class Enrollment extends Model
                 default => 'UNPAID',
             },
             'channel' => $billingContract->payment_channel,
+            'channel_label' => PaymentMethod::tryFrom($billingContract->payment_channel)?->label() ?? $billingContract->payment_channel,
             'total' => $total,
             'paid' => $paid,
             'balance' => $balance,
             'unpaid_installments' => $unpaidInstallments,
         ];
+    }
+
+    /**
+     * What installmentSchedule() needs, for eager loading: the bill, its
+     * installments and the payments made on each.
+     *
+     * @return array<int|string, mixed>
+     */
+    public static function installmentScheduleRelations(): array
+    {
+        return [
+            ...self::paymentSummaryRelations(),
+            'billingContract.installments.payments' => fn ($payments) => $payments
+                ->select(['id', 'installment_id', 'amount', 'method', 'receipt_number', 'status', 'paid_at'])
+                ->whereIn('status', ['COMPLETED', 'VOIDED'])
+                ->orderBy('paid_at'),
+        ];
+    }
+
+    /**
+     * Each installment with what's been paid on it and the payments behind
+     * it — voided ones included, so the record is complete. Load
+     * installmentScheduleRelations() first so this doesn't query per row.
+     *
+     * @return list<array{id: int, installment_number: int, due_date: string, amount_due: float, paid: float, status: string, payments: list<array{id: int, amount: float, method: string, receipt_number: string|null, status: string, paid_at: string|null}>}>
+     */
+    public function installmentSchedule(): array
+    {
+        if (! $this->billingContract) {
+            return [];
+        }
+
+        return array_values($this->billingContract->installments
+            ->map(fn (Installment $installment) => [
+                'id' => $installment->id,
+                'installment_number' => $installment->installment_number,
+                'due_date' => $installment->due_date->toDateString(),
+                'amount_due' => (float) $installment->amount_due,
+                'paid' => round((float) $installment->getAttribute('paid_amount'), 2),
+                'status' => $installment->status,
+                'payments' => array_values($installment->payments
+                    ->map(fn (Payment $payment) => [
+                        'id' => $payment->id,
+                        'amount' => (float) $payment->amount,
+                        'method' => $payment->method,
+                        'receipt_number' => $payment->receipt_number,
+                        'status' => $payment->status,
+                        'paid_at' => $payment->paid_at?->toDateString(),
+                    ])
+                    ->all()),
+            ])
+            ->all());
     }
 
     public function isCancelled(): bool
@@ -228,6 +300,40 @@ class Enrollment extends Model
         } else {
             $query->whereNull('enrollments.archived_at');
         }
+    }
+
+    /**
+     * Narrows to a school year and grade level, when given.
+     *
+     * @param  Builder<Enrollment>  $query
+     * @param  array{school_year?: string|null, grade_level_id?: int|string|null}  $filters
+     */
+    public function scopeInSchoolYearAndGrade(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['school_year'] ?? null, fn (Builder $query, string $schoolYear) => $query->where('enrollments.school_year', $schoolYear))
+            ->when($filters['grade_level_id'] ?? null, fn (Builder $query, int|string $gradeLevelId) => $query->where('enrollments.grade_level_id', $gradeLevelId));
+    }
+
+    /**
+     * Matches the student's name or LRN, the parent's email, or the
+     * application number ("#12" or "12").
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeMatchingSearch(Builder $query, string $search): void
+    {
+        $query->where(function (Builder $query) use ($search) {
+            $query->where('enrollments.email', 'like', "%{$search}%")
+                ->orWhereHas('student', fn (Builder $student) => $student
+                    ->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('lrn', 'like', "%{$search}%"));
+
+            if (ctype_digit(ltrim($search, '#'))) {
+                $query->orWhere('enrollments.id', (int) ltrim($search, '#'));
+            }
+        });
     }
 
     /**

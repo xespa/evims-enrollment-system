@@ -134,14 +134,6 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
                     value={PAYMENT_OPTIONS[data.payment_option]?.label}
                 />
                 <ReviewRow label="Payment Schedule" value={planSummary} />
-                <ReviewRow
-                    label="Payment Method"
-                    value={
-                        { COUNTER: 'School Counter', GCASH: 'GCash' }[
-                            data.payment_channel
-                        ]
-                    }
-                />
                 <div className="flex justify-between py-2 text-sm">
                     <span className="font-semibold text-[#1F2A24]">
                         Total Amount to Pay

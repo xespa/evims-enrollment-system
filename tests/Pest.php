@@ -90,7 +90,6 @@ function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): 
         'subject_ids' => Subject::whereIn('curriculum_id', $gradeLevel->curricula()->pluck('id'))->pluck('id')->toArray(),
 
         'payment_option' => 'MONTHLY',
-        'payment_channel' => 'COUNTER',
         'tuition_terms_accepted' => true,
     ], $overrides);
 }

@@ -9,9 +9,12 @@ use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
- * An approved application with a generated 10-installment schedule.
+ * An approved application with a generated 10-installment schedule of
+ * ₱1,000 each, due on the 15th from June to March.
+ *
+ * @param  array<string, mixed>  $attributes
  */
-function enrollmentWithInstallments(string $lastName): Enrollment
+function enrollmentWithInstallments(string $lastName, array $attributes = []): Enrollment
 {
     $gradeLevel = GradeLevel::factory()->withCurriculum([
         'registration_fee' => 1000,
@@ -26,6 +29,7 @@ function enrollmentWithInstallments(string $lastName): Enrollment
         'grade_level_id' => $gradeLevel->id,
         'enrollment_status' => 'APPROVED',
         'email' => strtolower($lastName).'@example.com',
+        ...$attributes,
     ]);
 
     $enrollment->billingContract()->create([
@@ -42,8 +46,8 @@ function enrollmentWithInstallments(string $lastName): Enrollment
  */
 function transactionFor(Enrollment $enrollment, array $attributes = []): Payment
 {
-    return Payment::create([
-        'installment_id' => $enrollment->billingContract->installments()->first()->id,
+    $payment = Payment::create([
+        'installment_id' => $enrollment->billingContract->installments()->orderBy('installment_number')->first()->id,
         'enrollment_id' => $enrollment->id,
         'amount' => 1000,
         'method' => 'GCASH',
@@ -52,10 +56,20 @@ function transactionFor(Enrollment $enrollment, array $attributes = []): Payment
         'paid_at' => now(),
         ...$attributes,
     ]);
+
+    $payment->installment->refreshStatus();
+
+    return $payment;
 }
 
 beforeEach(function () {
     $this->admin = User::factory()->create(['role' => 'ADMIN']);
+    // June to September's installments are past due; October onwards aren't.
+    Carbon::setTestNow('2026-10-14 10:00');
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 test('guests and non-admin staff cannot view transactions', function () {
@@ -69,97 +83,142 @@ test('guests and non-admin staff cannot view transactions', function () {
     $this->actingAs($staff)->get(route('admin.transactions.show', $payment))->assertForbidden();
 });
 
-test('admins see every transaction newest first with a summary', function () {
-    $enrollment = enrollmentWithInstallments('Cruz');
-    $paid = transactionFor($enrollment, ['amount' => 1000]);
-    $cash = transactionFor($enrollment, ['amount' => 500, 'method' => 'CASH', 'paymongo_source_id' => null, 'recorded_by' => $this->admin->id]);
-    $pending = transactionFor($enrollment, ['status' => 'PENDING', 'paid_at' => null]);
-    $failed = transactionFor($enrollment, ['status' => 'FAILED', 'paid_at' => null]);
+test('the paid tab lists each student who has paid once, most recent payment first', function () {
+    $cruz = enrollmentWithInstallments('Cruz');
+    $bautista = enrollmentWithInstallments('Bautista');
+    transactionFor($cruz, ['amount' => 600]);
+    transactionFor($cruz, ['amount' => 400, 'method' => 'CASH', 'paymongo_source_id' => null, 'recorded_by' => $this->admin->id]);
+    // Attempts that never took money, and reversed money, don't count.
+    transactionFor($cruz, ['status' => 'PENDING', 'paid_at' => null]);
+    transactionFor($cruz, ['status' => 'FAILED', 'paid_at' => null]);
+    transactionFor($cruz, ['amount' => 300, 'method' => 'CASH', 'paymongo_source_id' => null, 'receipt_number' => 'OR-1', 'status' => 'VOIDED']);
+    $this->travel(1)->hours();
+    transactionFor($bautista, ['amount' => 1000]);
+    // Owes but hasn't paid anything: not on the paid tab.
+    enrollmentWithInstallments('Dizon');
 
     $this->actingAs($this->admin)
         ->get(route('admin.transactions.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Transactions/Index')
-            ->has('transactions.data', 4)
-            ->where('transactions.data.0.id', $failed->id)
-            ->where('transactions.data.3.id', $paid->id)
-            ->where('transactions.data.0.enrollment.student.last_name', 'Cruz')
-            ->where('transactions.data.0.installment.installment_number', 1)
-            // Only completed payments count as money collected.
-            ->where('summary.collected', 1500)
-            ->where('summary.counts.ALL', 4)
-            ->where('summary.counts.COMPLETED', 2)
-            ->where('summary.counts.PENDING', 1)
-            ->where('summary.counts.FAILED', 1)
+            ->where('tab', 'PAID')
+            ->has('rows.data', 2)
+            ->where('rows.data.0.id', $bautista->id)
+            ->where('rows.data.1.id', $cruz->id)
+            ->where('rows.data.1.student.last_name', 'Cruz')
+            ->where('rows.data.1.paid_count', 2)
+            ->where('rows.data.1.payment.paid', 1000)
+            ->where('rows.data.1.payment.channel_label', 'GCash')
+            ->has('rows.data.1.installments', 10)
+            ->where('rows.data.1.installments.0.status', 'PAID')
+            // Voided money stays visible in the schedule, struck through.
+            ->has('rows.data.1.installments.0.payments', 3)
+            ->where('summary.collected', 2000)
+            ->where('summary.paid_students', 2)
         );
 });
 
-test('the status tab narrows the list but keeps every tab count', function () {
+test('students who owe are split into overdue and receivable by due date', function () {
     $enrollment = enrollmentWithInstallments('Cruz');
+    // Installment #1 (June) is paid; #2 (July) is part paid.
     transactionFor($enrollment);
-    $pending = transactionFor($enrollment, ['status' => 'PENDING', 'paid_at' => null]);
+    transactionFor($enrollment, [
+        'installment_id' => $enrollment->billingContract->installments()->where('installment_number', 2)->value('id'),
+        'amount' => 400,
+    ]);
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['status' => 'PENDING']))
+        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('transactions.data', 1)
-            ->where('transactions.data.0.id', $pending->id)
-            ->where('summary.counts.ALL', 2)
-            ->where('summary.counts.COMPLETED', 1)
-            ->where('filters.status', 'PENDING')
+            ->where('tab', 'OVERDUE')
+            ->has('rows.data', 1)
+            ->where('rows.data.0.id', $enrollment->id)
+            ->where('rows.data.0.owed', 2600)
+            ->where('rows.data.0.owed_installments', 3)
+            ->where('rows.data.0.first_owed_due_date', '2026-07-15')
+            ->where('rows.data.0.days_overdue', 91)
+            ->where('rows.data.0.grade_level', $enrollment->gradeLevel->name)
+            ->has('rows.data.0.installments', 10)
+            ->has('rows.data.0.payment.unpaid_installments', 9)
+            ->where('summary.overdue', ['count' => 1, 'total' => 2600])
+            ->where('summary.receivable', ['count' => 1, 'total' => 6000])
+            ->where('summary.collected', 1400)
+        );
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.transactions.index', ['tab' => 'RECEIVABLE']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('rows.data', 1)
+            ->where('rows.data.0.owed', 6000)
+            ->where('rows.data.0.owed_installments', 6)
+            ->where('rows.data.0.first_owed_due_date', '2026-10-15')
+            ->where('rows.data.0.days_overdue', 0)
         );
 });
 
-test('transactions can be filtered by method', function () {
-    $enrollment = enrollmentWithInstallments('Cruz');
-    transactionFor($enrollment);
-    $cash = transactionFor($enrollment, ['method' => 'CASH', 'paymongo_source_id' => null]);
+test('students who have caught up drop off the overdue tab', function () {
+    $current = enrollmentWithInstallments('Cruz');
+    $behind = enrollmentWithInstallments('Bautista');
+    // Cruz has paid every installment due before today; Bautista hasn't.
+    foreach ($current->billingContract->installments()->where('due_date', '<', '2026-10-14')->get() as $installment) {
+        transactionFor($current, ['installment_id' => $installment->id]);
+    }
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['method' => 'CASH']))
+        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('transactions.data', 1)
-            ->where('transactions.data.0.id', $cash->id)
-            ->where('summary.counts.ALL', 1)
+            ->has('rows.data', 1)
+            ->where('rows.data.0.id', $behind->id)
+            ->where('rows.data.0.owed_installments', 4)
         );
 });
 
-test('transactions can be searched by student, email, PayMongo ID or number', function (string $search) {
-    $match = transactionFor(enrollmentWithInstallments('Bautista'), ['paymongo_source_id' => 'src_findme123']);
-    transactionFor(enrollmentWithInstallments('Cruz'));
-
-    $search = str_replace('{id}', (string) $match->id, $search);
+test('applications that are not approved, cancelled or archived owe nothing', function () {
+    enrollmentWithInstallments('Pending', ['enrollment_status' => 'PENDING']);
+    enrollmentWithInstallments('Cancelled', ['cancelled_at' => now()]);
+    enrollmentWithInstallments('Archived', ['archived_at' => now()]);
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['search' => $search]))
+        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('transactions.data', 1)
-            ->where('transactions.data.0.id', $match->id)
+            ->has('rows.data', 0)
+            ->where('summary.overdue', ['count' => 0, 'total' => 0])
+            ->where('summary.receivable', ['count' => 0, 'total' => 0])
         );
-})->with([
-    'student last name' => 'bautista',
-    'email' => 'bautista@example',
-    'PayMongo source ID' => 'findme123',
-    'transaction number' => '#{id}',
-]);
+});
 
-test('transactions can be filtered by created date range', function () {
-    $enrollment = enrollmentWithInstallments('Cruz');
-
-    Carbon::setTestNow('2026-06-01 09:00');
-    transactionFor($enrollment);
-    Carbon::setTestNow('2026-06-15 09:00');
-    $inRange = transactionFor($enrollment);
-    Carbon::setTestNow('2026-07-01 09:00');
-    transactionFor($enrollment);
-    Carbon::setTestNow();
+test('every tab can be filtered by school year, grade level and student', function () {
+    $thisYear = enrollmentWithInstallments('Cruz', ['school_year' => '2026-2027']);
+    $lastYear = enrollmentWithInstallments('Bautista', ['school_year' => '2025-2026']);
+    transactionFor($thisYear);
+    transactionFor($lastYear);
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['from' => '2026-06-10', 'to' => '2026-06-20']))
+        ->get(route('admin.transactions.index', ['school_year' => '2026-2027']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('transactions.data', 1)
-            ->where('transactions.data.0.id', $inRange->id)
+            ->has('rows.data', 1)
+            ->where('rows.data.0.id', $thisYear->id)
+            ->where('summary.collected', 1000)
+            ->where('summary.overdue.count', 1)
+            ->where('schoolYears', ['2026-2027', '2025-2026'])
+            ->where('filters.school_year', '2026-2027')
+        );
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE', 'grade_level_id' => $lastYear->grade_level_id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('rows.data', 1)
+            ->where('rows.data.0.student.last_name', 'Bautista')
+            ->where('filters.grade_level_id', (string) $lastYear->grade_level_id)
+        );
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.transactions.index', ['tab' => 'RECEIVABLE', 'search' => 'bautista']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('rows.data', 1)
+            ->where('rows.data.0.id', $lastYear->id)
+            ->where('summary.receivable.count', 1)
         );
 });
 
@@ -168,9 +227,9 @@ test('invalid filters are rejected', function (array $query, string $field) {
         ->get(route('admin.transactions.index', $query))
         ->assertSessionHasErrors($field);
 })->with([
-    'unknown status' => [['status' => 'REFUNDED'], 'status'],
-    'unknown method' => [['method' => 'CARD'], 'method'],
-    'range ends before it starts' => [['from' => '2026-06-20', 'to' => '2026-06-10'], 'to'],
+    'removed status tab' => [['tab' => 'PENDING'], 'tab'],
+    'malformed school year' => [['school_year' => '2026'], 'school_year'],
+    'unknown grade level' => [['grade_level_id' => 999], 'grade_level_id'],
 ]);
 
 test('admins can view a transaction with its student, installment and recorder', function () {
@@ -192,27 +251,5 @@ test('admins can view a transaction with its student, installment and recorder',
             ->where('payment.installment.installment_number', 1)
             ->where('payment.recorded_by.name', $this->admin->name)
             ->missing('payment.recorded_by.email')
-        );
-});
-
-test('voided counter payments have their own tab and stay out of the collected total', function () {
-    $enrollment = enrollmentWithInstallments('Cruz');
-    transactionFor($enrollment, ['amount' => 1000]);
-    $voided = transactionFor($enrollment, [
-        'amount' => 500,
-        'method' => 'CASH',
-        'paymongo_source_id' => null,
-        'receipt_number' => 'OR-1',
-        'status' => 'VOIDED',
-        'void_reason' => 'Duplicate entry',
-    ]);
-
-    $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['status' => 'VOIDED']))
-        ->assertInertia(fn (Assert $page) => $page
-            ->has('transactions.data', 1)
-            ->where('transactions.data.0.id', $voided->id)
-            ->where('summary.counts.VOIDED', 1)
-            ->where('summary.collected', 1000)
         );
 });

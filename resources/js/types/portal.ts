@@ -9,6 +9,19 @@ export type SessionTimePreference =
 export type PortalDocumentType =
     'form_138' | 'birth_certificate' | 'good_moral';
 
+/** An App\Enums\PaymentMethod value, stored as the bill's payment_channel. */
+export type PaymentChannel =
+    'COUNTER' | 'GCASH' | 'MAYA' | 'SEABANK' | 'PAYPAL';
+
+/** One option in the Pay Tuition chooser, from PaymentMethod::options(). */
+export type PortalPaymentMethod = {
+    value: PaymentChannel;
+    label: string;
+    description: string;
+    logo: string | null;
+    available: boolean;
+};
+
 export type PortalPayment = {
     id: number;
     amount: string;
@@ -22,6 +35,9 @@ export type PortalPayment = {
 export type PortalInstallment = {
     id: number;
     installment_number: number;
+    amount_due: string;
+    due_date: string;
+    status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
     payments: PortalPayment[];
 };
 
@@ -62,6 +78,7 @@ export type PortalEnrollment = {
         name: string;
     };
     billing_contract: {
+        payment_channel: PaymentChannel;
         installments: PortalInstallment[];
     } | null;
     office_verification: PortalOfficeVerification | null;

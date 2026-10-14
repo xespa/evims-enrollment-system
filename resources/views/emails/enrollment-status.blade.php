@@ -13,7 +13,9 @@ Please proceed to settle your tuition payment to secure your child's slot.
 View Payment Details
 @endcomponent
 @else
-Please settle your tuition at the **school cashier** to secure your child's slot. Bring your reference number below; the cashier will record your payment and issue an official receipt.
+Please settle your tuition in cash at the **school cashier** to secure your child's slot. Bring your reference number below; the cashier will record your payment and issue an official receipt.
+
+Prefer to pay online? Choose **GCash** as your method of payment on your portal dashboard.
 @endif
 @elseif ($status === 'REJECTED')
 Thank you for your interest in enrolling **{{ $student->first_name }} {{ $student->last_name }}** for **{{ $gradeLevel->name }}** (School Year {{ $enrollment->school_year }}).

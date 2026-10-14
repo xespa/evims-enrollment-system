@@ -1,40 +1,65 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import DateRangePicker from '@/components/date-range-picker';
-import PayableEnrollmentLookupDialog from '@/components/payable-enrollment-lookup-dialog';
-import type { PayableEnrollment } from '@/components/payable-enrollment-lookup-dialog';
-import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import {
-    MethodLabel,
-    STATUS_LABELS,
-    STATUS_STYLES,
-    formatCurrency,
-    formatDateTime,
-    referenceId,
-} from '@/lib/transactions';
-import type { TransactionStatus as Status } from '@/lib/transactions';
+    AlertTriangle,
+    CalendarClock,
+    CheckCircle2,
+    ChevronRight,
+    History,
+    Inbox,
+    Plus,
+    Search,
+    Wallet,
+    X,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import InstallmentsDialog from '@/components/installments-dialog';
+import type { ScheduledInstallment } from '@/components/installments-dialog';
+import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
+import type { UnpaidInstallment } from '@/components/record-counter-payment-dialog';
+import { formatCurrency, formatDate } from '@/lib/transactions';
+import { cn } from '@/lib/utils';
+import { index as transactionHistoryIndex } from '@/routes/admin/transaction-history';
+import { index as transactionsIndex } from '@/routes/admin/transactions';
 
-type Transaction = {
+type Tab = 'PAID' | 'RECEIVABLE' | 'OVERDUE';
+
+/** One student's application, from TransactionController::row(). */
+type StudentRow = {
     id: number;
-    enrollment_id: number;
-    amount: string;
-    method: 'GCASH' | 'CASH';
-    receipt_number: string | null;
-    status: Status;
-    paymongo_source_id: string | null;
-    paymongo_payment_intent_id: string | null;
-    paid_at: string | null;
-    created_at: string;
-    enrollment: {
-        student: { first_name: string; last_name: string };
-    };
-    installment: { installment_number: number };
+    enrollment_status: string;
+    cancelled_at: string | null;
+    school_year: string;
+    grade_level: string | null;
+    student: { first_name: string; last_name: string };
+    payment: {
+        channel_label: string;
+        total: number;
+        paid: number;
+        balance: number;
+        unpaid_installments: UnpaidInstallment[];
+    } | null;
+    installments: ScheduledInstallment[];
+    paid_count: number;
+    last_paid_at: string | null;
+    owed: number;
+    owed_installments: number;
+    first_owed_due_date: string | null;
+    days_overdue: number;
 };
 
+type Filters = {
+    school_year: string;
+    grade_level_id: string;
+    search: string;
+};
+
+type OwedSummary = { count: number; total: number };
+
 type Props = {
-    transactions: {
-        data: Transaction[];
+    tab: Tab;
+    rows: {
+        data: StudentRow[];
         links: { url: string | null; label: string; active: boolean }[];
         from: number | null;
         to: number | null;
@@ -42,184 +67,508 @@ type Props = {
     };
     summary: {
         collected: number;
-        counts: Record<Status | 'ALL', number>;
+        paid_students: number;
+        receivable: OwedSummary;
+        overdue: OwedSummary;
     };
-    filters: {
-        status: string;
-        method: string;
-        search: string;
-        from: string;
-        to: string;
-    };
+    schoolYears: string[];
+    gradeLevels: { id: number; name: string }[];
+    filters: Filters;
 };
 
-const TABS: { value: '' | Status; label: string; countKey: Status | 'ALL' }[] =
-    [
-        { value: '', label: 'All', countKey: 'ALL' },
-        { value: 'COMPLETED', label: 'Paid', countKey: 'COMPLETED' },
-        { value: 'PENDING', label: 'Pending', countKey: 'PENDING' },
-        { value: 'FAILED', label: 'Failed', countKey: 'FAILED' },
-        { value: 'VOIDED', label: 'Voided', countKey: 'VOIDED' },
-    ];
+type Payer = {
+    id: number;
+    name: string;
+    unpaidInstallments: UnpaidInstallment[];
+    settleThroughInstallmentId?: number;
+};
+
+const EMPTY_FILTERS: Filters = {
+    school_year: '',
+    grade_level_id: '',
+    search: '',
+};
 
 const INPUT_CLASS =
-    'min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+    'min-h-11 rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
 
-export default function Index({ transactions, summary, filters }: Props) {
+/** Each tab, shown as a figure card the list is picked from. */
+const TABS: Record<
+    Tab,
+    {
+        label: string;
+        description: string;
+        icon: LucideIcon;
+        accent: { active: string; icon: string; amount: string };
+        empty: { icon: LucideIcon; title: string; body: string };
+    }
+> = {
+    PAID: {
+        label: 'Collected',
+        description: 'Students who have paid',
+        icon: Wallet,
+        accent: {
+            active: 'border-[#2F6F4E] ring-2 ring-[#2F6F4E]/20',
+            icon: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+            amount: 'text-[#2F6F4E]',
+        },
+        empty: {
+            icon: Inbox,
+            title: 'No payments yet',
+            body: 'Students show up here once a payment is recorded at the counter or made via GCash.',
+        },
+    },
+    RECEIVABLE: {
+        label: 'Receivable',
+        description: 'Upcoming installments still owed',
+        icon: CalendarClock,
+        accent: {
+            active: 'border-[#a4670f] ring-2 ring-[#E8A33D]/25',
+            icon: 'bg-[#E8A33D]/15 text-[#a4670f]',
+            amount: 'text-[#1F2A24]',
+        },
+        empty: {
+            icon: CheckCircle2,
+            title: 'Nothing upcoming',
+            body: 'No student owes an installment that is still to come.',
+        },
+    },
+    OVERDUE: {
+        label: 'Overdue',
+        description: 'Installments past their due date',
+        icon: AlertTriangle,
+        accent: {
+            active: 'border-[#C6473B] ring-2 ring-[#C6473B]/20',
+            icon: 'bg-[#C6473B]/10 text-[#A83A30]',
+            amount: 'text-[#A83A30]',
+        },
+        empty: {
+            icon: CheckCircle2,
+            title: 'Everyone is on track',
+            body: 'No student has an installment past its due date.',
+        },
+    },
+};
+
+function plural(count: number, word: string) {
+    return `${count} ${count === 1 ? word : `${word}s`}`;
+}
+
+function studentName(row: StudentRow) {
+    return `${row.student.first_name} ${row.student.last_name}`;
+}
+
+function initials(row: StudentRow) {
+    return `${row.student.first_name.charAt(0)}${row.student.last_name.charAt(0)}`.toUpperCase();
+}
+
+/** Whether a counter payment can be recorded against the application. */
+function isPayable(row: StudentRow) {
+    return (
+        row.enrollment_status === 'APPROVED' &&
+        !row.cancelled_at &&
+        (row.payment?.balance ?? 0) > 0
+    );
+}
+
+function TabCard({
+    tab,
+    isActive,
+    amount,
+    detail,
+    onSelect,
+}: {
+    tab: Tab;
+    isActive: boolean;
+    amount: number;
+    detail: string;
+    onSelect: () => void;
+}) {
+    const config = TABS[tab];
+    const Icon = config.icon;
+
+    return (
+        <button
+            type="button"
+            onClick={onSelect}
+            aria-pressed={isActive}
+            className={cn(
+                'flex min-h-11 w-full items-start gap-3 rounded-2xl border bg-white p-4 text-left transition-[border-color,box-shadow] duration-200 hover:border-[#1F2A24]/25 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none',
+                isActive ? config.accent.active : 'border-[#1F2A24]/10',
+            )}
+        >
+            <span
+                aria-hidden="true"
+                className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                    config.accent.icon,
+                )}
+            >
+                <Icon className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-2 text-sm font-medium text-[#1F2A24]/70">
+                    {config.label}
+                    {isActive && (
+                        <span className="rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/70">
+                            Showing
+                        </span>
+                    )}
+                </span>
+                <span
+                    className={cn(
+                        'mt-0.5 block text-2xl font-semibold tabular-nums',
+                        config.accent.amount,
+                    )}
+                >
+                    {formatCurrency(amount)}
+                </span>
+                <span className="mt-0.5 block text-xs text-[#1F2A24]/60">
+                    {detail}
+                </span>
+            </span>
+        </button>
+    );
+}
+
+/** Paid-of-total bar, with the numbers spelled out (not colour alone). */
+function PaidProgress({ row }: { row: StudentRow }) {
+    const total = row.payment?.total ?? 0;
+    const paid = row.payment?.paid ?? 0;
+    const percentage =
+        total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+
+    return (
+        <div className="w-full">
+            <div className="flex items-baseline justify-between gap-2 text-xs text-[#1F2A24]/60">
+                <span className="tabular-nums">
+                    {formatCurrency(paid)} of {formatCurrency(total)}
+                </span>
+                <span className="tabular-nums">{percentage}%</span>
+            </div>
+            <div
+                role="progressbar"
+                aria-label={`${studentName(row)}: tuition paid`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={percentage}
+                className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#1F2A24]/10"
+            >
+                <div
+                    className="h-full rounded-full bg-[#2F6F4E]"
+                    style={{ width: `${percentage}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
+/** What the open tab says about one student, as an amount and a status. */
+function RowFigure({ row, tab }: { row: StudentRow; tab: Tab }) {
+    if (tab === 'PAID') {
+        const isFullyPaid = (row.payment?.balance ?? 0) <= 0;
+
+        return (
+            <>
+                <span className="block font-semibold text-[#2F6F4E] tabular-nums">
+                    {formatCurrency(row.payment?.paid ?? 0)}
+                </span>
+                <span
+                    className={cn(
+                        'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                        isFullyPaid
+                            ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                            : 'bg-[#1F2A24]/5 text-[#1F2A24]/70',
+                    )}
+                >
+                    {isFullyPaid
+                        ? 'Fully paid'
+                        : `${formatCurrency(row.payment?.balance ?? 0)} left`}
+                </span>
+            </>
+        );
+    }
+
+    const isOverdue = tab === 'OVERDUE';
+    const StatusIcon = isOverdue ? AlertTriangle : CalendarClock;
+
+    return (
+        <>
+            <span
+                className={cn(
+                    'block font-semibold tabular-nums',
+                    isOverdue ? 'text-[#A83A30]' : 'text-[#1F2A24]',
+                )}
+            >
+                {formatCurrency(row.owed)}
+            </span>
+            <span
+                className={cn(
+                    'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                    isOverdue
+                        ? 'bg-[#C6473B]/10 text-[#A83A30]'
+                        : 'bg-[#E8A33D]/15 text-[#a4670f]',
+                )}
+            >
+                <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                {isOverdue
+                    ? `${plural(row.days_overdue, 'day')} overdue`
+                    : row.first_owed_due_date &&
+                      `Due ${formatDate(row.first_owed_due_date)}`}
+            </span>
+        </>
+    );
+}
+
+/** The line under a student's name: what the open tab is counting. */
+function rowSummary(row: StudentRow, tab: Tab) {
+    if (tab === 'PAID') {
+        return `${plural(row.paid_count, 'payment')}${row.last_paid_at ? ` · last on ${formatDate(row.last_paid_at)}` : ''}`;
+    }
+
+    return `${plural(row.owed_installments, 'installment')} ${tab === 'OVERDUE' ? 'past due' : 'coming up'}`;
+}
+
+export default function Index({
+    tab,
+    rows,
+    summary,
+    schoolYears,
+    gradeLevels,
+    filters,
+}: Props) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
 
-    // Recording a counter payment: pick who is paying, then the amount.
-    const [isLookupOpen, setIsLookupOpen] = useState(false);
-    const [payer, setPayer] = useState<PayableEnrollment | null>(null);
+    // The student whose installments are open; kept apart from
+    // `isViewing` so the dialog doesn't blank out while closing.
+    const [viewing, setViewing] = useState<StudentRow | null>(null);
+    const [isViewing, setIsViewing] = useState(false);
+
+    // Recording a counter payment for a student in the list.
+    const [payer, setPayer] = useState<Payer | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [recordSession, setRecordSession] = useState(0);
 
-    const choosePayer = (enrollment: PayableEnrollment) => {
-        setIsLookupOpen(false);
-        setPayer(enrollment);
+    const startRecording = (nextPayer: Payer) => {
+        setPayer(nextPayer);
         setRecordSession((n) => n + 1);
         setIsRecording(true);
     };
 
-    const [search, setSearch] = useState(filters.search);
-    const [method, setMethod] = useState(filters.method);
-    const [from, setFrom] = useState(filters.from);
-    const [to, setTo] = useState(filters.to);
+    const recordFor = (row: StudentRow, settleThroughInstallmentId?: number) =>
+        startRecording({
+            id: row.id,
+            name: studentName(row),
+            unpaidInstallments: row.payment?.unpaid_installments ?? [],
+            settleThroughInstallmentId,
+        });
 
-    const applyFilters = (overrides: Partial<Props['filters']> = {}) => {
+    const [draft, setDraft] = useState<Filters>(filters);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const visit = (query: Partial<Filters> & { tab?: Tab }) => {
         router.get(
-            route('admin.transactions.index'),
-            { status: filters.status, search, method, from, to, ...overrides },
-            { preserveState: true, replace: true },
+            transactionsIndex().url,
+            Object.fromEntries(
+                Object.entries({ tab, ...draft, ...query }).filter(
+                    ([, value]) => value !== '',
+                ),
+            ),
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                onStart: () => setIsLoading(true),
+                onFinish: () => setIsLoading(false),
+            },
         );
     };
 
-    const hasFilters = !!(
-        filters.search ||
-        filters.method ||
-        filters.from ||
-        filters.to
-    );
+    const update = (changes: Partial<Filters>) => {
+        setDraft((current) => ({ ...current, ...changes }));
+        visit(changes);
+    };
+
+    // Search as the user types, once they pause.
+    const lastSearched = useRef(filters.search);
+    useEffect(() => {
+        if (draft.search === lastSearched.current) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            lastSearched.current = draft.search;
+            visit({ search: draft.search });
+        }, 350);
+
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [draft.search]);
+
+    const gradeLevelName = gradeLevels.find(
+        (gradeLevel) => String(gradeLevel.id) === filters.grade_level_id,
+    )?.name;
+
+    const activeFilters: { key: keyof Filters; label: string }[] = [
+        {
+            key: 'search' as const,
+            label: filters.search ? `“${filters.search}”` : '',
+        },
+        {
+            key: 'school_year' as const,
+            label: filters.school_year ? `SY ${filters.school_year}` : '',
+        },
+        { key: 'grade_level_id' as const, label: gradeLevelName ?? '' },
+    ].filter((chip) => chip.label !== '');
+
+    const removeFilter = (key: keyof Filters) => {
+        if (key === 'search') {
+            lastSearched.current = '';
+        }
+        update({ [key]: '' });
+    };
 
     const clearFilters = () => {
-        setSearch('');
-        setMethod('');
-        setFrom('');
-        setTo('');
-        router.get(
-            route('admin.transactions.index'),
-            { status: filters.status },
-            { preserveState: true, replace: true },
-        );
+        lastSearched.current = '';
+        setDraft(EMPTY_FILTERS);
+        visit(EMPTY_FILTERS);
     };
+
+    const totalBilled =
+        summary.collected + summary.receivable.total + summary.overdue.total;
+    const share = (amount: number) =>
+        totalBilled > 0 ? (amount / totalBilled) * 100 : 0;
+
+    const tabCards: { tab: Tab; amount: number; detail: string }[] = [
+        {
+            tab: 'PAID',
+            amount: summary.collected,
+            detail: `from ${plural(summary.paid_students, 'student')}`,
+        },
+        {
+            tab: 'RECEIVABLE',
+            amount: summary.receivable.total,
+            detail: `${plural(summary.receivable.count, 'student')} with upcoming installments`,
+        },
+        {
+            tab: 'OVERDUE',
+            amount: summary.overdue.total,
+            detail: `${plural(summary.overdue.count, 'student')} behind on payments`,
+        },
+    ];
+
+    const empty = TABS[tab].empty;
+    const EmptyIcon = empty.icon;
 
     return (
         <>
-            <Head title="Transactions" />
+            <Head title="Billing & Collections" />
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
+                    {/* Header */}
                     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
-                                Transactions
+                                Billing &amp; Collections
                             </h1>
                             <p className="mt-1 text-sm text-[#1F2A24]/65">
-                                Every GCash and cash tuition payment, newest
-                                first.
+                                What's been collected, and what each student
+                                still owes.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setIsLookupOpen(true)}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                        <Link
+                            href={transactionHistoryIndex().url}
+                            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none"
                         >
-                            <Plus className="h-4 w-4" aria-hidden="true" />
-                            Record counter payment
-                        </button>
+                            <History className="h-4 w-4" aria-hidden="true" />
+                            Payment history
+                        </Link>
                     </div>
 
                     {flashSuccess && !isRecording && (
                         <div
                             role="status"
-                            className="mb-6 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-6 flex items-center gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
                         >
+                            <CheckCircle2
+                                className="h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                            />
                             {flashSuccess}
                         </div>
                     )}
 
-                    {/* Summary */}
-                    <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <div className="col-span-2 rounded-2xl border border-[#1F2A24]/10 bg-white p-4 lg:col-span-1">
-                            <dt className="text-xs font-medium text-[#1F2A24]/60">
-                                Collected
-                            </dt>
-                            <dd className="mt-1 text-xl font-semibold text-[#2F6F4E] tabular-nums">
-                                {formatCurrency(summary.collected)}
-                            </dd>
-                        </div>
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                            <dt className="text-xs font-medium text-[#1F2A24]/60">
-                                Successful payments
-                            </dt>
-                            <dd className="mt-1 text-xl font-semibold text-[#1F2A24] tabular-nums">
-                                {summary.counts.COMPLETED}
-                            </dd>
-                        </div>
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                            <dt className="text-xs font-medium text-[#1F2A24]/60">
-                                Pending
-                            </dt>
-                            <dd className="mt-1 text-xl font-semibold text-[#1F2A24] tabular-nums">
-                                {summary.counts.PENDING}
-                            </dd>
-                        </div>
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                            <dt className="text-xs font-medium text-[#1F2A24]/60">
-                                Failed
-                            </dt>
-                            <dd className="mt-1 text-xl font-semibold text-[#1F2A24] tabular-nums">
-                                {summary.counts.FAILED}
-                            </dd>
-                        </div>
-                    </dl>
-
-                    {/* Status tabs */}
-                    <nav
-                        aria-label="Filter by status"
-                        className="mb-4 flex flex-wrap gap-x-1 border-b border-[#1F2A24]/10"
+                    {/* Collection rate */}
+                    <section
+                        aria-label="Collection rate"
+                        className="mb-3 rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-3"
                     >
-                        {TABS.map((tab) => {
-                            const isActive = filters.status === tab.value;
+                        <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                            <span className="font-medium text-[#1F2A24]">
+                                {Math.round(share(summary.collected))}%
+                                collected
+                            </span>
+                            <span className="text-[#1F2A24]/60 tabular-nums">
+                                {formatCurrency(summary.collected)} of{' '}
+                                {formatCurrency(totalBilled)} billed
+                            </span>
+                        </div>
+                        <div
+                            aria-hidden="true"
+                            className="mt-2 flex h-2 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                        >
+                            <span
+                                className="bg-[#2F6F4E]"
+                                style={{
+                                    width: `${share(summary.collected)}%`,
+                                }}
+                            />
+                            <span
+                                className="bg-[#E8A33D]"
+                                style={{
+                                    width: `${share(summary.receivable.total)}%`,
+                                }}
+                            />
+                            <span
+                                className="bg-[#C6473B]"
+                                style={{
+                                    width: `${share(summary.overdue.total)}%`,
+                                }}
+                            />
+                        </div>
+                        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#1F2A24]/65">
+                            <li className="inline-flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-[#2F6F4E]" />
+                                Collected
+                            </li>
+                            <li className="inline-flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-[#E8A33D]" />
+                                Receivable
+                            </li>
+                            <li className="inline-flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-[#C6473B]" />
+                                Overdue
+                            </li>
+                        </ul>
+                    </section>
 
-                            return (
-                                <button
-                                    key={tab.label}
-                                    type="button"
-                                    onClick={() =>
-                                        applyFilters({ status: tab.value })
-                                    }
-                                    aria-current={isActive ? 'page' : undefined}
-                                    className={`-mb-px inline-flex min-h-10 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors ${
-                                        isActive
-                                            ? 'border-[#2F6F4E] text-[#2F6F4E]'
-                                            : 'border-transparent text-[#1F2A24]/60 hover:text-[#1F2A24]'
-                                    }`}
-                                >
-                                    {tab.label}
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
-                                            isActive
-                                                ? 'bg-[#2F6F4E]/10'
-                                                : 'bg-[#1F2A24]/5'
-                                        }`}
-                                    >
-                                        {summary.counts[tab.countKey]}
-                                    </span>
-                                </button>
-                            );
-                        })}
+                    {/* Figures, which double as the tabs */}
+                    <nav
+                        aria-label="Show students by"
+                        className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3"
+                    >
+                        {tabCards.map((card) => (
+                            <TabCard
+                                key={card.tab}
+                                tab={card.tab}
+                                isActive={tab === card.tab}
+                                amount={card.amount}
+                                detail={card.detail}
+                                onSelect={() => visit({ tab: card.tab })}
+                            />
+                        ))}
                     </nav>
 
                     {/* Filters */}
@@ -227,12 +576,13 @@ export default function Index({ transactions, summary, filters }: Props) {
                         role="search"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            applyFilters();
+                            lastSearched.current = draft.search;
+                            visit({});
                         }}
-                        className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4"
+                        className="mb-3 flex flex-wrap items-end gap-3"
                     >
-                        <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs font-medium text-[#1F2A24]/60">
-                            Search
+                        <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                            Search students
                             <span className="relative">
                                 <Search
                                     className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
@@ -240,224 +590,269 @@ export default function Index({ transactions, summary, filters }: Props) {
                                 />
                                 <input
                                     type="search"
-                                    placeholder="Student, LRN, email, OR no., reference or payment ID"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Name, LRN, email or application no."
+                                    value={draft.search}
+                                    onChange={(e) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            search: e.target.value,
+                                        }))
+                                    }
                                     className={`${INPUT_CLASS} w-full pl-9`}
                                 />
                             </span>
                         </label>
 
-                        <label className="flex flex-col gap-1 text-xs font-medium text-[#1F2A24]/60">
-                            Method
+                        <label className="flex flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                            School year
                             <select
-                                value={method}
-                                onChange={(e) => {
-                                    setMethod(e.target.value);
-                                    applyFilters({ method: e.target.value });
-                                }}
+                                value={draft.school_year}
+                                onChange={(e) =>
+                                    update({ school_year: e.target.value })
+                                }
                                 className={INPUT_CLASS}
                             >
-                                <option value="">All methods</option>
-                                <option value="GCASH">GCash</option>
-                                <option value="CASH">Cash</option>
+                                <option value="">All school years</option>
+                                {schoolYears.map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
                             </select>
                         </label>
 
-                        <DateRangePicker
-                            from={from}
-                            to={to}
-                            onChange={(range) => {
-                                setFrom(range.from);
-                                setTo(range.to);
-                                applyFilters(range);
-                            }}
-                        />
+                        <label className="flex flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                            Grade level
+                            <select
+                                value={draft.grade_level_id}
+                                onChange={(e) =>
+                                    update({ grade_level_id: e.target.value })
+                                }
+                                className={INPUT_CLASS}
+                            >
+                                <option value="">All grade levels</option>
+                                {gradeLevels.map((gradeLevel) => (
+                                    <option
+                                        key={gradeLevel.id}
+                                        value={String(gradeLevel.id)}
+                                    >
+                                        {gradeLevel.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    </form>
 
-                        <button
-                            type="submit"
-                            className="min-h-10 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
-                        >
-                            Search
-                        </button>
-
-                        {hasFilters && (
+                    {/* Result count and active filters */}
+                    <div className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm text-[#1F2A24]/65">
+                        <span aria-live="polite">
+                            {isLoading
+                                ? 'Loading…'
+                                : `${plural(rows.total, 'student')} · ${TABS[tab].description.toLowerCase()}`}
+                        </span>
+                        {activeFilters.map((chip) => (
+                            <button
+                                key={chip.key}
+                                type="button"
+                                onClick={() => removeFilter(chip.key)}
+                                aria-label={`Remove filter ${chip.label}`}
+                                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-3 text-xs font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/10"
+                            >
+                                {chip.label}
+                                <X className="h-3 w-3" aria-hidden="true" />
+                            </button>
+                        ))}
+                        {activeFilters.length > 1 && (
                             <button
                                 type="button"
                                 onClick={clearFilters}
-                                className="min-h-10 rounded-full px-3 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                                className="min-h-8 rounded-full px-2 text-xs font-medium text-[#1F2A24]/60 underline-offset-2 hover:text-[#1F2A24] hover:underline"
                             >
-                                Clear
+                                Clear all
                             </button>
                         )}
-                    </form>
+                    </div>
 
-                    {/* Table */}
-                    <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
-                        <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
-                            <thead className="bg-[#2F6F4E]/5">
-                                <tr>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-right font-semibold text-[#1F2A24]/70"
+                    {/* Students */}
+                    <div
+                        className={cn(
+                            'overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white transition-opacity duration-200',
+                            isLoading && 'opacity-60',
+                        )}
+                        aria-busy={isLoading}
+                    >
+                        {rows.data.length === 0 ? (
+                            <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
+                                <EmptyIcon
+                                    className="h-9 w-9 text-[#1F2A24]/25"
+                                    aria-hidden="true"
+                                />
+                                <p className="font-medium text-[#1F2A24]">
+                                    {activeFilters.length > 0
+                                        ? 'No students match these filters'
+                                        : empty.title}
+                                </p>
+                                <p className="max-w-sm text-sm text-[#1F2A24]/60">
+                                    {activeFilters.length > 0
+                                        ? 'Try a different search, school year or grade level.'
+                                        : empty.body}
+                                </p>
+                                {activeFilters.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={clearFilters}
+                                        className="mt-2 min-h-11 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
                                     >
-                                        Amount
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70"
-                                    >
-                                        Status
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70"
-                                    >
-                                        Method
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70"
-                                    >
-                                        Description
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70"
-                                    >
-                                        Reference
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70"
-                                    >
-                                        Date
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
-                                {transactions.data.map((transaction) => {
-                                    const student =
-                                        transaction.enrollment.student;
-                                    const href = route(
-                                        'admin.transactions.show',
-                                        transaction.id,
-                                    );
-
-                                    return (
-                                        <tr
-                                            key={transaction.id}
-                                            onClick={() => router.visit(href)}
-                                            className="cursor-pointer hover:bg-[#2F6F4E]/5"
-                                        >
-                                            <td className="px-4 py-3 text-right font-semibold whitespace-nowrap text-[#1F2A24] tabular-nums">
-                                                <Link
-                                                    href={href}
-                                                    className="hover:underline focus-visible:underline"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                >
-                                                    {formatCurrency(
-                                                        transaction.amount,
-                                                    )}
-                                                </Link>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span
-                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[transaction.status]}`}
-                                                >
-                                                    {
-                                                        STATUS_LABELS[
-                                                            transaction.status
-                                                        ]
-                                                    }
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <MethodLabel
-                                                    method={transaction.method}
-                                                />
-                                            </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]">
-                                                {student.last_name},{' '}
-                                                {student.first_name}
-                                                <span className="block text-xs text-[#1F2A24]/60">
-                                                    Installment #
-                                                    {
-                                                        transaction.installment
-                                                            .installment_number
-                                                    }{' '}
-                                                    · Application #
-                                                    {transaction.enrollment_id}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-[#1F2A24]/70">
-                                                {referenceId(transaction)}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-[#1F2A24]/70">
-                                                {formatDateTime(
-                                                    transaction.created_at,
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-
-                                {transactions.data.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="px-4 py-10 text-center text-[#1F2A24]/65"
-                                        >
-                                            No transactions found.
-                                        </td>
-                                    </tr>
+                                        Clear filters
+                                    </button>
                                 )}
-                            </tbody>
-                        </table>
+                            </div>
+                        ) : (
+                            <ul className="divide-y divide-[#1F2A24]/10">
+                                {rows.data.map((row) => (
+                                    <li
+                                        key={row.id}
+                                        className="flex flex-col gap-3 p-4 transition-colors hover:bg-[#2F6F4E]/[0.03] sm:flex-row sm:items-center sm:gap-4"
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setViewing(row);
+                                                setIsViewing(true);
+                                            }}
+                                            aria-label={`View ${studentName(row)}'s installments`}
+                                            className="group flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none sm:gap-4"
+                                        >
+                                            <span
+                                                aria-hidden="true"
+                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-sm font-semibold text-[#2F6F4E]"
+                                            >
+                                                {initials(row)}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate font-medium text-[#1F2A24] group-hover:underline">
+                                                    {row.student.last_name},{' '}
+                                                    {row.student.first_name}
+                                                </span>
+                                                <span className="block truncate text-xs text-[#1F2A24]/60">
+                                                    {row.grade_level ?? '—'} ·
+                                                    SY {row.school_year} · #
+                                                    {row.id}
+                                                </span>
+                                                <span className="mt-0.5 block text-xs text-[#1F2A24]/60">
+                                                    {rowSummary(row, tab)}
+                                                </span>
+                                            </span>
+                                            <span className="hidden w-48 shrink-0 md:block">
+                                                <PaidProgress row={row} />
+                                            </span>
+                                            <span className="w-32 shrink-0 text-right">
+                                                <RowFigure
+                                                    row={row}
+                                                    tab={tab}
+                                                />
+                                            </span>
+                                            <ChevronRight
+                                                className="hidden h-4 w-4 shrink-0 text-[#1F2A24]/35 transition-transform group-hover:translate-x-0.5 sm:block"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+
+                                        <div className="md:hidden">
+                                            <PaidProgress row={row} />
+                                        </div>
+
+                                        {isPayable(row) ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => recordFor(row)}
+                                                aria-label={`Record a counter payment for ${studentName(row)}`}
+                                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none"
+                                            >
+                                                <Plus
+                                                    className="h-4 w-4"
+                                                    aria-hidden="true"
+                                                />
+                                                Record
+                                            </button>
+                                        ) : (
+                                            <span
+                                                className="hidden w-[6.6rem] shrink-0 sm:block"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
 
                     {/* Pagination */}
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <p className="text-sm text-[#1F2A24]/60">
-                            {transactions.total > 0
-                                ? `Showing ${transactions.from}–${transactions.to} of ${transactions.total}`
-                                : 'Showing 0 results'}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            {transactions.links.map((link, i) => (
-                                <Link
-                                    key={i}
-                                    href={link.url ?? '#'}
-                                    dangerouslySetInnerHTML={{
-                                        __html: link.label,
-                                    }}
-                                    preserveScroll
-                                    className={`rounded-full border px-3 py-1.5 text-sm ${
-                                        link.active
-                                            ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                            : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
-                                    } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    {rows.links.length > 3 && (
+                        <nav
+                            aria-label="Pages"
+                            className="mt-4 flex flex-wrap items-center justify-between gap-3"
+                        >
+                            <p className="text-sm text-[#1F2A24]/60">
+                                Showing {rows.from}–{rows.to} of{' '}
+                                {plural(rows.total, 'student')}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {rows.links.map((link, i) => (
+                                    <Link
+                                        key={i}
+                                        href={link.url ?? '#'}
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                        preserveScroll
+                                        aria-current={
+                                            link.active ? 'page' : undefined
+                                        }
+                                        className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm ${
+                                            link.active
+                                                ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
+                                                : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                        } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
+                                    />
+                                ))}
+                            </div>
+                        </nav>
+                    )}
                 </div>
             </div>
 
-            <PayableEnrollmentLookupDialog
-                open={isLookupOpen}
-                onOpenChange={setIsLookupOpen}
-                onSelect={choosePayer}
-            />
+            {viewing?.payment && (
+                <InstallmentsDialog
+                    enrollmentId={viewing.id}
+                    studentName={studentName(viewing)}
+                    channelLabel={viewing.payment.channel_label}
+                    installments={viewing.installments}
+                    open={isViewing}
+                    onOpenChange={setIsViewing}
+                    onRecordPayment={
+                        isPayable(viewing)
+                            ? (settleThroughInstallmentId) => {
+                                  setIsViewing(false);
+                                  recordFor(
+                                      viewing,
+                                      settleThroughInstallmentId,
+                                  );
+                              }
+                            : undefined
+                    }
+                />
+            )}
 
             {payer && (
                 <RecordCounterPaymentDialog
                     key={recordSession}
                     enrollmentId={payer.id}
-                    studentName={payer.student_name}
-                    unpaidInstallments={payer.payment.unpaid_installments}
+                    studentName={payer.name}
+                    unpaidInstallments={payer.unpaidInstallments}
+                    settleThroughInstallmentId={
+                        payer.settleThroughInstallmentId
+                    }
                     open={isRecording}
                     onOpenChange={setIsRecording}
                 />

@@ -24,6 +24,11 @@ type Props = {
     studentName?: string;
     /** Unpaid installments in due-date order. */
     unpaidInstallments: UnpaidInstallment[];
+    /**
+     * Starts the amount at what settles every installment up to this one,
+     * instead of just the next one due.
+     */
+    settleThroughInstallmentId?: number;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -87,6 +92,7 @@ export default function RecordCounterPaymentDialog({
     enrollmentId,
     studentName,
     unpaidInstallments,
+    settleThroughInstallmentId,
     open,
     onOpenChange,
 }: Props) {
@@ -94,10 +100,19 @@ export default function RecordCounterPaymentDialog({
     const today = toDateInputValue(new Date());
     const nextAmount = unpaidInstallments[0]?.owed ?? 0;
     const fullBalance = unpaidInstallments.reduce((s, i) => s + i.owed, 0);
+    const settleThroughIndex = unpaidInstallments.findIndex(
+        (installment) => installment.id === settleThroughInstallmentId,
+    );
+    const initialAmount =
+        settleThroughIndex === -1
+            ? nextAmount
+            : unpaidInstallments
+                  .slice(0, settleThroughIndex + 1)
+                  .reduce((sum, installment) => sum + installment.owed, 0);
 
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm({
-            amount: nextAmount.toFixed(2),
+            amount: initialAmount.toFixed(2),
             receipt_number: '',
             paid_on: today,
             received_from: '',

@@ -38,7 +38,11 @@ import { logout } from '@/routes/portal';
 import { cancel as cancelEnrollment } from '@/routes/portal/enrollments';
 import { store as storeDocument } from '@/routes/portal/enrollments/documents';
 import { update as updatePhoto } from '@/routes/portal/profile/photo';
-import type { PortalDocumentType, PortalEnrollment } from '@/types/portal';
+import type {
+    PortalDocumentType,
+    PortalEnrollment,
+    PortalPaymentMethod,
+} from '@/types/portal';
 
 const TABS: DashboardTab[] = ['Applications', 'Payments', 'Documents'];
 
@@ -103,8 +107,10 @@ function EmptyState({ message }: { message: string }) {
 
 export default function Dashboard({
     enrollments,
+    paymentMethods,
 }: {
     enrollments: PortalEnrollment[];
+    paymentMethods: PortalPaymentMethod[];
 }) {
     const { props } = usePage();
     const enrollee = props.auth.enrollee;
@@ -429,6 +435,7 @@ export default function Dashboard({
                                 <ApplicationCard
                                     key={enrollment.id}
                                     enrollment={enrollment}
+                                    paymentMethods={paymentMethods}
                                     onCancel={cancel}
                                 />
                             ))}

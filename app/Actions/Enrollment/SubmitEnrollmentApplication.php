@@ -2,6 +2,7 @@
 
 namespace App\Actions\Enrollment;
 
+use App\Models\BillingContract;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
@@ -216,7 +217,8 @@ class SubmitEnrollmentApplication
 
             $billingContract = $enrollment->billingContract()->create([
                 'payment_option' => $validated['payment_option'],
-                'payment_channel' => $validated['payment_channel'],
+                // Cash until the parent switches to GCash from the portal dashboard.
+                'payment_channel' => BillingContract::CHANNEL_COUNTER,
                 'total_fee' => $curriculum->tuition_fee,
                 // The request only passes once the parent has agreed.
                 'terms_accepted_at' => now(),

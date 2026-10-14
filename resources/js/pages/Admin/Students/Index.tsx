@@ -2,6 +2,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
+import InstallmentsDialog from '@/components/installments-dialog';
+import type { ScheduledInstallment } from '@/components/installments-dialog';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 
@@ -68,11 +70,24 @@ function formatPeso(value) {
     }).format(value);
 }
 
+/** Whether a counter payment can be recorded against the application. */
+function isPayable(enrollment: {
+    enrollment_status: string;
+    cancelled_at: string | null;
+    payment: { balance: number } | null;
+}): boolean {
+    return (
+        enrollment.enrollment_status === 'APPROVED' &&
+        !enrollment.cancelled_at &&
+        (enrollment.payment?.balance ?? 0) > 0
+    );
+}
+
 /**
  * Where the application stands on payment, with a quick way to record a
  * counter payment once it's approved.
  */
-function PaymentCell({ enrollment, onRecord }) {
+function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
     const { handlePayments } = useStaffAbilities();
     const payment = enrollment.payment;
 
@@ -81,11 +96,7 @@ function PaymentCell({ enrollment, onRecord }) {
     }
 
     const status = PAYMENT_STATUS[payment.status];
-    const canRecord =
-        handlePayments &&
-        enrollment.enrollment_status === 'APPROVED' &&
-        !enrollment.cancelled_at &&
-        payment.balance > 0;
+    const canRecord = handlePayments && isPayable(enrollment);
 
     return (
         <div className="min-w-[9rem]">
@@ -98,9 +109,16 @@ function PaymentCell({ enrollment, onRecord }) {
                 {formatPeso(payment.paid)} of {formatPeso(payment.total)}
                 <span className="text-[#1F2A24]/45">
                     {' '}
-                    · {payment.channel === 'GCASH' ? 'GCash' : 'Counter'}
+                    · {payment.channel_label}
                 </span>
             </p>
+            <button
+                type="button"
+                onClick={onViewInstallments}
+                className="mt-1 mr-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+            >
+                View installments
+            </button>
             {canRecord ? (
                 <button
                     type="button"
@@ -137,6 +155,7 @@ type ApplicationRow = {
         last_name: string;
         lrn: string | null;
     };
+    installments: ScheduledInstallment[];
 };
 
 function ApplicationStatusBadge({
@@ -206,9 +225,11 @@ function LrnValue({ student }: { student: ApplicationRow['student'] }) {
 function ApplicationCard({
     enrollment,
     onRecordPayment,
+    onViewInstallments,
 }: {
     enrollment: ApplicationRow;
     onRecordPayment: () => void;
+    onViewInstallments: () => void;
 }) {
     const student = enrollment.student;
 
@@ -260,6 +281,7 @@ function ApplicationCard({
                         <PaymentCell
                             enrollment={enrollment}
                             onRecord={onRecordPayment}
+                            onViewInstallments={onViewInstallments}
                         />
                     </dd>
                 </div>
@@ -283,7 +305,7 @@ export default function Index({
 }) {
     const { props } = usePage();
     const flashSuccess = props.flash?.success;
-    const { viewDashboard } = useStaffAbilities();
+    const { viewDashboard, handlePayments } = useStaffAbilities();
 
     const [search, setSearch] = useState(filters.search ?? '');
     // The application whose counter payment is being recorded; kept apart
@@ -291,11 +313,24 @@ export default function Index({
     const [recordingFor, setRecordingFor] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const [recordSession, setRecordSession] = useState(0);
+    // Set when recording from an installment's "Add record" button.
+    const [settleThroughInstallmentId, setSettleThroughInstallmentId] =
+        useState<number | undefined>(undefined);
 
-    const openRecordPayment = (enrollment) => {
+    const openRecordPayment = (enrollment, throughInstallmentId?: number) => {
         setRecordingFor(enrollment);
+        setSettleThroughInstallmentId(throughInstallmentId);
         setRecordSession((n) => n + 1);
         setIsRecording(true);
+    };
+
+    // Kept apart from `isViewingInstallments` for the same reason.
+    const [installmentsFor, setInstallmentsFor] = useState(null);
+    const [isViewingInstallments, setIsViewingInstallments] = useState(false);
+
+    const openInstallments = (enrollment) => {
+        setInstallmentsFor(enrollment);
+        setIsViewingInstallments(true);
     };
 
     const [selected, setSelected] = useState(() =>
@@ -525,6 +560,9 @@ export default function Index({
                                 onRecordPayment={() =>
                                     openRecordPayment(enrollment)
                                 }
+                                onViewInstallments={() =>
+                                    openInstallments(enrollment)
+                                }
                             />
                         ))}
 
@@ -612,6 +650,11 @@ export default function Index({
                                                             enrollment,
                                                         )
                                                     }
+                                                    onViewInstallments={() =>
+                                                        openInstallments(
+                                                            enrollment,
+                                                        )
+                                                    }
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -662,6 +705,28 @@ export default function Index({
                 </div>
             </div>
 
+            {installmentsFor?.payment && (
+                <InstallmentsDialog
+                    enrollmentId={installmentsFor.id}
+                    studentName={`${installmentsFor.student.first_name} ${installmentsFor.student.last_name}`}
+                    channelLabel={installmentsFor.payment.channel_label}
+                    installments={installmentsFor.installments}
+                    open={isViewingInstallments}
+                    onOpenChange={setIsViewingInstallments}
+                    onRecordPayment={
+                        handlePayments && isPayable(installmentsFor)
+                            ? (throughInstallmentId) => {
+                                  setIsViewingInstallments(false);
+                                  openRecordPayment(
+                                      installmentsFor,
+                                      throughInstallmentId,
+                                  );
+                              }
+                            : undefined
+                    }
+                />
+            )}
+
             {recordingFor?.payment && (
                 <RecordCounterPaymentDialog
                     key={recordSession}
@@ -670,6 +735,7 @@ export default function Index({
                     unpaidInstallments={
                         recordingFor.payment.unpaid_installments
                     }
+                    settleThroughInstallmentId={settleThroughInstallmentId}
                     open={isRecording}
                     onOpenChange={setIsRecording}
                 />

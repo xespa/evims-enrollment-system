@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,12 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BillingContract extends Model
 {
     /** Pays in person at the school cashier; the office records each payment. */
-    public const CHANNEL_COUNTER = 'COUNTER';
+    public const CHANNEL_COUNTER = PaymentMethod::Counter->value;
 
     /** Pays online through GCash (PayMongo). */
-    public const CHANNEL_GCASH = 'GCASH';
-
-    public const CHANNELS = [self::CHANNEL_COUNTER, self::CHANNEL_GCASH];
+    public const CHANNEL_GCASH = PaymentMethod::Gcash->value;
 
     protected $fillable = ['enrollment_id', 'payment_option', 'payment_channel', 'total_fee', 'terms_accepted_at'];
 

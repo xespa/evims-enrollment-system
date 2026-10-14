@@ -863,7 +863,9 @@ export default function Dashboard({
                             title="Recent payments"
                             action={
                                 <Link
-                                    href={route('admin.transactions.index')}
+                                    href={route(
+                                        'admin.transaction-history.index',
+                                    )}
                                     className="text-sm font-medium text-[#2F6F4E] hover:underline"
                                 >
                                     View all

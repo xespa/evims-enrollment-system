@@ -3,65 +3,57 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\IndexTransactionRequest;
+use App\Models\BillingContract;
+use App\Models\Enrollment;
+use App\Models\EnrollmentPeriod;
+use App\Models\GradeLevel;
+use App\Models\Installment;
 use App\Models\Payment;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TransactionController extends Controller
 {
-    private const STATUSES = ['COMPLETED', 'PENDING', 'FAILED', 'VOIDED'];
-
-    private const METHODS = ['GCASH', 'CASH'];
-
     /**
-     * Every GCash and cash payment across all applications, newest first —
-     * modelled on PayMongo's Payments dashboard.
+     * One row per student: who has paid, who owes installments that aren't
+     * due yet (receivable), and who is behind (overdue). Each row carries
+     * the student's installment schedule for the page to open.
      */
-    public function index(Request $request): Response
+    public function index(IndexTransactionRequest $request): Response
     {
-        $filters = $request->validate([
-            'status' => ['nullable', Rule::in(self::STATUSES)],
-            'method' => ['nullable', Rule::in(self::METHODS)],
-            'search' => ['nullable', 'string', 'max:100'],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
+        $filters = $request->validated();
+        $tab = $request->tab();
+        $today = EnrollmentPeriod::today();
 
-        $filtered = $this->filteredQuery($filters);
-
-        $transactions = (clone $filtered)
-            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
-            ->with(['enrollment.student:id,first_name,last_name', 'installment:id,installment_number'])
-            ->latest('id')
+        $rows = $this->studentsForTab($tab, $filters, $today)
+            ->with(['student:id,first_name,last_name', 'gradeLevel:id,name', ...Enrollment::installmentScheduleRelations()])
             ->paginate(20)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Enrollment $enrollment) => $this->row($enrollment, $tab, $today));
 
-        // Tab counts and totals ignore the status filter, so switching tabs
-        // doesn't make the other tabs' numbers disappear.
-        $byStatus = (clone $filtered)
-            ->toBase()
-            ->selectRaw('status, count(*) as count, coalesce(sum(amount), 0) as total')
-            ->groupBy('status')
-            ->get()
-            ->keyBy('status');
+        $collected = Payment::query()
+            ->where('status', 'COMPLETED')
+            ->whereIn('enrollment_id', $this->filteredEnrollmentIds($filters));
 
         return Inertia::render('Admin/Transactions/Index', [
-            'transactions' => $transactions,
+            'tab' => $tab,
+            'rows' => $rows,
+            // The figures for every tab, whichever tab is open.
             'summary' => [
-                'collected' => (float) ($byStatus['COMPLETED']->total ?? 0),
-                'counts' => collect(self::STATUSES)
-                    ->mapWithKeys(fn (string $status) => [$status => (int) ($byStatus[$status]->count ?? 0)])
-                    ->put('ALL', (int) $byStatus->sum('count')),
+                'collected' => round((float) $collected->sum('amount'), 2),
+                'paid_students' => $this->studentsForTab(IndexTransactionRequest::TAB_PAID, $filters, $today)->count(),
+                'receivable' => $this->owedSummary(IndexTransactionRequest::TAB_RECEIVABLE, $filters, $today),
+                'overdue' => $this->owedSummary(IndexTransactionRequest::TAB_OVERDUE, $filters, $today),
             ],
+            'schoolYears' => Enrollment::query()->distinct()->orderByDesc('school_year')->pluck('school_year'),
+            'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'filters' => [
-                'status' => $filters['status'] ?? '',
-                'method' => $filters['method'] ?? '',
+                'school_year' => $filters['school_year'] ?? '',
+                'grade_level_id' => isset($filters['grade_level_id']) ? (string) $filters['grade_level_id'] : '',
                 'search' => $filters['search'] ?? '',
-                'from' => $filters['from'] ?? '',
-                'to' => $filters['to'] ?? '',
             ],
         ]);
     }
@@ -97,32 +89,124 @@ class TransactionController extends Controller
     }
 
     /**
+     * The applications listed under a tab: students who have paid, most
+     * recent payment first; or students who owe, earliest due first.
+     *
      * @param  array<string, mixed>  $filters
-     * @return Builder<Payment>
+     * @return Builder<Enrollment>
      */
-    private function filteredQuery(array $filters): Builder
+    private function studentsForTab(string $tab, array $filters, CarbonInterface $today): Builder
     {
-        return Payment::query()
-            ->when($filters['method'] ?? null, fn (Builder $query, string $method) => $query->where('method', $method))
-            ->when($filters['from'] ?? null, fn (Builder $query, string $from) => $query->whereDate('created_at', '>=', $from))
-            ->when($filters['to'] ?? null, fn (Builder $query, string $to) => $query->whereDate('created_at', '<=', $to))
-            ->when($filters['search'] ?? null, function (Builder $query, string $search) {
-                $query->where(function (Builder $query) use ($search) {
-                    $query->where('paymongo_source_id', 'like', "%{$search}%")
-                        ->orWhere('receipt_number', 'like', "%{$search}%")
-                        ->orWhere('paymongo_payment_intent_id', 'like', "%{$search}%")
-                        ->orWhereHas('enrollment', fn (Builder $enrollment) => $enrollment
-                            ->where('email', 'like', "%{$search}%")
-                            ->orWhereHas('student', fn (Builder $student) => $student
-                                ->where('first_name', 'like', "%{$search}%")
-                                ->orWhere('last_name', 'like', "%{$search}%")
-                                ->orWhere('lrn', 'like', "%{$search}%")));
+        $query = Enrollment::query()->tap(fn (Builder $enrollment) => $this->applyFilters($enrollment, $filters));
 
-                    if (ctype_digit(ltrim($search, '#'))) {
-                        $query->orWhere('id', (int) ltrim($search, '#'))
-                            ->orWhere('enrollment_id', (int) ltrim($search, '#'));
-                    }
-                });
-            });
+        if ($tab === IndexTransactionRequest::TAB_PAID) {
+            $completed = fn (Builder $payments) => $payments->where('status', 'COMPLETED');
+
+            return $query->whereHas('payments', $completed)
+                ->withMax(['payments as last_paid_at' => $completed], 'paid_at')
+                ->orderByDesc('last_paid_at')
+                ->orderBy('enrollments.id');
+        }
+
+        $owed = fn ($installments) => $tab === IndexTransactionRequest::TAB_OVERDUE
+            ? $installments->overdue($today)
+            : $installments->receivable($today);
+
+        return $query->whereHas('installments', $owed)
+            ->withMin(['installments as first_owed_due_date' => $owed], 'installments.due_date')
+            ->orderBy('first_owed_due_date')
+            ->orderBy('enrollments.id');
+    }
+
+    /**
+     * @param  Builder<Enrollment>  $enrollment
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFilters(Builder $enrollment, array $filters): void
+    {
+        $enrollment->inSchoolYearAndGrade($filters)
+            ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->matchingSearch($search));
+    }
+
+    /**
+     * The IDs of the applications matching the filters, as a subquery.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return Builder<Enrollment>
+     */
+    private function filteredEnrollmentIds(array $filters): Builder
+    {
+        return Enrollment::query()
+            ->tap(fn (Builder $enrollment) => $this->applyFilters($enrollment, $filters))
+            ->select('enrollments.id');
+    }
+
+    /**
+     * What a tab shows for one student, plus the full schedule and
+     * payment summary for the installments dialog.
+     *
+     * @return array<string, mixed>
+     */
+    private function row(Enrollment $enrollment, string $tab, CarbonInterface $today): array
+    {
+        $schedule = collect($enrollment->installmentSchedule());
+        $todayString = $today->toDateString();
+
+        $owedInTab = $schedule
+            ->reject(fn (array $installment) => $installment['status'] === 'PAID')
+            ->filter(fn (array $installment) => $tab === IndexTransactionRequest::TAB_OVERDUE
+                ? $installment['due_date'] < $todayString
+                : $installment['due_date'] >= $todayString)
+            ->values();
+
+        $firstOwedDueDate = $owedInTab->first()['due_date'] ?? null;
+
+        return [
+            'id' => $enrollment->id,
+            'enrollment_status' => $enrollment->enrollment_status,
+            'cancelled_at' => $enrollment->cancelled_at,
+            'school_year' => $enrollment->school_year,
+            'grade_level' => $enrollment->gradeLevel?->name,
+            'student' => [
+                'first_name' => $enrollment->student->first_name,
+                'last_name' => $enrollment->student->last_name,
+            ],
+            'payment' => $enrollment->paymentSummary(),
+            'installments' => $schedule->all(),
+            'paid_count' => $schedule->flatMap(fn (array $installment) => $installment['payments'])->where('status', 'COMPLETED')->count(),
+            'last_paid_at' => $enrollment->getAttribute('last_paid_at'),
+            'owed' => round($owedInTab->sum(fn (array $installment) => $installment['amount_due'] - $installment['paid']), 2),
+            'owed_installments' => $owedInTab->count(),
+            'first_owed_due_date' => $firstOwedDueDate,
+            'days_overdue' => $tab === IndexTransactionRequest::TAB_OVERDUE && $firstOwedDueDate
+                ? (int) $today->diffInDays($firstOwedDueDate, true)
+                : 0,
+        ];
+    }
+
+    /**
+     * How many students owe under a tab, and how much they owe in total.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return array{count: int, total: float}
+     */
+    private function owedSummary(string $tab, array $filters, CarbonInterface $today): array
+    {
+        $installments = Installment::query()
+            ->when(
+                $tab === IndexTransactionRequest::TAB_OVERDUE,
+                fn (Builder $query) => $query->overdue($today),
+                fn (Builder $query) => $query->receivable($today),
+            )
+            ->whereIn('billing_contract_id', BillingContract::query()
+                ->whereIn('enrollment_id', $this->filteredEnrollmentIds($filters))
+                ->select('id'))
+            ->withPaidAmount()
+            ->get(['installments.id', 'installments.billing_contract_id', 'installments.amount_due']);
+
+        return [
+            'count' => $installments->unique('billing_contract_id')->count(),
+            'total' => round($installments->sum(fn (Installment $installment) => (float) $installment->amount_due - (float) $installment->getAttribute('paid_amount')), 2),
+        ];
     }
 }

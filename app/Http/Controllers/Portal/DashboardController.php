@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Portal;
 
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\OfficeVerification;
@@ -34,8 +35,8 @@ class DashboardController extends Controller
             ->latest()
             ->get()
             ->map(function (Enrollment $enrollment) {
-                // Only GCash payers get the online payment page; counter
-                // payers are shown the cashier instructions instead.
+                // Only GCash payers get the online payment page; cash payers
+                // are shown the cashier instructions instead.
                 $enrollment->payment_url = $enrollment->enrollment_status === 'APPROVED'
                     && $enrollment->billingContract?->paysOnline()
                     ? URL::signedRoute('payments.show', $enrollment->id)
@@ -62,6 +63,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Portal/Dashboard', [
             'enrollments' => $enrollments,
+            'paymentMethods' => PaymentMethod::payTuitionOptions(),
         ]);
     }
 

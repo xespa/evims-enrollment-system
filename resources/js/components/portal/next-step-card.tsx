@@ -6,7 +6,6 @@ import {
     CheckCircle2,
     ClipboardList,
     Hourglass,
-    Landmark,
     Upload,
     Wallet,
 } from 'lucide-react';
@@ -89,20 +88,18 @@ function nextStepFor(enrollments: PortalEnrollment[]): NextStep {
     if (payable) {
         return {
             tone: 'action',
-            icon: Landmark,
-            title: `Pay tuition for ${studentName(payable)} at the cashier`,
+            icon: Wallet,
+            title: `Pay tuition for ${studentName(payable)}`,
             description: (
                 <>
-                    Bring reference no.{' '}
-                    <span className="font-semibold tabular-nums">
-                        #{payable.id}
-                    </span>{' '}
-                    · Remaining{' '}
+                    Remaining balance:{' '}
                     <span className="font-semibold tabular-nums">
                         {formatCurrency(payable.remaining_balance ?? 0)}
-                    </span>
+                    </span>{' '}
+                    · Pay in cash or online
                 </>
             ),
+            action: { label: 'Pay tuition', tab: 'Applications' },
         };
     }
 

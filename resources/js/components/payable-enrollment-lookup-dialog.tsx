@@ -35,7 +35,7 @@ type Props = {
 const SEARCH_DELAY_MS = 250;
 
 /**
- * Step one of recording a counter payment from Transactions: find who is
+ * Step one of recording a counter payment from Billing & Collections: find who is
  * paying. Only approved applications that still owe money are listed.
  */
 export default function PayableEnrollmentLookupDialog({

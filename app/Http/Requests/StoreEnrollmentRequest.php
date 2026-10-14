@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Actions\Enrollment\SubmitEnrollmentApplication;
-use App\Models\BillingContract;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\GradeLevel;
@@ -276,7 +275,6 @@ class StoreEnrollmentRequest extends FormRequest
 
             // Billing
             'payment_option' => ['required', 'string'],
-            'payment_channel' => ['required', Rule::in(BillingContract::CHANNELS)],
             // The tuition fee contract and withdrawal procedure.
             'tuition_terms_accepted' => ['accepted'],
 

@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\StaffInvitationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\TransactionHistoryController;
 use App\Http\Controllers\Admin\VoidPaymentController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\Auth\AcceptInvitationController;
@@ -161,6 +162,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         Route::resource('transactions', TransactionController::class)
             ->only(['index', 'show'])
             ->parameters(['transactions' => 'payment']);
+        // Every payment, one row each, opened from Transactions.
+        Route::get('transaction-history', TransactionHistoryController::class)->name('transaction-history.index');
     });
 
     Route::middleware('can:manage-school')->group(function () {

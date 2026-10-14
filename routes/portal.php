@@ -4,6 +4,7 @@ use App\Http\Controllers\Portal\AccountStatusController;
 use App\Http\Controllers\Portal\AuthController;
 use App\Http\Controllers\Portal\DashboardController;
 use App\Http\Controllers\Portal\NotificationController;
+use App\Http\Controllers\Portal\PaymentMethodController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\Portal\ReapplicationController;
 use App\Http\Controllers\Portal\RegistrationFormController;
@@ -51,6 +52,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
             Route::middleware('enrollee.approved')->group(function () {
                 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
                 Route::post('enrollments/{enrollment}/cancel', [DashboardController::class, 'cancel'])->name('enrollments.cancel');
+                Route::put('enrollments/{enrollment}/payment-method', [PaymentMethodController::class, 'update'])->name('enrollments.payment-method.update');
                 Route::get('enrollments/{enrollment}/registration-form', RegistrationFormController::class)->name('enrollments.registration-form.show');
                 Route::post('enrollments/{enrollment}/documents/{type}', [DashboardController::class, 'uploadDocument'])
                     ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
