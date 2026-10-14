@@ -14,6 +14,7 @@ test('admins can authenticate using the login screen', function () {
     $admin = User::factory()->withoutTwoFactor()->create(['role' => 'ADMIN']);
 
     $response = $this->post(route('login.store'), [
+        'role' => 'ADMIN',
         'email' => $admin->email,
         'password' => 'password',
     ]);
@@ -26,6 +27,7 @@ test('every staff role can authenticate and lands on its own home page', functio
     $staff = User::factory()->withoutTwoFactor()->create(['role' => $role]);
 
     $this->post(route('login.store'), [
+        'role' => $role,
         'email' => $staff->email,
         'password' => 'password',
     ])->assertRedirect(route($home));
@@ -41,6 +43,7 @@ test('deactivated staff cannot authenticate using the login screen', function ()
     $staff = User::factory()->deactivated()->create();
 
     $response = $this->post(route('login.store'), [
+        'role' => $staff->role->value,
         'email' => $staff->email,
         'password' => 'password',
     ]);
@@ -60,6 +63,7 @@ test('users with two factor enabled are redirected to two factor challenge', fun
     $user = User::factory()->withTwoFactor()->create();
 
     $response = $this->post(route('login'), [
+        'role' => $user->role->value,
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -73,6 +77,7 @@ test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
     $this->post(route('login.store'), [
+        'role' => $user->role->value,
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
@@ -96,6 +101,7 @@ test('users are rate limited', function () {
     RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
 
     $response = $this->post(route('login.store'), [
+        'role' => $user->role->value,
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);

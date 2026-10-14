@@ -49,9 +49,9 @@ test('the dashboard only lists the signed-in parents own applications', function
             ->where('enrollments.0.id', $ownEnrollment->id));
 });
 
-test('guests are sent to the portal login', function () {
+test('guests are sent to the login page', function () {
     $this->get(route('portal.dashboard'))
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 });
 
 test('accounts still awaiting approval cannot open the dashboard', function () {

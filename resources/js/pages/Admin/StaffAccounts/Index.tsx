@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Loader2, MailPlus, Send, UserPlus } from 'lucide-react';
+import { Check, Loader2, MailPlus, Send, UserPlus, X } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import AdminAvatar from '@/components/admin-avatar';
@@ -13,7 +13,8 @@ import {
 import { useConfirm } from '@/hooks/use-confirm';
 import staffAccountRoutes from '@/routes/admin/staff-accounts';
 
-type StaffStatus = 'active' | 'invited' | 'deactivated';
+type StaffStatus =
+    'awaiting_approval' | 'rejected' | 'active' | 'invited' | 'deactivated';
 
 type StaffAccount = {
     id: number;
@@ -23,6 +24,8 @@ type StaffAccount = {
     profile_photo_url: string | null;
     status: StaffStatus;
     invited_at: string | null;
+    /** When they asked for the account on the sign-up page. */
+    requested_at: string | null;
     deactivated_at: string | null;
 };
 
@@ -35,6 +38,14 @@ type Props = {
 
 const STATUS_BADGES: Record<StaffStatus, { label: string; className: string }> =
     {
+        awaiting_approval: {
+            label: 'Awaiting approval',
+            className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+        },
+        rejected: {
+            label: 'Rejected',
+            className: 'bg-[#C6473B]/10 text-[#9A3329]',
+        },
         active: {
             label: 'Active',
             className: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
@@ -292,6 +303,40 @@ export default function Index({ staffAccounts, roles }: Props) {
         });
     };
 
+    const approve = async (account: StaffAccount) => {
+        const confirmed = await confirm({
+            title: `Approve ${account.name} as a ${roleLabel(account.role)}?`,
+            description: `${roles.find((option) => option.value === account.role)?.description ?? ''} They'll get an email saying they can log in.`,
+            confirmLabel: 'Approve',
+        });
+        if (!confirmed) {
+            return;
+        }
+        router.put(
+            staffAccountRoutes.approval.update.url(account.id),
+            { account_status: 'APPROVED' },
+            { preserveScroll: true },
+        );
+    };
+
+    const reject = async (account: StaffAccount) => {
+        const confirmed = await confirm({
+            title: `Reject ${account.name}'s account request?`,
+            description:
+                "They won't be able to log in, and they'll get an email saying the request wasn't approved.",
+            confirmLabel: 'Reject',
+            destructive: true,
+        });
+        if (!confirmed) {
+            return;
+        }
+        router.put(
+            staffAccountRoutes.approval.update.url(account.id),
+            { account_status: 'REJECTED' },
+            { preserveScroll: true },
+        );
+    };
+
     const resendInvitation = (account: StaffAccount) => {
         router.post(
             staffAccountRoutes.invitation.store.url(account.id),
@@ -313,7 +358,10 @@ export default function Index({ staffAccounts, roles }: Props) {
                 <select
                     id={id}
                     value={account.role}
-                    disabled={account.status === 'deactivated'}
+                    disabled={
+                        account.status === 'deactivated' ||
+                        account.status === 'rejected'
+                    }
                     onChange={(e) => changeRole(account, e.target.value)}
                     className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-1.5 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:opacity-60 sm:w-auto"
                 >
@@ -334,6 +382,33 @@ export default function Index({ staffAccounts, roles }: Props) {
         const size = isStacked
             ? 'min-h-11 flex-1 px-4 text-sm'
             : 'min-h-9 px-4 text-xs';
+
+        if (account.status === 'rejected') {
+            return null;
+        }
+
+        if (account.status === 'awaiting_approval') {
+            return (
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={() => approve(account)}
+                        className={`${size} inline-flex items-center justify-center gap-1.5 rounded-full bg-[#2F6F4E] font-semibold text-white hover:bg-[#25573E]`}
+                    >
+                        <Check className="size-3.5" aria-hidden="true" />
+                        Approve
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => reject(account)}
+                        className={`${size} inline-flex items-center justify-center gap-1.5 rounded-full border border-[#C6473B]/40 font-semibold text-[#C6473B] hover:bg-[#C6473B]/5`}
+                    >
+                        <X className="size-3.5" aria-hidden="true" />
+                        Reject
+                    </button>
+                </div>
+            );
+        }
 
         return (
             <div className="flex flex-wrap gap-2">
@@ -392,11 +467,13 @@ export default function Index({ staffAccounts, roles }: Props) {
     );
 
     const statusNote = (account: StaffAccount) =>
-        account.status === 'invited' && account.invited_at
-            ? `Invited ${formatDate(account.invited_at)}`
-            : account.status === 'deactivated' && account.deactivated_at
-              ? `Since ${formatDate(account.deactivated_at)}`
-              : null;
+        account.status === 'awaiting_approval' && account.requested_at
+            ? `Asked ${formatDate(account.requested_at)}`
+            : account.status === 'invited' && account.invited_at
+              ? `Invited ${formatDate(account.invited_at)}`
+              : account.status === 'deactivated' && account.deactivated_at
+                ? `Since ${formatDate(account.deactivated_at)}`
+                : null;
 
     const errorMessage = props.errors?.staff_account ?? props.errors?.role;
 
@@ -418,8 +495,9 @@ export default function Index({ staffAccounts, roles }: Props) {
                                 Staff Accounts
                             </h1>
                             <p className="text-sm text-[#1F2A24]/70">
-                                Invite staff, choose what they can do, and
-                                deactivate accounts that are no longer needed.
+                                Approve sign-up requests, invite staff, choose
+                                what they can do, and deactivate accounts that
+                                are no longer needed.
                             </p>
                         </div>
                         <button

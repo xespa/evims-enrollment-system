@@ -9,29 +9,26 @@ use App\Models\User;
 use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('guests opening the admission form are sent to the portal login', function () {
+test('guests opening the admission form are sent to the login page', function () {
     $this->get(route('admission.create'))
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 
-    $this->get(route('portal.login'))
+    $this->get(route('login'))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Login')
+            ->component('auth/login')
             ->where('isApplying', true));
 
-    $this->get(route('portal.register'))
+    $this->get(route('register'))
         ->assertInertia(fn (Assert $page) => $page->where('isApplying', true));
 });
 
 test('the login page only mentions enrolling when the visitor came from the admission form', function () {
-    $this->get(route('portal.login'))
+    $this->get(route('login'))
         ->assertInertia(fn (Assert $page) => $page->where('isApplying', false));
 });
 
-test('guests are sent to the portal login, not the staff login, for portal pages', function () {
-    $this->get(route('portal.dashboard'))->assertRedirect(route('portal.login'));
-});
-
-test('staff pages still send guests to the staff login', function () {
+test('portal and staff pages send guests to the same login page', function () {
+    $this->get(route('portal.dashboard'))->assertRedirect(route('login'));
     $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
 });
 
@@ -41,6 +38,7 @@ test('logging in returns the parent to the admission form', function () {
     $this->get(route('admission.create'));
 
     $this->post(route('portal.login.store'), [
+        'account_type' => 'PARENT_GUARDIAN',
         'email' => $enrollee->email,
         'password' => 'password',
     ])->assertRedirect(route('admission.create'));

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Portal;
 
+use App\Enums\AccountRole;
 use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portal\StoreEnrolleeUserRequest;
@@ -10,21 +11,21 @@ use App\Notifications\ConfirmEmailReminder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
+/**
+ * Portal accounts for parents/guardians and students. The forms themselves
+ * live on the shared login and sign-up pages.
+ */
 class AuthController extends Controller
 {
-    public function create(Request $request): Response
+    /**
+     * The old portal sign-up address, kept so existing links still work.
+     */
+    public function create(): RedirectResponse
     {
-        return Inertia::render('Portal/Register', [
-            'isApplying' => $this->isApplying($request),
-            'accountTypes' => array_map(
-                fn (AccountType $type) => ['value' => $type->value, 'label' => $type->label()],
-                AccountType::cases(),
-            ),
-        ]);
+        return redirect()->route('register', ['role' => AccountRole::ParentGuardian->value]);
     }
 
     public function store(StoreEnrolleeUserRequest $request): RedirectResponse
@@ -45,16 +46,22 @@ class AuthController extends Controller
         return redirect()->route('portal.verification.notice');
     }
 
-    public function showLogin(Request $request): Response
+    /**
+     * The old portal login address, kept so existing links still work.
+     */
+    public function showLogin(): RedirectResponse
     {
-        return Inertia::render('Portal/Login', [
-            'isApplying' => $this->isApplying($request),
-        ]);
+        return redirect()->route('login', ['role' => AccountRole::ParentGuardian->value]);
     }
 
+    /**
+     * Signs in a parent/guardian or student portal account. The account must
+     * be the type picked on the login page.
+     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
+            'account_type' => ['required', Rule::enum(AccountType::class)],
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
@@ -77,15 +84,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('portal.login');
-    }
-
-    /**
-     * Whether the visitor was sent here on their way to the admission form,
-     * which needs an account first.
-     */
-    private function isApplying(Request $request): bool
-    {
-        return str_starts_with((string) $request->session()->get('url.intended', ''), route('admission.create'));
+        return redirect()->route('login');
     }
 }

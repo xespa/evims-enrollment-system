@@ -58,7 +58,7 @@ test('the emailed link shows the register form with the previous attempt\'s issu
     $this->get($enrollee->reapplicationUrl())
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Register')
+            ->component('auth/register')
             ->where('reapplication.email', 'maria@example.com')
             ->where('reapplication.reasons.0.label', AccountRejectionReason::BlurryId->label())
             ->where('reapplication.note', 'The photo is too dark.')
@@ -145,7 +145,7 @@ test('accounts that are no longer rejected cannot be redone from an old link', f
     $action = reapplyActionFor($enrollee);
     $enrollee->forceFill(['account_status' => AccountStatus::Approved])->save();
 
-    $this->get($url)->assertRedirect(route('portal.login'));
+    $this->get($url)->assertRedirect(route('login'));
     $this->post($action, reapplicationPayload())->assertForbidden();
 });
 

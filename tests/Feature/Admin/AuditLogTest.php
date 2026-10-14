@@ -111,6 +111,7 @@ test('document uploads are recorded against the application', function () {
 
 test('failed sign-ins are recorded without the password', function () {
     $this->post(route('login.store'), [
+        'role' => 'ADMIN',
         'email' => $this->admin->email,
         'password' => 'wrong-password',
     ]);

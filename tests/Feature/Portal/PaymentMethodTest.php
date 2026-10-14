@@ -146,9 +146,9 @@ test('a parent cannot change the payment method of someone else\'s application',
     expect($enrollment->billingContract->fresh()->payment_channel)->toBe(BillingContract::CHANNEL_COUNTER);
 });
 
-test('guests are sent to the portal login', function () {
+test('guests are sent to the login page', function () {
     $enrollment = billedEnrollmentFor(EnrolleeUser::factory()->create());
 
     $this->put(route('portal.enrollments.payment-method.update', $enrollment), ['payment_channel' => 'GCASH'])
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 });

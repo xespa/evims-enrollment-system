@@ -112,6 +112,7 @@ function appearance(notification: Notification): {
                 tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
             };
         case 'account_awaiting_review':
+        case 'staff_account_awaiting_approval':
             return {
                 icon: UserRoundCheck,
                 tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',

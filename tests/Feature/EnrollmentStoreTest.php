@@ -175,7 +175,7 @@ test('guests cannot submit an application and are sent to log in', function () {
     Subject::create(['curriculum_id' => $gradeLevel->curricula()->first()->id, 'name' => 'Math', 'code' => 'MATH1']);
 
     $this->post(route('admission.store'), validEnrollmentPayload($gradeLevel))
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 
     expect(Enrollment::count())->toBe(0);
 });

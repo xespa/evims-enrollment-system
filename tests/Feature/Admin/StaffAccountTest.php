@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Fortify\Features;
 
 beforeEach(function () {
     Notification::fake();
@@ -198,15 +199,15 @@ test('only admins can manage staff accounts', function (string $role) {
     expect($other->refresh()->role)->toBe(UserRole::Teacher);
 })->with(['REGISTRAR', 'TEACHER', 'CASHIER']);
 
-test('public registration is turned off', function () {
-    expect(Route::has('register'))->toBeFalse();
+test('fortify registration stays off, so staff sign-ups always wait for an admin', function () {
+    expect(Features::enabled(Features::registration()))->toBeFalse();
 
     $this->post('/register', [
         'name' => 'Stranger',
         'email' => 'stranger@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertNotFound();
+    ])->assertMethodNotAllowed();
 
     expect(User::query()->where('email', 'stranger@example.com')->exists())->toBeFalse();
 });

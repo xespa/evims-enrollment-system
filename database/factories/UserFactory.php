@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,6 +35,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::Cashier,
+            'account_status' => AccountStatus::Approved,
             'remember_token' => Str::random(10),
             // A fully set-up account; see withoutTwoFactor().
             ...$this->confirmedTwoFactorAttributes(),
@@ -75,6 +77,22 @@ class UserFactory extends Factory
     public function deactivated(): static
     {
         return $this->state(fn (array $attributes) => ['deactivated_at' => now()]);
+    }
+
+    /**
+     * Signed up from the sign-up page and waiting for an admin to approve it.
+     */
+    public function awaitingApproval(): static
+    {
+        return $this->withoutTwoFactor()->state(fn (array $attributes) => ['account_status' => AccountStatus::Pending]);
+    }
+
+    /**
+     * Signed up from the sign-up page and turned down by an admin.
+     */
+    public function rejected(): static
+    {
+        return $this->withoutTwoFactor()->state(fn (array $attributes) => ['account_status' => AccountStatus::Rejected]);
     }
 
     /**

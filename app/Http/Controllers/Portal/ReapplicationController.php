@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Enums\AccountRejectionReason;
+use App\Enums\AccountRole;
 use App\Enums\AccountStatus;
-use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portal\ReapplyEnrolleeUserRequest;
 use App\Models\EnrolleeUser;
@@ -27,15 +27,14 @@ class ReapplicationController extends Controller
     {
         if ($enrolleeUser->account_status !== AccountStatus::Rejected) {
             return redirect()
-                ->route('portal.login')
-                ->with('success', 'This account is no longer waiting to be redone — please log in.');
+                ->route('login')
+                ->with('status', 'This account is no longer waiting to be redone — please log in.');
         }
 
-        return Inertia::render('Portal/Register', [
-            'accountTypes' => array_map(
-                fn (AccountType $type) => ['value' => $type->value, 'label' => $type->label()],
-                AccountType::cases(),
-            ),
+        return Inertia::render('auth/register', [
+            // Only portal accounts can be redone; staff accounts are reviewed
+            // separately.
+            'roles' => AccountRole::options([AccountRole::Student, AccountRole::ParentGuardian]),
             'reapplication' => [
                 'action' => URL::temporarySignedRoute('portal.reapplication.store', now()->addHours(2), ['enrolleeUser' => $enrolleeUser->id]),
                 'email' => $enrolleeUser->email,

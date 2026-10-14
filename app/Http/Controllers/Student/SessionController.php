@@ -2,22 +2,25 @@
 
 namespace App\Http\Controllers\Student;
 
+use App\Enums\AccountRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use Inertia\Response;
 
 /**
- * Students signing in and out with their LRN.
+ * Students signing in and out with their LRN. The form is on the shared
+ * login page, under "Student".
  */
 class SessionController extends Controller
 {
-    public function create(): Response
+    /**
+     * The old student sign-in address, kept so emailed links still work.
+     */
+    public function create(): RedirectResponse
     {
-        return Inertia::render('Student/Login');
+        return redirect()->route('login', ['role' => AccountRole::Student->value]);
     }
 
     public function store(LoginRequest $request): RedirectResponse
@@ -36,6 +39,6 @@ class SessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('student.login');
+        return redirect()->route('login', ['role' => AccountRole::Student->value]);
     }
 }

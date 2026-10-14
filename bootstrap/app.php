@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AccountRole;
 use App\Http\Middleware\EnsureEnrolleeIsApproved;
 use App\Http\Middleware\EnsureStaffIsActive;
 use App\Http\Middleware\EnsureTwoFactorIsEnabled;
@@ -28,13 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Families sign in on the portal, students with their LRN; the
-        // Fortify login is for school staff.
-        $middleware->redirectGuestsTo(fn (Request $request) => match (true) {
-            $request->routeIs('portal.*', 'admission.*') => route('portal.login'),
-            $request->routeIs('student.*') => route('student.login'),
-            default => route('login'),
-        });
+        // Everyone signs in on the same page; student pages preselect the
+        // Student role so the LRN field is ready.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->routeIs('student.*')
+            ? route('login', ['role' => AccountRole::Student->value])
+            : route('login'));
 
         $middleware->alias([
             'staff.active' => EnsureStaffIsActive::class,

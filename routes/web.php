@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\ProfilePhotoController;
 use App\Http\Controllers\Admin\RegistrationFormController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\StaffAccountApprovalController;
 use App\Http\Controllers\Admin\StaffAccountController;
 use App\Http\Controllers\Admin\StaffAccountDeactivationController;
 use App\Http\Controllers\Admin\StaffInvitationController;
@@ -32,6 +33,8 @@ use App\Http\Controllers\Admin\TransactionHistoryController;
 use App\Http\Controllers\Admin\VoidPaymentController;
 use App\Http\Controllers\Api\PhAddressController;
 use App\Http\Controllers\Auth\AcceptInvitationController;
+use App\Http\Controllers\Auth\RegistrationController;
+use App\Http\Controllers\Auth\StaffRegistrationController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PaymentController;
 use App\Models\Curriculum;
@@ -202,6 +205,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         Route::post('staff-accounts/{staffAccount}/deactivation', [StaffAccountDeactivationController::class, 'store'])->name('staff-accounts.deactivation.store');
         Route::delete('staff-accounts/{staffAccount}/deactivation', [StaffAccountDeactivationController::class, 'destroy'])->name('staff-accounts.deactivation.destroy');
         Route::post('staff-accounts/{staffAccount}/invitation', [StaffInvitationController::class, 'store'])->name('staff-accounts.invitation.store');
+        // Approving or rejecting an account someone asked for on the sign-up page.
+        Route::put('staff-accounts/{staffAccount}/approval', [StaffAccountApprovalController::class, 'update'])->name('staff-accounts.approval.update');
 
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     });
@@ -220,6 +225,15 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
     // Only admins may delete an account, and never the last one.
     Route::delete('settings', [SettingsController::class, 'destroy'])->middleware('can:manage-staff')->name('settings.destroy');
+});
+
+Route::middleware(['guest.enrollee', 'guest.student', 'guest'])->group(function () {
+    // One sign-up page for every role. Parents/guardians and students post
+    // to portal.register.store; staff post here and wait for an admin.
+    Route::get('register', [RegistrationController::class, 'create'])->name('register');
+    Route::post('staff-registrations', [StaffRegistrationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('staff-registrations.store');
 });
 
 // Staff invited by an admin set their own password here.

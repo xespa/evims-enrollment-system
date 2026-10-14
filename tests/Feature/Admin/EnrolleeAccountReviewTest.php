@@ -243,7 +243,7 @@ test('the rejection email links to registering again, not to the login', functio
     $this->get($mail->actionUrl)
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Register')
+            ->component('auth/register')
             ->where('reapplication.email', $enrollee->email));
 });
 

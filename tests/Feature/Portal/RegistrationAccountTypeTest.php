@@ -29,15 +29,13 @@ function registrationAs(?string $accountType): array
     ];
 }
 
-test('the register page offers parent/guardian and student', function () {
-    $this->get(route('portal.register'))
+test('the register page offers student and parent/guardian', function () {
+    $this->get(route('register'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Register')
-            ->where('accountTypes', [
-                ['value' => 'PARENT_GUARDIAN', 'label' => 'Parent / Guardian'],
-                ['value' => 'STUDENT', 'label' => 'Student'],
-            ]));
+            ->component('auth/register')
+            ->where('roles.0', ['value' => 'STUDENT', 'label' => 'Student', 'isStaff' => false])
+            ->where('roles.1', ['value' => 'PARENT_GUARDIAN', 'label' => 'Parent / Guardian', 'isStaff' => false]));
 });
 
 test('the chosen account type is saved', function (string $value, AccountType $expected) {
@@ -82,6 +80,7 @@ test('remember me keeps a portal login across sessions', function () {
     $enrollee = EnrolleeUser::factory()->create();
 
     $this->post(route('portal.login.store'), [
+        'account_type' => 'PARENT_GUARDIAN',
         'email' => $enrollee->email,
         'password' => 'password',
         'remember' => 'on',

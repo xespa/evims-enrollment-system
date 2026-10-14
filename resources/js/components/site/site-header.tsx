@@ -10,11 +10,10 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NotificationBell from '@/components/notification-bell';
+import { login, register } from '@/routes';
 import {
     dashboard as portalDashboard,
-    login as portalLogin,
     logout as portalLogout,
-    register as portalRegister,
 } from '@/routes/portal';
 import EnrollButton from './enroll-button';
 import { NAV_ITEMS, isActiveItem, isNavGroup } from './site-navigation';
@@ -355,7 +354,7 @@ function MobileMenu({
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
                             <Link
-                                href={portalLogin()}
+                                href={login()}
                                 onClick={onClose}
                                 className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white text-sm font-semibold text-[#1F2A24]"
                             >
@@ -363,7 +362,7 @@ function MobileMenu({
                                 Log in
                             </Link>
                             <Link
-                                href={portalRegister()}
+                                href={register()}
                                 onClick={onClose}
                                 className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 text-sm font-semibold text-[#2F6F4E]"
                             >
@@ -566,7 +565,7 @@ export default function SiteHeader() {
                                 <AccountMenu enrollee={enrollee} />
                             ) : (
                                 <Link
-                                    href={portalLogin()}
+                                    href={login()}
                                     className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[#1F2A24]/80 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
                                 >
                                     <LogIn

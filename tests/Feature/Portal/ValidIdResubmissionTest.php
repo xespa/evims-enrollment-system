@@ -93,7 +93,7 @@ test('approved accounts cannot replace their ID', function () {
 
 test('guests cannot upload an ID', function () {
     $this->put(route('portal.valid-id.update'), ['valid_id' => UploadedFile::fake()->image('id.jpg')])
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 });
 
 test('a name mismatch sends the account to the full sign-up form, not just an ID upload', function (array $reasons) {
@@ -108,7 +108,7 @@ test('a name mismatch sends the account to the full sign-up form, not just an ID
         ->get($response->headers->get('Location'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Register')
+            ->component('auth/register')
             ->where('reapplication.email', $enrollee->email)
             ->where('reapplication.name', $enrollee->name)
             ->has('reapplication.reasons', count($reasons)));

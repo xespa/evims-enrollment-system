@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendStaffInvitation;
+use App\Enums\AccountStatus;
 use App\Enums\AuditAction;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
@@ -20,13 +21,16 @@ class StaffAccountController extends Controller
 {
     /**
      * List every staff account with its role and whether it's usable yet.
+     * Sign-up requests waiting on an admin come first.
      */
     public function index(): Response
     {
         $staffAccounts = User::query()
+            ->orderByRaw('account_status = ? desc', [AccountStatus::Pending->value])
+            ->orderByRaw('account_status = ?', [AccountStatus::Rejected->value])
             ->orderByRaw('deactivated_at is not null')
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'role', 'profile_photo_path', 'email_verified_at', 'invited_at', 'deactivated_at', 'created_at'])
+            ->get(['id', 'name', 'email', 'role', 'account_status', 'profile_photo_path', 'email_verified_at', 'invited_at', 'deactivated_at', 'created_at'])
             ->map(fn (User $staffAccount): array => [
                 'id' => $staffAccount->id,
                 'name' => $staffAccount->name,
@@ -34,11 +38,14 @@ class StaffAccountController extends Controller
                 'role' => $staffAccount->role->value,
                 'profile_photo_url' => $staffAccount->profile_photo_url,
                 'status' => match (true) {
+                    $staffAccount->isAwaitingApproval() => 'awaiting_approval',
+                    $staffAccount->isRejected() => 'rejected',
                     ! $staffAccount->isActive() => 'deactivated',
                     $staffAccount->hasPendingInvitation() => 'invited',
                     default => 'active',
                 },
                 'invited_at' => $staffAccount->invited_at?->toIso8601String(),
+                'requested_at' => $staffAccount->isAwaitingApproval() ? $staffAccount->created_at?->toIso8601String() : null,
                 'deactivated_at' => $staffAccount->deactivated_at?->toIso8601String(),
             ]);
 

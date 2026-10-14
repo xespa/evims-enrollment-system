@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import { login as studentLogin } from '@/routes/student';
+import { login } from '@/routes';
 import { update as answerConsent } from '@/routes/student-consent';
 
 type ConsentRequest = {
@@ -64,7 +64,7 @@ function Outcome({ result }: { result: Result }) {
                 change it right after signing in, since others may know it.
             </p>
             <Link
-                href={studentLogin().url}
+                href={login({ query: { role: 'STUDENT' } }).url}
                 className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
             >
                 Go to student sign in

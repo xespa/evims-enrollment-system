@@ -1,11 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, ArrowUp, Clock, Mail, MapPin, Phone } from 'lucide-react';
-import { login as staffLogin } from '@/routes';
+import { login, register } from '@/routes';
 import { create as admission } from '@/routes/admission';
-import {
-    login as portalLogin,
-    register as portalRegister,
-} from '@/routes/portal';
 import { about, contact, events, terms } from '@/routes/site';
 import { ACADEMICS, STUDENT_SERVICES } from './site-navigation';
 import type { NavLink } from './site-navigation';
@@ -20,8 +16,8 @@ const COLUMNS: { title: string; links: NavLink[] }[] = [
         title: 'Admissions',
         links: [
             { label: 'Enroll Now', href: admission().url },
-            { label: 'Student Portal Login', href: portalLogin().url },
-            { label: 'Create an Account', href: portalRegister().url },
+            { label: 'Log In', href: login().url },
+            { label: 'Create an Account', href: register().url },
             { label: 'Events', href: events().url },
         ],
     },
@@ -182,7 +178,7 @@ export default function SiteFooter() {
                             Cookies
                         </Link>
                         <Link
-                            href={staffLogin()}
+                            href={login()}
                             className="hover:text-[#FBF8F2] hover:underline"
                         >
                             Staff Login

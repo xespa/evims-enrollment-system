@@ -23,7 +23,7 @@ function studentWithAccount(string $state = 'active'): StudentAccount
 test('a student signs in with their LRN and password', function () {
     $account = studentWithAccount();
 
-    $this->get(route('student.login'))->assertOk();
+    $this->get(route('student.login'))->assertRedirect(route('login', ['role' => 'STUDENT']));
 
     $this->post(route('student.login.store'), ['lrn' => '1234-5678-9012', 'password' => 'Secret-Pass-123'])
         ->assertRedirect(route('student.dashboard'));
@@ -74,7 +74,7 @@ test('repeated failures are throttled', function () {
 });
 
 test('guests are sent to the student sign in', function () {
-    $this->get(route('student.dashboard'))->assertRedirect(route('student.login'));
+    $this->get(route('student.dashboard'))->assertRedirect(route('login', ['role' => 'STUDENT']));
 });
 
 test('a signed-in student is sent from the sign in page to their dashboard', function () {
@@ -114,7 +114,7 @@ test('changing the password needs the current one', function () {
 test('a student can sign out', function () {
     $this->actingAs(studentWithAccount(), 'student')
         ->post(route('student.logout'))
-        ->assertRedirect(route('student.login'));
+        ->assertRedirect(route('login', ['role' => 'STUDENT']));
 
     $this->assertGuest('student');
 });

@@ -28,6 +28,10 @@ createInertiaApp({
                 return null;
             case name.startsWith('Payments/'):
                 return SiteLayout;
+            // The shared login and sign-up pages, used by families too.
+            case name === 'auth/login':
+            case name === 'auth/register':
+                return SiteLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

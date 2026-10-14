@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -23,6 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property UserRole $role
+ * @property AccountStatus $account_status
  * @property Carbon|null $invited_at
  * @property Carbon|null $deactivated_at
  * @property string|null $profile_photo_path
@@ -53,6 +55,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'account_status' => AccountStatus::class,
             'invited_at' => 'datetime',
             'deactivated_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
@@ -70,13 +73,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Accounts that haven't been deactivated.
+     * Approved accounts that haven't been deactivated. Sign-up requests still
+     * waiting on an admin are left out, so they never get staff notifications.
      *
      * @param  Builder<self>  $query
      */
     public function scopeActive(Builder $query): void
     {
-        $query->whereNull('deactivated_at');
+        $query->whereNull('deactivated_at')->where('account_status', AccountStatus::Approved);
     }
 
     /**
@@ -118,6 +122,19 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->deactivated_at === null;
+    }
+
+    /**
+     * Signed up from the sign-up page and still waiting on an admin.
+     */
+    public function isAwaitingApproval(): bool
+    {
+        return $this->account_status === AccountStatus::Pending;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->account_status === AccountStatus::Rejected;
     }
 
     /**

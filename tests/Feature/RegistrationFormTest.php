@@ -220,11 +220,11 @@ test('a parent cannot download another family\'s registration form', function ()
         ->assertForbidden();
 });
 
-test('guests are sent to the portal login', function () {
+test('guests are sent to the login page', function () {
     $enrollment = registrableEnrollment(['enrollment_status' => 'APPROVED']);
 
     $this->get(route('portal.enrollments.registration-form.show', $enrollment))
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 });
 
 test('staff can download an approved application\'s registration form', function () {

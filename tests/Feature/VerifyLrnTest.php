@@ -10,7 +10,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests are sent to log in before they reach the admission page', function () {
     $this->get(route('admission.create'))
-        ->assertRedirect(route('portal.login'));
+        ->assertRedirect(route('login'));
 });
 
 test('the admission page has no fast-track gate for a first-time enrollee account', function () {

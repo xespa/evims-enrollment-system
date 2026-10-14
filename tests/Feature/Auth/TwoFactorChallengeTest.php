@@ -10,6 +10,7 @@ beforeEach(function () {
     $this->staff = User::factory()->registrar()->create();
 
     $this->post(route('login.store'), [
+        'role' => $this->staff->role->value,
         'email' => $this->staff->email,
         'password' => 'password',
     ])->assertRedirect(route('two-factor.login'));

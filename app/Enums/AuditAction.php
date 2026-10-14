@@ -18,6 +18,9 @@ enum AuditAction: string
     case RoleChanged = 'role_changed';
     case StaffDeactivated = 'staff_deactivated';
     case StaffReactivated = 'staff_reactivated';
+    case StaffSignUpRequested = 'staff_sign_up_requested';
+    case StaffSignUpApproved = 'staff_sign_up_approved';
+    case StaffSignUpRejected = 'staff_sign_up_rejected';
     case DocumentUploaded = 'document_uploaded';
     case StudentConsentRequested = 'student_consent_requested';
     case StudentConsentAnswered = 'student_consent_answered';
@@ -36,6 +39,9 @@ enum AuditAction: string
             self::RoleChanged => 'Changed role',
             self::StaffDeactivated => 'Deactivated account',
             self::StaffReactivated => 'Reactivated account',
+            self::StaffSignUpRequested => 'Asked for a staff account',
+            self::StaffSignUpApproved => 'Approved staff account request',
+            self::StaffSignUpRejected => 'Rejected staff account request',
             self::DocumentUploaded => 'Uploaded document',
             self::StudentConsentRequested => 'Asked parent consent for a student account',
             self::StudentConsentAnswered => 'Parent answered student account consent',
