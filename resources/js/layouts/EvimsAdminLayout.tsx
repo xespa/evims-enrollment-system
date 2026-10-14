@@ -336,11 +336,9 @@ function AccountMenu({
  */
 function SidebarBody({
     isCollapsed,
-    onToggleCollapsed,
     onNavigate,
 }: {
     isCollapsed: boolean;
-    onToggleCollapsed?: () => void;
     onNavigate?: () => void;
 }) {
     const { url } = usePage();
@@ -378,16 +376,6 @@ function SidebarBody({
                         </p>
                         <p className="text-xs text-[#1F2A24]/60">Admin Panel</p>
                     </div>
-                )}
-                {onToggleCollapsed && !isCollapsed && (
-                    <button
-                        type="button"
-                        onClick={onToggleCollapsed}
-                        aria-label="Collapse sidebar"
-                        className="rounded-lg p-2 text-[#1F2A24]/60 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
-                    >
-                        <PanelLeftClose className="size-4" aria-hidden="true" />
-                    </button>
                 )}
             </div>
 
@@ -440,21 +428,6 @@ function SidebarBody({
                     isCollapsed={isCollapsed}
                     onNavigate={onNavigate}
                 />
-                {onToggleCollapsed && isCollapsed && (
-                    <CollapsedTooltip label="Expand sidebar" isCollapsed>
-                        <button
-                            type="button"
-                            onClick={onToggleCollapsed}
-                            aria-label="Expand sidebar"
-                            className="flex min-h-10 w-full items-center justify-center rounded-lg text-[#1F2A24]/60 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
-                        >
-                            <PanelLeftOpen
-                                className="size-[1.125rem]"
-                                aria-hidden="true"
-                            />
-                        </button>
-                    </CollapsedTooltip>
-                )}
                 <AccountMenu
                     isCollapsed={isCollapsed}
                     onNavigate={onNavigate}
@@ -560,10 +533,7 @@ export default function EvimsAdminLayout({
                     isCollapsed ? 'lg:w-[4.75rem]' : 'lg:w-64'
                 }`}
             >
-                <SidebarBody
-                    isCollapsed={isCollapsed}
-                    onToggleCollapsed={toggleCollapsed}
-                />
+                <SidebarBody isCollapsed={isCollapsed} />
             </aside>
 
             <main
@@ -574,7 +544,40 @@ export default function EvimsAdminLayout({
                 scroll-region=""
                 className="min-w-0 flex-1 pt-16 focus:outline-none lg:h-full lg:overflow-y-auto lg:overscroll-contain lg:pt-0"
             >
-                <div className="sticky top-0 z-20 hidden h-14 items-center justify-end border-b border-[#1F2A24]/10 bg-[#FBF8F2]/90 px-6 backdrop-blur lg:flex">
+                {/* Same height as the sidebar's logo row, so their borders line up. */}
+                <div className="sticky top-0 z-20 hidden h-16 items-center justify-between gap-2 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/90 px-4 backdrop-blur lg:flex">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                type="button"
+                                onClick={toggleCollapsed}
+                                aria-label={
+                                    isCollapsed
+                                        ? 'Expand sidebar'
+                                        : 'Collapse sidebar'
+                                }
+                                aria-expanded={!isCollapsed}
+                                className="inline-flex size-10 items-center justify-center rounded-lg text-[#1F2A24]/60 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                            >
+                                {isCollapsed ? (
+                                    <PanelLeftOpen
+                                        className="size-[1.125rem]"
+                                        aria-hidden="true"
+                                    />
+                                ) : (
+                                    <PanelLeftClose
+                                        className="size-[1.125rem]"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                            {isCollapsed
+                                ? 'Expand sidebar'
+                                : 'Collapse sidebar'}
+                        </TooltipContent>
+                    </Tooltip>
                     <NotificationBell scope="admin" />
                 </div>
                 {children}
