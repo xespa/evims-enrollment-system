@@ -1,5 +1,6 @@
 import { Form, Head, router, usePage } from '@inertiajs/react';
 import {
+    ArrowLeftRight,
     BookOpenCheck,
     CheckCircle2,
     KeyRound,
@@ -59,14 +60,34 @@ export default function Dashboard({ student, usesDefaultPassword }: Props) {
                                     ` · SY ${student.school_year}`}
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => router.post(logout().url)}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
-                        >
-                            <LogOut className="h-4 w-4" aria-hidden="true" />
-                            Sign out
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.post(logout().url, {
+                                        switch_account: 1,
+                                    })
+                                }
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                            >
+                                <ArrowLeftRight
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Switch account
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => router.post(logout().url)}
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                            >
+                                <LogOut
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Sign out
+                            </button>
+                        </div>
                     </header>
 
                     {flashSuccess && (

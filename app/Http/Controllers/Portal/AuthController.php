@@ -7,6 +7,7 @@ use App\Enums\AccountRole;
 use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portal\StoreEnrolleeUserRequest;
+use App\Http\Responses\LogoutResponse;
 use App\Models\EnrolleeUser;
 use App\Notifications\ConfirmEmailReminder;
 use Illuminate\Http\RedirectResponse;
@@ -88,6 +89,10 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if (LogoutResponse::isSwitchingAccount($request)) {
+            return LogoutResponse::toLoginForAnotherAccount();
+        }
 
         return redirect()->route('login');
     }

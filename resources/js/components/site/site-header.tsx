@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    ArrowLeftRight,
     ChevronDown,
     LayoutDashboard,
     LogIn,
@@ -239,6 +240,19 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
                         </Link>
                         <Link
                             href={portalLogout()}
+                            data={{ switch_account: 1 }}
+                            as="button"
+                            role="menuitem"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                        >
+                            <ArrowLeftRight
+                                className="h-4 w-4 text-[#2F6F4E]"
+                                aria-hidden="true"
+                            />
+                            Switch account
+                        </Link>
+                        <Link
+                            href={portalLogout()}
                             as="button"
                             role="menuitem"
                             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
@@ -466,14 +480,31 @@ function MobileMenu({
                 <div className="space-y-2 border-t border-[#1F2A24]/10 p-4">
                     <EnrollButton onNavigate={onClose} fullWidth />
                     {enrollee && (
-                        <Link
-                            href={portalLogout()}
-                            as="button"
-                            className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
-                        >
-                            <LogOut className="h-4 w-4" aria-hidden="true" />
-                            Log out
-                        </Link>
+                        <div className="grid grid-cols-2 gap-2">
+                            <Link
+                                href={portalLogout()}
+                                data={{ switch_account: 1 }}
+                                as="button"
+                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                            >
+                                <ArrowLeftRight
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Switch account
+                            </Link>
+                            <Link
+                                href={portalLogout()}
+                                as="button"
+                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                            >
+                                <LogOut
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Log out
+                            </Link>
+                        </div>
                     )}
                 </div>
             </aside>

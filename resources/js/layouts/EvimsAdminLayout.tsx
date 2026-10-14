@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    ArrowLeftRight,
     Calendar,
     ChevronsUpDown,
     GraduationCap,
@@ -316,6 +317,19 @@ function AccountMenu({
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-[#1F2A24]/10" />
+                <DropdownMenuItem
+                    asChild
+                    className="min-h-10 w-full cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]"
+                >
+                    <Link
+                        href={logout()}
+                        data={{ switch_account: 1 }}
+                        as="button"
+                    >
+                        <ArrowLeftRight aria-hidden="true" />
+                        Switch account
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                     asChild
                     className="min-h-10 w-full cursor-pointer rounded-lg text-[#A3372D] focus:bg-[#C6473B]/10 focus:text-[#A3372D] [&_svg]:!text-[#A3372D]"

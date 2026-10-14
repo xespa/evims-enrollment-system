@@ -7,6 +7,7 @@ use App\Concerns\DetectsAdmissionIntent;
 use App\Enums\AccountRole;
 use App\Enums\UserRole;
 use App\Http\Responses\LoginResponse as StaffLoginResponse;
+use App\Http\Responses\LogoutResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -37,6 +39,8 @@ class FortifyServiceProvider extends ServiceProvider
         // code land each role on its own home page.
         $this->app->singleton(LoginResponse::class, StaffLoginResponse::class);
         $this->app->singleton(TwoFactorLoginResponse::class, StaffLoginResponse::class);
+        // "Switch account" lands on the login page instead of the website.
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**

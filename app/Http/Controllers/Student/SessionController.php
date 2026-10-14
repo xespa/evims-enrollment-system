@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Enums\AccountRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\LoginRequest;
+use App\Http\Responses\LogoutResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,10 @@ class SessionController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if (LogoutResponse::isSwitchingAccount($request)) {
+            return LogoutResponse::toLoginForAnotherAccount();
+        }
 
         return redirect()->route('login', ['role' => AccountRole::Student->value]);
     }
