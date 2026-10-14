@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
-import { FileDown } from 'lucide-react';
+import { CheckCircle2, FileDown } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
 import DocumentViewerDialog, {
@@ -31,7 +31,7 @@ function InfoRow({ label, value }) {
         <div className="flex justify-between gap-4 border-b border-[#1F2A24]/10 py-2 text-sm">
             <span className="shrink-0 text-[#1F2A24]/70">{label}</span>
             <span className="min-w-0 text-right font-medium break-words text-[#1F2A24]">
-                {value || '—'}
+                {(typeof value === 'string' ? value.trim() : value) || '—'}
             </span>
         </div>
     );
@@ -83,6 +83,12 @@ function formatShortDate(value) {
 
 const METHOD_LABELS = { CASH: 'Counter', GCASH: 'GCash' };
 
+const PAYMENT_PLAN_LABELS: Record<string, string> = {
+    MONTHLY: 'Monthly',
+    BI_MONTHLY: 'Bi-monthly',
+    FULL_PAYMENT: 'Full payment',
+};
+
 function PaymentsSection({ enrollment }) {
     const { handlePayments } = useStaffAbilities();
     const [isRecording, setIsRecording] = useState(false);
@@ -127,18 +133,32 @@ function PaymentsSection({ enrollment }) {
     };
 
     return (
-        <div className="mt-6 border-t border-[#1F2A24]/10 pt-4">
+        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                         Payments
                     </h2>
                     {billingContract && (
-                        <span className="rounded-full bg-[#1F2A24]/5 px-2.5 py-0.5 text-xs font-medium text-[#1F2A24]/70">
-                            {paysAtCounter
-                                ? 'Pays at the school counter'
-                                : 'Pays online via GCash'}
-                        </span>
+                        <>
+                            {PAYMENT_PLAN_LABELS[
+                                billingContract.payment_option
+                            ] && (
+                                <span className="rounded-full bg-[#2F6F4E]/10 px-2.5 py-0.5 text-xs font-medium text-[#2F6F4E]">
+                                    {
+                                        PAYMENT_PLAN_LABELS[
+                                            billingContract.payment_option
+                                        ]
+                                    }{' '}
+                                    plan
+                                </span>
+                            )}
+                            <span className="rounded-full bg-[#1F2A24]/5 px-2.5 py-0.5 text-xs font-medium text-[#1F2A24]/70">
+                                {paysAtCounter
+                                    ? 'Pays at the school counter'
+                                    : 'Pays online via GCash'}
+                            </span>
+                        </>
                     )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -339,6 +359,53 @@ const STATUS_STYLES = {
     APPROVED: 'bg-green-100 text-green-800',
     REJECTED: 'bg-red-100 text-red-800',
 };
+
+/** Readable labels for the codes stored on the application. */
+const STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Pending',
+    APPROVED: 'Approved',
+    REJECTED: 'Rejected',
+};
+
+const SEX_LABELS: Record<string, string> = { MALE: 'Male', FEMALE: 'Female' };
+
+const STUDENT_TYPE_LABELS: Record<string, string> = {
+    NO_LRN: 'New student (no LRN)',
+    WITH_LRN: 'Transferee (with LRN)',
+    RETURNEE: 'Returnee',
+};
+
+const SESSION_LABELS: Record<string, string> = {
+    MORNING_SESSION: 'Morning session',
+    AFTERNOON_SESSION: 'Afternoon session',
+    SCHOOL_SERVICE: 'School service',
+};
+
+/** The "Has the child ever…" answers from the Vital Information step. */
+const VITAL_HISTORY = [
+    ['has_attended_summer_school', 'Attended a summer school program'],
+    [
+        'has_emotional_mental_physical_difficulties',
+        'Had emotional, mental or physical difficulties',
+    ],
+    ['has_learning_difficulties', 'Had learning difficulties'],
+    ['has_extended_absences', 'Had extended absences from school'],
+    ['shows_special_abilities_interests', 'Shown special abilities/interests'],
+    ['has_been_expelled', 'Been expelled'],
+    ['has_been_suspended', 'Been suspended'],
+    ['has_repeated_a_grade', 'Repeated a grade'],
+];
+
+/** "Dela Cruz, Juan Santos" from whichever name parts were given. */
+function fullName(
+    lastName?: string | null,
+    firstName?: string | null,
+    middleName?: string | null,
+) {
+    const given = [firstName, middleName].filter(Boolean).join(' ');
+
+    return [lastName, given].filter(Boolean).join(', ');
+}
 
 const DOCUMENTS = [
     {
@@ -586,6 +653,17 @@ export default function Show({
     const [confirm, confirmDialog] = useConfirm();
     const [isRejecting, setIsRejecting] = useState(false);
     const studentName = `${student.first_name} ${student.last_name}`;
+    const history = enrollment.academic_history;
+    const hasAcademicHistory = [
+        history?.last_grade_level_completed,
+        history?.last_school_year_completed,
+        history?.previous_school_name,
+        history?.previous_school_id,
+        history?.previous_school_address,
+    ].some((value) => value && String(value).trim() !== '');
+    const reportedHistory = VITAL_HISTORY.filter(
+        ([field]) => enrollment.vital_information?.[field],
+    );
     const rejectionReasonLabels = Object.fromEntries(
         rejectionReasons.map((reason) => [reason.value, reason.label]),
     );
@@ -710,13 +788,15 @@ export default function Show({
                                 )}
                             {isCancelled ? (
                                 <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
-                                    CANCELLED
+                                    Cancelled
                                 </span>
                             ) : (
                                 <span
                                     className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_STYLES[enrollment.enrollment_status]}`}
                                 >
-                                    {enrollment.enrollment_status}
+                                    {STATUS_LABELS[
+                                        enrollment.enrollment_status
+                                    ] ?? enrollment.enrollment_status}
                                 </span>
                             )}
                         </div>
@@ -1021,7 +1101,10 @@ export default function Show({
                                             <span
                                                 className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[submittedFrom.account_status]}`}
                                             >
-                                                {submittedFrom.account_status}
+                                                {STATUS_LABELS[
+                                                    submittedFrom.account_status
+                                                ] ??
+                                                    submittedFrom.account_status}
                                             </span>
                                         }
                                     />
@@ -1062,16 +1145,26 @@ export default function Show({
                             />
                             <InfoRow
                                 label="Date of Birth"
-                                value={student.date_of_birth}
+                                value={
+                                    student.date_of_birth &&
+                                    `${formatShortDate(student.date_of_birth)}${enrollment.age ? ` · ${enrollment.age} yrs old` : ''}`
+                                }
                             />
-                            <InfoRow label="Sex" value={student.sex} />
+                            <InfoRow
+                                label="Sex"
+                                value={SEX_LABELS[student.sex] ?? student.sex}
+                            />
                             <InfoRow
                                 label="Grade Level"
                                 value={enrollment.grade_level.name}
                             />
                             <InfoRow
                                 label="Student Type"
-                                value={enrollment.student_type}
+                                value={
+                                    STUDENT_TYPE_LABELS[
+                                        enrollment.student_type
+                                    ] ?? enrollment.student_type
+                                }
                             />
                             <InfoRow
                                 label="School Year"
@@ -1079,7 +1172,11 @@ export default function Show({
                             />
                             <InfoRow
                                 label="Session"
-                                value={enrollment.session_time_preference}
+                                value={
+                                    SESSION_LABELS[
+                                        enrollment.session_time_preference
+                                    ] ?? enrollment.session_time_preference
+                                }
                             />
                         </div>
 
@@ -1121,12 +1218,23 @@ export default function Show({
                             </h2>
                             <InfoRow
                                 label="Name"
-                                value={`${student.parent_profile?.father_first_name ?? ''} ${student.parent_profile?.father_last_name ?? ''}`}
+                                value={fullName(
+                                    student.parent_profile?.father_last_name,
+                                    student.parent_profile?.father_first_name,
+                                    student.parent_profile?.father_middle_name,
+                                )}
                             />
                             <InfoRow
                                 label="Occupation"
                                 value={
                                     student.parent_profile?.father_occupation
+                                }
+                            />
+                            <InfoRow
+                                label="Office"
+                                value={
+                                    student.parent_profile
+                                        ?.father_name_of_office
                                 }
                             />
                             <InfoRow
@@ -1142,13 +1250,25 @@ export default function Show({
                                 Mother
                             </h2>
                             <InfoRow
-                                label="Name"
-                                value={`${student.parent_profile?.mother_first_name ?? ''} ${student.parent_profile?.mother_maiden_last_name ?? ''}`}
+                                label="Maiden Name"
+                                value={fullName(
+                                    student.parent_profile
+                                        ?.mother_maiden_last_name,
+                                    student.parent_profile?.mother_first_name,
+                                    student.parent_profile?.mother_middle_name,
+                                )}
                             />
                             <InfoRow
                                 label="Occupation"
                                 value={
                                     student.parent_profile?.mother_occupation
+                                }
+                            />
+                            <InfoRow
+                                label="Office"
+                                value={
+                                    student.parent_profile
+                                        ?.mother_name_of_office
                                 }
                             />
                             <InfoRow
@@ -1161,14 +1281,33 @@ export default function Show({
 
                         {/* Subjects */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                            <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                 Enrolled Subjects
+                                <span className="rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-[10px] tracking-normal">
+                                    {enrollment.subjects.length}
+                                </span>
                             </h2>
-                            <p className="text-sm text-[#1F2A24]/80">
-                                {enrollment.subjects
-                                    .map((s) => s.name)
-                                    .join(', ') || '—'}
-                            </p>
+                            {enrollment.subjects.length > 0 ? (
+                                <ul className="flex flex-wrap gap-2">
+                                    {enrollment.subjects.map(
+                                        (subject: {
+                                            id: number;
+                                            name: string;
+                                        }) => (
+                                            <li
+                                                key={subject.id}
+                                                className="rounded-full border border-[#1F2A24]/10 bg-[#FBF8F2] px-3 py-1 text-sm text-[#1F2A24]/85"
+                                            >
+                                                {subject.name}
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-[#1F2A24]/60">
+                                    No subjects recorded.
+                                </p>
+                            )}
                         </div>
 
                         {/* Academic history */}
@@ -1176,41 +1315,50 @@ export default function Show({
                             <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                 Academic History
                             </h2>
-                            <InfoRow
-                                label="Last Grade Level Completed"
-                                value={
-                                    enrollment.academic_history
-                                        ?.last_grade_level_completed
-                                }
-                            />
-                            <InfoRow
-                                label="Last School Year Completed"
-                                value={
-                                    enrollment.academic_history
-                                        ?.last_school_year_completed
-                                }
-                            />
-                            <InfoRow
-                                label="Previous School Name"
-                                value={
-                                    enrollment.academic_history
-                                        ?.previous_school_name
-                                }
-                            />
-                            <InfoRow
-                                label="Previous School ID"
-                                value={
-                                    enrollment.academic_history
-                                        ?.previous_school_id
-                                }
-                            />
-                            <InfoRow
-                                label="Previous School Address"
-                                value={
-                                    enrollment.academic_history
-                                        ?.previous_school_address
-                                }
-                            />
+                            {!hasAcademicHistory ? (
+                                <p className="py-2 text-sm text-[#1F2A24]/60">
+                                    No previous school given — only needed for
+                                    returnees and transferees.
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                                    <InfoRow
+                                        label="Last Grade Level Completed"
+                                        value={
+                                            enrollment.academic_history
+                                                ?.last_grade_level_completed
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Last School Year Completed"
+                                        value={
+                                            enrollment.academic_history
+                                                ?.last_school_year_completed
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Previous School Name"
+                                        value={
+                                            enrollment.academic_history
+                                                ?.previous_school_name
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Previous School ID"
+                                        value={
+                                            enrollment.academic_history
+                                                ?.previous_school_id
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Previous School Address"
+                                        value={
+                                            enrollment.academic_history
+                                                ?.previous_school_address
+                                        }
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Vital info */}
@@ -1218,6 +1366,36 @@ export default function Show({
                             <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
                                 Vital Information
                             </h2>
+                            <p className="mb-2 text-sm text-[#1F2A24]/70">
+                                Has the child ever:
+                            </p>
+                            {reportedHistory.length > 0 ? (
+                                <ul className="mb-2 flex flex-wrap gap-2">
+                                    {reportedHistory.map(([, label]) => (
+                                        <li
+                                            key={label}
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#E8A33D]/15 px-3 py-1 text-sm text-[#7a4d0b]"
+                                        >
+                                            <CheckCircle2
+                                                className="h-3.5 w-3.5"
+                                                aria-hidden="true"
+                                            />
+                                            {label}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="mb-2 text-sm font-medium text-[#1F2A24]">
+                                    None of these reported.
+                                </p>
+                            )}
+                            <InfoRow
+                                label="Particulars"
+                                value={
+                                    enrollment.vital_information
+                                        ?.history_particulars
+                                }
+                            />
                             <InfoRow
                                 label="Special Health Problems"
                                 value={
@@ -1225,32 +1403,12 @@ export default function Show({
                                         ?.special_health_problems
                                 }
                             />
-                            <InfoRow
-                                label="History Particulars"
-                                value={
-                                    enrollment.vital_information
-                                        ?.history_particulars
-                                }
-                            />
-                        </div>
-
-                        {/* Billing */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                                Billing
-                            </h2>
-                            <InfoRow
-                                label="Payment Option"
-                                value={
-                                    enrollment.billing_contract?.payment_option
-                                }
-                            />
                         </div>
 
                         {/* Document verification checklist */}
                         <div
                             id="document-verification"
-                            className="scroll-mt-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
+                            className="scroll-mt-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2"
                         >
                             <div className="mb-2 flex items-center justify-between">
                                 <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
@@ -1307,8 +1465,11 @@ export default function Show({
                                     onToggleVerification={toggleVerification}
                                 />
                             ))}
-                            <PaymentsSection enrollment={enrollment} />
                         </div>
+
+                        {enrollment.billing_contract && (
+                            <PaymentsSection enrollment={enrollment} />
+                        )}
                     </div>
                 </div>
             </div>
