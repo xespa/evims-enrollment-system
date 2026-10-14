@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\IndexAuditLogRequest;
 use App\Models\AuditLog;
 use App\Models\Enrollment;
+use App\Models\StudentAccount;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,6 +69,7 @@ class AuditLogController extends Controller
                 'label' => "Application #{$entry->subject->id}",
                 'url' => route('admin.enrollments.show', $entry->subject, false),
             ],
+            $entry->subject instanceof StudentAccount => ['label' => "Student account #{$entry->subject->id}", 'url' => null],
             default => null,
         };
     }

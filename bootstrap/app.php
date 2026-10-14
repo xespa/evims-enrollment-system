@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureTwoFactorIsEnabled;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RedirectIfEnrolleeAuthenticated;
+use App\Http\Middleware\RedirectIfStudentAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -27,16 +28,20 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Families sign in on the portal; the Fortify login is for school staff.
-        $middleware->redirectGuestsTo(fn (Request $request) => $request->routeIs('portal.*', 'admission.*')
-            ? route('portal.login')
-            : route('login'));
+        // Families sign in on the portal, students with their LRN; the
+        // Fortify login is for school staff.
+        $middleware->redirectGuestsTo(fn (Request $request) => match (true) {
+            $request->routeIs('portal.*', 'admission.*') => route('portal.login'),
+            $request->routeIs('student.*') => route('student.login'),
+            default => route('login'),
+        });
 
         $middleware->alias([
             'staff.active' => EnsureStaffIsActive::class,
             'two-factor.required' => EnsureTwoFactorIsEnabled::class,
             'guest.enrollee' => RedirectIfEnrolleeAuthenticated::class,
             'enrollee.approved' => EnsureEnrolleeIsApproved::class,
+            'guest.student' => RedirectIfStudentAuthenticated::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

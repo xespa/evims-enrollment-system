@@ -44,6 +44,30 @@ class Student extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+    /**
+     * The student's sign-in account, once one has been requested.
+     *
+     * @return HasOne<StudentAccount, $this>
+     */
+    public function account(): HasOne
+    {
+        return $this->hasOne(StudentAccount::class);
+    }
+
+    /**
+     * The student's latest approved application that wasn't cancelled:
+     * what a student account is requested from.
+     */
+    public function latestApprovedEnrollment(): ?Enrollment
+    {
+        return $this->enrollments()
+            ->where('enrollment_status', 'APPROVED')
+            ->whereNull('cancelled_at')
+            ->orderByDesc('school_year')
+            ->latest('id')
+            ->first();
+    }
+
     public function latestEnrollment()
     {
         return $this->hasOne(Enrollment::class)->latestOfMany();

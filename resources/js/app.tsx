@@ -8,7 +8,6 @@ import SettingsLayout from '@/layouts/settings/layout';
 import EvimsAdminLayout from '@/layouts/EvimsAdminLayout';
 import SiteLayout from '@/layouts/SiteLayout';
 
-
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
@@ -20,6 +19,9 @@ createInertiaApp({
             case name.startsWith('Enrollment/'):
                 return SiteLayout;
             case name.startsWith('Portal/'):
+                return SiteLayout;
+            case name.startsWith('Student/'):
+            case name.startsWith('StudentConsent/'):
                 return SiteLayout;
             // Stands in for PayMongo's own hosted checkout, so it stays bare.
             case name === 'Payments/SandboxCheckout':

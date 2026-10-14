@@ -19,6 +19,8 @@ enum AuditAction: string
     case StaffDeactivated = 'staff_deactivated';
     case StaffReactivated = 'staff_reactivated';
     case DocumentUploaded = 'document_uploaded';
+    case StudentConsentRequested = 'student_consent_requested';
+    case StudentConsentAnswered = 'student_consent_answered';
 
     public function label(): string
     {
@@ -35,6 +37,8 @@ enum AuditAction: string
             self::StaffDeactivated => 'Deactivated account',
             self::StaffReactivated => 'Reactivated account',
             self::DocumentUploaded => 'Uploaded document',
+            self::StudentConsentRequested => 'Asked parent consent for a student account',
+            self::StudentConsentAnswered => 'Parent answered student account consent',
         };
     }
 

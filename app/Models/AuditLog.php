@@ -93,6 +93,8 @@ class AuditLog extends Model
                 .(($properties['replaced'] ?? false) ? ' (replaced the old file)' : ''),
             AuditAction::SignInFailed => isset($properties['email']) ? "as {$properties['email']}" : null,
             AuditAction::SignedIn => ($properties['remembered'] ?? false) ? 'stayed signed in' : null,
+            AuditAction::StudentConsentRequested => ($properties['resent'] ?? false) ? 'resent the email' : null,
+            AuditAction::StudentConsentAnswered => ($properties['agreed'] ?? false) ? 'agreed' : 'declined',
             default => null,
         };
     }

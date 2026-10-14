@@ -12,6 +12,7 @@ import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 import { formatAppointment } from '@/lib/document-appointment';
 import DocumentAppointment from '@/pages/Admin/Enrollments/Components/DocumentAppointment';
 import RejectApplicationDialog from '@/pages/Admin/Enrollments/Components/RejectApplicationDialog';
+import StudentAccountCard from '@/pages/Admin/Enrollments/Components/StudentAccountCard';
 import UploadDocumentForm from '@/pages/Admin/Enrollments/Components/UploadDocumentForm';
 import {
     formatMobileNumber,
@@ -553,6 +554,7 @@ export default function Show({
     previousSchoolYear,
     rejectionReasons,
     today,
+    studentAccount,
 }) {
     const { props } = usePage();
     const can = useStaffAbilities();
@@ -1040,6 +1042,13 @@ export default function Show({
                                 </p>
                             )}
                         </div>
+
+                        <StudentAccountCard
+                            studentId={student.id}
+                            studentName={studentName}
+                            account={studentAccount}
+                            canManage={can.reviewApplications}
+                        />
 
                         {/* Student info */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">

@@ -140,6 +140,16 @@ function appearance(notification: Notification): {
                         tone: 'bg-[#C6473B]/10 text-[#9A3329]',
                     };
             }
+        case 'student_account_consent':
+            return notification.data.status === 'ACTIVE'
+                ? {
+                      icon: UserRoundCheck,
+                      tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                  }
+                : {
+                      icon: CircleAlert,
+                      tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+                  };
         case 'account_reviewed':
             return notification.data.status === 'APPROVED'
                 ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' }

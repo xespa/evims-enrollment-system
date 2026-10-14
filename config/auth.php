@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\EnrolleeUser;
+use App\Models\StudentAccount;
 use App\Models\User;
 
 return [
@@ -47,6 +48,11 @@ return [
             'driver' => 'session',
             'provider' => 'enrollees',
         ],
+        // Students sign in with their LRN, once a parent has consented.
+        'student' => [
+            'driver' => 'session',
+            'provider' => 'student_accounts',
+        ],
     ],
 
     /*
@@ -75,6 +81,11 @@ return [
         'enrollees' => [
             'driver' => 'eloquent',
             'model' => EnrolleeUser::class,
+        ],
+
+        'student_accounts' => [
+            'driver' => 'eloquent',
+            'model' => StudentAccount::class,
         ],
     ],
 

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffAccountController;
 use App\Http\Controllers\Admin\StaffAccountDeactivationController;
 use App\Http\Controllers\Admin\StaffInvitationController;
+use App\Http\Controllers\Admin\StudentAccountConsentController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -134,6 +135,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
 
     Route::middleware('can:review-applications')->group(function () {
         Route::patch('students/{student}/lrn', [StudentController::class, 'assignLrn'])->name('students.lrn.update');
+        // Asking the parent to consent to the student's sign-in account.
+        Route::post('students/{student}/account-consent', [StudentAccountConsentController::class, 'store'])->name('students.account-consent.store');
         Route::post('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'store'])->name('enrollments.archive.store');
         Route::delete('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'destroy'])->name('enrollments.archive.destroy');
         Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
@@ -229,3 +232,4 @@ Route::middleware('guest')->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/portal.php';
+require __DIR__.'/student.php';
