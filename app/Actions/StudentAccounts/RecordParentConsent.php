@@ -12,16 +12,17 @@ use Illuminate\Support\Facades\Notification;
 
 /**
  * Records the parent's answer from the emailed link. Agreeing activates
- * the account with the first password the parent set; declining keeps it
- * from ever being used. Either way the link stops working.
+ * the account with the student's LRN as the first password, which the
+ * student is prompted to change; declining keeps it from ever being used.
+ * Either way the link stops working.
  */
 class RecordParentConsent
 {
-    public function handle(StudentAccount $account, bool $agreed, string $parentName, ?string $password = null): void
+    public function handle(StudentAccount $account, bool $agreed, string $parentName): void
     {
         $account->forceFill([
             'status' => $agreed ? StudentAccountStatus::Active : StudentAccountStatus::Declined,
-            'password' => $agreed ? $password : null,
+            'password' => $agreed ? $account->student->lrn : null,
             'consent_given_by' => $parentName,
             'consent_responded_at' => now(),
             'consent_token' => null,

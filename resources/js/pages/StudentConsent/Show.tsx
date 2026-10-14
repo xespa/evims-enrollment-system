@@ -2,7 +2,6 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { CheckCircle2, Clock, ShieldCheck, ShieldX } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
 import PortalAuthShell from '@/components/portal-auth-shell';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -60,9 +59,9 @@ function Outcome({ result }: { result: Result }) {
                         {' '}
                         (<span className="font-semibold">{result.lrn}</span>)
                     </>
-                )}{' '}
-                and the password you just set. They can change it after signing
-                in.
+                )}
+                . Their first password is also their LRN. Please help them
+                change it right after signing in, since others may know it.
             </p>
             <Link
                 href={studentLogin().url}
@@ -97,8 +96,6 @@ function ConsentForm({
         decision: '' as Decision | '',
         parent_name: '',
         consent: false,
-        password: '',
-        password_confirmation: '',
     });
 
     const agrees = data.decision === 'agree';
@@ -117,7 +114,7 @@ function ConsentForm({
         {
             value: 'agree',
             label: 'I agree',
-            description: 'Create the account and set the first password.',
+            description: 'Create the account for your child.',
             icon: ShieldCheck,
         },
         {
@@ -158,8 +155,7 @@ function ConsentForm({
                 </p>
                 <ul className="list-disc space-y-1 pl-5">
                     <li>
-                        Your child signs in with their LRN and a password to see
-                        their grades.
+                        Your child signs in with their LRN to see their grades.
                     </li>
                     <li>
                         Teachers record grades against the account, so they
@@ -238,48 +234,13 @@ function ConsentForm({
 
             {agrees && (
                 <>
-                    <div>
-                        <Label htmlFor="password" className={LABEL_CLASS}>
-                            First password for your child
-                        </Label>
-                        <PasswordInput
-                            id="password"
-                            value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
-                            autoComplete="new-password"
-                            required
-                            aria-invalid={errors.password ? true : undefined}
-                            aria-describedby="password-help"
-                            className={INPUT_CLASS}
-                        />
-                        <p
-                            id="password-help"
-                            className="mt-1 text-xs text-[#1F2A24]/60"
-                        >
-                            Your child can change it after signing in.
-                        </p>
-                        <InputError message={errors.password} />
-                    </div>
-                    <div>
-                        <Label
-                            htmlFor="password_confirmation"
-                            className={LABEL_CLASS}
-                        >
-                            Confirm password
-                        </Label>
-                        <PasswordInput
-                            id="password_confirmation"
-                            value={data.password_confirmation}
-                            onChange={(e) =>
-                                setData('password_confirmation', e.target.value)
-                            }
-                            autoComplete="new-password"
-                            required
-                            className={INPUT_CLASS}
-                        />
-                    </div>
+                    <p className="rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 p-3 text-sm text-[#7a4d0b]">
+                        Your child's first password will be their LRN (
+                        <span className="font-semibold tabular-nums">
+                            {request.lrn}
+                        </span>
+                        ). They'll be reminded to change it after signing in.
+                    </p>
                     <label className="flex items-start gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-3 text-sm text-[#1F2A24]">
                         <input
                             type="checkbox"

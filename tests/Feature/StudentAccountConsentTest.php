@@ -55,7 +55,7 @@ test('a wrong, used or expired link shows nothing about the student', function (
         ->assertInertia(fn (Assert $page) => $page->where('request', null));
 });
 
-test('agreeing activates the account with the password the parent set', function () {
+test('agreeing activates the account with the LRN as the first password', function () {
     [$account, $token] = awaitingConsent();
     $registrar = User::factory()->create(['role' => 'REGISTRAR']);
 
@@ -63,8 +63,8 @@ test('agreeing activates the account with the password the parent set', function
         'decision' => 'agree',
         'parent_name' => 'Maria Cruz',
         'consent' => true,
-        'password' => 'Secret-Pass-123',
-        'password_confirmation' => 'Secret-Pass-123',
+        // A parent can't choose the password.
+        'password' => 'Parent-Chosen-1',
     ])
         ->assertRedirect(route('student-consent.show', $token))
         ->assertSessionHas('consent_result.agreed', true);
@@ -72,7 +72,7 @@ test('agreeing activates the account with the password the parent set', function
     $account->refresh();
 
     expect($account->status)->toBe(StudentAccountStatus::Active)
-        ->and(Hash::check('Secret-Pass-123', $account->password))->toBeTrue()
+        ->and(Hash::check('123456789012', $account->password))->toBeTrue()
         ->and($account->consent_given_by)->toBe('Maria Cruz')
         ->and($account->consent_responded_at)->not->toBeNull()
         ->and($account->consent_token)->toBeNull();
@@ -99,15 +99,13 @@ test('declining keeps the account from being used', function () {
         ->and($account->consent_token)->toBeNull();
 });
 
-test('agreeing needs the consent box, a name and a confirmed password', function (array $answer, string $field) {
+test('agreeing needs the consent box and a name', function (array $answer, string $field) {
     [$account, $token] = awaitingConsent();
 
     $this->put(route('student-consent.update', $token), [
         'decision' => 'agree',
         'parent_name' => 'Maria Cruz',
         'consent' => true,
-        'password' => 'Secret-Pass-123',
-        'password_confirmation' => 'Secret-Pass-123',
         ...$answer,
     ])->assertSessionHasErrors($field);
 
@@ -115,8 +113,6 @@ test('agreeing needs the consent box, a name and a confirmed password', function
 })->with([
     'no consent box' => [['consent' => false], 'consent'],
     'no name' => [['parent_name' => ''], 'parent_name'],
-    'no password' => [['password' => '', 'password_confirmation' => ''], 'password'],
-    'mismatched confirmation' => [['password_confirmation' => 'Different-Pass-1'], 'password'],
     'unknown decision' => [['decision' => 'maybe'], 'decision'],
 ]);
 

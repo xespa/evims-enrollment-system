@@ -3,12 +3,14 @@
 namespace App\Http\Requests\Student;
 
 use App\Models\StudentAccount;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * A signed-in student replacing the first password their parent set.
+ * A signed-in student replacing their password. The first one is their
+ * LRN, which others can know, so it can't be chosen again.
  */
 class UpdatePasswordRequest extends FormRequest
 {
@@ -24,7 +26,19 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'current_password:student'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::defaults(),
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    /** @var StudentAccount $account */
+                    $account = $this->user('student');
+
+                    if ($value === $account->student->lrn) {
+                        $fail('Choose a password other than your LRN.');
+                    }
+                },
+            ],
         ];
     }
 }

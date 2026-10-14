@@ -118,3 +118,34 @@ test('a student can sign out', function () {
 
     $this->assertGuest('student');
 });
+
+test('a new student signs in with their LRN as the password and is told to change it', function () {
+    $account = studentWithAccount();
+    $account->forceFill(['password' => '123456789012'])->save();
+
+    $this->post(route('student.login.store'), ['lrn' => '123456789012', 'password' => '123456789012'])
+        ->assertRedirect(route('student.dashboard'));
+
+    $this->get(route('student.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('usesDefaultPassword', true));
+});
+
+test('the reminder goes away once the password is changed', function () {
+    $this->actingAs(studentWithAccount(), 'student')
+        ->get(route('student.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('usesDefaultPassword', false));
+});
+
+test('the LRN cannot be chosen as a new password', function () {
+    $account = studentWithAccount();
+
+    $this->actingAs($account, 'student')
+        ->put(route('student.password.update'), [
+            'current_password' => 'Secret-Pass-123',
+            'password' => '123456789012',
+            'password_confirmation' => '123456789012',
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect(Hash::check('Secret-Pass-123', $account->refresh()->password))->toBeTrue();
+});

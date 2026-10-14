@@ -1,5 +1,11 @@
 import { Form, Head, router, usePage } from '@inertiajs/react';
-import { BookOpenCheck, CheckCircle2, KeyRound, LogOut } from 'lucide-react';
+import {
+    BookOpenCheck,
+    CheckCircle2,
+    KeyRound,
+    LogOut,
+    ShieldAlert,
+} from 'lucide-react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +21,8 @@ type Props = {
         grade_level: string | null;
         school_year: string | null;
     };
+    /** Still signing in with the starting password, their LRN. */
+    usesDefaultPassword: boolean;
 };
 
 const INPUT_CLASS =
@@ -23,7 +31,7 @@ const INPUT_CLASS =
 const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
 
 /** The signed-in student's home. Grades appear here once teachers post them. */
-export default function Dashboard({ student }: Props) {
+export default function Dashboard({ student, usesDefaultPassword }: Props) {
     const flashSuccess = usePage().props.flash?.success;
 
     return (
@@ -74,6 +82,33 @@ export default function Dashboard({ student }: Props) {
                         </div>
                     )}
 
+                    {usesDefaultPassword && (
+                        <div
+                            role="alert"
+                            className="flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <p className="flex items-start gap-2">
+                                <ShieldAlert
+                                    className="mt-0.5 h-4 w-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <span>
+                                    <span className="font-semibold">
+                                        Your password is still your LRN.
+                                    </span>{' '}
+                                    Others can know your LRN, so change it to
+                                    one only you know.
+                                </span>
+                            </p>
+                            <a
+                                href="#password-heading"
+                                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                            >
+                                Change password
+                            </a>
+                        </div>
+                    )}
+
                     <section
                         aria-labelledby="grades-heading"
                         className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
@@ -111,8 +146,8 @@ export default function Dashboard({ student }: Props) {
                             Change password
                         </h2>
                         <p className="mb-4 text-sm text-[#1F2A24]/65">
-                            Replace the password your parent or guardian set
-                            with one only you know.
+                            Your first password is your LRN. Change it to one
+                            only you know.
                         </p>
                         <Form
                             {...updatePassword.form()}

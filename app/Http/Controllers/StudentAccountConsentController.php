@@ -52,12 +52,7 @@ class StudentAccountConsentController extends Controller
 
         $agreed = $request->agreed();
 
-        $recordParentConsent->handle(
-            $account,
-            $agreed,
-            $request->string('parent_name')->trim()->toString(),
-            $agreed ? $request->validated('password') : null,
-        );
+        $recordParentConsent->handle($account, $agreed, $request->string('parent_name')->trim()->toString());
 
         return redirect()->route('student-consent.show', $token)->with('consent_result', [
             'agreed' => $agreed,

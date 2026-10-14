@@ -22,8 +22,8 @@ export default function Login() {
 
             <PortalAuthShell
                 title="Student sign in"
-                description="Use your LRN and the password your parent or guardian set for you."
-                footer="Don't have a password yet? Your parent or guardian sets it when they agree to your account."
+                description="Sign in with your LRN. If this is your first time, your password is also your LRN."
+                footer="Your account works once your parent or guardian agrees to it."
             >
                 <Form
                     {...signIn.form()}
@@ -43,7 +43,7 @@ export default function Login() {
                                     required
                                     autoFocus
                                     autoComplete="username"
-                                    placeholder="12-digit number on your report card"
+                                    placeholder="As printed on your report card"
                                     aria-invalid={errors.lrn ? true : undefined}
                                     className={`${INPUT_CLASS} tabular-nums`}
                                 />

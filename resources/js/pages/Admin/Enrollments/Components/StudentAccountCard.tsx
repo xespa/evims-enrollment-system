@@ -75,7 +75,7 @@ export default function StudentAccountCard({
                 : `Ask for consent to ${studentName}'s account?`,
             description: isAwaiting
                 ? 'The parent gets a fresh link, and the earlier one stops working.'
-                : "We'll email the parent or guardian on file a link to agree or decline. If they agree, they set the first password and the student signs in with their LRN.",
+                : "We'll email the parent or guardian on file a link to agree or decline. If they agree, the student signs in with their LRN, which is also their first password.",
             confirmLabel: isAwaiting ? 'Resend email' : 'Send consent email',
         });
 
