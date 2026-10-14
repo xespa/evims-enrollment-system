@@ -57,7 +57,6 @@ class StudentAccountConsentController extends Controller
         return redirect()->route('student-consent.show', $token)->with('consent_result', [
             'agreed' => $agreed,
             'student_first_name' => $account->student->first_name,
-            'lrn' => $agreed ? $account->student->lrn : null,
         ]);
     }
 }

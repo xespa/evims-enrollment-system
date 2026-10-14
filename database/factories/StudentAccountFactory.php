@@ -42,6 +42,20 @@ class StudentAccountFactory extends Factory
         ]);
     }
 
+    /**
+     * The parent agreed; waiting for staff to create the account.
+     */
+    public function consentGiven(): static
+    {
+        return $this->state(fn () => [
+            'status' => StudentAccountStatus::ConsentGiven,
+            'password' => null,
+            'consent_given_by' => fake()->name(),
+            'consent_responded_at' => now(),
+            'consent_expires_at' => null,
+        ]);
+    }
+
     public function declined(): static
     {
         return $this->state(fn () => [

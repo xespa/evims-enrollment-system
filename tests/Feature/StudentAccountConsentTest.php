@@ -6,7 +6,6 @@ use App\Models\Student;
 use App\Models\StudentAccount;
 use App\Models\User;
 use App\Notifications\StudentAccountConsentAnswered;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -55,7 +54,7 @@ test('a wrong, used or expired link shows nothing about the student', function (
         ->assertInertia(fn (Assert $page) => $page->where('request', null));
 });
 
-test('agreeing activates the account with the LRN as the first password', function () {
+test('agreeing lets staff create the account, but does not activate it yet', function () {
     [$account, $token] = awaitingConsent();
     $registrar = User::factory()->create(['role' => 'REGISTRAR']);
 
@@ -71,8 +70,8 @@ test('agreeing activates the account with the LRN as the first password', functi
 
     $account->refresh();
 
-    expect($account->status)->toBe(StudentAccountStatus::Active)
-        ->and(Hash::check('123456789012', $account->password))->toBeTrue()
+    expect($account->status)->toBe(StudentAccountStatus::ConsentGiven)
+        ->and($account->password)->toBeNull()
         ->and($account->consent_given_by)->toBe('Maria Cruz')
         ->and($account->consent_responded_at)->not->toBeNull()
         ->and($account->consent_token)->toBeNull();

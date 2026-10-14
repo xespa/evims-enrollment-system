@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { CheckCircle2, Clock, ShieldCheck, ShieldX } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import { login } from '@/routes';
 import { update as answerConsent } from '@/routes/student-consent';
 
 type ConsentRequest = {
@@ -21,7 +20,6 @@ type ConsentRequest = {
 type Result = {
     agreed: boolean;
     student_first_name: string;
-    lrn: string | null;
 };
 
 type Props = {
@@ -48,27 +46,16 @@ function Outcome({ result }: { result: Result }) {
                     aria-hidden="true"
                 />
                 <p>
-                    Thank you. {result.student_first_name}'s account is now
-                    active.
+                    Thank you for your consent. The school will now create{' '}
+                    {result.student_first_name}'s account, and we'll email you
+                    when it's ready.
                 </p>
             </div>
             <p>
-                {result.student_first_name} signs in with their LRN
-                {result.lrn && (
-                    <>
-                        {' '}
-                        (<span className="font-semibold">{result.lrn}</span>)
-                    </>
-                )}
-                . Their first password is also their LRN. Please help them
-                change it right after signing in, since others may know it.
+                {result.student_first_name} will sign in with their LRN. Their
+                first password is also their LRN, so please help them change it
+                right after signing in, since others may know it.
             </p>
-            <Link
-                href={login({ query: { role: 'STUDENT' } }).url}
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
-            >
-                Go to student sign in
-            </Link>
         </div>
     ) : (
         <div className="flex items-start gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] p-4 text-sm text-[#1F2A24]/80">
@@ -114,7 +101,7 @@ function ConsentForm({
         {
             value: 'agree',
             label: 'I agree',
-            description: 'Create the account for your child.',
+            description: 'The school creates the account for your child.',
             icon: ShieldCheck,
         },
         {
@@ -268,7 +255,7 @@ function ConsentForm({
                 {processing && <Spinner />}
                 {data.decision === 'decline'
                     ? 'Decline the account'
-                    : 'Give consent and create the account'}
+                    : 'Give consent'}
             </button>
         </form>
     );
@@ -287,7 +274,7 @@ export default function Show({ token, request, result }: Props) {
                 title={
                     result
                         ? result.agreed
-                            ? 'Account created'
+                            ? 'Consent recorded'
                             : 'Request declined'
                         : 'Your consent is needed'
                 }

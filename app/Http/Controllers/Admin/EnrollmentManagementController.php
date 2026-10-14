@@ -12,7 +12,6 @@ use App\Mail\RegistrationFormIssued;
 use App\Models\Enrollment;
 use App\Models\EnrollmentPeriod;
 use App\Models\OfficeVerification;
-use App\Models\Student;
 use App\Models\User;
 use App\Notifications\DocumentReminder;
 use App\Notifications\EnrollmentStatusChanged;
@@ -68,7 +67,7 @@ class EnrollmentManagementController extends Controller
             'previousSchoolYear' => $enrollment->previousApprovedEnrollment()?->school_year,
             // The earliest date an in-person document appointment can be set.
             'today' => EnrollmentPeriod::today()->toDateString(),
-            'studentAccount' => $this->studentAccountSummary($enrollment->student),
+            'studentAccount' => $enrollment->student->accountSummary($enrollment->student->latestApprovedEnrollment()),
             'rejectionReasons' => array_map(
                 fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
                 EnrollmentRejectionReason::cases(),
@@ -227,31 +226,5 @@ class EnrollmentManagementController extends Controller
         return redirect()
             ->route('admin.students.index')
             ->with('success', "Application for {$studentName} was permanently deleted.");
-    }
-
-    /**
-     * Where the student's sign-in account stands, and what stops one being
-     * requested yet (no LRN, or no approved application).
-     *
-     * @return array{status: string|null, status_label: string|null, consent_email: string|null, requested_at: string|null, expires_at: string|null, responded_at: string|null, consent_given_by: string|null, blocker: string|null}
-     */
-    private function studentAccountSummary(Student $student): array
-    {
-        $account = $student->account;
-
-        return [
-            'status' => $account?->status->value,
-            'status_label' => $account?->status->label(),
-            'consent_email' => $account?->consent_email,
-            'requested_at' => $account?->consent_requested_at->toIso8601String(),
-            'expires_at' => $account?->consent_expires_at?->toIso8601String(),
-            'responded_at' => $account?->consent_responded_at?->toIso8601String(),
-            'consent_given_by' => $account?->consent_given_by,
-            'blocker' => match (true) {
-                ! $student->lrn => 'Assign an LRN first; the account is bound to it.',
-                $student->latestApprovedEnrollment() === null => 'Available once an application is approved.',
-                default => null,
-            },
-        ];
     }
 }

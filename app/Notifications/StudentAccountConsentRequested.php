@@ -33,7 +33,7 @@ class StudentAccountConsentRequested extends Notification
             ->greeting('Dear Parent/Guardian,')
             ->line("The school would like to create a student account for **{$student->first_name} {$student->last_name}**.")
             ->line("The account is tied to {$student->first_name}'s LRN. It lets {$student->first_name} sign in to see their grades, and lets their teachers record grades against the right student.")
-            ->line("We need your consent first. If you agree, {$student->first_name} signs in with their LRN, which is also their first password; they'll be asked to change it after signing in. You can also decline.")
+            ->line("We need your consent first. If you agree, the school creates the account and emails you when it's ready. {$student->first_name} then signs in with their LRN, which is also their first password; they'll be asked to change it after signing in. You can also decline.")
             ->action('Review and Respond', route('student-consent.show', $this->token))
             ->line('This link works once and expires in '.StudentAccount::CONSENT_LINK_DAYS.' days.')
             ->line("If you weren't expecting this, you can ignore this email; no account is created without your consent.");

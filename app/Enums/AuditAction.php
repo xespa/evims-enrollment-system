@@ -24,6 +24,7 @@ enum AuditAction: string
     case DocumentUploaded = 'document_uploaded';
     case StudentConsentRequested = 'student_consent_requested';
     case StudentConsentAnswered = 'student_consent_answered';
+    case StudentAccountCreated = 'student_account_created';
 
     public function label(): string
     {
@@ -45,6 +46,7 @@ enum AuditAction: string
             self::DocumentUploaded => 'Uploaded document',
             self::StudentConsentRequested => 'Asked parent consent for a student account',
             self::StudentConsentAnswered => 'Parent answered student account consent',
+            self::StudentAccountCreated => 'Created a student account',
         };
     }
 

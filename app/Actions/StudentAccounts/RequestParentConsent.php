@@ -16,7 +16,8 @@ use Illuminate\Validation\ValidationException;
 /**
  * Emails a student's parent or guardian a one-time link to consent to (or
  * decline) a student account. Sending again replaces the earlier link.
- * Nothing about the account is usable until the parent consents.
+ * Nothing about the account is usable until the parent consents and staff
+ * then create it.
  */
 class RequestParentConsent
 {
@@ -30,6 +31,10 @@ class RequestParentConsent
 
         if ($existing?->isActive()) {
             throw ValidationException::withMessages(['account' => 'This student already has an active account.']);
+        }
+
+        if ($existing?->status === StudentAccountStatus::ConsentGiven) {
+            throw ValidationException::withMessages(['account' => 'The parent already consented. Create the account instead.']);
         }
 
         [$account, $token] = DB::transaction(function () use ($student, $requestedBy, $parentEmail) {
