@@ -4,6 +4,7 @@ use App\Http\Controllers\Portal\AccountStatusController;
 use App\Http\Controllers\Portal\AuthController;
 use App\Http\Controllers\Portal\DashboardController;
 use App\Http\Controllers\Portal\NotificationController;
+use App\Http\Controllers\Portal\ParentEmailController;
 use App\Http\Controllers\Portal\PaymentMethodController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\Portal\ReapplicationController;
@@ -47,6 +48,10 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::middleware('verified:portal.verification.notice')->group(function () {
             Route::get('account-status', AccountStatusController::class)->name('account-status');
             Route::put('valid-id', [ValidIdController::class, 'update'])->name('valid-id.update');
+            // A student sending their parent the confirmation again.
+            Route::put('parent-email', [ParentEmailController::class, 'update'])
+                ->middleware('throttle:6,1')
+                ->name('parent-email.update');
 
             // An admin has to approve the account before it can use the portal.
             Route::middleware('enrollee.approved')->group(function () {

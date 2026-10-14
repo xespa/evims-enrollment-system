@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Portal;
 
+use App\Actions\EnrolleeAccounts\RequestParentConfirmation;
 use App\Enums\AccountRole;
 use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
@@ -28,7 +29,7 @@ class AuthController extends Controller
         return redirect()->route('register', ['role' => AccountRole::ParentGuardian->value]);
     }
 
-    public function store(StoreEnrolleeUserRequest $request): RedirectResponse
+    public function store(StoreEnrolleeUserRequest $request, RequestParentConfirmation $requestParentConfirmation): RedirectResponse
     {
         $enrollee = EnrolleeUser::create([
             ...$request->safe()->only(['account_type', 'name', 'email', 'password']),
@@ -42,6 +43,10 @@ class AuthController extends Controller
 
         $enrollee->sendEmailVerificationNotification();
         $enrollee->notify(new ConfirmEmailReminder);
+
+        if ($enrollee->isStudentAccount()) {
+            $requestParentConfirmation->handle($enrollee, $request->string('parent_email')->toString());
+        }
 
         return redirect()->route('portal.verification.notice');
     }

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\AccountRejectionReason;
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
+use App\Enums\ParentConfirmationStatus;
 use App\Models\EnrolleeUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +41,19 @@ class EnrolleeUserFactory extends Factory
         return $this->state([
             'account_status' => AccountStatus::Pending,
             'reviewed_at' => null,
+        ]);
+    }
+
+    /**
+     * A student's own account, whose parent has (by default) confirmed it.
+     */
+    public function student(ParentConfirmationStatus $parentConfirmation = ParentConfirmationStatus::Confirmed): static
+    {
+        return $this->state([
+            'account_type' => AccountType::Student,
+            'parent_email' => fake()->unique()->safeEmail(),
+            'parent_confirmation_status' => $parentConfirmation,
+            'parent_responded_at' => $parentConfirmation === ParentConfirmationStatus::Awaiting ? null : now(),
         ]);
     }
 

@@ -31,6 +31,8 @@ type Notification = {
     data: {
         type?: string;
         status?: string;
+        /** Set on parent_confirmation_answered. */
+        confirmed?: boolean;
         title: string;
         message: string;
         url?: string;
@@ -123,6 +125,16 @@ function appearance(notification: Notification): {
             return { icon: Mail, tone: 'bg-[#E8A33D]/15 text-[#8A5A12]' };
         case 'email_confirmed':
             return { icon: MailCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+        case 'parent_confirmation_answered':
+            return notification.data.confirmed
+                ? {
+                      icon: UserRoundCheck,
+                      tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                  }
+                : {
+                      icon: UserRoundCheck,
+                      tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                  };
         case 'enrollment_period':
             switch (notification.data.status) {
                 case 'OPENING_SOON':

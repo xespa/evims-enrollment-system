@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Enums\AccountRejectionReason;
 use App\Enums\AccountStatus;
+use App\Enums\ParentConfirmationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\EnrolleeUser;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,14 @@ class AccountStatusController extends Controller
             'rejectionNote' => $enrollee->rejection_reason,
             // Pending again after a rejection: they've already sent a new ID.
             'hasResubmittedId' => $enrollee->account_status === AccountStatus::Pending && $enrollee->reviewed_at !== null,
+            // Students wait on their parent or guardian before the school
+            // reviews them; null for parent accounts.
+            'parentConfirmation' => $enrollee->isStudentAccount() ? [
+                'status' => $enrollee->parent_confirmation_status,
+                'email' => $enrollee->parent_email,
+                'isLinkExpired' => $enrollee->parent_confirmation_status === ParentConfirmationStatus::Awaiting
+                    && $enrollee->parent_confirmation_expires_at?->isPast(),
+            ] : null,
         ]);
     }
 }

@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { IdCard, MailCheck, MailWarning } from 'lucide-react';
+import { IdCard, MailCheck, MailWarning, UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import DocumentViewerDialog from '@/components/document-viewer-dialog';
@@ -51,6 +51,9 @@ type EnrolleeAccount = {
     rejection_reason: string | null;
     /** Null for accounts created before the type was asked for. */
     account_type: AccountType | null;
+    /** Who confirms a student account; null for parent accounts. */
+    parent_email: string | null;
+    parent_confirmation_status: 'AWAITING' | 'CONFIRMED' | 'DECLINED' | null;
     has_valid_id: boolean;
     valid_id_is_pdf: boolean;
     created_at: string;
@@ -314,6 +317,9 @@ function AccountSummary({
                     Email not confirmed
                 </span>
             )}
+            {account.account_type === 'STUDENT' && (
+                <ParentConfirmationBadge account={account} />
+            )}
             {account.has_valid_id ? (
                 <button
                     type="button"
@@ -329,6 +335,45 @@ function AccountSummary({
                 </span>
             )}
         </>
+    );
+}
+
+/** Whether a student account's parent or guardian has confirmed it. */
+function ParentConfirmationBadge({ account }: { account: EnrolleeAccount }) {
+    const isConfirmed = account.parent_confirmation_status === 'CONFIRMED';
+    const label = isConfirmed
+        ? 'Parent confirmed'
+        : account.parent_confirmation_status === 'DECLINED'
+          ? 'Parent declined'
+          : 'Waiting for parent';
+
+    return (
+        <span
+            title={account.parent_email ?? undefined}
+            className={`mt-1 flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                isConfirmed
+                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                    : account.parent_confirmation_status === 'DECLINED'
+                      ? 'bg-[#C6473B]/10 text-[#9A3329]'
+                      : 'bg-[#E8A33D]/15 text-[#a4670f]'
+            }`}
+        >
+            <UserRoundCheck className="h-3 w-3" aria-hidden="true" />
+            {label}
+            {account.parent_email && (
+                <span className="font-normal break-all">
+                    · {account.parent_email}
+                </span>
+            )}
+        </span>
+    );
+}
+
+/** A student account the school can't approve until a parent confirms it. */
+function isWaitingOnParent(account: EnrolleeAccount): boolean {
+    return (
+        account.account_type === 'STUDENT' &&
+        account.parent_confirmation_status !== 'CONFIRMED'
     );
 }
 
@@ -419,8 +464,13 @@ function AccountActions({
     onReject: () => void;
 }) {
     const blockedHintId = `${idPrefix}-approve-blocked-${account.id}`;
+    const blockedReason = !account.email_verified_at
+        ? 'waiting for them to confirm their email'
+        : isWaitingOnParent(account)
+          ? 'waiting for their parent or guardian to confirm it'
+          : null;
     const isApprovalBlocked =
-        account.account_status !== 'APPROVED' && !account.email_verified_at;
+        account.account_status !== 'APPROVED' && blockedReason !== null;
     const buttonSize = isStacked
         ? 'min-h-11 flex-1 px-4 text-sm'
         : 'min-h-9 px-4 text-xs';
@@ -429,7 +479,7 @@ function AccountActions({
         <>
             <div className="flex flex-wrap gap-2">
                 {account.account_status !== 'APPROVED' &&
-                    (account.email_verified_at ? (
+                    (!isApprovalBlocked ? (
                         <button
                             type="button"
                             onClick={onApprove}
@@ -442,7 +492,7 @@ function AccountActions({
                             type="button"
                             disabled
                             aria-describedby={blockedHintId}
-                            title="Can't approve until the email is confirmed"
+                            title={`Can't approve yet — ${blockedReason}`}
                             className={`${buttonSize} cursor-not-allowed rounded-full bg-[#1F2A24]/10 font-semibold text-[#1F2A24]/45`}
                         >
                             Approve
@@ -467,7 +517,7 @@ function AccountActions({
                         isStacked ? '' : 'max-w-[12rem]'
                     }`}
                 >
-                    Can't approve yet — waiting for them to confirm their email.
+                    Can't approve yet — {blockedReason}.
                 </p>
             )}
         </>

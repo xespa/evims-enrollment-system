@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Enums\AccountRejectionReason;
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
+use App\Enums\ParentConfirmationStatus;
 use App\Notifications\VerifyEnrolleeEmail;
 use Database\Factories\EnrolleeUserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,9 +20,15 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 /**
  * @property AccountType|null $account_type
+ * @property string|null $parent_email Who confirms a student account.
+ * @property ParentConfirmationStatus|null $parent_confirmation_status
+ * @property string|null $parent_confirmation_token Hashed; see issueParentConfirmationToken().
+ * @property Carbon|null $parent_confirmation_expires_at
+ * @property Carbon|null $parent_responded_at
  * @property AccountStatus $account_status
  * @property Carbon|null $reviewed_at
  * @property int|null $reviewed_by
@@ -40,7 +48,10 @@ class EnrolleeUser extends Authenticatable implements MustVerifyEmail
      * The ID's storage path is never sent to the browser — admins view the
      * file through an authorized route instead.
      */
-    protected $hidden = ['password', 'remember_token', 'valid_id_path'];
+    protected $hidden = ['password', 'remember_token', 'valid_id_path', 'parent_confirmation_token'];
+
+    /** How long the link emailed to a student's parent stays usable. */
+    public const PARENT_CONFIRMATION_LINK_DAYS = 7;
 
     protected $appends = ['profile_photo_url'];
 
@@ -50,6 +61,9 @@ class EnrolleeUser extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'account_type' => AccountType::class,
+            'parent_confirmation_status' => ParentConfirmationStatus::class,
+            'parent_confirmation_expires_at' => 'datetime',
+            'parent_responded_at' => 'datetime',
             'account_status' => AccountStatus::class,
             'reviewed_at' => 'datetime',
             'rejection_reasons' => AsEnumCollection::of(AccountRejectionReason::class),
@@ -93,6 +107,82 @@ class EnrolleeUser extends Authenticatable implements MustVerifyEmail
     public function isApproved(): bool
     {
         return $this->account_status === AccountStatus::Approved;
+    }
+
+    public function isStudentAccount(): bool
+    {
+        return $this->account_type === AccountType::Student;
+    }
+
+    /**
+     * A student account its parent or guardian hasn't confirmed (yet, or
+     * at all). Parent accounts never wait on this.
+     */
+    public function needsParentConfirmation(): bool
+    {
+        return $this->isStudentAccount() && $this->parent_confirmation_status !== ParentConfirmationStatus::Confirmed;
+    }
+
+    /**
+     * Pending, with a confirmed email and (for students) a confirming
+     * parent: the point where admins can review it.
+     */
+    public function isReadyForReview(): bool
+    {
+        return $this->account_status === AccountStatus::Pending
+            && $this->hasVerifiedEmail()
+            && ! $this->needsParentConfirmation();
+    }
+
+    /**
+     * Starts a new parent confirmation: a fresh one-time token, replacing
+     * any earlier link. Returns the plain token for the email; only its
+     * hash is stored.
+     */
+    public function issueParentConfirmationToken(string $parentEmail): string
+    {
+        $token = Str::random(64);
+
+        $this->forceFill([
+            'parent_email' => $parentEmail,
+            'parent_confirmation_status' => ParentConfirmationStatus::Awaiting,
+            'parent_confirmation_token' => self::hashParentConfirmationToken($token),
+            'parent_confirmation_expires_at' => now()->addDays(self::PARENT_CONFIRMATION_LINK_DAYS),
+            'parent_responded_at' => null,
+        ])->save();
+
+        return $token;
+    }
+
+    /**
+     * Records the parent's answer and retires the link.
+     */
+    public function recordParentAnswer(bool $confirmed): void
+    {
+        $this->forceFill([
+            'parent_confirmation_status' => $confirmed ? ParentConfirmationStatus::Confirmed : ParentConfirmationStatus::Declined,
+            'parent_confirmation_token' => null,
+            'parent_confirmation_expires_at' => null,
+            'parent_responded_at' => now(),
+        ])->save();
+    }
+
+    /**
+     * The account a parent confirmation link points to, while the link is
+     * still unanswered and unexpired.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeWithUsableParentConfirmationToken(Builder $query, string $token): void
+    {
+        $query->where('parent_confirmation_token', self::hashParentConfirmationToken($token))
+            ->where('parent_confirmation_status', ParentConfirmationStatus::Awaiting)
+            ->where('parent_confirmation_expires_at', '>', now());
+    }
+
+    public static function hashParentConfirmationToken(string $token): string
+    {
+        return hash('sha256', $token);
     }
 
     /**

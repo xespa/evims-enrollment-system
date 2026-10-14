@@ -22,6 +22,8 @@ function registrationAs(?string $accountType): array
         'account_type' => $accountType,
         'name' => 'Ana Reyes',
         'email' => 'ana@example.com',
+        // Only asked of students; ignored for parent accounts.
+        'parent_email' => 'parent-of-ana@example.com',
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'valid_id' => UploadedFile::fake()->image('school-id.jpg'),

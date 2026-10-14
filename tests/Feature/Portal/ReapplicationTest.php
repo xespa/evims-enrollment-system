@@ -3,10 +3,12 @@
 use App\Enums\AccountRejectionReason;
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
+use App\Enums\ParentConfirmationStatus;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\User;
 use App\Notifications\EnrolleeAccountAwaitingReview;
+use App\Notifications\ParentConfirmationRequested;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -70,7 +72,7 @@ test('creating the account again sends it back for review and logs them in', fun
     $oldIdPath = $enrollee->valid_id_path;
     $enrollment = Enrollment::factory()->create(['enrollee_user_id' => $enrollee->id]);
 
-    $this->post(reapplyActionFor($enrollee), reapplicationPayload(['account_type' => 'STUDENT']))
+    $this->post(reapplyActionFor($enrollee), reapplicationPayload(['account_type' => 'STUDENT', 'parent_email' => 'mom@example.com']))
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('portal.account-status'));
 
@@ -79,6 +81,8 @@ test('creating the account again sends it back for review and logs them in', fun
     expect($enrollee->account_status)->toBe(AccountStatus::Pending)
         ->and($enrollee->name)->toBe('Maria Santos Reyes')
         ->and($enrollee->account_type)->toBe(AccountType::Student)
+        ->and($enrollee->parent_email)->toBe('mom@example.com')
+        ->and($enrollee->parent_confirmation_status)->toBe(ParentConfirmationStatus::Awaiting)
         ->and(Hash::check('new-password-123', $enrollee->password))->toBeTrue()
         ->and($enrollee->email)->toBe('maria@example.com')
         ->and($enrollee->terms_accepted_at)->not->toBeNull()
@@ -87,6 +91,22 @@ test('creating the account again sends it back for review and logs them in', fun
     Storage::disk('local')->assertExists($enrollee->valid_id_path);
     Storage::disk('local')->assertMissing($oldIdPath);
     $this->assertAuthenticatedAs($enrollee, 'enrollee');
+});
+
+test('a student starting over keeps a parent confirmation from the same parent', function () {
+    Notification::fake();
+    $enrollee = rejectedAccount();
+    $enrollee->forceFill([
+        'account_type' => AccountType::Student,
+        'parent_email' => 'mom@example.com',
+        'parent_confirmation_status' => ParentConfirmationStatus::Confirmed,
+    ])->save();
+
+    $this->post(reapplyActionFor($enrollee), reapplicationPayload(['account_type' => 'STUDENT', 'parent_email' => 'mom@example.com']))
+        ->assertSessionHasNoErrors();
+
+    expect($enrollee->refresh()->parent_confirmation_status)->toBe(ParentConfirmationStatus::Confirmed);
+    Notification::assertSentOnDemandTimes(ParentConfirmationRequested::class, 0);
 });
 
 test('admins see the account back in the pending queue', function () {

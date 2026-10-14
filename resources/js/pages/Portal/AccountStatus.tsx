@@ -1,14 +1,27 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { AlertCircle, Clock, FileCheck2, Upload } from 'lucide-react';
+import {
+    AlertCircle,
+    Clock,
+    FileCheck2,
+    Upload,
+    UserRoundCheck,
+} from 'lucide-react';
 import type { FormEvent } from 'react';
 import AcceptedIdsDialog from '@/components/accepted-ids-dialog';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { update as updateParentEmail } from '@/routes/portal/parent-email';
 
 type RejectionReason = {
     label: string;
     guidance: string;
+};
+
+type ParentConfirmation = {
+    status: 'AWAITING' | 'CONFIRMED' | 'DECLINED' | null;
+    email: string | null;
+    isLinkExpired: boolean;
 };
 
 type Props = {
@@ -17,7 +30,92 @@ type Props = {
     rejectionNote: string | null;
     /** Pending again because a new ID was sent after a rejection. */
     hasResubmittedId: boolean;
+    /** Only for student accounts, which a parent or guardian confirms. */
+    parentConfirmation: ParentConfirmation | null;
 };
+
+/**
+ * A student waiting on their parent or guardian: where the confirmation
+ * stands, and a way to send it again (to the same or another email).
+ */
+function ParentConfirmationCard({
+    parentConfirmation,
+}: {
+    parentConfirmation: ParentConfirmation;
+}) {
+    const { data, setData, put, processing, errors } = useForm({
+        parent_email: parentConfirmation.email ?? '',
+    });
+
+    const isDeclined = parentConfirmation.status === 'DECLINED';
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        put(updateParentEmail.url(), { preserveScroll: true });
+    };
+
+    return (
+        <form
+            onSubmit={submit}
+            className={`space-y-3 rounded-2xl border p-4 text-left text-sm ${
+                isDeclined
+                    ? 'border-[#C6473B]/25 bg-[#C6473B]/5'
+                    : 'border-[#E8A33D]/30 bg-[#E8A33D]/10'
+            }`}
+        >
+            <div className="flex items-start gap-2">
+                <UserRoundCheck
+                    className="mt-0.5 h-4 w-4 shrink-0 text-[#1F2A24]/70"
+                    aria-hidden="true"
+                />
+                <div>
+                    <p className="font-semibold text-[#1F2A24]">
+                        {isDeclined
+                            ? 'Your parent or guardian declined your account'
+                            : 'Waiting for your parent or guardian'}
+                    </p>
+                    <p className="mt-0.5 text-[#1F2A24]/75">
+                        {isDeclined
+                            ? 'The school can only review your account once a parent or guardian confirms it. If this was a mistake, send the confirmation again.'
+                            : parentConfirmation.isLinkExpired
+                              ? `The link we sent to ${parentConfirmation.email} has expired. Send it again below.`
+                              : parentConfirmation.email
+                                ? `We emailed ${parentConfirmation.email} a link to confirm your account. The school reviews it once they do.`
+                                : 'Enter your parent or guardian’s email so they can confirm your account.'}
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <label
+                    htmlFor="parent_email"
+                    className="mb-1 block text-xs font-medium text-[#1F2A24]/70"
+                >
+                    Parent or guardian's email
+                </label>
+                <input
+                    id="parent_email"
+                    type="email"
+                    required
+                    value={data.parent_email}
+                    onChange={(e) => setData('parent_email', e.target.value)}
+                    aria-invalid={errors.parent_email ? true : undefined}
+                    className="h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                />
+                <InputError message={errors.parent_email} />
+            </div>
+
+            <Button
+                type="submit"
+                disabled={processing}
+                className="h-10 w-full rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+            >
+                {processing && <Spinner />}
+                Send confirmation email
+            </Button>
+        </form>
+    );
+}
 
 function ResubmitIdForm() {
     const { data, setData, post, processing, errors, progress } = useForm<{
@@ -121,8 +219,14 @@ export default function AccountStatus({
     rejectionReasons,
     rejectionNote,
     hasResubmittedId,
+    parentConfirmation,
 }: Props) {
-    const { props } = usePage<{ flash?: { success?: string; error?: string } }>();
+    const isWaitingOnParent =
+        parentConfirmation !== null &&
+        parentConfirmation.status !== 'CONFIRMED';
+    const { props } = usePage<{
+        flash?: { success?: string; error?: string };
+    }>();
     const isRejected = status === 'REJECTED';
     const title = isRejected ? 'Account Not Approved' : 'Awaiting Approval';
 
@@ -140,7 +244,10 @@ export default function AccountStatus({
                         }`}
                     >
                         {isRejected ? (
-                            <AlertCircle className="h-6 w-6" aria-hidden="true" />
+                            <AlertCircle
+                                className="h-6 w-6"
+                                aria-hidden="true"
+                            />
                         ) : (
                             <Clock className="h-6 w-6" aria-hidden="true" />
                         )}
@@ -210,12 +317,19 @@ export default function AccountStatus({
                     </>
                 ) : (
                     <>
-                        <p className="text-center text-sm text-[#1F2A24]/70">
-                            {hasResubmittedId
-                                ? 'We received your new ID. The school is checking it now.'
-                                : 'Your email is confirmed. The school is now checking your valid ID to verify your account.'}{' '}
-                            We'll email you as soon as your account is approved.
-                        </p>
+                        {isWaitingOnParent && parentConfirmation ? (
+                            <ParentConfirmationCard
+                                parentConfirmation={parentConfirmation}
+                            />
+                        ) : (
+                            <p className="text-center text-sm text-[#1F2A24]/70">
+                                {hasResubmittedId
+                                    ? 'We received your new ID. The school is checking it now.'
+                                    : 'Your email is confirmed. The school is now checking your valid ID to verify your account.'}{' '}
+                                We'll email you as soon as your account is
+                                approved.
+                            </p>
+                        )}
 
                         <div className="rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#1F2A24]">
                             <p className="font-semibold">

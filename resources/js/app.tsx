@@ -22,6 +22,7 @@ createInertiaApp({
                 return SiteLayout;
             case name.startsWith('Student/'):
             case name.startsWith('StudentConsent/'):
+            case name.startsWith('ParentConfirmation/'):
                 return SiteLayout;
             // Stands in for PayMongo's own hosted checkout, so it stays bare.
             case name === 'Payments/SandboxCheckout':

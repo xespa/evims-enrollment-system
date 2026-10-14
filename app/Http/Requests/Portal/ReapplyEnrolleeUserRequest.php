@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Portal;
 
 use App\Enums\AccountStatus;
+use App\Enums\AccountType;
 use App\Models\EnrolleeUser;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Arr;
@@ -31,6 +32,15 @@ class ReapplyEnrolleeUserRequest extends StoreEnrolleeUserRequest
      */
     public function rules(): array
     {
-        return Arr::except(parent::rules(), 'email');
+        /** @var EnrolleeUser $enrolleeUser */
+        $enrolleeUser = $this->route('enrolleeUser');
+
+        return [
+            ...Arr::except(parent::rules(), 'email'),
+            'parent_email' => [
+                'exclude_unless:account_type,'.AccountType::Student->value,
+                ...self::parentEmailRules($enrolleeUser->email),
+            ],
+        ];
     }
 }

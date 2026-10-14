@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ParentConfirmationController;
 use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\PasswordController;
 use App\Http\Controllers\Student\SessionController;
@@ -11,6 +12,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('throttle:20,1')->group(function () {
     Route::get('student-consent/{token}', [StudentAccountConsentController::class, 'show'])->name('student-consent.show');
     Route::put('student-consent/{token}', [StudentAccountConsentController::class, 'update'])->name('student-consent.update');
+
+    // A parent confirming (or declining) the portal account their child
+    // created, from the link emailed at sign-up.
+    Route::get('parent-confirmation/{token}', [ParentConfirmationController::class, 'show'])->name('parent-confirmation.show');
+    Route::put('parent-confirmation/{token}', [ParentConfirmationController::class, 'update'])->name('parent-confirmation.update');
 });
 
 Route::prefix('student')->name('student.')->group(function () {

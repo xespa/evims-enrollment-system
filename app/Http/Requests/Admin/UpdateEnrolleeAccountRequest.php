@@ -68,7 +68,8 @@ class UpdateEnrolleeAccountRequest extends FormRequest
 
     /**
      * An account can't be approved until its owner has confirmed their
-     * email — otherwise the school has no proven way to reach them.
+     * email — otherwise the school has no proven way to reach them — nor,
+     * for a student, until their parent or guardian has confirmed it.
      *
      * @return array<int, callable>
      */
@@ -79,10 +80,19 @@ class UpdateEnrolleeAccountRequest extends FormRequest
                 /** @var EnrolleeUser $enrolleeUser */
                 $enrolleeUser = $this->route('enrolleeUser');
 
-                if ($this->input('account_status') === AccountStatus::Approved->value && ! $enrolleeUser->hasVerifiedEmail()) {
+                if ($this->input('account_status') !== AccountStatus::Approved->value) {
+                    return;
+                }
+
+                if (! $enrolleeUser->hasVerifiedEmail()) {
                     $validator->errors()->add(
                         'account_status',
                         "{$enrolleeUser->name} hasn't confirmed their email yet, so the account can't be approved. Try again once they've clicked the link we emailed them.",
+                    );
+                } elseif ($enrolleeUser->needsParentConfirmation()) {
+                    $validator->errors()->add(
+                        'account_status',
+                        "{$enrolleeUser->name}'s parent or guardian hasn't confirmed this student account yet, so it can't be approved.",
                     );
                 }
             },

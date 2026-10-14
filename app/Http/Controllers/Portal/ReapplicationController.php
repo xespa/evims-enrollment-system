@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Portal;
 
+use App\Actions\EnrolleeAccounts\RequestParentConfirmation;
 use App\Enums\AccountRejectionReason;
 use App\Enums\AccountRole;
 use App\Enums\AccountStatus;
@@ -40,6 +41,7 @@ class ReapplicationController extends Controller
                 'email' => $enrolleeUser->email,
                 'name' => $enrolleeUser->name,
                 'accountType' => $enrolleeUser->account_type?->value,
+                'parentEmail' => $enrolleeUser->parent_email,
                 'reasons' => $enrolleeUser->rejection_reasons?->map(fn (AccountRejectionReason $reason) => [
                     'label' => $reason->label(),
                     'guidance' => $reason->guidance(),
@@ -49,7 +51,7 @@ class ReapplicationController extends Controller
         ]);
     }
 
-    public function store(ReapplyEnrolleeUserRequest $request, EnrolleeUser $enrolleeUser): RedirectResponse
+    public function store(ReapplyEnrolleeUserRequest $request, EnrolleeUser $enrolleeUser, RequestParentConfirmation $requestParentConfirmation): RedirectResponse
     {
         $path = $request->file('valid_id')->store('valid-ids', 'local');
 
@@ -62,7 +64,16 @@ class ReapplicationController extends Controller
             $path,
         );
 
-        Notification::send(User::query()->applicationReviewers()->get(), new EnrolleeAccountAwaitingReview($enrolleeUser, isResubmission: true));
+        // A student's parent confirms again unless the same parent already has.
+        $parentEmail = $request->string('parent_email')->toString();
+
+        if ($enrolleeUser->isStudentAccount() && ($enrolleeUser->needsParentConfirmation() || $enrolleeUser->parent_email !== $parentEmail)) {
+            $requestParentConfirmation->handle($enrolleeUser, $parentEmail);
+        }
+
+        if ($enrolleeUser->isReadyForReview()) {
+            Notification::send(User::query()->applicationReviewers()->get(), new EnrolleeAccountAwaitingReview($enrolleeUser, isResubmission: true));
+        }
 
         Auth::guard('enrollee')->login($enrolleeUser);
         $request->session()->regenerate();

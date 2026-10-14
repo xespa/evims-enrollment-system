@@ -40,7 +40,7 @@ class EnrolleeAccountController extends Controller
         $search = $validated['search'] ?? '';
 
         $accounts = EnrolleeUser::query()
-            ->select(['id', 'name', 'email', 'account_type', 'email_verified_at', 'account_status', 'reviewed_at', 'reviewed_by', 'rejection_reasons', 'rejection_reason', 'valid_id_path', 'created_at'])
+            ->select(['id', 'name', 'email', 'account_type', 'parent_email', 'parent_confirmation_status', 'email_verified_at', 'account_status', 'reviewed_at', 'reviewed_by', 'rejection_reasons', 'rejection_reason', 'valid_id_path', 'created_at'])
             ->with([
                 'reviewer:id,name',
                 'enrollments:id,enrollee_user_id,student_id,grade_level_id,school_year,enrollment_status',
