@@ -249,6 +249,30 @@ test('students are only placed once approved, and only in their own grade level\
         ->and($approved->fresh()->section_id)->toBeNull();
 });
 
+test('the students list shows each application\'s section and the sections of its year to place it in', function () {
+    $thisYear = gradeLevelWithSections(['A' => 30, 'B' => 1]);
+    $sectionB = $thisYear->sections->last();
+    $placed = applicationFor($thisYear, ['enrollment_status' => 'APPROVED', 'section_id' => $sectionB->id]);
+    $lastYear = Curriculum::factory()->for($thisYear->gradeLevel)->create(['school_year' => '2025-2026']);
+    Section::factory()->for($lastYear)->create(['name' => 'Rizal', 'slots' => 20]);
+    applicationFor($lastYear, ['student_id' => $placed->student_id, 'enrollment_status' => 'APPROVED']);
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.students.index', ['school_year' => '']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('applications.data', 2)
+            ->where('applications.data.0.school_year', $thisYear->school_year)
+            ->where('applications.data.0.section.name', 'B')
+            ->where('applications.data.1.section', null)
+            ->where("sections.{$thisYear->school_year}|{$thisYear->grade_level_id}.1", [
+                'id' => $sectionB->id,
+                'name' => 'B',
+                'slots' => 1,
+                'students_count' => 1,
+            ])
+            ->where("sections.2025-2026|{$thisYear->grade_level_id}.0.name", 'Rizal'));
+});
+
 test('teachers cannot place students in sections', function () {
     $curriculum = gradeLevelWithSections(['A' => 30]);
     $enrollment = applicationFor($curriculum, ['enrollment_status' => 'APPROVED']);

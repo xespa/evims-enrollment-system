@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\IndexStudentRequest;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
+use App\Models\Section;
 use App\Models\Student;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +31,7 @@ class StudentController extends Controller
             ->with([
                 'student',
                 'gradeLevel',
+                'section:id,name',
                 'officeVerification',
                 ...Enrollment::installmentScheduleRelations(),
             ])
@@ -72,6 +76,7 @@ class StudentController extends Controller
 
         return Inertia::render('Admin/Students/Index', [
             'applications' => $applications,
+            'sections' => $this->sectionsFor($applications->getCollection()),
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'schoolYears' => Enrollment::schoolYearOptions(),
             'filters' => [
@@ -84,6 +89,45 @@ class StudentController extends Controller
                 'archived' => $showArchived,
             ],
         ]);
+    }
+
+    /**
+     * The sections each listed application can be placed in, keyed by
+     * "school year|grade level ID", with how full each one is.
+     *
+     * @param  Collection<int, Enrollment>  $applications
+     * @return array<string, array<int, array{id: int, name: string, slots: int, students_count: int}>>
+     */
+    private function sectionsFor(Collection $applications): array
+    {
+        $gradeLevelsBySchoolYear = $applications
+            ->groupBy('school_year')
+            ->map(fn (Collection $enrollments) => $enrollments->pluck('grade_level_id')->unique()->values());
+
+        if ($gradeLevelsBySchoolYear->isEmpty()) {
+            return [];
+        }
+
+        return Section::query()
+            ->with('curriculum:id,school_year,grade_level_id')
+            ->withCount('students')
+            ->whereHas('curriculum', fn (Builder $curricula) => $curricula->where(function (Builder $curricula) use ($gradeLevelsBySchoolYear) {
+                foreach ($gradeLevelsBySchoolYear as $schoolYear => $gradeLevelIds) {
+                    $curricula->orWhere(fn (Builder $curriculum) => $curriculum
+                        ->where('school_year', $schoolYear)
+                        ->whereIn('grade_level_id', $gradeLevelIds));
+                }
+            }))
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn (Section $section) => "{$section->curriculum->school_year}|{$section->curriculum->grade_level_id}")
+            ->map(fn (Collection $sections) => $sections->map(fn (Section $section) => [
+                'id' => $section->id,
+                'name' => $section->name,
+                'slots' => $section->slots,
+                'students_count' => (int) $section->getAttribute('students_count'),
+            ])->values()->all())
+            ->all();
     }
 
     public function assignLrn(Request $request, Student $student)

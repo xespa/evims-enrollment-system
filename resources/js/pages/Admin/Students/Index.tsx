@@ -6,6 +6,7 @@ import InstallmentsDialog from '@/components/installments-dialog';
 import type { ScheduledInstallment } from '@/components/installments-dialog';
 import RecordCounterPaymentDialog from '@/components/record-counter-payment-dialog';
 import { useStaffAbilities } from '@/hooks/use-staff-abilities';
+import enrollmentSectionRoutes from '@/routes/admin/enrollments/section';
 
 const STATUS_STYLES = {
     PENDING: 'bg-yellow-100 text-yellow-800',
@@ -148,7 +149,10 @@ type ApplicationRow = {
     enrollment_status: ApplicationStatus;
     cancelled_at: string | null;
     parent_email_verified: boolean;
+    grade_level_id: number;
     grade_level: { name: string } | null;
+    section_id: number | null;
+    section: { id: number; name: string } | null;
     student: {
         id: number;
         first_name: string;
@@ -221,13 +225,108 @@ function LrnValue({ student }: { student: ApplicationRow['student'] }) {
     );
 }
 
+type SectionOption = {
+    id: number;
+    name: string;
+    slots: number;
+    /** Students placed in it and holding a slot. */
+    students_count: number;
+};
+
+/** The sections offered to each listed application, by "school year|grade level ID". */
+type SectionsByClass = Record<string, SectionOption[]>;
+
+/**
+ * The section the student is in that school year. Staff who review
+ * applications place an approved student by picking one; it saves straight
+ * away, and full sections can't be picked.
+ */
+function SectionCell({
+    enrollment,
+    sections,
+}: {
+    enrollment: ApplicationRow;
+    sections: SectionOption[];
+}) {
+    const { reviewApplications } = useStaffAbilities();
+    const errorBag = `section-${enrollment.id}`;
+    const error = (
+        usePage().props.errors as Record<string, Record<string, string>>
+    )?.[errorBag]?.section_id;
+    const [isSaving, setIsSaving] = useState(false);
+
+    const canPlace =
+        reviewApplications &&
+        enrollment.enrollment_status === 'APPROVED' &&
+        !enrollment.cancelled_at &&
+        sections.length > 0;
+
+    if (!canPlace) {
+        return (
+            <span className="text-[#1F2A24]/70">
+                {enrollment.section
+                    ? `Section ${enrollment.section.name}`
+                    : '—'}
+            </span>
+        );
+    }
+
+    const place = (sectionId: string) =>
+        router.put(
+            enrollmentSectionRoutes.update.url(enrollment.id),
+            { section_id: sectionId === '' ? null : Number(sectionId) },
+            {
+                errorBag,
+                preserveScroll: true,
+                preserveState: true,
+                onStart: () => setIsSaving(true),
+                onFinish: () => setIsSaving(false),
+            },
+        );
+
+    return (
+        <div>
+            <select
+                value={enrollment.section_id ?? ''}
+                onChange={(e) => place(e.target.value)}
+                disabled={isSaving}
+                aria-label={`Section of ${enrollment.student.first_name} ${enrollment.student.last_name} in ${enrollment.school_year}`}
+                aria-invalid={!!error}
+                className="min-h-9 w-full min-w-28 rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:opacity-60 aria-[invalid=true]:border-[#C6473B]"
+            >
+                <option value="">Not placed</option>
+                {sections.map((section) => {
+                    const isFull =
+                        section.students_count >= section.slots &&
+                        section.id !== enrollment.section_id;
+
+                    return (
+                        <option
+                            key={section.id}
+                            value={section.id}
+                            disabled={isFull}
+                        >
+                            {section.name} · {section.students_count}/
+                            {section.slots}
+                            {isFull ? ' · Full' : ''}
+                        </option>
+                    );
+                })}
+            </select>
+            {error && <p className="mt-1 text-xs text-[#C6473B]">{error}</p>}
+        </div>
+    );
+}
+
 /** One application as a card, standing in for a table row on phones. */
 function ApplicationCard({
     enrollment,
+    sections,
     onRecordPayment,
     onViewInstallments,
 }: {
     enrollment: ApplicationRow;
+    sections: SectionOption[];
     onRecordPayment: () => void;
     onViewInstallments: () => void;
 }) {
@@ -258,6 +357,15 @@ function ApplicationCard({
                     <dt className="text-xs text-[#1F2A24]/55">School Year</dt>
                     <dd className="mt-0.5 text-[#1F2A24]/80">
                         {enrollment.school_year}
+                    </dd>
+                </div>
+                <div>
+                    <dt className="text-xs text-[#1F2A24]/55">Section</dt>
+                    <dd className="mt-0.5">
+                        <SectionCell
+                            enrollment={enrollment}
+                            sections={sections}
+                        />
                     </dd>
                 </div>
                 <div>
@@ -299,11 +407,17 @@ function ApplicationCard({
 
 export default function Index({
     applications,
+    sections,
     gradeLevels,
     schoolYears,
     filters,
 }) {
     const { props } = usePage();
+    // The sections of the application's grade level in its school year.
+    const sectionsOf = (enrollment: ApplicationRow): SectionOption[] =>
+        (sections as SectionsByClass)[
+            `${enrollment.school_year}|${enrollment.grade_level_id}`
+        ] ?? [];
     const flashSuccess = props.flash?.success;
     const { viewDashboard, handlePayments } = useStaffAbilities();
 
@@ -557,6 +671,7 @@ export default function Index({
                             <ApplicationCard
                                 key={enrollment.id}
                                 enrollment={enrollment}
+                                sections={sectionsOf(enrollment)}
                                 onRecordPayment={() =>
                                     openRecordPayment(enrollment)
                                 }
@@ -589,6 +704,9 @@ export default function Index({
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
                                         School Year
+                                    </th>
+                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                        Section
                                     </th>
                                     <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
                                         Status
@@ -633,6 +751,14 @@ export default function Index({
                                                 {enrollment.school_year}
                                             </td>
                                             <td className="px-4 py-3">
+                                                <SectionCell
+                                                    enrollment={enrollment}
+                                                    sections={sectionsOf(
+                                                        enrollment,
+                                                    )}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
                                                 <ApplicationStatusBadge
                                                     enrollment={enrollment}
                                                 />
@@ -675,7 +801,7 @@ export default function Index({
                                 {applications.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={8}
+                                            colSpan={9}
                                             className="px-4 py-8 text-center text-[#1F2A24]/65"
                                         >
                                             No applications found.

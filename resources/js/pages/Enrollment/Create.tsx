@@ -820,6 +820,16 @@ export default function Create({
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // Only the Submit Application button on the Review step sends the
+        // application; reaching Review never does it on its own.
+        const submitter = e.nativeEvent?.submitter;
+        if (
+            step !== totalSteps ||
+            !submitter?.hasAttribute('data-submit-application')
+        ) {
+            return;
+        }
+
         // The stepper lets a fast-track applicant jump straight to Review
         // and submit without ever passing through step 6's Next button, so
         // the school-year check needs to be re-run here too.
@@ -1311,8 +1321,13 @@ export default function Create({
                                             />
                                             Back
                                         </button>
+                                        {/* Separate keys, so reaching Review mounts a
+                                            new Submit button instead of turning the
+                                            clicked Next button into one, which the
+                                            browser would then treat as a submit. */}
                                         {step < totalSteps ? (
                                             <button
+                                                key="next"
                                                 type="button"
                                                 onClick={goNext}
                                                 className="group pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-lg ring-4 shadow-[#2F6F4E]/30 ring-white transition-colors hover:bg-[#25573E] sm:px-6"
@@ -1328,7 +1343,9 @@ export default function Create({
                                             </button>
                                         ) : (
                                             <button
+                                                key="submit"
                                                 type="submit"
+                                                data-submit-application
                                                 disabled={processing}
                                                 aria-busy={processing}
                                                 className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-lg ring-4 shadow-[#E8A33D]/40 ring-white transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
