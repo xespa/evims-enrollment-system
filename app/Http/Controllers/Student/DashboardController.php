@@ -20,7 +20,7 @@ class DashboardController extends Controller
         /** @var StudentAccount $account */
         $account = $request->user('student');
         $student = $account->student;
-        $enrollment = $student->latestApprovedEnrollment()?->load('gradeLevel:id,name');
+        $enrollment = $student->latestApprovedEnrollment()?->load(['gradeLevel:id,name', 'section:id,name']);
         $grades = $enrollment?->gradeReport() ?? [];
 
         return Inertia::render('Student/Dashboard', [
@@ -29,6 +29,8 @@ class DashboardController extends Controller
                 'last_name' => $student->last_name,
                 'lrn' => $student->lrn,
                 'grade_level' => $enrollment?->gradeLevel?->name,
+                // Null until staff place them in one.
+                'section' => $enrollment?->section?->name,
                 'school_year' => $enrollment?->school_year,
             ],
             // Still signing in with the starting password (their LRN).

@@ -10,7 +10,7 @@ import {
     KeyRound,
     Settings,
     ShieldAlert,
-    ShieldCheck,
+    Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import Metric from '@/components/portal/metric';
@@ -36,6 +36,8 @@ type Props = {
         last_name: string;
         lrn: string;
         grade_level: string | null;
+        /** e.g. "A"; null until staff place them in a section. */
+        section: string | null;
         school_year: string | null;
     };
     /** Still signing in with the starting password, their LRN. */
@@ -211,10 +213,13 @@ export default function Dashboard({
                     />
                     <Metric icon={IdCard} label="LRN" value={student.lrn} />
                     <Metric
-                        icon={needsNewPassword ? ShieldAlert : ShieldCheck}
-                        label="Password"
-                        value={needsNewPassword ? 'Change needed' : 'Secure'}
-                        emphasis={needsNewPassword}
+                        icon={Users}
+                        label="Section"
+                        value={
+                            student.section
+                                ? `Section ${student.section}`
+                                : 'Not yet assigned'
+                        }
                     />
                 </div>
             </section>

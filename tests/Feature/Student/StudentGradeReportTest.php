@@ -2,6 +2,7 @@
 
 use App\Models\Enrollment;
 use App\Models\GradeSheet;
+use App\Models\Section;
 use App\Models\StudentAccount;
 use App\Models\StudentGrade;
 use App\Models\Subject;
@@ -80,6 +81,20 @@ test('each term\'s general average shows once every subject has that term\'s gra
             ->where('termAverages.term_2', 86.5)
             // English has no Term 3 grade yet.
             ->where('termAverages.term_3', null));
+});
+
+test('students see the section they were placed in', function () {
+    [$account, $enrollment] = studentWithApprovedEnrollment();
+
+    $this->actingAs($account, 'student')
+        ->get(route('student.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('student.section', null));
+
+    $enrollment->section()->associate(Section::factory()->create(['name' => 'B']))->save();
+
+    $this->actingAs($account, 'student')
+        ->get(route('student.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('student.section', 'B'));
 });
 
 test('students only see their own grades', function () {
