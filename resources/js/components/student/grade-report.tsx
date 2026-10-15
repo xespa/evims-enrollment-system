@@ -13,6 +13,9 @@ export type SubjectGrade = {
     remarks: 'Passed' | 'Failed' | null;
 };
 
+/** Mirrors Enrollment::termGeneralAverages(). */
+export type TermAverages = Record<(typeof TERMS)[number]['key'], number | null>;
+
 const TERMS = [
     { key: 'term_1', label: 'Term 1' },
     { key: 'term_2', label: 'Term 2' },
@@ -49,9 +52,12 @@ function RemarksBadge({ remarks }: { remarks: SubjectGrade['remarks'] }) {
  */
 export default function GradeReport({
     grades,
+    termAverages,
     generalAverage,
 }: {
     grades: SubjectGrade[];
+    /** Each term's general average, once every subject has that term's grade. */
+    termAverages: TermAverages;
     /** Shown once every subject has a final grade. */
     generalAverage: number | null;
 }) {
@@ -167,20 +173,38 @@ export default function GradeReport({
                 </table>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3 shadow-sm">
-                <span className="text-sm font-medium text-[#1F2A24]/75">
+            <section
+                aria-labelledby="general-average-heading"
+                className="rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3 shadow-sm"
+            >
+                <h3
+                    id="general-average-heading"
+                    className="text-sm font-medium text-[#1F2A24]/75"
+                >
                     General average
-                </span>
-                {generalAverage === null ? (
-                    <span className="text-sm text-[#1F2A24]/55">
-                        Once every subject has a final grade
-                    </span>
-                ) : (
-                    <span className="font-serif text-xl font-semibold text-[#2F6F4E] tabular-nums">
-                        {generalAverage.toFixed(2)}
-                    </span>
-                )}
-            </div>
+                </h3>
+                <dl className="mt-2 grid grid-cols-4 gap-2 text-center">
+                    {TERMS.map((term) => (
+                        <div key={term.key}>
+                            <dt className="text-[11px] text-[#1F2A24]/55">
+                                {term.label}
+                            </dt>
+                            <dd className="text-base font-semibold text-[#1F2A24] tabular-nums">
+                                {formatGrade(termAverages[term.key])}
+                            </dd>
+                        </div>
+                    ))}
+                    <div>
+                        <dt className="text-[11px] text-[#1F2A24]/55">Final</dt>
+                        <dd className="font-serif text-xl font-semibold text-[#2F6F4E] tabular-nums">
+                            {formatGrade(generalAverage)}
+                        </dd>
+                    </div>
+                </dl>
+                <p className="mt-2 text-xs text-[#1F2A24]/55">
+                    Each average shows once every subject has that grade.
+                </p>
+            </section>
         </div>
     );
 }

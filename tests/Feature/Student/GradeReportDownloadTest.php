@@ -77,6 +77,9 @@ test('the pdf has every approved school year\'s grades in each subject, newest f
         // Each year's age is the one on that year's application.
         ->and($data['schoolYears'][0]['age'])->toBe($thisYear->age)
         ->and($data['schoolYears'][0]['general_remarks'])->toBe('Passed')
+        // Mathematics 80/85/90 and English 70/72/74, term by term.
+        ->and($data['schoolYears'][0]['term_averages'])->toBe(['term_1' => 75.0, 'term_2' => 78.5, 'term_3' => 82.0])
+        ->and($data['schoolYears'][1]['term_averages'])->toBe(['term_1' => 88.0, 'term_2' => null, 'term_3' => null])
         ->and($data['schoolYears'][1]['general_remarks'])->toBeNull()
         ->and(array_column($data['schoolYears'][0]['grades'], 'subject'))->toBe(['English', 'Mathematics'])
         ->and($data['schoolYears'][0]['grades'][1]['final_grade'])->toEqual(85)

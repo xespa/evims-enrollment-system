@@ -29,7 +29,7 @@ class GenerateGradeReport
     /**
      * Everything the printed grade report shows.
      *
-     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
+     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, term_averages: array{term_1: float|null, term_2: float|null, term_3: float|null}, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
      */
     public function viewData(Student $student): array
     {
@@ -57,6 +57,7 @@ class GenerateGradeReport
                     // Their age that school year, from the application.
                     'age' => $enrollment->age,
                     'grades' => $grades,
+                    'term_averages' => Enrollment::termGeneralAverages($grades),
                     'general_average' => $generalAverage,
                     'general_remarks' => match (true) {
                         $generalAverage === null => null,

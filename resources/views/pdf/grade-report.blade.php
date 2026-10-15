@@ -42,7 +42,7 @@
 <body>
     @php
         // A report with no school year yet still prints the learner's details.
-        $reports = $schoolYears ?: [['school_year' => null, 'grade_level' => null, 'section' => null, 'age' => '', 'grades' => [], 'general_average' => null, 'general_remarks' => null]];
+        $reports = $schoolYears ?: [['school_year' => null, 'grade_level' => null, 'section' => null, 'age' => '', 'grades' => [], 'term_averages' => ['term_1' => null, 'term_2' => null, 'term_3' => null], 'general_average' => null, 'general_remarks' => null]];
     @endphp
 
     @foreach ($reports as $report)
@@ -131,7 +131,10 @@
                 </tr>
             @endforelse
             <tr class="average">
-                <td class="label" colspan="4">General Average</td>
+                <td class="label">General Average</td>
+                @foreach (['term_1', 'term_2', 'term_3'] as $term)
+                    <td>{{ $report['term_averages'][$term] === null ? '' : number_format($report['term_averages'][$term], 2) }}</td>
+                @endforeach
                 <td>{{ $report['general_average'] === null ? '' : number_format($report['general_average'], 2) }}</td>
                 <td>{{ $report['general_remarks'] }}</td>
             </tr>

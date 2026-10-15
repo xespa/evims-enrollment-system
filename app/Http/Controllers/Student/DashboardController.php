@@ -39,6 +39,8 @@ class DashboardController extends Controller
             'grades' => $grades,
             // The average of every subject's final grade, once they're all in.
             'generalAverage' => Enrollment::generalAverage($grades),
+            // Each term's, once every subject has that term's grade.
+            'termAverages' => Enrollment::termGeneralAverages($grades),
         ]);
     }
 }

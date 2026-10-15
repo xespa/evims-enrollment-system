@@ -16,7 +16,10 @@ import { useState } from 'react';
 import Metric from '@/components/portal/metric';
 import ChangePasswordDialog from '@/components/student/change-password-dialog';
 import GradeReport from '@/components/student/grade-report';
-import type { SubjectGrade } from '@/components/student/grade-report';
+import type {
+    SubjectGrade,
+    TermAverages,
+} from '@/components/student/grade-report';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,6 +44,8 @@ type Props = {
     mustChangePassword: boolean;
     /** This school year's grades from the teachers' grade sheets. */
     grades: SubjectGrade[];
+    /** Each term's general average, once every subject has that term's grade. */
+    termAverages: TermAverages;
     generalAverage: number | null;
 };
 
@@ -56,6 +61,7 @@ export default function Dashboard({
     usesDefaultPassword,
     mustChangePassword,
     grades,
+    termAverages,
     generalAverage,
 }: Props) {
     const flashSuccess = usePage().props.flash?.success;
@@ -251,6 +257,7 @@ export default function Dashboard({
                     <div className="mt-6">
                         <GradeReport
                             grades={grades}
+                            termAverages={termAverages}
                             generalAverage={generalAverage}
                         />
                     </div>

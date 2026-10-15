@@ -192,6 +192,29 @@ class Enrollment extends Model
     }
 
     /**
+     * Each term's general average in a grade report: the average of every
+     * subject's grade for that term, or null until they're all in.
+     *
+     * @param  list<array{term_1: string|null, term_2: string|null, term_3: string|null}>  $gradeReport
+     * @return array{term_1: float|null, term_2: float|null, term_3: float|null}
+     */
+    public static function termGeneralAverages(array $gradeReport): array
+    {
+        $averages = [];
+
+        foreach (StudentGrade::TERMS as $term) {
+            $grades = array_column($gradeReport, $term);
+
+            $averages[$term] = $grades !== [] && ! in_array(null, $grades, true)
+                ? round(array_sum(array_map('floatval', $grades)) / count($grades), 2)
+                : null;
+        }
+
+        /** @var array{term_1: float|null, term_2: float|null, term_3: float|null} */
+        return $averages;
+    }
+
+    /**
      * @return BelongsTo<EnrolleeUser, $this>
      */
     public function enrolleeUser(): BelongsTo

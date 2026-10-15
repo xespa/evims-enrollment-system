@@ -68,6 +68,20 @@ test('the general average shows once every subject has a final grade', function 
         ->assertInertia(fn (Assert $page) => $page->where('generalAverage', 78.5));
 });
 
+test('each term\'s general average shows once every subject has that term\'s grade', function () {
+    [$account, $enrollment] = studentWithApprovedEnrollment();
+    gradeInSubject($enrollment, 'Mathematics', ['term_1' => 80, 'term_2' => 85, 'term_3' => 90]);
+    gradeInSubject($enrollment, 'English', ['term_1' => 91, 'term_2' => 88, 'term_3' => null]);
+
+    $this->actingAs($account, 'student')
+        ->get(route('student.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('termAverages.term_1', 85.5)
+            ->where('termAverages.term_2', 86.5)
+            // English has no Term 3 grade yet.
+            ->where('termAverages.term_3', null));
+});
+
 test('students only see their own grades', function () {
     [$account] = studentWithApprovedEnrollment();
     [, $otherEnrollment] = studentWithApprovedEnrollment();
