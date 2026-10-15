@@ -3,6 +3,7 @@ import {
     Archive,
     ArchiveRestore,
     ArrowLeft,
+    Download,
     Pencil,
     Plus,
     Printer,
@@ -169,6 +170,22 @@ export default function Show({
                                 />
                                 Print
                             </a>
+                            {studentGrades.length > 0 && (
+                                // Every student's report card, one page each,
+                                // in one PDF to print together.
+                                <a
+                                    href={gradeSheetRoutes.reportCards.show.url(
+                                        gradeSheet.id,
+                                    )}
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <Download
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Download report cards
+                                </a>
+                            )}
                             {sendGrades && (
                                 // Each student's report card, as the Form 138 of
                                 // their next school year's application.

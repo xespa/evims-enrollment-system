@@ -4,6 +4,7 @@ namespace App\Actions\GradeSheets;
 
 use App\Concerns\EmbedsSchoolLogo;
 use App\Models\Enrollment;
+use App\Models\GradeSheet;
 use App\Models\Student;
 use App\Models\StudentGrade;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -25,15 +26,87 @@ class GenerateGradeReport
      */
     public function handle(Student $student, ?string $schoolYear = null): GradeReportPdf
     {
-        return Pdf::loadView('pdf.grade-report', $this->viewData($student, $schoolYear))
+        $data = $this->viewData($student, $schoolYear);
+
+        return $this->render("Learner's Performance Report of {$student->full_name}", $this->pages($data['student'], $data['schoolYears']));
+    }
+
+    /**
+     * Every student on the grade sheet, by name, one report card each for
+     * the sheet's school year, in one file to print.
+     */
+    public function handleForGradeSheet(GradeSheet $gradeSheet): GradeReportPdf
+    {
+        $schoolYear = $gradeSheet->subject->curriculum->school_year;
+
+        $pages = $gradeSheet->studentGrades()
+            ->with('enrollment.student')
+            ->get()
+            ->map(fn (StudentGrade $studentGrade) => $studentGrade->enrollment->student)
+            ->filter()
+            ->sortBy('full_name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->flatMap(function (Student $student) use ($schoolYear) {
+                $data = $this->viewData($student, $schoolYear);
+
+                return $this->pages($data['student'], $data['schoolYears']);
+            })
+            ->values()
+            ->all();
+
+        return $this->render("Report cards · {$gradeSheet->number}", $pages);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $pages
+     */
+    private function render(string $title, array $pages): GradeReportPdf
+    {
+        return Pdf::loadView('pdf.grade-report', [
+            'title' => $title,
+            'pages' => $pages,
+            'logo' => $this->logoDataUri(),
+        ])
             ->setPaper('a4')
             ->setOption('isFontSubsettingEnabled', true);
     }
 
     /**
-     * Everything the printed grade report shows.
+     * One page per school year, each with the student's details; a blank
+     * report when they have no school year yet, so their details still print.
      *
-     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, term_averages: array{term_1: float|null, term_2: float|null, term_3: float|null}, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
+     * @param  array{name: string, lrn: string|null, sex: string}  $student
+     * @param  list<array<string, mixed>>  $schoolYears
+     * @return list<array<string, mixed>>
+     */
+    private function pages(array $student, array $schoolYears): array
+    {
+        $reports = $schoolYears ?: [[
+            'school_year' => null,
+            'grade_level' => null,
+            'section' => null,
+            'age' => '',
+            'grades' => [],
+            'term_averages' => ['term_1' => null, 'term_2' => null, 'term_3' => null],
+            'general_average' => null,
+            'general_remarks' => null,
+        ]];
+
+        return array_map(fn (array $report) => ['student' => $student, ...$report], $reports);
+    }
+
+    /**
+     * e.g. "report-cards-GS-00012.pdf"
+     */
+    public function gradeSheetFilename(GradeSheet $gradeSheet): string
+    {
+        return "report-cards-{$gradeSheet->number}.pdf";
+    }
+
+    /**
+     * One student's details and report for each school year (or only the
+     * given one), as the printed report card shows them.
+     *
+     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, term_averages: array{term_1: float|null, term_2: float|null, term_3: float|null}, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>}
      */
     public function viewData(Student $student, ?string $schoolYear = null): array
     {
@@ -71,7 +144,6 @@ class GenerateGradeReport
                     },
                 ];
             })->all()),
-            'logo' => $this->logoDataUri(),
         ];
     }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Learner's Performance Report of {{ $student['name'] }}</title>
+    <title>{{ $title }}</title>
     <style>
         @page { margin: 32px 44px 36px; }
         * { box-sizing: border-box; }
@@ -40,12 +40,9 @@
     </style>
 </head>
 <body>
-    @php
-        // A report with no school year yet still prints the learner's details.
-        $reports = $schoolYears ?: [['school_year' => null, 'grade_level' => null, 'section' => null, 'age' => '', 'grades' => [], 'term_averages' => ['term_1' => null, 'term_2' => null, 'term_3' => null], 'general_average' => null, 'general_remarks' => null]];
-    @endphp
-
-    @foreach ($reports as $report)
+    {{-- One page per report card: a student's school year. --}}
+    @foreach ($pages as $report)
+        @php($student = $report['student'])
         <table class="letterhead">
             <tr>
                 <td class="side"></td>

@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\GradeSheetArchiveController;
 use App\Http\Controllers\Admin\GradeSheetController;
 use App\Http\Controllers\Admin\GradeSheetGradeController;
 use App\Http\Controllers\Admin\GradeSheetPrintController;
+use App\Http\Controllers\Admin\GradeSheetReportCardController;
 use App\Http\Controllers\Admin\GradeSheetStudentController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\Admin\StudentAccountController;
 use App\Http\Controllers\Admin\StudentAccountPasswordController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentGradeController;
+use App\Http\Controllers\Admin\StudentReportCardController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeachingSubjectController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -208,6 +210,10 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
             ->only(['index', 'create', 'store', 'show', 'update'])
             ->parameters(['grade-sheets' => 'gradeSheet']);
         Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
+        // Students' report cards (every subject): one to view or print, or
+        // the whole sheet's in one download.
+        Route::get('grade-sheets/{gradeSheet}/report-cards', GradeSheetReportCardController::class)->name('grade-sheets.report-cards.show');
+        Route::get('student-grades/{studentGrade}/report-card', StudentReportCardController::class)->name('student-grades.report-card.show');
         // Sending a year's grades on to students' next-year applications,
         // as their Form 138 (from "Send grades" on a grade sheet).
         Route::resource('report-cards', ReportCardController::class)->only(['store']);

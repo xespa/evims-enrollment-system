@@ -1,8 +1,9 @@
 import { router, useForm } from '@inertiajs/react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { FileText, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
+import studentGradeRoutes from '@/routes/admin/student-grades';
 import { PASSING_GRADE, TERMS, formatGrade } from './types';
 import type { StudentGradeRow, TermKey } from './types';
 
@@ -203,7 +204,9 @@ export default function GradesTable({
                             </th>
                             <th className="px-4 py-3 font-semibold">Remarks</th>
                             <th className="px-2 py-3">
-                                <span className="sr-only">Remove</span>
+                                <span className="sr-only">
+                                    Report card and remove
+                                </span>
                             </th>
                         </tr>
                     </thead>
@@ -292,7 +295,23 @@ export default function GradesTable({
                                     <td className="px-4 py-2">
                                         <RemarksBadge final={final} />
                                     </td>
-                                    <td className="px-2 py-2 text-right">
+                                    <td className="px-2 py-2 text-right whitespace-nowrap">
+                                        {/* A PDF in a new tab, to view or print. */}
+                                        <a
+                                            href={studentGradeRoutes.reportCard.show.url(
+                                                studentGrade.id,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener"
+                                            title="Report card"
+                                            aria-label={`${studentGrade.student_name}'s report card (opens in a new tab)`}
+                                            className="inline-flex size-10 items-center justify-center rounded-full text-[#2F6F4E]/70 hover:bg-[#2F6F4E]/10 hover:text-[#2F6F4E]"
+                                        >
+                                            <FileText
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            />
+                                        </a>
                                         {!readOnly && (
                                             <button
                                                 type="button"
