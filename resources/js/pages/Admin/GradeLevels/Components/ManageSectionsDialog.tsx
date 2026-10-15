@@ -123,10 +123,10 @@ export default function ManageSectionsDialog({
             <DialogContent
                 // No description under the title, on purpose.
                 aria-describedby={undefined}
-                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-lg"
+                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-lg"
             >
                 <form onSubmit={save}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             {gradeLevel.name} sections ·{' '}
                             {curriculum.school_year}
@@ -135,15 +135,15 @@ export default function ManageSectionsDialog({
 
                     <div className="space-y-4 px-6 py-5">
                         {data.sections.length === 0 ? (
-                            <div className="rounded-xl border border-dashed border-[#1F2A24]/15 px-4 py-6 text-center">
-                                <p className="text-sm text-[#1F2A24]/70">
+                            <div className="rounded-xl border border-dashed border-ink/15 px-4 py-6 text-center">
+                                <p className="text-sm text-ink/70">
                                     No sections, so there’s no limit on how many
                                     can apply.
                                 </p>
                                 <button
                                     type="button"
                                     onClick={addDefaultSections}
-                                    className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-brand/30 px-4 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <Plus
                                         className="h-4 w-4"
@@ -154,7 +154,7 @@ export default function ManageSectionsDialog({
                             </div>
                         ) : (
                             <table className="w-full text-left text-sm">
-                                <thead className="text-xs tracking-wide text-[#1F2A24]/55 uppercase">
+                                <thead className="text-xs tracking-wide text-ink/55 uppercase">
                                     <tr>
                                         <th className="pb-2 font-semibold">
                                             Section
@@ -211,7 +211,7 @@ export default function ManageSectionsDialog({
                                                         className={INPUT_CLASS}
                                                     />
                                                     {nameError && (
-                                                        <p className="mt-1 text-xs text-[#C6473B]">
+                                                        <p className="mt-1 text-xs text-danger-ink">
                                                             {nameError}
                                                         </p>
                                                     )}
@@ -240,12 +240,12 @@ export default function ManageSectionsDialog({
                                                         className={`${INPUT_CLASS} tabular-nums`}
                                                     />
                                                     {slotsError && (
-                                                        <p className="mt-1 text-xs text-[#C6473B]">
+                                                        <p className="mt-1 text-xs text-danger-ink">
                                                             {slotsError}
                                                         </p>
                                                     )}
                                                 </td>
-                                                <td className="py-1.5 pt-3.5 text-right text-[#1F2A24]/70 tabular-nums">
+                                                <td className="py-1.5 pt-3.5 text-right text-ink/70 tabular-nums">
                                                     {placed}
                                                 </td>
                                                 <td className="py-1.5 pl-1 text-right">
@@ -261,7 +261,7 @@ export default function ManageSectionsDialog({
                                                                 : undefined
                                                         }
                                                         aria-label={`Remove section ${row.name}`}
-                                                        className="inline-flex size-10 items-center justify-center rounded-full text-[#1F2A24]/45 hover:bg-[#C6473B]/10 hover:text-[#A3372D] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                                                        className="inline-flex size-10 items-center justify-center rounded-full text-ink/45 hover:bg-danger/10 hover:text-danger-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                                                     >
                                                         <Trash2
                                                             className="h-4 w-4"
@@ -277,7 +277,7 @@ export default function ManageSectionsDialog({
                         )}
 
                         {fieldErrors.sections && (
-                            <p role="alert" className="text-sm text-[#C6473B]">
+                            <p role="alert" className="text-sm text-danger-ink">
                                 {fieldErrors.sections}
                             </p>
                         )}
@@ -287,16 +287,16 @@ export default function ManageSectionsDialog({
                                 type="button"
                                 onClick={addSection}
                                 disabled={data.sections.length >= 26}
-                                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 disabled:opacity-50"
+                                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-brand-ink hover:bg-brand/5 disabled:opacity-50"
                             >
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                                 Add section
                             </button>
                         )}
 
-                        <p className="flex gap-2 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2.5 text-xs leading-relaxed text-[#1F2A24]/80">
+                        <p className="flex gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-xs leading-relaxed text-ink/80">
                             <Info
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                                 aria-hidden="true"
                             />
                             <span>
@@ -307,11 +307,11 @@ export default function ManageSectionsDialog({
                         </p>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-2 border-t border-ink/10 px-6 py-4 sm:flex-row sm:justify-end">
                         <DialogClose asChild>
                             <button
                                 type="button"
-                                className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                                className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink hover:bg-ink/5"
                             >
                                 Cancel
                             </button>
@@ -319,7 +319,7 @@ export default function ManageSectionsDialog({
                         <button
                             type="submit"
                             disabled={processing || !isDirty}
-                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {processing && (
                                 <Loader2

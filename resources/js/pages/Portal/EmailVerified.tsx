@@ -21,23 +21,23 @@ export default function EmailVerified({ email }: Props) {
                 description="Your email address has been verified."
             >
                 <div className="mb-6 flex flex-col items-center text-center">
-                    <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                    <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand-ink">
                         <CircleCheck className="h-6 w-6" aria-hidden="true" />
                     </span>
-                    <p className="text-sm text-[#1F2A24]/70">
+                    <p className="text-sm text-ink/70">
                         Thanks for confirming
                     </p>
-                    <p className="mt-0.5 max-w-full truncate font-semibold text-[#1F2A24]">
+                    <p className="mt-0.5 max-w-full truncate font-semibold text-ink">
                         {email}
                     </p>
-                    <p className="mt-3 text-sm text-[#1F2A24]/70">
+                    <p className="mt-3 text-sm text-ink/70">
                         Log in to your portal account to continue.
                     </p>
                 </div>
 
                 <Link
                     href={route('login')}
-                    className="flex h-10 w-full items-center justify-center rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                    className="flex h-10 w-full items-center justify-center rounded-full bg-brand text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                 >
                     Log in
                 </Link>

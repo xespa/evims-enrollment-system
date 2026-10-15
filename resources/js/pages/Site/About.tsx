@@ -91,7 +91,7 @@ const FACILITIES = [
 
 function SectionLabel({ children }: { children: ReactNode }) {
     return (
-        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+        <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
             {children}
         </p>
     );
@@ -114,22 +114,22 @@ export default function About() {
             {/* Hero */}
             <section className="relative overflow-hidden">
                 <div
-                    className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[#E8A33D]/15 blur-3xl"
+                    className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-warn/15 blur-3xl"
                     aria-hidden="true"
                 />
                 <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 py-16 lg:grid-cols-[1.2fr_0.8fr] lg:py-24">
                     <div>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                             About EVIMS
                         </span>
-                        <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
+                        <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-ink sm:text-5xl">
                             A community school built for the
-                            <span className="text-[#2F6F4E]">
+                            <span className="text-brand-ink">
                                 {' '}
                                 whole child.
                             </span>
                         </h1>
-                        <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
+                        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink/70 sm:text-lg">
                             Since {FOUNDED_YEAR}, Eastern Visayas International
                             Montessori School has brought authentic Montessori
                             education to the children of Borongan City and
@@ -140,7 +140,7 @@ export default function About() {
                         <div className="mt-8 flex flex-wrap gap-3">
                             <Link
                                 href="/admission"
-                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                             >
                                 Start Enrollment
                                 <ArrowRight
@@ -150,7 +150,7 @@ export default function About() {
                             </Link>
                             <a
                                 href="#our-story"
-                                className="inline-flex min-h-12 items-center rounded-full border border-[#1F2A24]/15 px-6 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5"
+                                className="inline-flex min-h-12 items-center rounded-full border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-ink/5"
                             >
                                 Read our story
                             </a>
@@ -160,10 +160,10 @@ export default function About() {
                     {/* School seal */}
                     <div className="relative mx-auto w-full max-w-sm">
                         <div
-                            className="absolute inset-6 rounded-full bg-gradient-to-br from-[#2F6F4E] via-[#E8A33D] to-[#2F6F4E] opacity-30 blur-2xl"
+                            className="absolute inset-6 rounded-full bg-gradient-to-br from-brand via-warn to-brand opacity-30 blur-2xl"
                             aria-hidden="true"
                         />
-                        <div className="relative aspect-square rounded-full border-[10px] border-white bg-white shadow-2xl ring-4 shadow-[#1F2A24]/15 ring-[#E8A33D]/60">
+                        <div className="relative aspect-square rounded-full border-[10px] border-white bg-surface shadow-2xl ring-4 shadow-shade/15 ring-warn/60">
                             <img
                                 src="/images/logoevims.png"
                                 alt="The EVIMS school seal"
@@ -171,7 +171,7 @@ export default function About() {
                             />
                         </div>
                         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-[#1B4D34] px-5 py-2 text-center shadow-lg">
-                            <p className="text-[11px] font-semibold tracking-[0.14em] whitespace-nowrap text-[#E8A33D] uppercase">
+                            <p className="text-[11px] font-semibold tracking-[0.14em] whitespace-nowrap text-warn uppercase">
                                 Since {FOUNDED_YEAR}
                             </p>
                         </div>
@@ -186,10 +186,10 @@ export default function About() {
                         <div key={stat.label} className="text-center">
                             <dt className="sr-only">{stat.label}</dt>
                             <dd>
-                                <span className="block font-serif text-3xl font-semibold text-[#FBF8F2]">
+                                <span className="block font-serif text-3xl font-semibold text-on-brand">
                                     {stat.value}
                                 </span>
-                                <span className="mt-1 block text-xs text-[#FBF8F2]/75">
+                                <span className="mt-1 block text-xs text-on-brand/75">
                                     {stat.label}
                                 </span>
                             </dd>
@@ -206,20 +206,20 @@ export default function About() {
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
                     <div>
                         <SectionLabel>Our story</SectionLabel>
-                        <h2 className="mt-2 font-serif text-3xl leading-tight font-semibold text-[#1F2A24] sm:text-4xl">
+                        <h2 className="mt-2 font-serif text-3xl leading-tight font-semibold text-ink sm:text-4xl">
                             From a small dream to a thriving community
                         </h2>
-                        <figure className="mt-8 border-l-4 border-[#E8A33D] pl-5">
-                            <blockquote className="font-serif text-xl leading-snug text-[#1F2A24] italic">
+                        <figure className="mt-8 border-l-4 border-warn pl-5">
+                            <blockquote className="font-serif text-xl leading-snug text-ink italic">
                                 “Every child deserves an environment where they
                                 can learn at their own pace.”
                             </blockquote>
-                            <figcaption className="mt-2 text-sm text-[#1F2A24]/60">
+                            <figcaption className="mt-2 text-sm text-ink/60">
                                 The belief EVIMS was founded on
                             </figcaption>
                         </figure>
                     </div>
-                    <div className="space-y-5 text-base leading-relaxed text-[#1F2A24]/75">
+                    <div className="space-y-5 text-base leading-relaxed text-ink/75">
                         <p>
                             Eastern Visayas International Montessori School was
                             founded in {FOUNDED_YEAR} with a vision to bring
@@ -249,16 +249,16 @@ export default function About() {
             </section>
 
             {/* Mission & vision */}
-            <section className="border-y border-[#1F2A24]/10 bg-white">
+            <section className="border-y border-ink/10 bg-surface">
                 <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-5 py-16 lg:grid-cols-2">
-                    <article className="relative overflow-hidden rounded-2xl border border-[#2F6F4E]/15 bg-[#2F6F4E]/[0.04] p-8">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2F6F4E] text-white">
+                    <article className="relative overflow-hidden rounded-2xl border border-brand/15 bg-brand/[0.04] p-8">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
                             <Target className="h-6 w-6" aria-hidden="true" />
                         </span>
-                        <h2 className="mt-5 text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                        <h2 className="mt-5 text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                             Our Mission
                         </h2>
-                        <p className="mt-3 font-serif text-lg leading-relaxed text-[#1F2A24] sm:text-xl">
+                        <p className="mt-3 font-serif text-lg leading-relaxed text-ink sm:text-xl">
                             Eastern Visayas International Montessori School,
                             Inc. is committed to the development of the whole
                             child, which enables him to reach his greatest
@@ -270,14 +270,14 @@ export default function About() {
                             filled with warmth, kindness and respect.
                         </p>
                     </article>
-                    <article className="relative overflow-hidden rounded-2xl border border-[#E8A33D]/25 bg-[#E8A33D]/[0.06] p-8">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8A33D] text-[#1F2A24]">
+                    <article className="relative overflow-hidden rounded-2xl border border-warn/25 bg-warn/[0.06] p-8">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-warn text-ink">
                             <Eye className="h-6 w-6" aria-hidden="true" />
                         </span>
-                        <h2 className="mt-5 text-xs font-semibold tracking-[0.14em] text-[#8A5A12] uppercase">
+                        <h2 className="mt-5 text-xs font-semibold tracking-[0.14em] text-warn-strong uppercase">
                             Our Vision
                         </h2>
-                        <p className="mt-3 font-serif text-lg leading-relaxed text-[#1F2A24] sm:text-xl">
+                        <p className="mt-3 font-serif text-lg leading-relaxed text-ink sm:text-xl">
                             Our school's vision is to provide the best education
                             in an open environment and to assist children on
                             their individual paths to development. It is also
@@ -293,7 +293,7 @@ export default function About() {
             <section className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
                 <div className="max-w-2xl">
                     <SectionLabel>What drives us forward</SectionLabel>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                         The principles that guide our actions and shape our
                         community
                     </h2>
@@ -303,15 +303,15 @@ export default function About() {
                     {VALUES.map(({ icon: Icon, ...value }) => (
                         <div
                             key={value.title}
-                            className="group rounded-2xl border border-[#1F2A24]/10 bg-white p-6 transition-[border-color,box-shadow] duration-200 hover:border-[#2F6F4E]/25 hover:shadow-lg hover:shadow-[#1F2A24]/5 motion-reduce:transition-none"
+                            className="group rounded-2xl border border-ink/10 bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-brand/25 hover:shadow-lg hover:shadow-shade/5 motion-reduce:transition-none"
                         >
-                            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E] transition-colors group-hover:bg-[#2F6F4E] group-hover:text-white motion-reduce:transition-none">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand-ink transition-colors group-hover:bg-brand group-hover:text-white motion-reduce:transition-none">
                                 <Icon className="h-5 w-5" aria-hidden="true" />
                             </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
+                            <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
                                 {value.title}
                             </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                            <p className="mt-2 text-sm leading-relaxed text-ink/70">
                                 {value.copy}
                             </p>
                         </div>
@@ -320,11 +320,11 @@ export default function About() {
             </section>
 
             {/* Campus & facilities */}
-            <section className="border-y border-[#1F2A24]/10 bg-white">
+            <section className="border-y border-ink/10 bg-surface">
                 <div className="mx-auto max-w-7xl px-5 py-16 lg:py-24">
                     <div className="max-w-2xl">
                         <SectionLabel>Our campus</SectionLabel>
-                        <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                        <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                             Spaces designed for hands-on learning
                         </h2>
                     </div>
@@ -333,19 +333,19 @@ export default function About() {
                         {FACILITIES.map(({ icon: Icon, ...facility }) => (
                             <li
                                 key={facility.title}
-                                className="flex gap-4 rounded-2xl bg-[#FBF8F2] p-6"
+                                className="flex gap-4 rounded-2xl bg-cream p-6"
                             >
-                                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[#2F6F4E] shadow-sm">
+                                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface text-brand-ink shadow-sm">
                                     <Icon
                                         className="h-5 w-5"
                                         aria-hidden="true"
                                     />
                                 </span>
                                 <div>
-                                    <h3 className="font-serif text-lg font-semibold text-[#1F2A24]">
+                                    <h3 className="font-serif text-lg font-semibold text-ink">
                                         {facility.title}
                                     </h3>
-                                    <p className="mt-1.5 text-sm leading-relaxed text-[#1F2A24]/70">
+                                    <p className="mt-1.5 text-sm leading-relaxed text-ink/70">
                                         {facility.copy}
                                     </p>
                                 </div>
@@ -359,15 +359,15 @@ export default function About() {
             <section className="px-5 py-16">
                 <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1B4D34] px-6 py-12 sm:px-12">
                     <div
-                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#E8A33D]/20 blur-2xl"
+                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-warn/20 blur-2xl"
                         aria-hidden="true"
                     />
                     <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
+                            <h2 className="font-serif text-3xl font-semibold text-on-brand">
                                 Come see EVIMS for yourself.
                             </h2>
-                            <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
+                            <p className="mt-2 max-w-lg text-sm text-on-brand/80">
                                 Have questions before you apply? Our registrar's
                                 office is happy to walk you through grade
                                 levels, sessions, and tuition options.
@@ -376,13 +376,13 @@ export default function About() {
                         <div className="flex shrink-0 flex-wrap gap-3">
                             <Link
                                 href="/contact"
-                                className="inline-flex min-h-12 items-center rounded-full border border-[#FBF8F2]/40 px-6 text-sm font-semibold text-[#FBF8F2] transition-colors hover:border-[#FBF8F2] hover:bg-white/5"
+                                className="inline-flex min-h-12 items-center rounded-full border border-cream/40 px-6 text-sm font-semibold text-on-brand transition-colors hover:border-cream hover:bg-white/5"
                             >
                                 Contact Us
                             </Link>
                             <Link
                                 href="/admission"
-                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#E8A33D] px-6 text-sm font-semibold text-[#1F2A24] shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warn px-6 text-sm font-semibold text-ink shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
                             >
                                 Enroll Now
                                 <ArrowRight

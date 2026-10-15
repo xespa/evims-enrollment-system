@@ -10,22 +10,22 @@ const VARIANTS: Record<
     PENDING: {
         label: 'Under review',
         icon: Clock,
-        className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+        className: 'bg-warn/15 text-warn-ink',
     },
     APPROVED: {
         label: 'Approved',
         icon: CheckCircle2,
-        className: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+        className: 'bg-brand/10 text-brand-ink',
     },
     REJECTED: {
         label: 'Not approved',
         icon: XCircle,
-        className: 'bg-[#C6473B]/10 text-[#A83A30]',
+        className: 'bg-danger/10 text-danger-alert',
     },
     CANCELLED: {
         label: 'Cancelled',
         icon: Ban,
-        className: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+        className: 'bg-ink/10 text-ink/70',
     },
 };
 

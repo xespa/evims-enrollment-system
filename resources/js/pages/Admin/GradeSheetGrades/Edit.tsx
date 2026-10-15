@@ -21,7 +21,7 @@ type Props = {
 type GradeRow = { id: number } & Record<TermKey, string>;
 
 const inputClass =
-    'min-h-10 w-24 rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-right text-base text-[#1F2A24] tabular-nums placeholder-[#1F2A24]/30 focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] aria-[invalid=true]:bg-[#C6473B]/5 sm:text-sm';
+    'min-h-10 w-24 rounded-lg border border-ink/15 bg-surface px-2 py-1.5 text-right text-base text-ink tabular-nums placeholder-ink/30 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:bg-danger/5 sm:text-sm';
 
 /** The average once all three terms are in, as the server works it out. */
 function finalGrade(row: GradeRow): number | null {
@@ -81,20 +81,20 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
         <>
             <Head title={`Enter Grades · ${gradeSheet.number}`} />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <form onSubmit={submit} className="mx-auto max-w-5xl">
                     <Link
                         href={sheetUrl}
-                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-ink/70 hover:text-ink"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheet {gradeSheet.number}
                     </Link>
 
-                    <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
                         Enter Grades
                     </h1>
-                    <p className="mb-6 text-sm text-[#1F2A24]/70">
+                    <p className="mb-6 text-sm text-ink/70">
                         {gradeSheet.subject} · {gradeSheet.grade_level} · SY{' '}
                         {gradeSheet.school_year} · {gradeSheet.teacher}. Grades
                         are 0–100, up to two decimals; leave a term blank until
@@ -104,7 +104,7 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                     {props.flash?.success && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {props.flash.success}
                         </div>
@@ -112,15 +112,15 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                     {errorCount > 0 && (
                         <div
                             role="alert"
-                            className="mb-4 rounded-xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A3372D]"
+                            className="mb-4 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger-strong"
                         >
                             Some grades need fixing. They're highlighted below.
                         </div>
                     )}
 
-                    <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
+                    <div className="overflow-x-auto rounded-2xl border border-ink/10 bg-surface">
                         <table className="w-full min-w-[720px] text-left text-sm">
-                            <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
+                            <thead className="border-b border-ink/10 bg-ink/[0.03] text-xs tracking-wide text-ink/60 uppercase">
                                 <tr>
                                     <th className="w-10 px-4 py-3 font-semibold">
                                         #
@@ -141,21 +141,21 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
+                            <tbody className="divide-y divide-ink/10">
                                 {studentGrades.map((student, index) => {
                                     const row = data.grades[index];
                                     const final = finalGrade(row);
 
                                     return (
                                         <tr key={student.id}>
-                                            <td className="px-4 py-2 text-[#1F2A24]/50 tabular-nums">
+                                            <td className="px-4 py-2 text-ink/50 tabular-nums">
                                                 {index + 1}
                                             </td>
                                             <td className="px-4 py-2">
-                                                <span className="block font-medium text-[#1F2A24]">
+                                                <span className="block font-medium text-ink">
                                                     {student.student_name}
                                                 </span>
-                                                <span className="text-xs text-[#1F2A24]/55">
+                                                <span className="text-xs text-ink/55">
                                                     {student.lrn
                                                         ? `LRN ${student.lrn}`
                                                         : 'No LRN yet'}
@@ -213,7 +213,7 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                                                             }
                                                         />
                                                         {error && (
-                                                            <p className="mt-1 max-w-24 text-left text-xs text-[#C6473B]">
+                                                            <p className="mt-1 max-w-24 text-left text-xs text-danger-ink">
                                                                 {error}
                                                             </p>
                                                         )}
@@ -221,7 +221,7 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                                                 );
                                             })}
                                             <td className="px-4 py-2 text-right">
-                                                <span className="font-semibold text-[#1F2A24] tabular-nums">
+                                                <span className="font-semibold text-ink tabular-nums">
                                                     {formatGrade(final)}
                                                 </span>
                                                 {final !== null && (
@@ -229,8 +229,8 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                                                         className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
                                                             final >=
                                                             PASSING_GRADE
-                                                                ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                                                                : 'bg-[#C6473B]/10 text-[#A3372D]'
+                                                                ? 'bg-brand/10 text-brand-ink'
+                                                                : 'bg-danger/10 text-danger-strong'
                                                         }`}
                                                     >
                                                         {final >= PASSING_GRADE
@@ -246,17 +246,17 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                         </table>
                     </div>
 
-                    <div className="sticky bottom-0 mt-4 flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 bg-[#FBF8F2]/95 py-4 backdrop-blur sm:flex-row sm:justify-end">
+                    <div className="sticky bottom-0 mt-4 flex flex-col-reverse gap-2 border-t border-ink/10 bg-cream/95 py-4 backdrop-blur sm:flex-row sm:justify-end">
                         <Link
                             href={sheetUrl}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                         >
                             Cancel
                         </Link>
                         <button
                             type="submit"
                             disabled={processing || !isDirty}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep disabled:opacity-50"
                         >
                             {processing && (
                                 <Loader2

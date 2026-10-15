@@ -21,7 +21,7 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
 
     return (
         <div>
-            <h2 className="font-serif text-xl font-semibold text-[#1F2A24] mb-3">Subjects</h2>
+            <h2 className="font-serif text-xl font-semibold text-ink mb-3">Subjects</h2>
             <StepGuide>
                 Showing subjects for <span className="font-semibold">{selectedGrade?.name ?? '—'}</span>.
                 {!selectedGrade && ' Please go back and select a grade level first.'}
@@ -33,7 +33,7 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                         type="button"
                         onClick={selectAll}
                         disabled={allSelected}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-3 py-1.5 text-sm font-medium text-[#2F6F4E] transition-colors hover:border-[#2F6F4E]/40 hover:bg-[#2F6F4E]/10 disabled:cursor-not-allowed disabled:border-[#1F2A24]/10 disabled:bg-[#1F2A24]/[0.03] disabled:text-[#1F2A24]/45"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-brand/25 bg-brand/5 px-3 py-1.5 text-sm font-medium text-brand-ink transition-colors hover:border-brand/40 hover:bg-brand/10 disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/[0.03] disabled:text-ink/45"
                     >
                         <Check className="h-3.5 w-3.5" />
                         Select all
@@ -42,12 +42,12 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                         type="button"
                         onClick={clearAll}
                         disabled={noneSelected}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] px-3 py-1.5 text-sm font-medium text-[#1F2A24]/75 transition-colors hover:border-[#1F2A24]/25 hover:bg-[#1F2A24]/10 disabled:cursor-not-allowed disabled:text-[#1F2A24]/40"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-ink/[0.03] px-3 py-1.5 text-sm font-medium text-ink/75 transition-colors hover:border-ink/25 hover:bg-ink/10 disabled:cursor-not-allowed disabled:text-ink/40"
                     >
                         <X className="h-3.5 w-3.5" />
                         Clear
                     </button>
-                    <span className="ml-1 text-xs text-[#1F2A24]/70" aria-live="polite">
+                    <span className="ml-1 text-xs text-ink/70" aria-live="polite">
                         {selectedIds.length} of {subjects.length} selected
                     </span>
                 </div>
@@ -68,24 +68,24 @@ export default function SubjectsStep({ data, setData, errors, gradeLevels }) {
                             key={subject.id}
                             className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
                                 isChecked
-                                    ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
-                                    : 'border-[#1F2A24]/10 hover:bg-[#1F2A24]/[0.03]'
+                                    ? 'border-brand/40 bg-brand/5'
+                                    : 'border-ink/10 hover:bg-ink/[0.03]'
                             }`}
                         >
                             <input
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => toggleSubject(subject.id)}
-                                className="h-4 w-4 shrink-0 rounded border-[#1F2A24]/15 text-[#2F6F4E] accent-[#2F6F4E] focus:ring-[#2F6F4E]/30"
+                                className="h-4 w-4 shrink-0 rounded border-ink/15 text-brand-ink accent-brand focus:ring-brand/30"
                             />
-                            <span className="text-sm text-[#1F2A24]/80">{subject.name}</span>
+                            <span className="text-sm text-ink/80">{subject.name}</span>
                         </label>
                     );
                 })}
             </fieldset>
 
             {errors.subject_ids && (
-                <p id="subject_ids-error" className="mt-2 text-sm text-[#C6473B]">
+                <p id="subject_ids-error" className="mt-2 text-sm text-danger-ink">
                     {errors.subject_ids}
                 </p>
             )}

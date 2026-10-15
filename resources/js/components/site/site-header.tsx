@@ -86,7 +86,7 @@ function Avatar({ account, size }: { account: SiteAccount; size: string }) {
         />
     ) : (
         <span
-            className={`${size} flex items-center justify-center rounded-full bg-[#2F6F4E] text-xs font-semibold text-white`}
+            className={`${size} flex items-center justify-center rounded-full bg-brand text-xs font-semibold text-white`}
         >
             {initials(account.name)}
         </span>
@@ -109,7 +109,7 @@ function Brand() {
                 <span className="font-serif text-lg font-semibold tracking-tight">
                     EVIMS
                 </span>
-                <span className="hidden truncate text-[10.5px] tracking-[0.12em] text-[#1F2A24]/65 uppercase sm:block">
+                <span className="hidden truncate text-[10.5px] tracking-[0.12em] text-ink/65 uppercase sm:block">
                     Eastern Visayas Int'l Montessori School
                 </span>
             </span>
@@ -144,8 +144,8 @@ function DesktopDropdown({
                 aria-expanded={open}
                 className={`relative flex items-center gap-1 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
                     isActive || open
-                        ? 'text-[#2F6F4E]'
-                        : 'text-[#1F2A24]/80 hover:text-[#2F6F4E]'
+                        ? 'text-brand-ink'
+                        : 'text-ink/80 hover:text-brand-ink'
                 }`}
             >
                 {group.label}
@@ -163,7 +163,7 @@ function DesktopDropdown({
                         : 'invisible -translate-y-1 opacity-0'
                 }`}
             >
-                <div className="overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white p-1.5 shadow-xl shadow-[#1F2A24]/10">
+                <div className="overflow-hidden rounded-2xl border border-ink/10 bg-surface p-1.5 shadow-xl shadow-shade/10">
                     {group.children.map((child) => {
                         const isChildActive = isActiveItem(child, currentUrl);
 
@@ -177,17 +177,17 @@ function DesktopDropdown({
                                 }
                                 className={`block rounded-xl px-3 py-2.5 transition-colors ${
                                     isChildActive
-                                        ? 'bg-[#2F6F4E]/10'
-                                        : 'hover:bg-[#1F2A24]/5'
+                                        ? 'bg-brand/10'
+                                        : 'hover:bg-ink/5'
                                 }`}
                             >
                                 <span
-                                    className={`block text-sm font-semibold ${isChildActive ? 'text-[#2F6F4E]' : 'text-[#1F2A24]'}`}
+                                    className={`block text-sm font-semibold ${isChildActive ? 'text-brand-ink' : 'text-ink'}`}
                                 >
                                     {child.label}
                                 </span>
                                 {child.description && (
-                                    <span className="block text-xs text-[#1F2A24]/60">
+                                    <span className="block text-xs text-ink/60">
                                         {child.description}
                                     </span>
                                 )}
@@ -203,7 +203,7 @@ function DesktopDropdown({
 function ActiveBar() {
     return (
         <span
-            className="absolute inset-x-2.5 -bottom-[13px] h-0.5 rounded-full bg-[#2F6F4E]"
+            className="absolute inset-x-2.5 -bottom-[13px] h-0.5 rounded-full bg-brand"
             aria-hidden="true"
         />
     );
@@ -243,11 +243,11 @@ function AccountMenu({ account }: { account: SiteAccount }) {
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-label={`Account menu for ${account.name}`}
-                className="flex items-center gap-1 rounded-full p-0.5 pr-1.5 transition-colors hover:bg-[#1F2A24]/5"
+                className="flex items-center gap-1 rounded-full p-0.5 pr-1.5 transition-colors hover:bg-ink/5"
             >
                 <Avatar account={account} size="h-9 w-9" />
                 <ChevronDown
-                    className={`h-4 w-4 text-[#1F2A24]/60 transition-transform ${open ? 'rotate-180' : ''}`}
+                    className={`h-4 w-4 text-ink/60 transition-transform ${open ? 'rotate-180' : ''}`}
                     aria-hidden="true"
                 />
             </button>
@@ -255,15 +255,15 @@ function AccountMenu({ account }: { account: SiteAccount }) {
             {open && (
                 <div
                     role="menu"
-                    className="absolute top-full right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white shadow-xl shadow-[#1F2A24]/10"
+                    className="absolute top-full right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-xl shadow-shade/10"
                 >
-                    <div className="flex items-center gap-3 border-b border-[#1F2A24]/10 p-3">
+                    <div className="flex items-center gap-3 border-b border-ink/10 p-3">
                         <Avatar account={account} size="h-10 w-10" />
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#1F2A24]">
+                            <p className="truncate text-sm font-semibold text-ink">
                                 {account.name}
                             </p>
-                            <p className="truncate text-xs text-[#1F2A24]/60">
+                            <p className="truncate text-xs text-ink/60">
                                 {account.detail}
                             </p>
                         </div>
@@ -273,10 +273,10 @@ function AccountMenu({ account }: { account: SiteAccount }) {
                             href={account.dashboardUrl}
                             role="menuitem"
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-ink hover:bg-ink/5"
                         >
                             <LayoutDashboard
-                                className="h-4 w-4 text-[#2F6F4E]"
+                                className="h-4 w-4 text-brand-ink"
                                 aria-hidden="true"
                             />
                             My account
@@ -287,10 +287,10 @@ function AccountMenu({ account }: { account: SiteAccount }) {
                             data={{ switch_account: 1 }}
                             as="button"
                             role="menuitem"
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-ink hover:bg-ink/5"
                         >
                             <ArrowLeftRight
-                                className="h-4 w-4 text-[#2F6F4E]"
+                                className="h-4 w-4 text-brand-ink"
                                 aria-hidden="true"
                             />
                             Switch account
@@ -300,10 +300,10 @@ function AccountMenu({ account }: { account: SiteAccount }) {
                             method="post"
                             as="button"
                             role="menuitem"
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-ink hover:bg-ink/5"
                         >
                             <LogOut
-                                className="h-4 w-4 text-[#1F2A24]/60"
+                                className="h-4 w-4 text-ink/60"
                                 aria-hidden="true"
                             />
                             Log out
@@ -352,15 +352,15 @@ function MobileMenu({
     const linkClass = (isActive: boolean) =>
         `flex min-h-11 items-center rounded-xl px-3 text-sm font-medium ${
             isActive
-                ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                : 'text-[#1F2A24]/80 hover:bg-[#1F2A24]/5'
+                ? 'bg-brand/10 text-brand-ink'
+                : 'text-ink/80 hover:bg-ink/5'
         }`;
 
     return (
         <>
             <div
                 onClick={onClose}
-                className={`fixed inset-0 z-40 bg-[#1F2A24]/40 backdrop-blur-[2px] transition-opacity duration-300 xl:hidden ${
+                className={`fixed inset-0 z-40 bg-ink/40 backdrop-blur-[2px] transition-opacity duration-300 xl:hidden ${
                     open
                         ? 'pointer-events-auto opacity-100'
                         : 'pointer-events-none opacity-0'
@@ -374,38 +374,38 @@ function MobileMenu({
                 aria-modal="true"
                 aria-label="Site navigation"
                 inert={!open}
-                className={`fixed top-0 right-0 z-50 flex h-full w-80 max-w-[86vw] flex-col bg-[#FBF8F2] shadow-2xl transition-[transform,visibility] duration-300 ease-in-out xl:hidden ${
+                className={`fixed top-0 right-0 z-50 flex h-full w-80 max-w-[86vw] flex-col bg-cream shadow-2xl transition-[transform,visibility] duration-300 ease-in-out xl:hidden ${
                     open
                         ? 'visible translate-x-0'
                         : 'invisible translate-x-full'
                 }`}
             >
-                <div className="flex items-center justify-between gap-3 border-b border-[#1F2A24]/10 px-4 py-3">
+                <div className="flex items-center justify-between gap-3 border-b border-ink/10 px-4 py-3">
                     <Brand />
                     <button
                         ref={closeButtonRef}
                         type="button"
                         onClick={onClose}
-                        className="rounded-full p-2 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                        className="rounded-full p-2 text-ink/70 hover:bg-ink/5 hover:text-ink"
                         aria-label="Close navigation"
                     >
                         <X className="h-5 w-5" aria-hidden="true" />
                     </button>
                 </div>
 
-                <div className="border-b border-[#1F2A24]/10 p-4">
+                <div className="border-b border-ink/10 p-4">
                     {account ? (
                         <Link
                             href={account.dashboardUrl}
                             onClick={onClose}
-                            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#1F2A24]/10"
+                            className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-ink/10"
                         >
                             <Avatar account={account} size="h-10 w-10" />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate text-sm font-semibold text-[#1F2A24]">
+                                <span className="block truncate text-sm font-semibold text-ink">
                                     {account.name}
                                 </span>
-                                <span className="block text-xs font-medium text-[#2F6F4E]">
+                                <span className="block text-xs font-medium text-brand-ink">
                                     Go to my account
                                 </span>
                             </span>
@@ -415,7 +415,7 @@ function MobileMenu({
                             <Link
                                 href={login()}
                                 onClick={onClose}
-                                className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white text-sm font-semibold text-[#1F2A24]"
+                                className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-ink/15 bg-surface text-sm font-semibold text-ink"
                             >
                                 <LogIn className="h-4 w-4" aria-hidden="true" />
                                 Log in
@@ -423,7 +423,7 @@ function MobileMenu({
                             <Link
                                 href={register()}
                                 onClick={onClose}
-                                className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 text-sm font-semibold text-[#2F6F4E]"
+                                className="flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-brand/30 bg-brand/5 text-sm font-semibold text-brand-ink"
                             >
                                 <UserPlus
                                     className="h-4 w-4"
@@ -479,7 +479,7 @@ function MobileMenu({
                                     />
                                 </button>
                                 {isOpen && (
-                                    <div className="my-1 ml-4 flex flex-col gap-0.5 border-l-2 border-[#2F6F4E]/15 pl-2">
+                                    <div className="my-1 ml-4 flex flex-col gap-0.5 border-l-2 border-brand/15 pl-2">
                                         {item.children.map((child) => {
                                             const isChildActive = isActiveItem(
                                                 child,
@@ -498,17 +498,17 @@ function MobileMenu({
                                                     }
                                                     className={`rounded-lg px-3 py-2 ${
                                                         isChildActive
-                                                            ? 'bg-[#2F6F4E]/10'
-                                                            : 'hover:bg-[#1F2A24]/5'
+                                                            ? 'bg-brand/10'
+                                                            : 'hover:bg-ink/5'
                                                     }`}
                                                 >
                                                     <span
-                                                        className={`block text-sm font-medium ${isChildActive ? 'text-[#2F6F4E]' : 'text-[#1F2A24]/80'}`}
+                                                        className={`block text-sm font-medium ${isChildActive ? 'text-brand-ink' : 'text-ink/80'}`}
                                                     >
                                                         {child.label}
                                                     </span>
                                                     {child.description && (
-                                                        <span className="block text-xs text-[#1F2A24]/55">
+                                                        <span className="block text-xs text-ink/55">
                                                             {child.description}
                                                         </span>
                                                     )}
@@ -522,7 +522,7 @@ function MobileMenu({
                     })}
                 </nav>
 
-                <div className="space-y-2 border-t border-[#1F2A24]/10 p-4">
+                <div className="space-y-2 border-t border-ink/10 p-4">
                     <EnrollButton onNavigate={onClose} fullWidth />
                     {account && (
                         <div className="grid grid-cols-2 gap-2">
@@ -531,7 +531,7 @@ function MobileMenu({
                                 method="post"
                                 data={{ switch_account: 1 }}
                                 as="button"
-                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-ink/60 hover:text-ink"
                             >
                                 <ArrowLeftRight
                                     className="h-4 w-4"
@@ -543,7 +543,7 @@ function MobileMenu({
                                 href={account.logoutUrl}
                                 method="post"
                                 as="button"
-                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-ink/60 hover:text-ink"
                             >
                                 <LogOut
                                     className="h-4 w-4"
@@ -588,9 +588,9 @@ export default function SiteHeader() {
     return (
         <>
             <header
-                className={`sticky top-0 z-40 border-b bg-[#FBF8F2]/90 backdrop-blur-md transition-shadow duration-200 ${
+                className={`sticky top-0 z-40 border-b bg-cream/90 backdrop-blur-md transition-shadow duration-200 ${
                     isScrolled
-                        ? 'border-[#1F2A24]/10 shadow-sm shadow-[#1F2A24]/5'
+                        ? 'border-ink/10 shadow-sm shadow-shade/5'
                         : 'border-transparent'
                 }`}
             >
@@ -624,8 +624,8 @@ export default function SiteHeader() {
                                     aria-current={isActive ? 'page' : undefined}
                                     className={`relative rounded-md px-2.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                                         isActive
-                                            ? 'text-[#2F6F4E]'
-                                            : 'text-[#1F2A24]/80 hover:text-[#2F6F4E]'
+                                            ? 'text-brand-ink'
+                                            : 'text-ink/80 hover:text-brand-ink'
                                     }`}
                                 >
                                     {item.label}
@@ -644,7 +644,7 @@ export default function SiteHeader() {
                             ) : (
                                 <Link
                                     href={login()}
-                                    className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[#1F2A24]/80 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                                    className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-ink/80 transition-colors hover:bg-ink/5 hover:text-ink"
                                 >
                                     <LogIn
                                         className="h-4 w-4"
@@ -662,7 +662,7 @@ export default function SiteHeader() {
                         <button
                             type="button"
                             onClick={() => setIsMenuOpen(true)}
-                            className="-mr-1 rounded-full p-2 text-[#1F2A24] hover:bg-[#1F2A24]/5 xl:hidden"
+                            className="-mr-1 rounded-full p-2 text-ink hover:bg-ink/5 xl:hidden"
                             aria-label="Open navigation"
                             aria-expanded={isMenuOpen}
                             aria-controls="site-mobile-nav"

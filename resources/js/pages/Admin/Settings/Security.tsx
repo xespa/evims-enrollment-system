@@ -143,10 +143,10 @@ export default function Security({
                 {twoFactor.isRequired && !twoFactor.isEnabled && (
                     <div
                         role="alert"
-                        className="flex items-start gap-2.5 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#1F2A24]"
+                        className="flex items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-ink"
                     >
                         <ShieldAlert
-                            className="mt-0.5 size-4 shrink-0 text-[#a4670f]"
+                            className="mt-0.5 size-4 shrink-0 text-warn-ink"
                             aria-hidden="true"
                         />
                         <p>
@@ -233,8 +233,8 @@ export default function Security({
                                                 aria-live="polite"
                                                 className={`inline-flex items-center gap-1.5 ${
                                                     passwordsMatch
-                                                        ? 'text-[#2F6F4E]'
-                                                        : 'text-[#C6473B]'
+                                                        ? 'text-brand-ink'
+                                                        : 'text-danger-ink'
                                                 }`}
                                             >
                                                 {passwordsMatch ? (
@@ -281,8 +281,8 @@ export default function Security({
                             </div>
 
                             {requirements.length > 0 && (
-                                <div className="self-start rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-4">
-                                    <p className="text-sm font-medium text-[#1F2A24]/85">
+                                <div className="self-start rounded-xl border border-ink/10 bg-cream p-4">
+                                    <p className="text-sm font-medium text-ink/85">
                                         Your new password needs
                                     </p>
                                     <ul
@@ -300,8 +300,8 @@ export default function Security({
                                                     key={requirement.label}
                                                     className={`flex items-center gap-2 transition-colors ${
                                                         isMet
-                                                            ? 'text-[#2F6F4E]'
-                                                            : 'text-[#1F2A24]/60'
+                                                            ? 'text-brand-ink'
+                                                            : 'text-ink/60'
                                                     }`}
                                                 >
                                                     {isMet ? (

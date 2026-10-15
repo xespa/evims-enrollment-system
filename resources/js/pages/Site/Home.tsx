@@ -28,11 +28,11 @@ type Props = {
 
 const BADGE_TONES = {
     open: {
-        badge: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
-        dot: 'animate-pulse bg-[#2F6F4E] motion-reduce:animate-none',
+        badge: 'bg-brand/10 text-brand-ink',
+        dot: 'animate-pulse bg-brand motion-reduce:animate-none',
     },
-    upcoming: { badge: 'bg-[#E8A33D]/15 text-[#8A5A12]', dot: 'bg-[#E8A33D]' },
-    closed: { badge: 'bg-[#C6473B]/10 text-[#9A3329]', dot: 'bg-[#C6473B]' },
+    upcoming: { badge: 'bg-warn/15 text-warn-strong', dot: 'bg-warn' },
+    closed: { badge: 'bg-danger/10 text-danger-deep', dot: 'bg-danger' },
 };
 
 function formatShortDate(date: string): string {
@@ -145,7 +145,7 @@ function formatSchoolYear(schoolYear: string): string {
 
 function SectionLabel({ children }: { children: string }) {
     return (
-        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+        <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
             {children}
         </p>
     );
@@ -166,7 +166,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
 
             {/* Banner */}
             <section className="px-3 pt-3 sm:px-5 sm:pt-5">
-                <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-[#1B4D34] shadow-xl shadow-[#1F2A24]/10 sm:rounded-[2rem]">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-[#1B4D34] shadow-xl shadow-shade/10 sm:rounded-[2rem]">
                     <img
                         src="/images/evims-banner.jpg"
                         alt="Give your child the world — Eastern Visayas International Montessori School (EVIMS), since 2003, Borongan City, Eastern Samar. Choose Montessori!"
@@ -180,7 +180,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
 
             {/* Enrollment call-out, overlapping the banner's bottom edge */}
             <section className="relative z-10 px-5">
-                <div className="mx-auto -mt-6 flex max-w-5xl flex-col gap-5 rounded-2xl border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/10 sm:-mt-10 md:flex-row md:items-center md:justify-between md:p-8">
+                <div className="mx-auto -mt-6 flex max-w-5xl flex-col gap-5 rounded-2xl border border-ink/10 bg-surface p-6 shadow-xl shadow-shade/10 sm:-mt-10 md:flex-row md:items-center md:justify-between md:p-8">
                     <div>
                         <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${badge.tone.badge}`}
@@ -191,11 +191,11 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                             />
                             {badge.label}
                         </span>
-                        <h1 className="mt-3 font-serif text-2xl leading-tight font-semibold text-[#1F2A24] sm:text-3xl">
+                        <h1 className="mt-3 font-serif text-2xl leading-tight font-semibold text-ink sm:text-3xl">
                             Be part of something{' '}
-                            <span className="text-[#2F6F4E]">exceptional</span>
+                            <span className="text-brand-ink">exceptional</span>
                         </h1>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#1F2A24]/70 sm:text-base">
+                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink/70 sm:text-base">
                             At Eastern Visayas International Montessori School,
                             we cultivate excellence through innovative
                             education, dedicated teaching, and a thriving
@@ -205,7 +205,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                     <div className="flex shrink-0 flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
                         <Link
                             href="/admission"
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                         >
                             Start Enrollment
                             <ArrowRight
@@ -215,7 +215,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                         </Link>
                         <Link
                             href="/about"
-                            className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#1F2A24]/15 px-6 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-12 items-center justify-center rounded-full border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-ink/5"
                         >
                             Meet the School
                         </Link>
@@ -237,14 +237,14 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                     ].map((stat) => (
                         <div
                             key={stat.label}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white/60 px-4 py-4 text-center"
+                            className="rounded-2xl border border-ink/10 bg-white/60 px-4 py-4 text-center"
                         >
                             <dt className="sr-only">{stat.label}</dt>
                             <dd>
-                                <span className="block font-serif text-2xl font-semibold text-[#2F6F4E]">
+                                <span className="block font-serif text-2xl font-semibold text-brand-ink">
                                     {stat.value}
                                 </span>
-                                <span className="mt-0.5 block text-xs text-[#1F2A24]/70">
+                                <span className="mt-0.5 block text-xs text-ink/70">
                                     {stat.label}
                                 </span>
                             </dd>
@@ -257,7 +257,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
             <section className="mx-auto max-w-7xl px-5 py-16">
                 <div className="max-w-2xl">
                     <SectionLabel>Programs &amp; grade levels</SectionLabel>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                         A Montessori path from Nursery to Grade 10
                     </h2>
                 </div>
@@ -267,28 +267,28 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                         <Link
                             key={program.title}
                             href={program.href}
-                            className="group flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#2F6F4E]/30 hover:shadow-lg hover:shadow-[#1F2A24]/5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                            className="group flex flex-col rounded-2xl border border-ink/10 bg-surface p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lg hover:shadow-shade/5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                         >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand-ink">
                                 <GraduationCap
                                     className="h-5 w-5"
                                     aria-hidden="true"
                                 />
                             </span>
-                            <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
+                            <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
                                 {program.title}
                             </h3>
                             <ul className="mt-3 flex flex-wrap gap-1.5">
                                 {program.grades.map((grade) => (
                                     <li
                                         key={grade.id}
-                                        className="rounded-full bg-[#FBF8F2] px-2.5 py-1 text-xs font-medium text-[#1F2A24]/80"
+                                        className="rounded-full bg-cream px-2.5 py-1 text-xs font-medium text-ink/80"
                                     >
                                         {grade.name}
                                     </li>
                                 ))}
                             </ul>
-                            <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-[#2F6F4E]">
+                            <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-brand-ink">
                                 Learn more
                                 <ArrowRight
                                     className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
@@ -301,28 +301,28 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
             </section>
 
             {/* Why EVIMS */}
-            <section className="border-y border-[#1F2A24]/10 bg-white">
+            <section className="border-y border-ink/10 bg-surface">
                 <div className="mx-auto max-w-7xl px-5 py-16">
                     <SectionLabel>Why families choose EVIMS</SectionLabel>
                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                         {HIGHLIGHTS.map(({ icon: Icon, ...item }) => (
                             <div
                                 key={item.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 p-6"
+                                className="rounded-2xl border border-ink/10 p-6"
                             >
-                                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E8A33D]/15 text-[#8A5A12]">
+                                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-warn/15 text-warn-strong">
                                     <Icon
                                         className="h-5 w-5"
                                         aria-hidden="true"
                                     />
                                 </span>
-                                <p className="mt-4 text-xs font-semibold text-[#8A5A12] uppercase">
+                                <p className="mt-4 text-xs font-semibold text-warn-strong uppercase">
                                     {item.label}
                                 </p>
-                                <h3 className="mt-1.5 font-serif text-xl font-semibold text-[#1F2A24]">
+                                <h3 className="mt-1.5 font-serif text-xl font-semibold text-ink">
                                     {item.title}
                                 </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                                <p className="mt-2 text-sm leading-relaxed text-ink/70">
                                     {item.copy}
                                 </p>
                             </div>
@@ -336,13 +336,13 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <SectionLabel>How enrollment works</SectionLabel>
-                        <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                        <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                             Four steps, start to finish
                         </h2>
                     </div>
                     <Link
                         href="/admission"
-                        className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[#2F6F4E] hover:underline"
+                        className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-brand-ink hover:underline"
                     >
                         Start your application
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -352,28 +352,28 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                 <ol className="relative mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Connects the numbered steps on wide screens. */}
                     <span
-                        className="absolute top-6 right-[12.5%] left-[12.5%] hidden h-px bg-[#1F2A24]/15 lg:block"
+                        className="absolute top-6 right-[12.5%] left-[12.5%] hidden h-px bg-ink/15 lg:block"
                         aria-hidden="true"
                     />
                     {STEPS.map(({ icon: Icon, ...step }, index) => (
                         <li key={step.title} className="relative">
                             <div className="flex items-center gap-3 lg:flex-col lg:text-center">
-                                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] font-serif text-lg font-semibold text-[#FBF8F2] ring-8 ring-[#FBF8F2]">
+                                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand font-serif text-lg font-semibold text-on-brand ring-8 ring-cream">
                                     {index + 1}
                                 </span>
-                                <p className="text-xs font-semibold tracking-[0.14em] text-[#8A5A12] uppercase lg:mt-2">
+                                <p className="text-xs font-semibold tracking-[0.14em] text-warn-strong uppercase lg:mt-2">
                                     Step {index + 1}
                                 </p>
                             </div>
-                            <div className="mt-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-5 lg:text-center">
+                            <div className="mt-4 rounded-2xl border border-ink/10 bg-surface p-5 lg:text-center">
                                 <Icon
-                                    className="h-5 w-5 text-[#2F6F4E] lg:mx-auto"
+                                    className="h-5 w-5 text-brand-ink lg:mx-auto"
                                     aria-hidden="true"
                                 />
-                                <h3 className="mt-3 font-serif text-lg font-semibold text-[#1F2A24]">
+                                <h3 className="mt-3 font-serif text-lg font-semibold text-ink">
                                     {step.title}
                                 </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                                <p className="mt-2 text-sm leading-relaxed text-ink/70">
                                     {step.copy}
                                 </p>
                             </div>
@@ -386,11 +386,11 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
             <section className="px-5 pb-16">
                 <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1B4D34] px-6 py-12 sm:px-12">
                     <div
-                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#E8A33D]/20 blur-2xl"
+                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-warn/20 blur-2xl"
                         aria-hidden="true"
                     />
                     <div
-                        className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[#2F6F4E] blur-2xl"
+                        className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-brand blur-2xl"
                         aria-hidden="true"
                     />
                     <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
@@ -398,20 +398,20 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                             <img
                                 src="/images/logoevims.png"
                                 alt=""
-                                className="hidden h-16 w-16 shrink-0 rounded-full bg-white object-cover p-0.5 sm:block"
+                                className="hidden h-16 w-16 shrink-0 rounded-full bg-surface object-cover p-0.5 sm:block"
                             />
                             <div>
-                                <p className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">
+                                <p className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] text-warn uppercase">
                                     <Sparkles
                                         className="h-3.5 w-3.5"
                                         aria-hidden="true"
                                     />
                                     Give your child the world
                                 </p>
-                                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#FBF8F2]">
+                                <h2 className="mt-2 font-serif text-3xl font-semibold text-on-brand">
                                     Ready to reserve your child's seat?
                                 </h2>
-                                <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
+                                <p className="mt-2 max-w-lg text-sm text-on-brand/80">
                                     {enrollmentStatus?.status === 'open'
                                         ? `Applications for School Year ${formatSchoolYear(enrollmentStatus.school_year)} are open for new, returning, and transferee students.`
                                         : enrollmentStatus?.status === 'closed'
@@ -422,7 +422,7 @@ export default function Home({ gradeLevels, enrollmentStatus }: Props) {
                         </div>
                         <Link
                             href="/admission"
-                            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-[#E8A33D] px-7 text-base font-semibold text-[#1F2A24] shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
+                            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-warn px-7 text-base font-semibold text-ink shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
                         >
                             Enroll Now
                             <ArrowRight

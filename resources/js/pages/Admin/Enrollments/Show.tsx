@@ -29,9 +29,9 @@ function displayMobileNumber(value) {
 
 function InfoRow({ label, value }) {
     return (
-        <div className="flex justify-between gap-4 border-b border-[#1F2A24]/10 py-2 text-sm">
-            <span className="shrink-0 text-[#1F2A24]/70">{label}</span>
-            <span className="min-w-0 text-right font-medium break-words text-[#1F2A24]">
+        <div className="flex justify-between gap-4 border-b border-ink/10 py-2 text-sm">
+            <span className="shrink-0 text-ink/70">{label}</span>
+            <span className="min-w-0 text-right font-medium break-words text-ink">
                 {(typeof value === 'string' ? value.trim() : value) || '—'}
             </span>
         </div>
@@ -48,9 +48,9 @@ function CheckboxField({ label, checked, onChange, disabled = false }) {
                 checked={!!checked}
                 onChange={onChange}
                 disabled={disabled}
-                className="h-4 w-4 rounded border-[#1F2A24]/20 text-[#2F6F4E] focus:ring-[#2F6F4E] disabled:opacity-60"
+                className="h-4 w-4 rounded border-ink/20 text-brand-ink focus:ring-brand disabled:opacity-60"
             />
-            <span className="text-sm text-[#1F2A24]/80">{label}</span>
+            <span className="text-sm text-ink/80">{label}</span>
         </label>
     );
 }
@@ -134,10 +134,10 @@ function PaymentsSection({ enrollment }) {
     };
 
     return (
-        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                    <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                         Payments
                     </h2>
                     {billingContract && (
@@ -145,7 +145,7 @@ function PaymentsSection({ enrollment }) {
                             {PAYMENT_PLAN_LABELS[
                                 billingContract.payment_option
                             ] && (
-                                <span className="rounded-full bg-[#2F6F4E]/10 px-2.5 py-0.5 text-xs font-medium text-[#2F6F4E]">
+                                <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand-ink">
                                     {
                                         PAYMENT_PLAN_LABELS[
                                             billingContract.payment_option
@@ -154,7 +154,7 @@ function PaymentsSection({ enrollment }) {
                                     plan
                                 </span>
                             )}
-                            <span className="rounded-full bg-[#1F2A24]/5 px-2.5 py-0.5 text-xs font-medium text-[#1F2A24]/70">
+                            <span className="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs font-medium text-ink/70">
                                 {paysAtCounter
                                     ? 'Pays at the school counter'
                                     : 'Pays online via GCash'}
@@ -163,13 +163,13 @@ function PaymentsSection({ enrollment }) {
                     )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="text-sm text-[#1F2A24]/70">
+                    <div className="text-sm text-ink/70">
                         Paid{' '}
-                        <span className="font-semibold text-[#2F6F4E]">
+                        <span className="font-semibold text-brand-ink">
                             {formatCurrency(totalPaid)}
                         </span>{' '}
                         of{' '}
-                        <span className="font-semibold text-[#1F2A24]">
+                        <span className="font-semibold text-ink">
                             {formatCurrency(totalDue)}
                         </span>
                     </div>
@@ -180,7 +180,7 @@ function PaymentsSection({ enrollment }) {
                                 setRecordSession((n) => n + 1);
                                 setIsRecording(true);
                             }}
-                            className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                            className="min-h-9 rounded-full bg-brand px-4 text-xs font-semibold text-white transition-colors hover:bg-brand-deep"
                         >
                             Record counter payment
                         </button>
@@ -188,7 +188,7 @@ function PaymentsSection({ enrollment }) {
                 </div>
             </div>
 
-            <div className="divide-y divide-[#1F2A24]/10">
+            <div className="divide-y divide-ink/10">
                 {installments.map((installment) => {
                     const paid = installmentPaid(installment);
                     const remaining = Number(installment.amount_due) - paid;
@@ -201,17 +201,17 @@ function PaymentsSection({ enrollment }) {
                         <div key={installment.id} className="py-3">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
-                                    <span className="text-sm font-medium text-[#1F2A24]">
+                                    <span className="text-sm font-medium text-ink">
                                         Installment #
                                         {installment.installment_number}
                                     </span>
-                                    <span className="ml-2 text-xs text-[#1F2A24]/70">
+                                    <span className="ml-2 text-xs text-ink/70">
                                         Due{' '}
                                         {formatShortDate(installment.due_date)}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <span className="text-sm text-[#1F2A24]/70 tabular-nums">
+                                    <span className="text-sm text-ink/70 tabular-nums">
                                         {formatCurrency(installment.amount_due)}
                                     </span>
                                     <span
@@ -225,14 +225,14 @@ function PaymentsSection({ enrollment }) {
                             </div>
 
                             {paid > 0 && installment.status !== 'PAID' && (
-                                <p className="mt-1 text-xs text-[#1F2A24]/70">
+                                <p className="mt-1 text-xs text-ink/70">
                                     {formatCurrency(paid)} paid so far,{' '}
                                     {formatCurrency(remaining)} remaining
                                 </p>
                             )}
 
                             {shownPayments.length > 0 && (
-                                <ul className="mt-2 space-y-1.5 border-l-2 border-[#2F6F4E]/15 pl-3">
+                                <ul className="mt-2 space-y-1.5 border-l-2 border-brand/15 pl-3">
                                     {shownPayments.map((payment) => {
                                         const isVoided =
                                             payment.status === 'VOIDED';
@@ -244,7 +244,7 @@ function PaymentsSection({ enrollment }) {
                                         return (
                                             <li
                                                 key={payment.id}
-                                                className="text-xs text-[#1F2A24]/65"
+                                                className="text-xs text-ink/65"
                                             >
                                                 <div className="flex flex-wrap items-center justify-between gap-x-3">
                                                     <span
@@ -264,7 +264,7 @@ function PaymentsSection({ enrollment }) {
                                                     </span>
                                                     <span className="flex items-center gap-2">
                                                         {isVoided && (
-                                                            <span className="rounded-full bg-[#1F2A24]/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#1F2A24]/70 uppercase">
+                                                            <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-ink/70 uppercase">
                                                                 Voided
                                                             </span>
                                                         )}
@@ -283,7 +283,7 @@ function PaymentsSection({ enrollment }) {
                                                                         payment,
                                                                     )
                                                                 }
-                                                                className="min-h-8 rounded-full px-2 font-medium text-[#A83A30] hover:bg-[#C6473B]/10"
+                                                                className="min-h-8 rounded-full px-2 font-medium text-danger-alert hover:bg-danger/10"
                                                             >
                                                                 Void
                                                             </button>
@@ -291,7 +291,7 @@ function PaymentsSection({ enrollment }) {
                                                     </span>
                                                 </div>
                                                 {isVoided && (
-                                                    <p className="mt-0.5 text-[#1F2A24]/55 italic">
+                                                    <p className="mt-0.5 text-ink/55 italic">
                                                         Voided
                                                         {payment.voided_by
                                                             ?.name &&
@@ -312,7 +312,7 @@ function PaymentsSection({ enrollment }) {
                 })}
 
                 {installments.length === 0 && (
-                    <p className="py-3 text-sm text-[#1F2A24]/65">
+                    <p className="py-3 text-sm text-ink/65">
                         No installment schedule found.
                     </p>
                 )}
@@ -480,7 +480,7 @@ function DocumentRow({
     };
 
     return (
-        <div className="border-b border-[#1F2A24]/10 py-1.5 last:border-0">
+        <div className="border-b border-ink/10 py-1.5 last:border-0">
             <div className="flex items-center justify-between gap-2">
                 <CheckboxField
                     label={doc.label}
@@ -500,7 +500,7 @@ function DocumentRow({
                             type="button"
                             onClick={toggleOpen}
                             aria-expanded={open}
-                            className="min-h-9 shrink-0 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                            className="min-h-9 shrink-0 rounded-full px-2 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline"
                         >
                             {open ? 'Cancel' : 'Remind'}
                         </button>
@@ -513,7 +513,7 @@ function DocumentRow({
                         <button
                             type="button"
                             onClick={() => setIsViewing(true)}
-                            className="inline-block text-xs font-medium text-[#2F6F4E] hover:underline"
+                            className="inline-block text-xs font-medium text-brand-ink hover:underline"
                         >
                             View uploaded file →
                         </button>
@@ -526,7 +526,7 @@ function DocumentRow({
                         />
                     </>
                 ) : (
-                    <p className="text-xs text-[#1F2A24]/65">
+                    <p className="text-xs text-ink/65">
                         {isUploadedBySchool
                             ? 'Returning student — upload their latest report card'
                             : 'No file uploaded yet'}
@@ -545,11 +545,11 @@ function DocumentRow({
             {open && (
                 <form
                     onSubmit={submit}
-                    className="mt-2 space-y-2 rounded-lg bg-[#E8A33D]/10 p-3"
+                    className="mt-2 space-y-2 rounded-lg bg-warn/10 p-3"
                 >
                     <label
                         htmlFor={`remind-reason-${doc.type}`}
-                        className="block text-xs font-medium text-[#1F2A24]/80"
+                        className="block text-xs font-medium text-ink/80"
                     >
                         Reason for reminder
                     </label>
@@ -557,7 +557,7 @@ function DocumentRow({
                         id={`remind-reason-${doc.type}`}
                         value={data.reason}
                         onChange={(e) => setData('reason', e.target.value)}
-                        className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                        className="w-full rounded-lg border border-ink/15 bg-surface px-2 py-1.5 text-xs text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                     >
                         {REMINDER_REASONS.map((reason) => (
                             <option key={reason.value} value={reason.value}>
@@ -577,7 +577,7 @@ function DocumentRow({
                                     : 'Optional note to include...'
                             }
                             rows={2}
-                            className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                            className="w-full rounded-lg border border-ink/15 bg-surface px-2 py-1.5 text-xs text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                         />
                     )}
 
@@ -585,7 +585,7 @@ function DocumentRow({
                         <button
                             type="button"
                             onClick={() => setShowNote(true)}
-                            className="text-xs font-medium text-[#2F6F4E] hover:underline"
+                            className="text-xs font-medium text-brand-ink hover:underline"
                         >
                             + Add a note
                         </button>
@@ -595,14 +595,14 @@ function DocumentRow({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="min-h-9 rounded-full bg-[#E8A33D] px-4 py-1 text-xs font-semibold text-[#1F2A24] transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-50"
+                            className="min-h-9 rounded-full bg-warn px-4 py-1 text-xs font-semibold text-ink transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-50"
                         >
                             {processing ? 'Sending…' : 'Send Reminder'}
                         </button>
                         {(errors.reason || errors.note || errors.reminder) && (
                             <span
                                 role="alert"
-                                className="text-xs text-[#C6473B]"
+                                className="text-xs text-danger-ink"
                             >
                                 {errors.reason ||
                                     errors.note ||
@@ -747,11 +747,11 @@ export default function Show({
                 onOpenChange={setIsRejecting}
             />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <Link
                         href={route('admin.students.index')}
-                        className="mb-4 inline-block text-sm font-medium text-[#2F6F4E] hover:underline"
+                        className="mb-4 inline-block text-sm font-medium text-brand-ink hover:underline"
                     >
                         ← Back to students
                     </Link>
@@ -759,14 +759,14 @@ export default function Show({
                     {flashSuccess && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {flashSuccess}
                         </div>
                     )}
 
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             {student.last_name}, {student.first_name}{' '}
                             {student.middle_name}
                         </h1>
@@ -779,7 +779,7 @@ export default function Show({
                                             'admin.enrollments.registration-form.show',
                                             enrollment.id,
                                         )}
-                                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand/30 px-3 text-sm font-medium text-brand-ink transition-colors hover:bg-brand/5"
                                     >
                                         <FileDown
                                             className="h-4 w-4"
@@ -807,9 +807,9 @@ export default function Show({
                     {isCancelled && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#1F2A24]"
+                            className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-ink"
                         >
-                            <span className="font-semibold text-[#C6473B]">
+                            <span className="font-semibold text-danger-ink">
                                 Cancelled by the parent
                             </span>{' '}
                             on {formatShortDate(enrollment.cancelled_at)}. They
@@ -821,7 +821,7 @@ export default function Show({
                     {enrollment.archived_at && (
                         <div
                             role="status"
-                            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#1F2A24]/15 bg-[#1F2A24]/5 px-4 py-3 text-sm text-[#1F2A24]"
+                            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink"
                         >
                             <p>
                                 <span className="font-semibold">Archived</span>{' '}
@@ -832,7 +832,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={restoreApplication}
-                                    className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                                    className="min-h-9 rounded-full bg-brand px-4 text-xs font-semibold text-white transition-colors hover:bg-brand-deep"
                                 >
                                     Restore
                                 </button>
@@ -843,7 +843,7 @@ export default function Show({
                     {!enrollment.parent_email_verified && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                            className="mb-4 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn-deep"
                         >
                             <span className="font-semibold">
                                 Email not verified.
@@ -862,7 +862,7 @@ export default function Show({
                     {isMissingLrn && !isCancelled && (
                         <div
                             role="status"
-                            className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                            className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn-deep"
                         >
                             <p>
                                 <span className="font-semibold">
@@ -883,7 +883,7 @@ export default function Show({
                         !isCancelled && (
                             <div
                                 role="status"
-                                className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                                className="mb-4 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn-deep"
                             >
                                 <p>
                                     <span className="font-semibold">
@@ -909,7 +909,7 @@ export default function Show({
                         !isCancelled && (
                             <div
                                 role="status"
-                                className="mb-4 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                                className="mb-4 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn-deep"
                             >
                                 <p>
                                     <span className="font-semibold">
@@ -947,8 +947,8 @@ export default function Show({
                     {enrollment.enrollment_status === 'REJECTED' &&
                         (enrollment.rejection_reasons?.length > 0 ||
                             enrollment.rejection_note) && (
-                            <div className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#1F2A24]">
-                                <p className="font-semibold text-[#C6473B]">
+                            <div className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-ink">
+                                <p className="font-semibold text-danger-ink">
                                     Rejected because:
                                 </p>
                                 <ul className="mt-1 list-disc pl-5">
@@ -976,7 +976,7 @@ export default function Show({
                     {statusError && (
                         <div
                             role="alert"
-                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#C6473B]"
+                            className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger-ink"
                         >
                             {statusError}
                         </div>
@@ -985,7 +985,7 @@ export default function Show({
                     {missingDocumentsError && (
                         <div
                             role="alert"
-                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#C6473B]"
+                            className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger-ink"
                         >
                             {missingDocumentsError}
                         </div>
@@ -993,7 +993,7 @@ export default function Show({
 
                     {/* Approve/Reject actions */}
                     {can.reviewApplications && (
-                        <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                        <div className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-ink/10 bg-surface p-4">
                             <button
                                 type="button"
                                 onClick={() => changeStatus('APPROVED')}
@@ -1010,7 +1010,7 @@ export default function Show({
                                           ? `Before approving, ${approveBlockers.join(' and ')}.`
                                           : undefined
                                 }
-                                className="min-h-11 rounded-full bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="min-h-11 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 Approve
                             </button>
@@ -1026,7 +1026,7 @@ export default function Show({
                                         ? 'The parent cancelled this application.'
                                         : undefined
                                 }
-                                className="min-h-11 rounded-full bg-[#C6473B] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="min-h-11 rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 Reject
                             </button>
@@ -1034,7 +1034,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => changeStatus('PENDING')}
-                                    className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                                    className="min-h-11 rounded-full border border-ink/15 bg-surface px-4 py-2 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5"
                                 >
                                     Reset to Pending
                                 </button>
@@ -1044,7 +1044,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={archiveApplication}
-                                    className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 sm:ml-auto"
+                                    className="min-h-11 rounded-full border border-ink/15 bg-surface px-4 py-2 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5 sm:ml-auto"
                                 >
                                     Archive
                                 </button>
@@ -1054,9 +1054,9 @@ export default function Show({
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {/* Portal account the application came from */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
                             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                     Submitted From
                                 </h2>
                                 {submittedFrom && can.reviewApplications && (
@@ -1068,7 +1068,7 @@ export default function Show({
                                                 search: submittedFrom.email,
                                             },
                                         )}
-                                        className="text-xs font-semibold text-[#2F6F4E] hover:underline"
+                                        className="text-xs font-semibold text-brand-ink hover:underline"
                                     >
                                         View in Portal Accounts →
                                     </Link>
@@ -1086,7 +1086,7 @@ export default function Show({
                                             <>
                                                 {submittedFrom.email}
                                                 {!submittedFrom.email_verified && (
-                                                    <span className="ml-2 rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                                                    <span className="ml-2 rounded-full bg-warn/15 px-2 py-0.5 text-xs font-medium text-warn-ink">
                                                         Not verified
                                                     </span>
                                                 )}
@@ -1121,7 +1121,7 @@ export default function Show({
                                     />
                                 </div>
                             ) : (
-                                <p className="py-2 text-sm text-[#1F2A24]/65">
+                                <p className="py-2 text-sm text-ink/65">
                                     No linked portal account — this application
                                     wasn't submitted from a signed-in account.
                                 </p>
@@ -1149,8 +1149,8 @@ export default function Show({
                         />
 
                         {/* Student info */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                 Student Info
                             </h2>
                             <InfoRow label="LRN" value={student.lrn} />
@@ -1204,8 +1204,8 @@ export default function Show({
                         </div>
 
                         {/* Address */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                 Address
                             </h2>
                             <InfoRow
@@ -1236,8 +1236,8 @@ export default function Show({
 
                         {/* Parents, or the guardian in their place */}
                         {student.parent_profile?.info_type === 'GUARDIAN' ? (
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
-                                <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                            <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
+                                <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                     Guardian
                                 </h2>
                                 <InfoRow
@@ -1282,8 +1282,8 @@ export default function Show({
                             </div>
                         ) : (
                             <>
-                                <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                         Father
                                     </h2>
                                     <InfoRow
@@ -1320,8 +1320,8 @@ export default function Show({
                                     />
                                 </div>
 
-                                <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                         Mother
                                     </h2>
                                     <InfoRow
@@ -1361,10 +1361,10 @@ export default function Show({
                         )}
 
                         {/* Subjects */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
-                            <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
+                            <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                 Enrolled Subjects
-                                <span className="rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-[10px] tracking-normal">
+                                <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] tracking-normal">
                                     {enrollment.subjects.length}
                                 </span>
                             </h2>
@@ -1377,7 +1377,7 @@ export default function Show({
                                         }) => (
                                             <li
                                                 key={subject.id}
-                                                className="rounded-full border border-[#1F2A24]/10 bg-[#FBF8F2] px-3 py-1 text-sm text-[#1F2A24]/85"
+                                                className="rounded-full border border-ink/10 bg-cream px-3 py-1 text-sm text-ink/85"
                                             >
                                                 {subject.name}
                                             </li>
@@ -1385,19 +1385,19 @@ export default function Show({
                                     )}
                                 </ul>
                             ) : (
-                                <p className="text-sm text-[#1F2A24]/60">
+                                <p className="text-sm text-ink/60">
                                     No subjects recorded.
                                 </p>
                             )}
                         </div>
 
                         {/* Academic history */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
+                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                 Academic History
                             </h2>
                             {!hasAcademicHistory ? (
-                                <p className="py-2 text-sm text-[#1F2A24]/60">
+                                <p className="py-2 text-sm text-ink/60">
                                     No previous school given — only needed for
                                     returnees and transferees.
                                 </p>
@@ -1443,11 +1443,11 @@ export default function Show({
                         </div>
 
                         {/* Vital info */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
+                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                 Vital Information
                             </h2>
-                            <p className="mb-2 text-sm text-[#1F2A24]/70">
+                            <p className="mb-2 text-sm text-ink/70">
                                 Has the child ever:
                             </p>
                             {reportedHistory.length > 0 ? (
@@ -1455,7 +1455,7 @@ export default function Show({
                                     {reportedHistory.map(([, label]) => (
                                         <li
                                             key={label}
-                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#E8A33D]/15 px-3 py-1 text-sm text-[#7a4d0b]"
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-warn/15 px-3 py-1 text-sm text-warn-deep"
                                         >
                                             <CheckCircle2
                                                 className="h-3.5 w-3.5"
@@ -1466,7 +1466,7 @@ export default function Show({
                                     ))}
                                 </ul>
                             ) : (
-                                <p className="mb-2 text-sm font-medium text-[#1F2A24]">
+                                <p className="mb-2 text-sm font-medium text-ink">
                                     None of these reported.
                                 </p>
                             )}
@@ -1489,14 +1489,14 @@ export default function Show({
                         {/* Document verification checklist */}
                         <div
                             id="document-verification"
-                            className="scroll-mt-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2"
+                            className="scroll-mt-4 rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2"
                         >
                             <div className="mb-2 flex items-center justify-between">
-                                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                                     Document Verification
                                 </h2>
                                 {missingDocuments.length > 0 && (
-                                    <span className="rounded-full bg-[#E8A33D]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#a4670f]">
+                                    <span className="rounded-full bg-warn/15 px-2.5 py-0.5 text-[10px] font-semibold text-warn-ink">
                                         {missingDocuments.length} missing
                                     </span>
                                 )}
@@ -1504,7 +1504,7 @@ export default function Show({
 
                             {missingDocuments.length > 0 &&
                                 !enrollment.enrollee_user_id && (
-                                    <p className="mb-3 text-xs text-[#1F2A24]/65">
+                                    <p className="mb-3 text-xs text-ink/65">
                                         No linked student portal account —
                                         reminders can't be sent for this
                                         application.

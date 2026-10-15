@@ -33,16 +33,16 @@ type Props = {
 type Decision = 'agree' | 'decline';
 
 const INPUT_CLASS =
-    'h-11 border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30';
+    'h-11 border-ink/15 focus-visible:border-brand focus-visible:ring-brand/30';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
+const LABEL_CLASS = 'mb-1 block text-sm font-medium text-ink/80';
 
 function Outcome({ result }: { result: Result }) {
     return result.agreed ? (
-        <div className="space-y-4 text-sm text-[#1F2A24]/80">
-            <div className="flex items-start gap-3 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-4">
+        <div className="space-y-4 text-sm text-ink/80">
+            <div className="flex items-start gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4">
                 <CheckCircle2
-                    className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-brand-ink"
                     aria-hidden="true"
                 />
                 <p>
@@ -58,9 +58,9 @@ function Outcome({ result }: { result: Result }) {
             </p>
         </div>
     ) : (
-        <div className="flex items-start gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] p-4 text-sm text-[#1F2A24]/80">
+        <div className="flex items-start gap-3 rounded-xl border border-ink/10 bg-ink/[0.03] p-4 text-sm text-ink/80">
             <ShieldX
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#1F2A24]/60"
+                className="mt-0.5 h-5 w-5 shrink-0 text-ink/60"
                 aria-hidden="true"
             />
             <p>
@@ -114,30 +114,30 @@ function ConsentForm({
 
     return (
         <form onSubmit={submit} className="space-y-5">
-            <dl className="grid grid-cols-2 gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-4 text-sm">
+            <dl className="grid grid-cols-2 gap-3 rounded-xl border border-ink/10 bg-cream p-4 text-sm">
                 <div className="col-span-2">
-                    <dt className="text-xs text-[#1F2A24]/60">Student</dt>
-                    <dd className="font-semibold text-[#1F2A24]">
+                    <dt className="text-xs text-ink/60">Student</dt>
+                    <dd className="font-semibold text-ink">
                         {request.student_name}
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/60">LRN</dt>
-                    <dd className="text-[#1F2A24] tabular-nums">
+                    <dt className="text-xs text-ink/60">LRN</dt>
+                    <dd className="text-ink tabular-nums">
                         {request.lrn}
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/60">Class</dt>
-                    <dd className="text-[#1F2A24]">
+                    <dt className="text-xs text-ink/60">Class</dt>
+                    <dd className="text-ink">
                         {request.grade_level ?? '—'}
                         {request.school_year && ` · SY ${request.school_year}`}
                     </dd>
                 </div>
             </dl>
 
-            <div className="space-y-2 text-sm leading-relaxed text-[#1F2A24]/80">
-                <p className="font-medium text-[#1F2A24]">
+            <div className="space-y-2 text-sm leading-relaxed text-ink/80">
+                <p className="font-medium text-ink">
                     What the account is for
                 </p>
                 <ul className="list-disc space-y-1 pl-5">
@@ -166,10 +166,10 @@ function ConsentForm({
                             <label
                                 key={choice.value}
                                 className={cn(
-                                    'flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E]/30',
+                                    'flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors focus-within:ring-2 focus-within:ring-brand/30',
                                     isSelected
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E]/5'
-                                        : 'border-[#1F2A24]/15 hover:bg-[#1F2A24]/[0.03]',
+                                        ? 'border-brand bg-brand/5'
+                                        : 'border-ink/15 hover:bg-ink/[0.03]',
                                 )}
                             >
                                 <input
@@ -180,17 +180,17 @@ function ConsentForm({
                                     onChange={() =>
                                         setData('decision', choice.value)
                                     }
-                                    className="mt-1 h-4 w-4 shrink-0 accent-[#2F6F4E]"
+                                    className="mt-1 h-4 w-4 shrink-0 accent-brand"
                                 />
                                 <span>
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2A24]">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
                                         <Icon
-                                            className="h-4 w-4 text-[#2F6F4E]"
+                                            className="h-4 w-4 text-brand-ink"
                                             aria-hidden="true"
                                         />
                                         {choice.label}
                                     </span>
-                                    <span className="block text-xs text-[#1F2A24]/65">
+                                    <span className="block text-xs text-ink/65">
                                         {choice.description}
                                     </span>
                                 </span>
@@ -221,14 +221,14 @@ function ConsentForm({
 
             {agrees && (
                 <>
-                    <p className="rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 p-3 text-sm text-[#7a4d0b]">
+                    <p className="rounded-xl border border-warn/30 bg-warn/10 p-3 text-sm text-warn-deep">
                         Your child's first password will be their LRN (
                         <span className="font-semibold tabular-nums">
                             {request.lrn}
                         </span>
                         ). They'll be reminded to change it after signing in.
                     </p>
-                    <label className="flex items-start gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-3 text-sm text-[#1F2A24]">
+                    <label className="flex items-start gap-3 rounded-xl border border-ink/10 bg-cream p-3 text-sm text-ink">
                         <input
                             type="checkbox"
                             checked={data.consent}
@@ -236,7 +236,7 @@ function ConsentForm({
                                 setData('consent', e.target.checked)
                             }
                             aria-invalid={errors.consent ? true : undefined}
-                            className="mt-0.5 h-4 w-4 shrink-0 accent-[#2F6F4E]"
+                            className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                         />
                         <span>
                             As {request.student_name}'s parent or guardian, I
@@ -250,7 +250,7 @@ function ConsentForm({
             <button
                 type="submit"
                 disabled={!data.decision || processing}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep disabled:opacity-50"
             >
                 {processing && <Spinner />}
                 {data.decision === 'decline'
@@ -293,7 +293,7 @@ export default function Show({ token, request, result }: Props) {
                 )}
 
                 {!result && !request && (
-                    <div className="flex items-start gap-3 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 p-4 text-sm text-[#7a4d0b]">
+                    <div className="flex items-start gap-3 rounded-xl border border-warn/30 bg-warn/10 p-4 text-sm text-warn-deep">
                         <Clock
                             className="mt-0.5 h-5 w-5 shrink-0"
                             aria-hidden="true"

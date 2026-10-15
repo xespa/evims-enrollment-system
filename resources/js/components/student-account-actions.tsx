@@ -87,7 +87,7 @@ export default function StudentAccountActions({
     };
 
     const buttonClass = cn(
-        'inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60',
+        'inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60',
         size === 'compact' ? 'min-h-9 px-4 text-xs' : 'min-h-11 px-5 text-sm',
     );
 
@@ -101,7 +101,7 @@ export default function StudentAccountActions({
                     disabled={processing}
                     className={cn(
                         buttonClass,
-                        'bg-[#2F6F4E] text-white hover:bg-[#25573E]',
+                        'bg-brand text-white hover:bg-brand-deep',
                     )}
                 >
                     <KeyRound className="h-4 w-4" aria-hidden="true" />
@@ -115,8 +115,8 @@ export default function StudentAccountActions({
                     className={cn(
                         buttonClass,
                         isAwaiting
-                            ? 'border border-[#2F6F4E]/30 text-[#2F6F4E] hover:bg-[#2F6F4E]/5'
-                            : 'bg-[#2F6F4E] text-white hover:bg-[#25573E]',
+                            ? 'border border-brand/30 text-brand-ink hover:bg-brand/5'
+                            : 'bg-brand text-white hover:bg-brand-deep',
                     )}
                 >
                     <Send className="h-4 w-4" aria-hidden="true" />

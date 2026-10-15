@@ -57,12 +57,12 @@ export function useConfirm(): [
                 }
             }}
         >
-            <DialogContent className="rounded-2xl border-[#1F2A24]/10 bg-white text-[#1F2A24] sm:max-w-md">
+            <DialogContent className="rounded-2xl border-ink/10 bg-surface text-ink sm:max-w-md">
                 <DialogTitle className="font-serif text-lg font-semibold">
                     {options?.title}
                 </DialogTitle>
                 {options?.description && (
-                    <DialogDescription className="text-sm leading-relaxed text-[#1F2A24]/75">
+                    <DialogDescription className="text-sm leading-relaxed text-ink/75">
                         {options.description}
                     </DialogDescription>
                 )}
@@ -70,7 +70,7 @@ export function useConfirm(): [
                     <button
                         type="button"
                         onClick={() => settle(false)}
-                        className="min-h-10 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/80 transition-colors hover:bg-[#1F2A24]/5"
+                        className="min-h-10 rounded-full border border-ink/15 bg-surface px-5 py-2 text-sm font-semibold text-ink/80 transition-colors hover:bg-ink/5"
                     >
                         {options?.cancelLabel ?? 'Cancel'}
                     </button>
@@ -79,8 +79,8 @@ export function useConfirm(): [
                         onClick={() => settle(true)}
                         className={`min-h-10 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors ${
                             options?.destructive
-                                ? 'bg-[#C6473B] hover:bg-[#A83A30]'
-                                : 'bg-[#2F6F4E] hover:bg-[#25573E]'
+                                ? 'bg-danger hover:bg-[#A83A30]'
+                                : 'bg-brand hover:bg-brand-deep'
                         }`}
                     >
                         {options?.confirmLabel ?? 'Confirm'}

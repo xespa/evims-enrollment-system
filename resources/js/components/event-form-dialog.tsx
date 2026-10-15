@@ -31,7 +31,7 @@ type Props = {
 };
 
 const inputClass =
-    'min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-base text-[#1F2A24] placeholder-[#1F2A24]/40 focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] sm:text-sm';
+    'min-h-11 w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-base text-ink placeholder-ink/40 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger sm:text-sm';
 
 function Field({
     id,
@@ -54,22 +54,22 @@ function Field({
         <div className={className}>
             <label
                 htmlFor={id}
-                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1 block text-sm font-medium text-ink/80"
             >
                 {label}{' '}
                 {required && (
-                    <span className="text-[#C6473B]" aria-hidden="true">
+                    <span className="text-danger-ink" aria-hidden="true">
                         *
                     </span>
                 )}
             </label>
             {children}
             {error ? (
-                <p id={`${id}-error`} className="mt-1 text-xs text-[#C6473B]">
+                <p id={`${id}-error`} className="mt-1 text-xs text-danger-ink">
                     {error}
                 </p>
             ) : (
-                hint && <p className="mt-1 text-xs text-[#1F2A24]/55">{hint}</p>
+                hint && <p className="mt-1 text-xs text-ink/55">{hint}</p>
             )}
         </div>
     );
@@ -188,16 +188,16 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
 
     return (
         <Dialog open={open} onOpenChange={close}>
-            <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-2xl">
+            <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-2xl">
                 <form
                     onSubmit={submit}
                     className="flex min-h-0 flex-1 flex-col"
                 >
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             {isEditing ? 'Edit Event' : 'New Event'}
                         </DialogTitle>
-                        <DialogDescription className="text-sm text-[#1F2A24]/65">
+                        <DialogDescription className="text-sm text-ink/65">
                             {isEditing
                                 ? 'Changes show on the public Events page right away.'
                                 : 'It will show on the public Events page once saved.'}
@@ -207,7 +207,7 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                     <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-6 py-5 sm:grid-cols-6">
                         {/* Image: preview + drop zone */}
                         <div className="sm:col-span-6">
-                            <p className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+                            <p className="mb-1 block text-sm font-medium text-ink/80">
                                 Image
                             </p>
                             <label
@@ -224,10 +224,10 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                                 }}
                                 className={`group relative flex h-40 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-colors ${
                                     isDraggingOver
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E]/5'
+                                        ? 'border-brand bg-brand/5'
                                         : errors.image
-                                          ? 'border-[#C6473B]/60'
-                                          : 'border-[#1F2A24]/15 hover:border-[#2F6F4E]/50 hover:bg-[#2F6F4E]/[0.03]'
+                                          ? 'border-danger/60'
+                                          : 'border-ink/15 hover:border-brand/50 hover:bg-brand/[0.03]'
                                 }`}
                             >
                                 {previewUrl ? (
@@ -244,13 +244,13 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                                         </span>
                                     </>
                                 ) : (
-                                    <span className="flex flex-col items-center gap-2 px-4 text-center text-sm text-[#1F2A24]/60">
+                                    <span className="flex flex-col items-center gap-2 px-4 text-center text-sm text-ink/60">
                                         <ImagePlus
-                                            className="h-7 w-7 text-[#2F6F4E]"
+                                            className="h-7 w-7 text-brand-ink"
                                             aria-hidden="true"
                                         />
                                         <span>
-                                            <span className="font-semibold text-[#2F6F4E]">
+                                            <span className="font-semibold text-brand-ink">
                                                 Choose an image
                                             </span>{' '}
                                             or drop it here
@@ -276,7 +276,7 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => pickImage(null)}
-                                    className="mt-1.5 inline-flex min-h-8 items-center gap-1 text-xs font-medium text-[#1F2A24]/65 hover:text-[#C6473B]"
+                                    className="mt-1.5 inline-flex min-h-8 items-center gap-1 text-xs font-medium text-ink/65 hover:text-danger-ink"
                                 >
                                     <X
                                         className="h-3.5 w-3.5"
@@ -290,7 +290,7 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                             {errors.image && (
                                 <p
                                     id={`${id('image')}-error`}
-                                    className="mt-1 text-xs text-[#C6473B]"
+                                    className="mt-1 text-xs text-danger-ink"
                                 >
                                     {errors.image}
                                 </p>
@@ -396,11 +396,11 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                         </Field>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-2 border-t border-ink/10 px-6 py-4 sm:flex-row sm:justify-end">
                         <DialogClose asChild>
                             <button
                                 type="button"
-                                className="min-h-11 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium hover:bg-[#1F2A24]/5"
+                                className="min-h-11 rounded-full border border-ink/15 px-5 text-sm font-medium hover:bg-ink/5"
                             >
                                 Cancel
                             </button>
@@ -409,7 +409,7 @@ export default function EventFormDialog({ event, open, onOpenChange }: Props) {
                             type="submit"
                             disabled={processing}
                             aria-busy={processing}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-wait disabled:opacity-60"
                         >
                             {processing && (
                                 <Loader2

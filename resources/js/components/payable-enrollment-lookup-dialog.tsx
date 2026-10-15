@@ -117,23 +117,23 @@ export default function PayableEnrollmentLookupDialog({
 
     return (
         <Dialog open={open} onOpenChange={close}>
-            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-lg">
-                <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-lg">
+                <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                     <DialogTitle className="font-serif text-xl font-semibold">
                         Record counter payment
                     </DialogTitle>
-                    <DialogDescription className="text-sm text-[#1F2A24]/65">
+                    <DialogDescription className="text-sm text-ink/65">
                         Who is paying?
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="border-b border-[#1F2A24]/10 px-6 py-4">
+                <div className="border-b border-ink/10 px-6 py-4">
                     <label htmlFor="payable-search" className="sr-only">
                         Search by student, LRN, reference no. or email
                     </label>
                     <div className="relative">
                         <Search
-                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                             aria-hidden="true"
                         />
                         <input
@@ -144,11 +144,11 @@ export default function PayableEnrollmentLookupDialog({
                             placeholder="Student name, LRN, reference no. or email"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white py-2 pr-9 pl-9 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                            className="min-h-10 w-full rounded-lg border border-ink/15 bg-surface py-2 pr-9 pl-9 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                         />
                         {isLoading && (
                             <Loader2
-                                className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-[#1F2A24]/40"
+                                className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-ink/40"
                                 aria-hidden="true"
                             />
                         )}
@@ -161,21 +161,21 @@ export default function PayableEnrollmentLookupDialog({
                     aria-busy={isLoading}
                 >
                     {hasError ? (
-                        <p className="px-6 py-8 text-center text-sm text-[#A83A30]">
+                        <p className="px-6 py-8 text-center text-sm text-danger-alert">
                             {query
                                 ? "Couldn't search right now. Please try again."
                                 : "Couldn't load the students right now. Try searching instead."}
                         </p>
                     ) : !isLoading && results.length === 0 ? (
-                        <p className="px-6 py-8 text-center text-sm text-[#1F2A24]/55">
+                        <p className="px-6 py-8 text-center text-sm text-ink/55">
                             {query
                                 ? `No approved application with a balance matches “${query}”.`
                                 : 'No approved application has a balance to pay.'}
                         </p>
                     ) : (
-                        <ul className="divide-y divide-[#1F2A24]/10">
+                        <ul className="divide-y divide-ink/10">
                             {!query && results.length > 0 && (
-                                <li className="bg-[#FBF8F2] px-6 py-2 text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                                <li className="bg-cream px-6 py-2 text-xs font-semibold tracking-wide text-ink/60 uppercase">
                                     Students with a balance
                                     {total !== null &&
                                         total > results.length &&
@@ -187,13 +187,13 @@ export default function PayableEnrollmentLookupDialog({
                                     <button
                                         type="button"
                                         onClick={() => onSelect(result)}
-                                        className="flex w-full items-center justify-between gap-4 px-6 py-3 text-left transition-colors hover:bg-[#2F6F4E]/5 focus-visible:bg-[#2F6F4E]/5 focus-visible:outline-none"
+                                        className="flex w-full items-center justify-between gap-4 px-6 py-3 text-left transition-colors hover:bg-brand/5 focus-visible:bg-brand/5 focus-visible:outline-none"
                                     >
                                         <span className="min-w-0">
-                                            <span className="block truncate text-sm font-medium text-[#1F2A24]">
+                                            <span className="block truncate text-sm font-medium text-ink">
                                                 {result.student_name}
                                             </span>
-                                            <span className="block text-xs text-[#1F2A24]/60">
+                                            <span className="block text-xs text-ink/60">
                                                 #{result.id}
                                                 {result.grade_level &&
                                                     ` · ${result.grade_level}`}{' '}
@@ -203,12 +203,12 @@ export default function PayableEnrollmentLookupDialog({
                                             </span>
                                         </span>
                                         <span className="shrink-0 text-right">
-                                            <span className="block text-sm font-semibold text-[#1F2A24] tabular-nums">
+                                            <span className="block text-sm font-semibold text-ink tabular-nums">
                                                 {formatCurrency(
                                                     result.payment.balance,
                                                 )}
                                             </span>
-                                            <span className="block text-xs text-[#1F2A24]/55">
+                                            <span className="block text-xs text-ink/55">
                                                 balance ·{' '}
                                                 {result.payment.channel ===
                                                 'GCASH'

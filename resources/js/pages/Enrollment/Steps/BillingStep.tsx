@@ -11,15 +11,15 @@ import StepGuide from '../Components/StepGuide';
 function FeeRow({ label, detail, amount }) {
     return (
         <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
-            <span className="text-[#1F2A24]/75">
+            <span className="text-ink/75">
                 {label}
                 {detail && (
-                    <span className="ml-1 text-xs text-[#1F2A24]/65">
+                    <span className="ml-1 text-xs text-ink/65">
                         {detail}
                     </span>
                 )}
             </span>
-            <span className="font-medium text-[#1F2A24] tabular-nums">
+            <span className="font-medium text-ink tabular-nums">
                 {formatCurrency(amount)}
             </span>
         </div>
@@ -44,19 +44,19 @@ function TuitionAgreement({
     return (
         <section
             aria-labelledby="tuition-agreement-heading"
-            className={`mb-4 rounded-xl border bg-white px-4 py-3 ${error ? 'border-[#C6473B]' : 'border-[#1F2A24]/10'}`}
+            className={`mb-4 rounded-xl border bg-surface px-4 py-3 ${error ? 'border-danger' : 'border-ink/10'}`}
         >
             <h3
                 id="tuition-agreement-heading"
-                className="mb-2 text-sm font-semibold text-[#1F2A24]"
+                className="mb-2 text-sm font-semibold text-ink"
             >
                 Tuition Fee Contract and Withdrawal Procedure
             </h3>
-            <div className="space-y-2 text-sm leading-relaxed text-[#1F2A24]/80">
+            <div className="space-y-2 text-sm leading-relaxed text-ink/80">
                 <p>
                     This is to signify that I,{' '}
                     {parentName ? (
-                        <span className="font-semibold text-[#1F2A24]">
+                        <span className="font-semibold text-ink">
                             {parentName}
                         </span>
                     ) : (
@@ -91,10 +91,10 @@ function TuitionAgreement({
                 </ul>
             </div>
 
-            <label className="mt-3 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-[#1F2A24]/10 bg-[#FBF8F2] p-3 focus-within:ring-2 focus-within:ring-[#2F6F4E]/30">
+            <label className="mt-3 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-ink/10 bg-cream p-3 focus-within:ring-2 focus-within:ring-brand/30">
                 <input
                     type="checkbox"
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#2F6F4E]"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                     checked={accepted}
                     onChange={(e) => onChange(e.target.checked)}
                     aria-invalid={error ? true : undefined}
@@ -102,10 +102,10 @@ function TuitionAgreement({
                         error ? 'tuition_terms_accepted-error' : undefined
                     }
                 />
-                <span className="text-sm font-medium text-[#1F2A24]">
+                <span className="text-sm font-medium text-ink">
                     I have read, understood and accepted the abovementioned
                     terms and conditions.{' '}
-                    <span className="text-[#C6473B]" aria-hidden="true">
+                    <span className="text-danger-ink" aria-hidden="true">
                         *
                     </span>
                 </span>
@@ -113,7 +113,7 @@ function TuitionAgreement({
             {error && (
                 <p
                     id="tuition_terms_accepted-error"
-                    className="mt-1 text-sm text-[#C6473B]"
+                    className="mt-1 text-sm text-danger-ink"
                 >
                     {error}
                 </p>
@@ -130,7 +130,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
     if (!selectedGrade) {
         return (
             <div>
-                <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
+                <h2 className="mb-4 font-serif text-xl font-semibold text-ink">
                     Billing / Tuition Contract
                 </h2>
                 <StepGuide className="">
@@ -161,7 +161,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
 
     return (
         <div>
-            <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-4 font-serif text-xl font-semibold text-ink">
                 Billing / Tuition Contract
             </h2>
 
@@ -173,12 +173,12 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                 error={errors.tuition_terms_accepted}
             />
 
-            <div className="mb-4 rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3">
-                <p className="mb-2 text-sm font-semibold text-[#1F2A24]">
+            <div className="mb-4 rounded-xl border border-ink/10 bg-surface px-4 py-3">
+                <p className="mb-2 text-sm font-semibold text-ink">
                     School Fees — {selectedGrade.name}
                 </p>
 
-                <div className="divide-y divide-[#1F2A24]/10">
+                <div className="divide-y divide-ink/10">
                     {oneTimeFees.map((fee) => (
                         <FeeRow
                             key={fee.label}
@@ -196,11 +196,11 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                     ))}
                 </div>
 
-                <div className="mt-2 flex items-baseline justify-between border-t-2 border-[#1F2A24]/10 pt-2">
-                    <span className="text-sm font-semibold text-[#1F2A24]">
+                <div className="mt-2 flex items-baseline justify-between border-t-2 border-ink/10 pt-2">
+                    <span className="text-sm font-semibold text-ink">
                         Total Amount to Pay
                     </span>
-                    <span className="text-xl font-bold text-[#2F6F4E] tabular-nums">
+                    <span className="text-xl font-bold text-brand-ink tabular-nums">
                         {formatCurrency(total)}
                     </span>
                 </div>
@@ -224,7 +224,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
             />
 
             {plan && (
-                <div className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
+                <div className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-ink/80">
                     {plan.count === 1 ? (
                         <p>
                             You will pay{' '}
@@ -256,7 +256,7 @@ export default function BillingStep({ data, gradeLevels, setData, errors }) {
                             .
                         </p>
                     )}
-                    <p className="mt-1 text-xs text-[#1F2A24]/70">
+                    <p className="mt-1 text-xs text-ink/70">
                         {PAYMENT_OPTIONS[data.payment_option]?.label} plan ·
                         Total of {formatCurrency(total)}. Once approved, you
                         choose to pay in cash at the school cashier or via GCash

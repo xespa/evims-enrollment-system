@@ -125,7 +125,7 @@ export default function AddressStep({ data, setData, errors }) {
 
     return (
         <div>
-            <h2 className="mb-4 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-4 font-serif text-xl font-semibold text-ink">
                 Residential Address
             </h2>
 

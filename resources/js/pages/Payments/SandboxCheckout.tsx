@@ -15,7 +15,7 @@ export default function SandboxCheckout({ payment }) {
         <>
             <Head title="GCash Checkout (Sandbox)" />
             <div className="flex min-h-screen items-center justify-center bg-blue-50 px-4">
-                <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+                <div className="w-full max-w-sm rounded-lg bg-surface p-6 shadow-lg">
                     <div className="mb-4 rounded-md bg-yellow-100 px-3 py-2 text-center text-xs font-semibold text-yellow-800">
                         ⚠ SIMULATION MODE — No real money is involved
                     </div>

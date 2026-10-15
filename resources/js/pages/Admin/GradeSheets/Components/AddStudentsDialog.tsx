@@ -51,12 +51,12 @@ export default function AddStudentsDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-lg">
-                <DialogHeader className="border-b border-[#1F2A24]/10 p-5">
+            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-lg">
+                <DialogHeader className="border-b border-ink/10 p-5">
                     <DialogTitle className="font-serif text-xl">
                         Add students
                     </DialogTitle>
-                    <DialogDescription className="text-[#1F2A24]/65">
+                    <DialogDescription className="text-ink/65">
                         Students approved for this grade level and taking this
                         subject. You'll enter their grades in the table.
                     </DialogDescription>
@@ -74,11 +74,11 @@ export default function AddStudentsDialog({
                         />
                     </div>
 
-                    <div className="border-t border-[#1F2A24]/10 p-4">
+                    <div className="border-t border-ink/10 p-4">
                         {firstError && (
                             <p
                                 role="alert"
-                                className="mb-3 text-sm text-[#C6473B]"
+                                className="mb-3 text-sm text-danger-ink"
                             >
                                 {firstError}
                             </p>
@@ -86,7 +86,7 @@ export default function AddStudentsDialog({
                         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <p
                                 aria-live="polite"
-                                className="text-sm text-[#1F2A24]/65"
+                                className="text-sm text-ink/65"
                             >
                                 {selectedCount} selected
                             </p>
@@ -94,14 +94,14 @@ export default function AddStudentsDialog({
                                 <button
                                     type="button"
                                     onClick={() => onOpenChange(false)}
-                                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing || selectedCount === 0}
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep disabled:opacity-50"
                                 >
                                     {processing && (
                                         <Loader2

@@ -45,7 +45,7 @@ export default function AccountRoleSelect({
             <option
                 key={role.value}
                 value={role.value}
-                className="text-[#1F2A24]"
+                className="text-ink"
             >
                 {role.label}
             </option>
@@ -55,7 +55,7 @@ export default function AccountRoleSelect({
         <div>
             <Label
                 htmlFor="account_role"
-                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1 block text-sm font-medium text-ink/80"
             >
                 {label}
             </Label>
@@ -68,8 +68,8 @@ export default function AccountRoleSelect({
                     onChange(e.target.value as AccountRoleValue | '')
                 }
                 aria-invalid={error ? true : undefined}
-                className={`h-10 w-full rounded-md border border-[#1F2A24]/15 bg-white px-3 text-sm shadow-xs focus-visible:border-[#2F6F4E] focus-visible:ring-[3px] focus-visible:ring-[#2F6F4E]/30 focus-visible:outline-none aria-[invalid=true]:border-[#C6473B] ${
-                    value ? 'text-[#1F2A24]' : 'text-[#1F2A24]/50'
+                className={`h-10 w-full rounded-md border border-ink/15 bg-surface px-3 text-sm shadow-xs focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 focus-visible:outline-none aria-[invalid=true]:border-danger ${
+                    value ? 'text-ink' : 'text-ink/50'
                 }`}
             >
                 <option value="" disabled>

@@ -108,11 +108,11 @@ export default function MobileNumberInput({
         <div className="mb-4">
             <label
                 htmlFor={name}
-                className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1.5 block text-sm font-medium text-ink/80"
             >
                 {label}{' '}
                 {required && (
-                    <span className="text-[#C6473B]" aria-hidden="true">
+                    <span className="text-danger-ink" aria-hidden="true">
                         *
                     </span>
                 )}
@@ -121,12 +121,12 @@ export default function MobileNumberInput({
             {/* Positions the country list under the whole field. */}
             <div className="relative">
                 <div
-                    className={`flex min-h-11 rounded-lg border bg-white shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-[#2F6F4E] focus-within:ring-2 focus-within:ring-[#2F6F4E]/30 motion-reduce:transition-none ${
+                    className={`flex min-h-11 rounded-lg border bg-surface shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/30 motion-reduce:transition-none ${
                         shownError
-                            ? 'border-[#C6473B] bg-[#C6473B]/[0.03]'
+                            ? 'border-danger bg-danger/[0.03]'
                             : isComplete
-                              ? 'border-[#2F6F4E]/50'
-                              : 'border-[#1F2A24]/15'
+                              ? 'border-brand/50'
+                              : 'border-ink/15'
                     }`}
                 >
                     <CountryCodePicker
@@ -155,10 +155,10 @@ export default function MobileNumberInput({
                         // Screen readers hear the country code the sighted
                         // prefix shows.
                         aria-label={`${label}, after country code plus ${country.code}`}
-                        className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base tracking-wide text-[#1F2A24] tabular-nums placeholder-[#1F2A24]/40 focus:outline-none sm:text-sm"
+                        className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base tracking-wide text-ink tabular-nums placeholder-ink/40 focus:outline-none sm:text-sm"
                     />
                     {isComplete && !shownError && (
-                        <span className="flex items-center pr-1 text-[#2F6F4E]">
+                        <span className="flex items-center pr-1 text-brand-ink">
                             <CircleCheck
                                 className="h-4 w-4"
                                 aria-hidden="true"
@@ -171,7 +171,7 @@ export default function MobileNumberInput({
                             type="button"
                             onClick={clear}
                             aria-label={`Clear ${label.toLowerCase()}`}
-                            className="flex min-w-11 cursor-pointer items-center justify-center rounded-r-lg text-[#1F2A24]/45 transition-colors hover:text-[#1F2A24] focus-visible:text-[#1F2A24] focus-visible:outline-none"
+                            className="flex min-w-11 cursor-pointer items-center justify-center rounded-r-lg text-ink/45 transition-colors hover:text-ink focus-visible:text-ink focus-visible:outline-none"
                         >
                             <X className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -183,12 +183,12 @@ export default function MobileNumberInput({
                 <p
                     id={errorId}
                     role="alert"
-                    className="mt-1 text-sm text-[#C6473B]"
+                    className="mt-1 text-sm text-danger-ink"
                 >
                     {shownError}
                 </p>
             ) : (
-                <p id={hintId} className="mt-1 text-xs text-[#1F2A24]/60">
+                <p id={hintId} className="mt-1 text-xs text-ink/60">
                     {hint}
                 </p>
             )}

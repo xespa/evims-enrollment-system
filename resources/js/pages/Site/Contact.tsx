@@ -138,10 +138,10 @@ function CopyButton({ value, label }: { value: string; label: string }) {
             type="button"
             onClick={copy}
             aria-label={copied ? `${label} copied` : `Copy ${label}`}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#1F2A24]/50 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/5 hover:text-ink"
         >
             {copied ? (
-                <Check className="h-4 w-4 text-[#2F6F4E]" aria-hidden="true" />
+                <Check className="h-4 w-4 text-brand-ink" aria-hidden="true" />
             ) : (
                 <Copy className="h-4 w-4" aria-hidden="true" />
             )}
@@ -158,22 +158,22 @@ function ContactHero() {
     return (
         <section className="relative overflow-hidden">
             <div
-                className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-[#E8A33D]/15 blur-3xl"
+                className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-warn/15 blur-3xl"
                 aria-hidden="true"
             />
             <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
                 <div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                         Get in touch
                     </span>
-                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
+                    <h1 className="mt-5 max-w-3xl font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-ink sm:text-5xl">
                         We're here to answer your questions
-                        <span className="text-[#2F6F4E]">
+                        <span className="text-brand-ink">
                             {' '}
                             and help your child thrive.
                         </span>
                     </h1>
-                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
+                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink/70 sm:text-lg">
                         Whether you're interested in enrollment, have questions
                         about our programs, or want to schedule a campus tour,
                         our office is ready to help.
@@ -181,14 +181,14 @@ function ContactHero() {
                     <div className="mt-8 flex flex-wrap gap-3">
                         <a
                             href="#send-a-message"
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                         >
                             <Send className="h-4 w-4" aria-hidden="true" />
                             Send a Message
                         </a>
                         <Link
                             href="/admission"
-                            className="inline-flex min-h-12 items-center rounded-full border border-[#1F2A24]/15 px-6 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-12 items-center rounded-full border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-ink/5"
                         >
                             Start Enrollment
                         </Link>
@@ -196,24 +196,24 @@ function ContactHero() {
                 </div>
 
                 {/* Quick contact card */}
-                <div className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8">
+                <div className="rounded-[2rem] border border-ink/10 bg-surface p-6 shadow-xl shadow-shade/5 sm:p-8">
                     <div className="flex items-center justify-between gap-3">
-                        <h2 className="font-serif text-xl font-semibold text-[#1F2A24]">
+                        <h2 className="font-serif text-xl font-semibold text-ink">
                             Reach us directly
                         </h2>
                         {status && (
                             <span
                                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
                                     status.isOpen
-                                        ? 'bg-[#2E8057]/10 text-[#22613F]'
-                                        : 'bg-[#1F2A24]/5 text-[#1F2A24]/65'
+                                        ? 'bg-[#2E8057]/10 text-brand-forest'
+                                        : 'bg-ink/5 text-ink/65'
                                 }`}
                             >
                                 <span
                                     className={`h-2 w-2 rounded-full ${
                                         status.isOpen
                                             ? 'animate-pulse bg-[#2E8057] motion-reduce:animate-none'
-                                            : 'bg-[#1F2A24]/40'
+                                            : 'bg-ink/40'
                                     }`}
                                     aria-hidden="true"
                                 />
@@ -222,19 +222,19 @@ function ContactHero() {
                         )}
                     </div>
 
-                    <ul className="mt-5 divide-y divide-[#1F2A24]/10">
+                    <ul className="mt-5 divide-y divide-ink/10">
                         <li className="flex items-center gap-3 py-3">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-ink">
                                 <Phone className="h-5 w-5" aria-hidden="true" />
                             </span>
                             <a
                                 href={PHONE_LINK}
-                                className="min-w-0 flex-1 rounded-md hover:text-[#2F6F4E]"
+                                className="min-w-0 flex-1 rounded-md hover:text-brand-ink"
                             >
-                                <span className="block text-xs text-[#1F2A24]/55">
+                                <span className="block text-xs text-ink/55">
                                     Main desk
                                 </span>
-                                <span className="block font-semibold text-[#1F2A24] tabular-nums">
+                                <span className="block font-semibold text-ink tabular-nums">
                                     {PHONE_DISPLAY}
                                 </span>
                             </a>
@@ -244,31 +244,31 @@ function ContactHero() {
                             />
                         </li>
                         <li className="flex items-center gap-3 py-3">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-ink">
                                 <Mail className="h-5 w-5" aria-hidden="true" />
                             </span>
                             <a
                                 href={`mailto:${EMAIL}`}
-                                className="min-w-0 flex-1 rounded-md hover:text-[#2F6F4E]"
+                                className="min-w-0 flex-1 rounded-md hover:text-brand-ink"
                             >
-                                <span className="block text-xs text-[#1F2A24]/55">
+                                <span className="block text-xs text-ink/55">
                                     Email
                                 </span>
-                                <span className="block truncate font-semibold text-[#1F2A24]">
+                                <span className="block truncate font-semibold text-ink">
                                     {EMAIL}
                                 </span>
                             </a>
                             <CopyButton value={EMAIL} label="email address" />
                         </li>
                         <li className="flex items-center gap-3 py-3">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-ink">
                                 <Clock className="h-5 w-5" aria-hidden="true" />
                             </span>
                             <div className="min-w-0 flex-1">
-                                <span className="block text-xs text-[#1F2A24]/55">
+                                <span className="block text-xs text-ink/55">
                                     Office hours
                                 </span>
-                                <span className="block font-semibold text-[#1F2A24]">
+                                <span className="block font-semibold text-ink">
                                     Monday – Friday, 8:00 AM – 4:00 PM
                                 </span>
                             </div>
@@ -278,7 +278,7 @@ function ContactHero() {
                     <div className="mt-5 grid grid-cols-2 gap-3">
                         <a
                             href={PHONE_LINK}
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand text-sm font-semibold text-white transition-colors hover:bg-brand-deep"
                         >
                             <Phone className="h-4 w-4" aria-hidden="true" />
                             Call
@@ -287,7 +287,7 @@ function ContactHero() {
                             href={DIRECTIONS_URL}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#1F2A24]/15 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-ink/15 text-sm font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-ink/5"
                         >
                             <Navigation
                                 className="h-4 w-4"
@@ -333,26 +333,26 @@ function MessageComposer({
     };
 
     const inputClass =
-        'min-h-12 w-full rounded-xl border border-[#1F2A24]/15 bg-white px-4 py-2.5 text-base text-[#1F2A24] placeholder-[#1F2A24]/40 focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:text-sm';
+        'min-h-12 w-full rounded-xl border border-ink/15 bg-surface px-4 py-2.5 text-base text-ink placeholder-ink/40 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none sm:text-sm';
 
     return (
         <form
             id="contact-form"
             onSubmit={submit}
-            className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8"
+            className="rounded-[2rem] border border-ink/10 bg-surface p-6 shadow-xl shadow-shade/5 sm:p-8"
         >
             <fieldset>
-                <legend className="text-sm font-medium text-[#1F2A24]/80">
+                <legend className="text-sm font-medium text-ink/80">
                     What can we help with?
                 </legend>
                 <div className="mt-2 flex flex-wrap gap-2">
                     {TOPICS.map((t) => (
                         <label
                             key={t.key}
-                            className={`inline-flex min-h-10 cursor-pointer items-center rounded-full border px-4 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#2F6F4E]/40 ${
+                            className={`inline-flex min-h-10 cursor-pointer items-center rounded-full border px-4 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40 ${
                                 topic === t.key
-                                    ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                    : 'border-[#1F2A24]/15 text-[#1F2A24]/75 hover:border-[#2F6F4E]/40'
+                                    ? 'border-brand bg-brand text-white'
+                                    : 'border-ink/15 text-ink/75 hover:border-brand/40'
                             }`}
                         >
                             <input
@@ -375,7 +375,7 @@ function MessageComposer({
             <div className="mt-5">
                 <label
                     htmlFor="contact-name"
-                    className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80"
+                    className="mb-1.5 block text-sm font-medium text-ink/80"
                 >
                     Your name
                 </label>
@@ -392,10 +392,10 @@ function MessageComposer({
             <div className="mt-4">
                 <label
                     htmlFor="contact-message"
-                    className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80"
+                    className="mb-1.5 block text-sm font-medium text-ink/80"
                 >
                     Message{' '}
-                    <span className="text-[#C6473B]" aria-hidden="true">
+                    <span className="text-danger-ink" aria-hidden="true">
                         *
                     </span>
                 </label>
@@ -412,12 +412,12 @@ function MessageComposer({
 
             <button
                 type="submit"
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-deep"
             >
                 <Send className="h-4 w-4" aria-hidden="true" />
                 Continue in your email app
             </button>
-            <p className="mt-2 text-center text-xs text-[#1F2A24]/55">
+            <p className="mt-2 text-center text-xs text-ink/55">
                 Opens your email app with the message ready to send to {EMAIL}.
             </p>
         </form>
@@ -445,17 +445,17 @@ function HelpAndMessage() {
     return (
         <section
             id="send-a-message"
-            className="scroll-mt-24 border-y border-[#1F2A24]/10 bg-white"
+            className="scroll-mt-24 border-y border-ink/10 bg-surface"
         >
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
                 <div>
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                         How we can help
                     </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                         Tell us what you need
                     </h2>
-                    <p className="mt-3 text-base text-[#1F2A24]/65">
+                    <p className="mt-3 text-base text-ink/65">
                         Pick a topic and we'll start the message for you.
                     </p>
                     <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -467,20 +467,20 @@ function HelpAndMessage() {
                                     aria-pressed={topic === t.key}
                                     className={`flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-[border-color,background-color] ${
                                         topic === t.key
-                                            ? 'border-[#2F6F4E] bg-[#2F6F4E]/[0.04]'
-                                            : 'border-[#1F2A24]/10 hover:border-[#2F6F4E]/30'
+                                            ? 'border-brand bg-brand/[0.04]'
+                                            : 'border-ink/10 hover:border-brand/30'
                                     }`}
                                 >
-                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E8A33D]/15 text-[#8A5A12]">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-warn/15 text-warn-strong">
                                         <Icon
                                             className="h-5 w-5"
                                             aria-hidden="true"
                                         />
                                     </span>
-                                    <span className="mt-3 font-serif text-lg font-semibold text-[#1F2A24]">
+                                    <span className="mt-3 font-serif text-lg font-semibold text-ink">
                                         {t.title}
                                     </span>
-                                    <span className="mt-1 text-sm leading-relaxed text-[#1F2A24]/65">
+                                    <span className="mt-1 text-sm leading-relaxed text-ink/65">
                                         {t.copy}
                                     </span>
                                 </button>
@@ -498,17 +498,17 @@ function HelpAndMessage() {
 function VisitUs() {
     return (
         <section className="mx-auto max-w-7xl px-5 py-16 lg:py-20">
-            <div className="grid grid-cols-1 overflow-hidden rounded-[2rem] border border-[#1F2A24]/10 bg-white lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="grid grid-cols-1 overflow-hidden rounded-[2rem] border border-ink/10 bg-surface lg:grid-cols-[0.8fr_1.2fr]">
                 <div className="p-6 sm:p-10">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                         Visit us
                     </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                         Main Campus
                     </h2>
-                    <address className="mt-5 flex gap-3 text-base leading-relaxed text-[#1F2A24]/75 not-italic">
+                    <address className="mt-5 flex gap-3 text-base leading-relaxed text-ink/75 not-italic">
                         <MapPin
-                            className="mt-1 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                            className="mt-1 h-5 w-5 shrink-0 text-brand-ink"
                             aria-hidden="true"
                         />
                         <span>
@@ -519,9 +519,9 @@ function VisitUs() {
                             ))}
                         </span>
                     </address>
-                    <p className="mt-4 flex gap-3 text-sm text-[#1F2A24]/65">
+                    <p className="mt-4 flex gap-3 text-sm text-ink/65">
                         <Clock
-                            className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                            className="mt-0.5 h-5 w-5 shrink-0 text-brand-ink"
                             aria-hidden="true"
                         />
                         Walk-ins welcome during office hours. For a guided tour,
@@ -531,13 +531,13 @@ function VisitUs() {
                         href={DIRECTIONS_URL}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#25573E]"
+                        className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-deep"
                     >
                         <Navigation className="h-4 w-4" aria-hidden="true" />
                         Get directions
                     </a>
                 </div>
-                <div className="min-h-72 bg-[#2F6F4E]/10 lg:min-h-full">
+                <div className="min-h-72 bg-brand/10 lg:min-h-full">
                     <iframe
                         title="Map showing the EVIMS main campus in Borongan City"
                         src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
@@ -556,15 +556,15 @@ function ContactCta() {
         <section className="px-5 pb-16">
             <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1B4D34] px-6 py-12 sm:px-12">
                 <div
-                    className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#E8A33D]/20 blur-2xl"
+                    className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-warn/20 blur-2xl"
                     aria-hidden="true"
                 />
                 <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
+                        <h2 className="font-serif text-3xl font-semibold text-on-brand">
                             Ready to take the next step?
                         </h2>
-                        <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
+                        <p className="mt-2 max-w-lg text-sm text-on-brand/80">
                             Reach out today and let's talk about how EVIMS can
                             support your child's growth.
                         </p>
@@ -572,14 +572,14 @@ function ContactCta() {
                     <div className="flex shrink-0 flex-wrap gap-3">
                         <a
                             href={PHONE_LINK}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#FBF8F2]/40 px-6 text-sm font-semibold text-[#FBF8F2] transition-colors hover:border-[#FBF8F2] hover:bg-white/5"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-cream/40 px-6 text-sm font-semibold text-on-brand transition-colors hover:border-cream hover:bg-white/5"
                         >
                             <Phone className="h-4 w-4" aria-hidden="true" />
                             Call Us
                         </a>
                         <Link
                             href="/admission"
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#E8A33D] px-6 text-sm font-semibold text-[#1F2A24] shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warn px-6 text-sm font-semibold text-ink shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
                         >
                             Enroll Now
                             <ArrowRight

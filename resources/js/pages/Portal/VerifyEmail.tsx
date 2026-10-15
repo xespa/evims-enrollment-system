@@ -59,7 +59,7 @@ export default function VerifyEmail({ email }: Props) {
                             href={route('portal.logout')}
                             method="post"
                             as="button"
-                            className="font-semibold text-[#2F6F4E] underline-offset-2 hover:underline"
+                            className="font-semibold text-brand-ink underline-offset-2 hover:underline"
                         >
                             Log out
                         </Link>
@@ -67,13 +67,13 @@ export default function VerifyEmail({ email }: Props) {
                 }
             >
                 <div className="mb-4 flex flex-col items-center text-center">
-                    <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                    <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand-ink">
                         <MailCheck className="h-6 w-6" aria-hidden="true" />
                     </span>
-                    <p className="text-sm text-[#1F2A24]/70">
+                    <p className="text-sm text-ink/70">
                         We sent a confirmation link to
                     </p>
-                    <p className="mt-0.5 max-w-full truncate font-semibold text-[#1F2A24]">
+                    <p className="mt-0.5 max-w-full truncate font-semibold text-ink">
                         {email}
                     </p>
                 </div>
@@ -81,20 +81,20 @@ export default function VerifyEmail({ email }: Props) {
                 {props.flash?.success && (
                     <div
                         role="status"
-                        className="mb-4 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2 text-center text-[13px] text-[#2F6F4E]"
+                        className="mb-4 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-center text-[13px] text-brand-ink"
                     >
                         {props.flash.success}
                     </div>
                 )}
 
-                <ol className="mb-5 space-y-2 rounded-xl bg-[#FBF8F2] p-3">
+                <ol className="mb-5 space-y-2 rounded-xl bg-cream p-3">
                     {STEPS.map(({ icon: Icon, text }) => (
                         <li
                             key={text}
-                            className="flex items-center gap-2.5 text-sm text-[#1F2A24]/80"
+                            className="flex items-center gap-2.5 text-sm text-ink/80"
                         >
                             <Icon
-                                className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                className="h-4 w-4 shrink-0 text-brand-ink"
                                 aria-hidden="true"
                             />
                             {text}
@@ -107,7 +107,7 @@ export default function VerifyEmail({ email }: Props) {
                         href="https://mail.google.com/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mb-2 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                        className="mb-2 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                     >
                         Open Gmail
                         <ExternalLink className="h-4 w-4" aria-hidden="true" />
@@ -126,7 +126,7 @@ export default function VerifyEmail({ email }: Props) {
                             type="submit"
                             variant="outline"
                             disabled={processing || secondsLeft > 0}
-                            className="h-10 w-full rounded-full border-[#2F6F4E]/30 bg-white text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:text-[#25573E] disabled:text-[#1F2A24]/60 dark:bg-white dark:hover:bg-[#2F6F4E]/5"
+                            className="h-10 w-full rounded-full border-brand/30 bg-surface text-sm font-semibold text-brand-ink hover:bg-brand/5 hover:text-brand-deep-ink disabled:text-ink/60 dark:bg-surface dark:hover:bg-brand/5"
                         >
                             {processing && <Spinner />}
                             {secondsLeft > 0

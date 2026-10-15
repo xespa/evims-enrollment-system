@@ -218,12 +218,12 @@ function NavLink({
                 href={item.href}
                 onClick={onNavigate}
                 aria-current={isActive ? 'page' : undefined}
-                className={`relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none ${
+                className={`relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none ${
                     isCollapsed ? 'justify-center px-0' : ''
                 } ${
                     isActive
-                        ? 'bg-[#2F6F4E]/10 font-semibold text-[#2F6F4E] before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-[#2F6F4E]'
-                        : 'font-medium text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]'
+                        ? 'bg-brand/10 font-semibold text-brand-ink before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-brand'
+                        : 'font-medium text-ink/70 hover:bg-ink/5 hover:text-ink'
                 }`}
             >
                 <Icon className="size-[1.125rem] shrink-0" aria-hidden="true" />
@@ -250,7 +250,7 @@ function AccountMenu({
         <DropdownMenu>
             <CollapsedTooltip label={user.name} isCollapsed={isCollapsed}>
                 <DropdownMenuTrigger
-                    className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-[#1F2A24]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none data-[state=open]:bg-[#1F2A24]/5 ${
+                    className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none data-[state=open]:bg-ink/5 ${
                         isCollapsed ? 'justify-center' : ''
                     }`}
                 >
@@ -264,15 +264,15 @@ function AccountMenu({
                     ) : (
                         <>
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate text-sm font-semibold text-[#1F2A24]">
+                                <span className="block truncate text-sm font-semibold text-ink">
                                     {user.name}
                                 </span>
-                                <span className="block truncate text-xs text-[#1F2A24]/60">
+                                <span className="block truncate text-xs text-ink/60">
                                     {auth.roleLabel ?? user.email}
                                 </span>
                             </span>
                             <ChevronsUpDown
-                                className="size-4 shrink-0 text-[#1F2A24]/50"
+                                className="size-4 shrink-0 text-ink/50"
                                 aria-hidden="true"
                             />
                         </>
@@ -284,7 +284,7 @@ function AccountMenu({
                 side={isCollapsed ? 'right' : 'top'}
                 align={isCollapsed ? 'end' : 'start'}
                 sideOffset={8}
-                className="w-64 rounded-xl border-[#1F2A24]/10 bg-white p-1.5 text-[#1F2A24] shadow-lg"
+                className="w-64 rounded-xl border-ink/10 bg-surface p-1.5 text-ink shadow-lg"
             >
                 <DropdownMenuLabel className="flex items-center gap-3 px-2 py-2 font-normal">
                     <AdminAvatar
@@ -296,20 +296,20 @@ function AccountMenu({
                         <span className="block truncate text-sm font-semibold">
                             {user.name}
                         </span>
-                        <span className="block truncate text-xs text-[#1F2A24]/60">
+                        <span className="block truncate text-xs text-ink/60">
                             {user.email}
                         </span>
                         {auth.roleLabel && (
-                            <span className="mt-1 inline-block rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-[#2F6F4E]">
+                            <span className="mt-1 inline-block rounded-full bg-brand/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-ink">
                                 {auth.roleLabel}
                             </span>
                         )}
                     </span>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-[#1F2A24]/10" />
+                <DropdownMenuSeparator className="bg-ink/10" />
                 <DropdownMenuItem
                     asChild
-                    className="min-h-10 cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]"
+                    className="min-h-10 cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink"
                 >
                     <Link
                         href={admin.settings.profile.edit.url()}
@@ -321,7 +321,7 @@ function AccountMenu({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     asChild
-                    className="min-h-10 cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]"
+                    className="min-h-10 cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink"
                 >
                     <Link
                         href={admin.settings.security.edit.url()}
@@ -331,10 +331,10 @@ function AccountMenu({
                         Password &amp; two-factor
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#1F2A24]/10" />
+                <DropdownMenuSeparator className="bg-ink/10" />
                 <DropdownMenuItem
                     asChild
-                    className="min-h-10 w-full cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]"
+                    className="min-h-10 w-full cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink"
                 >
                     <Link
                         href={logout()}
@@ -347,7 +347,7 @@ function AccountMenu({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     asChild
-                    className="min-h-10 w-full cursor-pointer rounded-lg text-[#A3372D] focus:bg-[#C6473B]/10 focus:text-[#A3372D] [&_svg]:!text-[#A3372D]"
+                    className="min-h-10 w-full cursor-pointer rounded-lg text-danger-strong focus:bg-danger/10 focus:text-danger-strong [&_svg]:!text-danger-strong"
                 >
                     <Link href={logout()} as="button">
                         <LogOut aria-hidden="true" />
@@ -389,7 +389,7 @@ function SidebarBody({
     return (
         <div className="flex h-full min-h-0 flex-col">
             <div
-                className={`flex h-16 shrink-0 items-center gap-3 border-b border-[#1F2A24]/10 ${
+                className={`flex h-16 shrink-0 items-center gap-3 border-b border-ink/10 ${
                     isCollapsed ? 'justify-center px-2' : 'px-4'
                 }`}
             >
@@ -400,10 +400,10 @@ function SidebarBody({
                 />
                 {!isCollapsed && (
                     <div className="min-w-0 flex-1 leading-tight">
-                        <p className="font-serif text-lg font-semibold text-[#1F2A24]">
+                        <p className="font-serif text-lg font-semibold text-ink">
                             EVIMS
                         </p>
-                        <p className="text-xs text-[#1F2A24]/60">Admin Panel</p>
+                        <p className="text-xs text-ink/60">Admin Panel</p>
                     </div>
                 )}
             </div>
@@ -420,12 +420,12 @@ function SidebarBody({
                         {isCollapsed ? (
                             index > 0 && (
                                 <hr
-                                    className="mx-2 mb-3 border-[#1F2A24]/10"
+                                    className="mx-2 mb-3 border-ink/10"
                                     aria-hidden="true"
                                 />
                             )
                         ) : (
-                            <p className="mb-1 px-3 text-[0.6875rem] font-semibold tracking-[0.08em] text-[#1F2A24]/45 uppercase">
+                            <p className="mb-1 px-3 text-[0.6875rem] font-semibold tracking-[0.08em] text-ink/45 uppercase">
                                 {section.label}
                             </p>
                         )}
@@ -449,7 +449,7 @@ function SidebarBody({
             </nav>
 
             <div
-                className={`shrink-0 space-y-1 border-t border-[#1F2A24]/10 py-3 ${isCollapsed ? 'px-2' : 'px-3'}`}
+                className={`shrink-0 space-y-1 border-t border-ink/10 py-3 ${isCollapsed ? 'px-2' : 'px-3'}`}
             >
                 <NavLink
                     item={SETTINGS_ITEM}
@@ -503,23 +503,23 @@ export default function EvimsAdminLayout({
         // `relative` keeps stray absolutely positioned content (like an
         // sr-only element) inside this box, so it can't make the window
         // itself scroll and drag the sidebar along.
-        <div className="evims-admin relative flex min-h-screen bg-[#FBF8F2] lg:h-dvh lg:overflow-hidden">
+        <div className="evims-admin relative flex min-h-screen bg-cream lg:h-dvh lg:overflow-hidden">
             <a
                 href="#main-content"
-                className="sr-only z-[60] rounded-md bg-[#2F6F4E] px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+                className="sr-only z-[60] rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
             >
                 Skip to content
             </a>
 
             {/* Top bar (phones and tablets) */}
-            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-[#1F2A24]/10 bg-white/95 px-2 backdrop-blur lg:hidden">
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-ink/10 bg-white/95 px-2 backdrop-blur lg:hidden">
                 <button
                     type="button"
                     onClick={() => setIsMobileOpen(true)}
                     aria-label="Open menu"
                     aria-expanded={isMobileOpen}
                     aria-controls="admin-sidebar-drawer"
-                    className="inline-flex size-11 items-center justify-center rounded-lg text-[#1F2A24]/75 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                    className="inline-flex size-11 items-center justify-center rounded-lg text-ink/75 hover:bg-ink/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
                 >
                     <Menu className="size-6" aria-hidden="true" />
                 </button>
@@ -533,7 +533,7 @@ export default function EvimsAdminLayout({
                         alt=""
                         className="size-9 rounded-full object-cover"
                     />
-                    <span className="font-serif text-lg font-semibold text-[#1F2A24]">
+                    <span className="font-serif text-lg font-semibold text-ink">
                         EVIMS
                     </span>
                 </Link>
@@ -545,7 +545,7 @@ export default function EvimsAdminLayout({
                 <SheetContent
                     id="admin-sidebar-drawer"
                     side="left"
-                    className="w-72 max-w-[85vw] gap-0 border-[#1F2A24]/10 bg-white p-0 sm:max-w-xs lg:hidden"
+                    className="w-72 max-w-[85vw] gap-0 border-ink/10 bg-surface p-0 sm:max-w-xs lg:hidden"
                 >
                     <SheetTitle className="sr-only">Admin menu</SheetTitle>
                     <SheetDescription className="sr-only">
@@ -558,7 +558,7 @@ export default function EvimsAdminLayout({
             {/* Sidebar (desktop) */}
             <aside
                 aria-label="Sidebar"
-                className={`hidden shrink-0 border-r border-[#1F2A24]/10 bg-white transition-[width] duration-200 ease-in-out lg:block lg:h-full ${
+                className={`hidden shrink-0 border-r border-ink/10 bg-surface transition-[width] duration-200 ease-in-out lg:block lg:h-full ${
                     isCollapsed ? 'lg:w-[4.75rem]' : 'lg:w-64'
                 }`}
             >
@@ -574,7 +574,7 @@ export default function EvimsAdminLayout({
                 className="min-w-0 flex-1 pt-16 focus:outline-none lg:h-full lg:overflow-y-auto lg:overscroll-contain lg:pt-0"
             >
                 {/* Same height as the sidebar's logo row, so their borders line up. */}
-                <div className="sticky top-0 z-20 hidden h-16 items-center justify-between gap-2 border-b border-[#1F2A24]/10 bg-[#FBF8F2]/90 px-4 backdrop-blur lg:flex">
+                <div className="sticky top-0 z-20 hidden h-16 items-center justify-between gap-2 border-b border-ink/10 bg-cream/90 px-4 backdrop-blur lg:flex">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
@@ -586,7 +586,7 @@ export default function EvimsAdminLayout({
                                         : 'Collapse sidebar'
                                 }
                                 aria-expanded={!isCollapsed}
-                                className="inline-flex size-10 items-center justify-center rounded-lg text-[#1F2A24]/60 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                                className="inline-flex size-10 items-center justify-center rounded-lg text-ink/60 hover:bg-ink/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
                             >
                                 {isCollapsed ? (
                                     <PanelLeftOpen

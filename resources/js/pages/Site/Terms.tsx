@@ -6,12 +6,12 @@ export default function Terms() {
         <>
             <Head title="Terms and Conditions" />
 
-            <div className="bg-[#FBF8F2] px-4 py-12">
-                <article className="mx-auto max-w-3xl rounded-3xl border border-[#1F2A24]/10 bg-white p-6 shadow-sm sm:p-10">
-                    <span className="inline-flex rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+            <div className="bg-cream px-4 py-12">
+                <article className="mx-auto max-w-3xl rounded-3xl border border-ink/10 bg-surface p-6 shadow-sm sm:p-10">
+                    <span className="inline-flex rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                         Student Portal
                     </span>
-                    <h1 className="mt-3 mb-6 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h1 className="mt-3 mb-6 font-serif text-3xl font-semibold text-ink">
                         Terms and Conditions
                     </h1>
                     <TermsContent />

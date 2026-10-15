@@ -165,20 +165,20 @@ export default function Show({
                 />
             )}
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <Link
                         href={gradeSheetRoutes.index.url()}
-                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-ink/70 hover:text-ink"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheets
                     </Link>
 
                     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             {gradeSheet.subject}{' '}
-                            <span className="text-[#1F2A24]/50">
+                            <span className="text-ink/50">
                                 · {gradeSheet.grade_level}
                             </span>
                         </h1>
@@ -190,7 +190,7 @@ export default function Show({
                                 )}
                                 target="_blank"
                                 rel="noopener"
-                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                             >
                                 <Printer
                                     className="h-4 w-4"
@@ -205,7 +205,7 @@ export default function Show({
                                     href={gradeSheetRoutes.reportCards.show.url(
                                         gradeSheet.id,
                                     )}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <Download
                                         className="h-4 w-4"
@@ -220,7 +220,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => setIsSendingGrades(true)}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <Send
                                         className="h-4 w-4"
@@ -228,7 +228,7 @@ export default function Show({
                                     />
                                     Send grades
                                     {sendGrades.students.length > 0 && (
-                                        <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                        <span className="rounded-full bg-brand/10 px-1.5 text-xs tabular-nums">
                                             {sendGrades.students.length}
                                         </span>
                                     )}
@@ -240,7 +240,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => setIsViewingAwards(true)}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <Trophy
                                         className="h-4 w-4"
@@ -253,14 +253,14 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => setIsAddingStudents(true)}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <UserPlus
                                         className="h-4 w-4"
                                         aria-hidden="true"
                                     />
                                     Add students
-                                    <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                    <span className="rounded-full bg-brand/10 px-1.5 text-xs tabular-nums">
                                         {ungradedStudents.length}
                                     </span>
                                 </button>
@@ -270,7 +270,7 @@ export default function Show({
                                     href={gradeSheetRoutes.studentGrades.create.url(
                                         gradeSheet.id,
                                     )}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E]"
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep"
                                 >
                                     <Plus
                                         className="h-4 w-4"
@@ -282,7 +282,7 @@ export default function Show({
                                 <span
                                     aria-disabled="true"
                                     title="Every enrolled student is already on this grade sheet."
-                                    className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-full bg-[#2F6F4E]/40 px-5 text-sm font-semibold text-white"
+                                    className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-full bg-brand/40 px-5 text-sm font-semibold text-white"
                                 >
                                     <Plus
                                         className="h-4 w-4"
@@ -297,7 +297,7 @@ export default function Show({
                     {props.flash?.success && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {props.flash.success}
                         </div>
@@ -306,7 +306,7 @@ export default function Show({
                     {isArchived && gradeSheet.archived_at && (
                         <div
                             role="status"
-                            className="mb-4 flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                            className="mb-4 flex flex-col gap-3 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn-deep sm:flex-row sm:items-center sm:justify-between"
                         >
                             <p className="flex items-start gap-2">
                                 <Archive
@@ -330,7 +330,7 @@ export default function Show({
                             <button
                                 type="button"
                                 onClick={restoreGradeSheet}
-                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-deep"
                             >
                                 <ArchiveRestore
                                     className="h-4 w-4"
@@ -341,27 +341,27 @@ export default function Show({
                         </div>
                     )}
 
-                    <dl className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-[#1F2A24]/10 sm:grid-cols-2 lg:grid-cols-3">
+                    <dl className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
                         {details.map((detail) => (
-                            <div key={detail.label} className="bg-white p-4">
-                                <dt className="text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
+                            <div key={detail.label} className="bg-surface p-4">
+                                <dt className="text-xs font-semibold tracking-wide text-ink/55 uppercase">
                                     {detail.label}
                                 </dt>
                                 <dd
-                                    className={`mt-1 font-semibold text-[#1F2A24] ${detail.mono ? 'font-mono text-[#2F6F4E]' : ''}`}
+                                    className={`mt-1 font-semibold text-ink ${detail.mono ? 'font-mono text-brand-ink' : ''}`}
                                 >
                                     {detail.value}
                                 </dd>
                             </div>
                         ))}
-                        <div className="flex items-start justify-between gap-2 bg-white p-4 sm:col-span-2 lg:col-span-3">
+                        <div className="flex items-start justify-between gap-2 bg-surface p-4 sm:col-span-2 lg:col-span-3">
                             <div className="min-w-0">
-                                <dt className="text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
+                                <dt className="text-xs font-semibold tracking-wide text-ink/55 uppercase">
                                     Schedule
                                 </dt>
-                                <dd className="mt-1 font-semibold text-[#1F2A24]">
+                                <dd className="mt-1 font-semibold text-ink">
                                     {gradeSheet.schedule ?? (
-                                        <span className="font-normal text-[#1F2A24]/50">
+                                        <span className="font-normal text-ink/50">
                                             Not set
                                         </span>
                                     )}
@@ -371,7 +371,7 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => setIsEditingSchedule(true)}
-                                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[#2F6F4E] hover:bg-[#2F6F4E]/10"
+                                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-brand-ink hover:bg-brand/10"
                                 >
                                     <Pencil
                                         className="h-4 w-4"
@@ -386,15 +386,15 @@ export default function Show({
                     </dl>
 
                     {studentGrades.length === 0 ? (
-                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-[#1F2A24]/15 bg-white px-6 py-14 text-center">
+                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink/15 bg-surface px-6 py-14 text-center">
                             <Users
-                                className="h-10 w-10 text-[#2F6F4E]/60"
+                                className="h-10 w-10 text-brand-ink/60"
                                 aria-hidden="true"
                             />
-                            <p className="mt-3 font-medium text-[#1F2A24]">
+                            <p className="mt-3 font-medium text-ink">
                                 No students on this grade sheet yet
                             </p>
-                            <p className="mt-1 max-w-md text-sm text-[#1F2A24]/65">
+                            <p className="mt-1 max-w-md text-sm text-ink/65">
                                 {isArchived
                                     ? 'Restore it to add students.'
                                     : canAddStudent
@@ -406,7 +406,7 @@ export default function Show({
                                     type="button"
                                     disabled={isAddingAll}
                                     onClick={addAllStudents}
-                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-60"
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep disabled:opacity-60"
                                 >
                                     <UserPlus
                                         className="h-4 w-4"
@@ -431,11 +431,11 @@ export default function Show({
                     )}
 
                     {!isArchived && (
-                        <div className="mt-8 border-t border-[#1F2A24]/10 pt-4">
+                        <div className="mt-8 border-t border-ink/10 pt-4">
                             <button
                                 type="button"
                                 onClick={archiveGradeSheet}
-                                className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold text-[#1F2A24]/70 hover:bg-[#1F2A24]/5"
+                                className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold text-ink/70 hover:bg-ink/5"
                             >
                                 <Archive
                                     className="h-4 w-4"

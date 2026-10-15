@@ -62,7 +62,7 @@ export type TermKey = (typeof TERMS)[number]['key'];
 export const PASSING_GRADE = 75;
 
 export const SELECT_CLASS =
-    'min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-base text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] disabled:bg-[#1F2A24]/5 disabled:text-[#1F2A24]/60 sm:text-sm';
+    'min-h-11 w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-base text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger disabled:bg-ink/5 disabled:text-ink/60 sm:text-sm';
 
 /** The final grade with two decimals, or a dash until all terms are in. */
 export function formatGrade(grade: string | number | null): string {

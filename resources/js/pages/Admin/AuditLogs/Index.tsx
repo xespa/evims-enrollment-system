@@ -24,7 +24,7 @@ type Props = {
 };
 
 const SELECT_CLASS =
-    'min-h-11 w-full min-w-0 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:min-h-10 sm:w-auto';
+    'min-h-11 w-full min-w-0 rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none sm:min-h-10 sm:w-auto';
 
 function formatWhen(value: string): string {
     return new Date(value).toLocaleString('en-PH', {
@@ -41,8 +41,8 @@ function ActionBadge({ entry }: { entry: AuditEntry }) {
         <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${
                 entry.is_warning
-                    ? 'bg-[#C6473B]/10 text-[#9A3329]'
-                    : 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                    ? 'bg-danger/10 text-danger-deep'
+                    : 'bg-brand/10 text-brand-ink'
             }`}
         >
             {entry.is_warning && (
@@ -61,12 +61,12 @@ function Subject({ entry }: { entry: AuditEntry }) {
     return entry.subject.url ? (
         <Link
             href={entry.subject.url}
-            className="font-medium text-[#2F6F4E] hover:underline"
+            className="font-medium text-brand-ink hover:underline"
         >
             {entry.subject.label}
         </Link>
     ) : (
-        <span className="font-medium text-[#1F2A24]">
+        <span className="font-medium text-ink">
             {entry.subject.label}
         </span>
     );
@@ -91,20 +91,20 @@ export default function Index({ entries, filters, actions, staff }: Props) {
         <>
             <Head title="Audit Log" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             Audit Log
                         </h1>
-                        <p className="text-sm text-[#1F2A24]/70">
+                        <p className="text-sm text-ink/70">
                             Sign-ins, staff account changes, two-factor changes,
                             and document uploads. Entries can't be edited or
                             deleted.
                         </p>
                     </div>
 
-                    <div className="mb-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                    <div className="mb-4 rounded-2xl border border-ink/10 bg-surface p-4">
                         <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
                             <select
                                 aria-label="Filter by action"
@@ -141,7 +141,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                             </select>
                             <p
                                 aria-live="polite"
-                                className="text-sm text-[#1F2A24]/65 sm:ml-auto"
+                                className="text-sm text-ink/65 sm:ml-auto"
                             >
                                 {entries.total}{' '}
                                 {entries.total === 1 ? 'entry' : 'entries'}
@@ -150,7 +150,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                         {' · '}
                                         <Link
                                             href={auditLogRoutes.index.url()}
-                                            className="font-semibold text-[#2F6F4E] hover:underline"
+                                            className="font-semibold text-brand-ink hover:underline"
                                         >
                                             Clear filters
                                         </Link>
@@ -165,18 +165,18 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                         {entries.data.map((entry) => (
                             <li
                                 key={entry.id}
-                                className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4 text-sm"
+                                className="rounded-2xl border border-ink/10 bg-surface p-4 text-sm"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <ActionBadge entry={entry} />
                                     <time
                                         dateTime={entry.created_at}
-                                        className="text-right text-xs text-[#1F2A24]/60"
+                                        className="text-right text-xs text-ink/60"
                                     >
                                         {formatWhen(entry.created_at)}
                                     </time>
                                 </div>
-                                <p className="mt-3 text-[#1F2A24]">
+                                <p className="mt-3 text-ink">
                                     <span className="font-medium">
                                         {entry.actor?.name ?? 'Unknown'}
                                     </span>
@@ -188,60 +188,60 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                     )}
                                 </p>
                                 {entry.details && (
-                                    <p className="mt-1 text-[#1F2A24]/70">
+                                    <p className="mt-1 text-ink/70">
                                         {entry.details}
                                     </p>
                                 )}
                                 {entry.ip_address && (
-                                    <p className="mt-2 font-mono text-xs text-[#1F2A24]/50">
+                                    <p className="mt-2 font-mono text-xs text-ink/50">
                                         {entry.ip_address}
                                     </p>
                                 )}
                             </li>
                         ))}
                         {entries.data.length === 0 && (
-                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-8 text-center text-sm text-[#1F2A24]/65">
+                            <li className="rounded-2xl border border-ink/10 bg-surface px-4 py-8 text-center text-sm text-ink/65">
                                 No entries found.
                             </li>
                         )}
                     </ul>
 
                     {/* Table (tablets and up) */}
-                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
-                        <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
-                            <thead className="bg-[#2F6F4E]/5">
+                    <div className="hidden overflow-x-auto rounded-2xl border border-ink/10 bg-surface md:block">
+                        <table className="min-w-full divide-y divide-ink/10 text-sm">
+                            <thead className="bg-brand/5">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         When
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Who
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         What
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         IP address
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
+                            <tbody className="divide-y divide-ink/10">
                                 {entries.data.map((entry) => (
                                     <tr
                                         key={entry.id}
-                                        className="align-top hover:bg-[#2F6F4E]/5"
+                                        className="align-top hover:bg-brand/5"
                                     >
-                                        <td className="px-4 py-3 whitespace-nowrap text-[#1F2A24]/70">
+                                        <td className="px-4 py-3 whitespace-nowrap text-ink/70">
                                             <time dateTime={entry.created_at}>
                                                 {formatWhen(entry.created_at)}
                                             </time>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <p className="font-medium text-[#1F2A24]">
+                                            <p className="font-medium text-ink">
                                                 {entry.actor?.name ?? 'Unknown'}
                                             </p>
                                             {entry.actor && (
-                                                <p className="text-xs text-[#1F2A24]/60">
+                                                <p className="text-xs text-ink/60">
                                                     {entry.actor.email}
                                                 </p>
                                             )}
@@ -250,7 +250,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                             <ActionBadge entry={entry} />
                                             {(entry.subject ||
                                                 entry.details) && (
-                                                <p className="mt-1 text-[#1F2A24]/70">
+                                                <p className="mt-1 text-ink/70">
                                                     <Subject entry={entry} />
                                                     {entry.subject &&
                                                         entry.details &&
@@ -259,7 +259,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                                 </p>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 font-mono text-xs text-[#1F2A24]/60">
+                                        <td className="px-4 py-3 font-mono text-xs text-ink/60">
                                             {entry.ip_address ?? '—'}
                                         </td>
                                     </tr>
@@ -268,7 +268,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                     <tr>
                                         <td
                                             colSpan={4}
-                                            className="px-4 py-8 text-center text-[#1F2A24]/65"
+                                            className="px-4 py-8 text-center text-ink/65"
                                         >
                                             No entries found.
                                         </td>
@@ -287,8 +287,8 @@ export default function Index({ entries, filters, actions, staff }: Props) {
                                 preserveScroll
                                 className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                     link.active
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                        : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                        ? 'border-brand bg-brand text-white'
+                                        : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                 } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                             />
                         ))}

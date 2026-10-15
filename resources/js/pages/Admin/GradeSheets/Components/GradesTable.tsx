@@ -11,11 +11,11 @@ import type { StudentGradeRow, TermKey } from './types';
 type GradeRow = { id: number } & Record<TermKey, string>;
 
 const cellInputClass =
-    'min-h-10 w-20 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-right text-base text-[#1F2A24] tabular-nums transition-colors placeholder:text-[#1F2A24]/30 hover:border-[#1F2A24]/15 hover:bg-white focus:border-[#2F6F4E] focus:bg-white focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] aria-[invalid=true]:bg-[#C6473B]/5 sm:text-sm';
+    'min-h-10 w-20 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-right text-base text-ink tabular-nums transition-colors placeholder:text-ink/30 hover:border-ink/15 hover:bg-surface focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:bg-danger/5 sm:text-sm';
 
 /** Always outlined and full width on phones, where there's no hover. */
 const mobileInputClass =
-    'min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-2 text-center text-base text-[#1F2A24] tabular-nums placeholder:text-[#1F2A24]/30 read-only:bg-[#1F2A24]/[0.03] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] aria-[invalid=true]:bg-[#C6473B]/5';
+    'min-h-11 w-full rounded-lg border border-ink/15 bg-surface px-2 py-2 text-center text-base text-ink tabular-nums placeholder:text-ink/30 read-only:bg-ink/[0.03] focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:bg-danger/5';
 
 function toFormRows(studentGrades: StudentGradeRow[]): GradeRow[] {
     return studentGrades.map((row) => ({
@@ -53,7 +53,7 @@ function finalGrade(row: GradeRow): number | null {
 
 function RemarksBadge({ final }: { final: number | null }) {
     if (final === null) {
-        return <span className="text-[#1F2A24]/40">—</span>;
+        return <span className="text-ink/40">—</span>;
     }
 
     const passed = final >= PASSING_GRADE;
@@ -62,8 +62,8 @@ function RemarksBadge({ final }: { final: number | null }) {
         <span
             className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                 passed
-                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                    : 'bg-[#C6473B]/10 text-[#A3372D]'
+                    ? 'bg-brand/10 text-brand-ink'
+                    : 'bg-danger/10 text-danger-strong'
             }`}
         >
             {passed ? 'Passed' : 'Failed'}
@@ -212,7 +212,7 @@ export default function GradesTable({
                     className={className}
                 />
                 {error && (
-                    <p className="mt-1 text-left text-xs text-[#C6473B]">
+                    <p className="mt-1 text-left text-xs text-danger-ink">
                         {error}
                     </p>
                 )}
@@ -230,7 +230,7 @@ export default function GradesTable({
                 rel="noopener"
                 title="Report card"
                 aria-label={`${studentGrade.student_name}'s report card (opens in a new tab)`}
-                className="inline-flex size-10 items-center justify-center rounded-full text-[#2F6F4E]/70 hover:bg-[#2F6F4E]/10 hover:text-[#2F6F4E]"
+                className="inline-flex size-10 items-center justify-center rounded-full text-brand-ink/70 hover:bg-brand/10 hover:text-brand-ink"
             >
                 <FileText className="h-4 w-4" aria-hidden="true" />
             </a>
@@ -239,7 +239,7 @@ export default function GradesTable({
                     type="button"
                     onClick={() => onRemove(studentGrade)}
                     aria-label={`Remove ${studentGrade.student_name}`}
-                    className="inline-flex size-10 items-center justify-center rounded-full text-[#1F2A24]/40 hover:bg-[#C6473B]/10 hover:text-[#A3372D]"
+                    className="inline-flex size-10 items-center justify-center rounded-full text-ink/40 hover:bg-danger/10 hover:text-danger-strong"
                 >
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -250,7 +250,7 @@ export default function GradesTable({
     return (
         <form onSubmit={save}>
             {!readOnly && (
-                <p className="mb-2 text-xs text-[#1F2A24]/60">
+                <p className="mb-2 text-xs text-ink/60">
                     {isMobile
                         ? 'Tap a term to change it.'
                         : 'Click a term to change it. Enter moves down, Esc undoes the box.'}{' '}
@@ -260,7 +260,7 @@ export default function GradesTable({
 
             {isMobile ? (
                 // One card per student on phones, so nothing scrolls sideways.
-                <ul className="divide-y divide-[#1F2A24]/10 overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white">
+                <ul className="divide-y divide-ink/10 overflow-hidden rounded-2xl border border-ink/10 bg-surface">
                     {studentGrades.map((studentGrade, index) => {
                         const row = data.grades[index];
                         const final = finalGrade(row);
@@ -268,17 +268,17 @@ export default function GradesTable({
                         return (
                             <li
                                 key={studentGrade.id}
-                                className={`p-4 ${isRowChanged(row, index) ? 'bg-[#E8A33D]/[0.07]' : ''}`}
+                                className={`p-4 ${isRowChanged(row, index) ? 'bg-warn/[0.07]' : ''}`}
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="min-w-0">
-                                        <p className="font-medium break-words text-[#1F2A24]">
-                                            <span className="mr-1.5 text-[#1F2A24]/45 tabular-nums">
+                                        <p className="font-medium break-words text-ink">
+                                            <span className="mr-1.5 text-ink/45 tabular-nums">
                                                 {index + 1}.
                                             </span>
                                             {studentGrade.student_name}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-ink/60">
                                             {studentGrade.lrn
                                                 ? `LRN ${studentGrade.lrn}`
                                                 : 'No LRN yet'}
@@ -294,7 +294,7 @@ export default function GradesTable({
                                         <div key={term.key}>
                                             <label
                                                 htmlFor={`grade-${index}-${term.key}`}
-                                                className="mb-1 block text-[11px] font-medium text-[#1F2A24]/60"
+                                                className="mb-1 block text-[11px] font-medium text-ink/60"
                                             >
                                                 {term.label}
                                             </label>
@@ -308,10 +308,10 @@ export default function GradesTable({
                                     ))}
                                 </div>
 
-                                <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#1F2A24]/10 pt-3">
-                                    <span className="text-sm text-[#1F2A24]/70">
+                                <div className="mt-3 flex items-center justify-between gap-3 border-t border-ink/10 pt-3">
+                                    <span className="text-sm text-ink/70">
                                         Final{' '}
-                                        <span className="font-semibold text-[#1F2A24] tabular-nums">
+                                        <span className="font-semibold text-ink tabular-nums">
                                             {formatGrade(final)}
                                         </span>
                                     </span>
@@ -322,9 +322,9 @@ export default function GradesTable({
                     })}
                 </ul>
             ) : (
-                <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
+                <div className="overflow-x-auto rounded-2xl border border-ink/10 bg-surface">
                     <table className="w-full min-w-[760px] text-left text-sm">
-                        <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
+                        <thead className="border-b border-ink/10 bg-ink/[0.03] text-xs tracking-wide text-ink/60 uppercase">
                             <tr>
                                 <th className="w-10 px-4 py-3 font-semibold">
                                     #
@@ -353,7 +353,7 @@ export default function GradesTable({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#1F2A24]/10">
+                        <tbody className="divide-y divide-ink/10">
                             {studentGrades.map((studentGrade, index) => {
                                 const row = data.grades[index];
                                 const isChanged = isRowChanged(row, index);
@@ -364,18 +364,18 @@ export default function GradesTable({
                                         key={studentGrade.id}
                                         className={
                                             isChanged
-                                                ? 'bg-[#E8A33D]/[0.07]'
+                                                ? 'bg-warn/[0.07]'
                                                 : ''
                                         }
                                     >
-                                        <td className="px-4 py-2 text-[#1F2A24]/50 tabular-nums">
+                                        <td className="px-4 py-2 text-ink/50 tabular-nums">
                                             {index + 1}
                                         </td>
                                         <td className="px-4 py-2">
-                                            <span className="block font-medium text-[#1F2A24]">
+                                            <span className="block font-medium text-ink">
                                                 {studentGrade.student_name}
                                             </span>
-                                            <span className="text-xs text-[#1F2A24]/60">
+                                            <span className="text-xs text-ink/60">
                                                 {studentGrade.lrn
                                                     ? `LRN ${studentGrade.lrn}`
                                                     : 'No LRN yet'}
@@ -394,7 +394,7 @@ export default function GradesTable({
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-2 text-right font-semibold text-[#1F2A24] tabular-nums">
+                                        <td className="px-4 py-2 text-right font-semibold text-ink tabular-nums">
                                             {formatGrade(final)}
                                         </td>
                                         <td className="px-4 py-2">
@@ -415,9 +415,9 @@ export default function GradesTable({
                 <div
                     role="region"
                     aria-label="Unsaved grades"
-                    className="sticky bottom-4 z-10 mt-4 flex flex-col gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between"
+                    className="sticky bottom-4 z-10 mt-4 flex flex-col gap-3 rounded-2xl border border-ink/10 bg-surface px-4 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <p aria-live="polite" className="text-sm text-[#1F2A24]/75">
+                    <p aria-live="polite" className="text-sm text-ink/75">
                         {errorCount > 0
                             ? 'Some grades need fixing. They’re highlighted above.'
                             : changedRows.length === 1
@@ -432,14 +432,14 @@ export default function GradesTable({
                                 clearErrors();
                             }}
                             disabled={processing}
-                            className="min-h-11 flex-1 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/75 hover:bg-[#1F2A24]/5 disabled:opacity-50 sm:flex-none"
+                            className="min-h-11 flex-1 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/75 hover:bg-ink/5 disabled:opacity-50 sm:flex-none"
                         >
                             Discard
                         </button>
                         <button
                             type="submit"
                             disabled={processing || !hasChanges}
-                            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-50 sm:flex-none"
+                            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep disabled:opacity-50 sm:flex-none"
                         >
                             {processing && (
                                 <Loader2

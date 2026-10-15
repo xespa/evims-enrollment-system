@@ -41,12 +41,12 @@ export default function EditScheduleDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="rounded-2xl border-[#1F2A24]/10 bg-white text-[#1F2A24] sm:max-w-md">
+            <DialogContent className="rounded-2xl border-ink/10 bg-surface text-ink sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="font-serif text-xl">
                         Class schedule
                     </DialogTitle>
-                    <DialogDescription className="text-[#1F2A24]/65">
+                    <DialogDescription className="text-ink/65">
                         When {gradeSheet.subject} meets. It's printed on the
                         grade sheet.
                     </DialogDescription>
@@ -63,14 +63,14 @@ export default function EditScheduleDialog({
                         <button
                             type="button"
                             onClick={() => onOpenChange(false)}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-50"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep disabled:opacity-50"
                         >
                             {processing && (
                                 <Loader2

@@ -33,15 +33,15 @@ const COLUMNS: { title: string; links: NavLink[] }[] = [
 
 export default function SiteFooter() {
     return (
-        <footer className="bg-[#1F2A24] text-[#FBF8F2] [&_:focus-visible]:outline-[#E8A33D]">
+        <footer className="bg-ink text-on-brand [&_:focus-visible]:outline-warn">
             {/* Call to action */}
-            <div className="border-b border-[#FBF8F2]/10">
+            <div className="border-b border-cream/10">
                 <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 px-5 py-8 sm:flex-row sm:items-center">
                     <div>
                         <p className="font-serif text-xl font-semibold sm:text-2xl">
                             Ready to join the EVIMS family?
                         </p>
-                        <p className="mt-1 text-sm text-[#FBF8F2]/70">
+                        <p className="mt-1 text-sm text-on-brand/70">
                             Create an account, get verified, and enroll your
                             child online.
                         </p>
@@ -49,7 +49,7 @@ export default function SiteFooter() {
                     <div className="flex flex-wrap gap-2">
                         <Link
                             href={admission()}
-                            className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#E8A33D] px-5 text-sm font-semibold text-[#1F2A24] transition-colors hover:bg-[#F0B456]"
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-warn px-5 text-sm font-semibold text-ink transition-colors hover:bg-[#F0B456]"
                         >
                             Enroll Now
                             <ArrowRight
@@ -59,7 +59,7 @@ export default function SiteFooter() {
                         </Link>
                         <Link
                             href={contact()}
-                            className="inline-flex min-h-11 items-center rounded-full border border-[#FBF8F2]/25 px-5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#FBF8F2]/10"
+                            className="inline-flex min-h-11 items-center rounded-full border border-cream/25 px-5 text-sm font-semibold text-on-brand transition-colors hover:bg-cream/10"
                         >
                             Talk to Us
                         </Link>
@@ -73,27 +73,27 @@ export default function SiteFooter() {
                         <img
                             src="/images/logoevims.png"
                             alt=""
-                            className="h-12 w-12 rounded-full bg-white object-cover"
+                            className="h-12 w-12 rounded-full bg-surface object-cover"
                         />
                         <span className="leading-tight">
                             <span className="block font-serif text-lg font-semibold">
                                 EVIMS
                             </span>
-                            <span className="block text-xs text-[#FBF8F2]/60">
+                            <span className="block text-xs text-on-brand/60">
                                 Eastern Visayas International Montessori School,
                                 Inc.
                             </span>
                         </span>
                     </Link>
-                    <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#FBF8F2]/70">
+                    <p className="mt-4 max-w-sm text-sm leading-relaxed text-on-brand/70">
                         Guiding learners from Nursery through Grade 10 with a
                         curriculum built on curiosity, character, and community.
                     </p>
 
-                    <ul className="mt-5 space-y-2.5 text-sm text-[#FBF8F2]/75">
+                    <ul className="mt-5 space-y-2.5 text-sm text-on-brand/75">
                         <li className="flex gap-2.5">
                             <MapPin
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#E8A33D]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-warn"
                                 aria-hidden="true"
                             />
                             <address className="not-italic">
@@ -104,31 +104,31 @@ export default function SiteFooter() {
                         </li>
                         <li className="flex gap-2.5">
                             <Phone
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#E8A33D]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-warn"
                                 aria-hidden="true"
                             />
                             <a
                                 href={PHONE_LINK}
-                                className="hover:text-[#FBF8F2] hover:underline"
+                                className="hover:text-on-brand hover:underline"
                             >
                                 {PHONE_DISPLAY}
                             </a>
                         </li>
                         <li className="flex gap-2.5">
                             <Mail
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#E8A33D]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-warn"
                                 aria-hidden="true"
                             />
                             <a
                                 href={`mailto:${EMAIL}`}
-                                className="break-all hover:text-[#FBF8F2] hover:underline"
+                                className="break-all hover:text-on-brand hover:underline"
                             >
                                 {EMAIL}
                             </a>
                         </li>
                         <li className="flex gap-2.5">
                             <Clock
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#E8A33D]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-warn"
                                 aria-hidden="true"
                             />
                             Mon–Fri, 8:00 AM – 4:00 PM
@@ -138,15 +138,15 @@ export default function SiteFooter() {
 
                 {COLUMNS.map((column) => (
                     <nav key={column.title} aria-label={column.title}>
-                        <p className="mb-3 text-xs font-semibold tracking-[0.14em] text-[#E8A33D] uppercase">
+                        <p className="mb-3 text-xs font-semibold tracking-[0.14em] text-warn uppercase">
                             {column.title}
                         </p>
-                        <ul className="space-y-2 text-sm text-[#FBF8F2]/70">
+                        <ul className="space-y-2 text-sm text-on-brand/70">
                             {column.links.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="inline-block py-0.5 transition-colors hover:text-[#FBF8F2]"
+                                        className="inline-block py-0.5 transition-colors hover:text-on-brand"
                                     >
                                         {link.label}
                                     </Link>
@@ -157,8 +157,8 @@ export default function SiteFooter() {
                 ))}
             </div>
 
-            <div className="border-t border-[#FBF8F2]/10">
-                <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-5 text-xs text-[#FBF8F2]/60 sm:flex-row">
+            <div className="border-t border-cream/10">
+                <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-5 text-xs text-on-brand/60 sm:flex-row">
                     <span>
                         © {new Date().getFullYear()} Eastern Visayas
                         International Montessori School, Inc. All rights
@@ -167,13 +167,13 @@ export default function SiteFooter() {
                     <div className="flex items-center gap-4">
                         <Link
                             href={terms()}
-                            className="hover:text-[#FBF8F2] hover:underline"
+                            className="hover:text-on-brand hover:underline"
                         >
                             Terms & Privacy
                         </Link>
                         <Link
                             href={`${terms.url()}#cookies`}
-                            className="hover:text-[#FBF8F2] hover:underline"
+                            className="hover:text-on-brand hover:underline"
                         >
                             Cookies
                         </Link>
@@ -182,7 +182,7 @@ export default function SiteFooter() {
                             onClick={() =>
                                 window.scrollTo({ top: 0, behavior: 'smooth' })
                             }
-                            className="inline-flex items-center gap-1 rounded-full border border-[#FBF8F2]/20 px-2.5 py-1 hover:bg-[#FBF8F2]/10 hover:text-[#FBF8F2]"
+                            className="inline-flex items-center gap-1 rounded-full border border-cream/20 px-2.5 py-1 hover:bg-cream/10 hover:text-on-brand"
                         >
                             <ArrowUp
                                 className="h-3.5 w-3.5"

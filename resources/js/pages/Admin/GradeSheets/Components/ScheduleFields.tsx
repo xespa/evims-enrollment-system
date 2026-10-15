@@ -39,9 +39,9 @@ export default function ScheduleFields({
 
     return (
         <fieldset>
-            <legend className="mb-1 block text-sm font-medium text-[#1F2A24]/80">
+            <legend className="mb-1 block text-sm font-medium text-ink/80">
                 Schedule{' '}
-                <span className="font-normal text-[#1F2A24]/55">
+                <span className="font-normal text-ink/55">
                     (optional)
                 </span>
             </legend>
@@ -60,10 +60,10 @@ export default function ScheduleFields({
                             type="button"
                             aria-pressed={isSelected}
                             onClick={() => toggleDay(day.value)}
-                            className={`min-h-10 min-w-12 rounded-full border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none ${
+                            className={`min-h-10 min-w-12 rounded-full border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none ${
                                 isSelected
-                                    ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                    : 'border-[#1F2A24]/15 bg-white text-[#1F2A24]/70 hover:bg-[#2F6F4E]/5'
+                                    ? 'border-brand bg-brand text-white'
+                                    : 'border-ink/15 bg-surface text-ink/70 hover:bg-brand/5'
                             }`}
                         >
                             {day.label}
@@ -72,14 +72,14 @@ export default function ScheduleFields({
                 })}
             </div>
             {daysError && (
-                <p className="mt-1 text-xs text-[#C6473B]">{daysError}</p>
+                <p className="mt-1 text-xs text-danger-ink">{daysError}</p>
             )}
 
             <div className="mt-3 grid grid-cols-2 gap-3">
                 <div>
                     <label
                         htmlFor="start-time"
-                        className="mb-1 block text-xs font-medium text-[#1F2A24]/70"
+                        className="mb-1 block text-xs font-medium text-ink/70"
                     >
                         Starts
                     </label>
@@ -97,7 +97,7 @@ export default function ScheduleFields({
                     {errors.start_time && (
                         <p
                             id="start-time-error"
-                            className="mt-1 text-xs text-[#C6473B]"
+                            className="mt-1 text-xs text-danger-ink"
                         >
                             {errors.start_time}
                         </p>
@@ -106,7 +106,7 @@ export default function ScheduleFields({
                 <div>
                     <label
                         htmlFor="end-time"
-                        className="mb-1 block text-xs font-medium text-[#1F2A24]/70"
+                        className="mb-1 block text-xs font-medium text-ink/70"
                     >
                         Ends
                     </label>
@@ -124,7 +124,7 @@ export default function ScheduleFields({
                     {errors.end_time && (
                         <p
                             id="end-time-error"
-                            className="mt-1 text-xs text-[#C6473B]"
+                            className="mt-1 text-xs text-danger-ink"
                         >
                             {errors.end_time}
                         </p>

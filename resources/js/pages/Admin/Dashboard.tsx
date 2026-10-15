@@ -63,8 +63,9 @@ type Props = {
     }[];
 };
 
-const INK = '#1F2A24';
-const GREEN = '#2F6F4E';
+// The theme's colours, so the charts follow the light/dark switch.
+const INK = 'var(--color-ink)';
+const GREEN = 'var(--color-brand)';
 
 // Status colours, in the order the stacked bar shows them: amber sits
 // between green and red, which are too alike for red-green colour
@@ -81,21 +82,21 @@ const STATUSES: {
         key: 'APPROVED',
         label: 'Approved',
         color: '#2E8057',
-        badge: 'bg-[#2E8057]/10 text-[#22613F]',
+        badge: 'bg-[#2E8057]/10 text-brand-forest',
         icon: CircleCheck,
     },
     {
         key: 'PENDING',
         label: 'Pending review',
         color: '#E8A33D',
-        badge: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+        badge: 'bg-warn/15 text-warn-strong',
         icon: Clock,
     },
     {
         key: 'REJECTED',
         label: 'Rejected',
         color: '#C6473B',
-        badge: 'bg-[#C6473B]/10 text-[#9A3329]',
+        badge: 'bg-danger/10 text-danger-deep',
         icon: CircleX,
     },
 ];
@@ -140,10 +141,10 @@ function Card({
 }) {
     return (
         <section
-            className={`rounded-2xl border border-[#1F2A24]/10 bg-white p-5 ${className}`}
+            className={`rounded-2xl border border-ink/10 bg-surface p-5 ${className}`}
         >
             <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                     {title}
                 </h2>
                 {action}
@@ -169,25 +170,25 @@ function StatTile({
     children?: ReactNode;
 }) {
     const iconStyle = {
-        neutral: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
-        attention: 'bg-[#E8A33D]/15 text-[#8A5A12]',
-        critical: 'bg-[#C6473B]/10 text-[#9A3329]',
+        neutral: 'bg-brand/10 text-brand-ink',
+        attention: 'bg-warn/15 text-warn-strong',
+        critical: 'bg-danger/10 text-danger-deep',
     }[tone];
 
     return (
-        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+        <div className="rounded-2xl border border-ink/10 bg-surface p-5">
             <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-[#1F2A24]/70">{label}</p>
+                <p className="text-sm text-ink/70">{label}</p>
                 <span
                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
                 >
                     <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 </span>
             </div>
-            <p className="mt-1 font-serif text-2xl font-semibold text-[#1F2A24] tabular-nums">
+            <p className="mt-1 font-serif text-2xl font-semibold text-ink tabular-nums">
                 {value}
             </p>
-            {sub && <p className="mt-1 text-xs text-[#1F2A24]/65">{sub}</p>}
+            {sub && <p className="mt-1 text-xs text-ink/65">{sub}</p>}
             {children}
         </div>
     );
@@ -209,9 +210,9 @@ function ChartTooltip({
     }
 
     return (
-        <div className="rounded-lg border border-[#1F2A24]/10 bg-white px-3 py-2 text-sm shadow-lg">
-            <p className="text-xs text-[#1F2A24]/60">{label}</p>
-            <p className="font-semibold text-[#1F2A24] tabular-nums">
+        <div className="rounded-lg border border-ink/10 bg-surface px-3 py-2 text-sm shadow-lg">
+            <p className="text-xs text-ink/60">{label}</p>
+            <p className="font-semibold text-ink tabular-nums">
                 {format(payload[0].value)}
             </p>
         </div>
@@ -220,7 +221,7 @@ function ChartTooltip({
 
 function EmptyNote({ children }: { children: ReactNode }) {
     return (
-        <p className="py-6 text-center text-sm text-[#1F2A24]/60">{children}</p>
+        <p className="py-6 text-center text-sm text-ink/60">{children}</p>
     );
 }
 
@@ -264,14 +265,14 @@ export default function Dashboard({
     return (
         <>
             <Head title="Dashboard" />
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                         <div>
-                            <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                            <h1 className="font-serif text-2xl font-semibold text-ink">
                                 Dashboard
                             </h1>
-                            <p className="text-sm text-[#1F2A24]/70">
+                            <p className="text-sm text-ink/70">
                                 {schoolYear
                                     ? `School year ${schoolYear} at a glance.`
                                     : 'All school years at a glance.'}
@@ -280,7 +281,7 @@ export default function Dashboard({
                         <div>
                             <label
                                 htmlFor="dashboard-school-year"
-                                className="mb-1 block text-xs font-medium text-[#1F2A24]/70"
+                                className="mb-1 block text-xs font-medium text-ink/70"
                             >
                                 School year
                             </label>
@@ -290,7 +291,7 @@ export default function Dashboard({
                                 onChange={(e) =>
                                     changeSchoolYear(e.target.value)
                                 }
-                                className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 pr-8 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                className="min-h-10 rounded-lg border border-ink/15 bg-surface px-3 pr-8 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                             >
                                 {schoolYears.map((year) => (
                                     <option key={year} value={year}>
@@ -305,7 +306,7 @@ export default function Dashboard({
                     {awaitingForm138.length > 0 && (
                         <div
                             role="status"
-                            className="mb-6 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                            className="mb-6 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn-deep"
                         >
                             <p className="flex items-start gap-2">
                                 <AlertTriangle
@@ -363,7 +364,7 @@ export default function Dashboard({
                                         href={route('admin.students.index', {
                                             school_year: schoolYear,
                                         })}
-                                        className="font-medium text-[#2F6F4E] hover:underline"
+                                        className="font-medium text-brand-ink hover:underline"
                                     >
                                         Review applications →
                                     </Link>
@@ -379,7 +380,7 @@ export default function Dashboard({
                             sub={`${collectionRate.toFixed(1)}% of ${formatCurrency(stats.totalBilled)} billed`}
                         >
                             <div
-                                className="mt-3 h-2 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                                className="mt-3 h-2 overflow-hidden rounded-full bg-ink/10"
                                 role="progressbar"
                                 aria-label="Share of billed fees collected"
                                 aria-valuenow={Math.round(collectionRate)}
@@ -387,11 +388,11 @@ export default function Dashboard({
                                 aria-valuemax={100}
                             >
                                 <div
-                                    className="h-full rounded-full bg-[#2F6F4E] transition-[width] duration-500 motion-reduce:transition-none"
+                                    className="h-full rounded-full bg-brand transition-[width] duration-500 motion-reduce:transition-none"
                                     style={{ width: `${collectionRate}%` }}
                                 />
                             </div>
-                            <p className="mt-1.5 text-xs text-[#1F2A24]/65">
+                            <p className="mt-1.5 text-xs text-ink/65">
                                 {formatCurrency(outstanding)} still to collect
                             </p>
                         </StatTile>
@@ -596,16 +597,16 @@ export default function Dashboard({
                                                         aria-hidden="true"
                                                     />
                                                     <Icon
-                                                        className="h-4 w-4 shrink-0 text-[#1F2A24]/55"
+                                                        className="h-4 w-4 shrink-0 text-ink/55"
                                                         aria-hidden="true"
                                                     />
-                                                    <span className="flex-1 text-[#1F2A24]/80">
+                                                    <span className="flex-1 text-ink/80">
                                                         {s.label}
                                                     </span>
-                                                    <span className="font-semibold text-[#1F2A24] tabular-nums">
+                                                    <span className="font-semibold text-ink tabular-nums">
                                                         {count}
                                                     </span>
-                                                    <span className="w-11 text-right text-xs text-[#1F2A24]/55 tabular-nums">
+                                                    <span className="w-11 text-right text-xs text-ink/55 tabular-nums">
                                                         {Math.round(
                                                             (count /
                                                                 statusTotal) *
@@ -736,7 +737,7 @@ export default function Dashboard({
                                         return (
                                             <li key={row.method}>
                                                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                                                    <span className="font-medium text-[#1F2A24]">
+                                                    <span className="font-medium text-ink">
                                                         {row.method === 'GCASH'
                                                             ? 'GCash'
                                                             : row.method ===
@@ -744,21 +745,21 @@ export default function Dashboard({
                                                               ? 'Cash (counter)'
                                                               : row.method}
                                                     </span>
-                                                    <span className="font-semibold text-[#1F2A24] tabular-nums">
+                                                    <span className="font-semibold text-ink tabular-nums">
                                                         {formatCurrency(
                                                             row.total,
                                                         )}
                                                     </span>
                                                 </div>
-                                                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#1F2A24]/10">
+                                                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/10">
                                                     <div
-                                                        className="h-full rounded-full bg-[#2F6F4E]"
+                                                        className="h-full rounded-full bg-brand"
                                                         style={{
                                                             width: `${share}%`,
                                                         }}
                                                     />
                                                 </div>
-                                                <p className="mt-1 text-xs text-[#1F2A24]/60 tabular-nums">
+                                                <p className="mt-1 text-xs text-ink/60 tabular-nums">
                                                     {row.count} payment
                                                     {Number(row.count) === 1
                                                         ? ''
@@ -784,14 +785,14 @@ export default function Dashboard({
                                     href={route('admin.students.index', {
                                         school_year: schoolYear,
                                     })}
-                                    className="text-sm font-medium text-[#2F6F4E] hover:underline"
+                                    className="text-sm font-medium text-brand-ink hover:underline"
                                 >
                                     View all
                                 </Link>
                             }
                         >
                             {recentEnrollments.length > 0 ? (
-                                <ul className="-mx-2 divide-y divide-[#1F2A24]/10">
+                                <ul className="-mx-2 divide-y divide-ink/10">
                                     {recentEnrollments.map((enrollment) => {
                                         const status = enrollment.cancelled_at
                                             ? null
@@ -807,10 +808,10 @@ export default function Dashboard({
                                                         'admin.enrollments.show',
                                                         enrollment.id,
                                                     )}
-                                                    className="flex min-h-14 items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-[#1F2A24]/[0.03]"
+                                                    className="flex min-h-14 items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-ink/[0.03]"
                                                 >
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium text-[#1F2A24]">
+                                                        <p className="truncate text-sm font-medium text-ink">
                                                             {
                                                                 enrollment
                                                                     .student
@@ -823,7 +824,7 @@ export default function Dashboard({
                                                                     .first_name
                                                             }
                                                         </p>
-                                                        <p className="text-xs text-[#1F2A24]/65">
+                                                        <p className="text-xs text-ink/65">
                                                             {
                                                                 enrollment
                                                                     .grade_level
@@ -838,7 +839,7 @@ export default function Dashboard({
                                                     <span
                                                         className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
                                                             status?.badge ??
-                                                            'bg-[#1F2A24]/10 text-[#1F2A24]/70'
+                                                            'bg-ink/10 text-ink/70'
                                                         }`}
                                                     >
                                                         <Icon
@@ -866,21 +867,21 @@ export default function Dashboard({
                                     href={route(
                                         'admin.transaction-history.index',
                                     )}
-                                    className="text-sm font-medium text-[#2F6F4E] hover:underline"
+                                    className="text-sm font-medium text-brand-ink hover:underline"
                                 >
                                     View all
                                 </Link>
                             }
                         >
                             {recentPayments.length > 0 ? (
-                                <ul className="divide-y divide-[#1F2A24]/10">
+                                <ul className="divide-y divide-ink/10">
                                     {recentPayments.map((payment) => (
                                         <li
                                             key={payment.id}
                                             className="flex min-h-14 items-center gap-3 py-2"
                                         >
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-[#1F2A24]">
+                                                <p className="truncate text-sm font-medium text-ink">
                                                     {
                                                         payment.enrollment
                                                             .student.last_name
@@ -891,7 +892,7 @@ export default function Dashboard({
                                                             .student.first_name
                                                     }
                                                 </p>
-                                                <p className="text-xs text-[#1F2A24]/65">
+                                                <p className="text-xs text-ink/65">
                                                     {payment.method === 'GCASH'
                                                         ? 'GCash'
                                                         : payment.method ===
@@ -904,7 +905,7 @@ export default function Dashboard({
                                                     )}
                                                 </p>
                                             </div>
-                                            <span className="shrink-0 text-sm font-semibold text-[#1F2A24] tabular-nums">
+                                            <span className="shrink-0 text-sm font-semibold text-ink tabular-nums">
                                                 {formatCurrency(payment.amount)}
                                             </span>
                                         </li>

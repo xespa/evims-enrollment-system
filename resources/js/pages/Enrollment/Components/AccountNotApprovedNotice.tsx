@@ -21,16 +21,16 @@ export default function AccountNotApprovedNotice({ status }: Props) {
     return (
         <>
             <Head title="Enrollment Application" />
-            <div className="flex min-h-[70vh] items-center justify-center bg-[#FBF8F2] px-4 py-12">
+            <div className="flex min-h-[70vh] items-center justify-center bg-cream px-4 py-12">
                 <div
                     role="status"
-                    className="w-full max-w-md rounded-3xl border border-[#1F2A24]/10 bg-white p-7 text-center shadow-lg shadow-[#1F2A24]/5"
+                    className="w-full max-w-md rounded-3xl border border-ink/10 bg-surface p-7 text-center shadow-lg shadow-shade/5"
                 >
                     <span
                         className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full ${
                             isRejected
-                                ? 'bg-[#C6473B]/10 text-[#C6473B]'
-                                : 'bg-[#E8A33D]/15 text-[#a4670f]'
+                                ? 'bg-danger/10 text-danger-ink'
+                                : 'bg-warn/15 text-warn-ink'
                         }`}
                     >
                         {isRejected ? (
@@ -40,18 +40,18 @@ export default function AccountNotApprovedNotice({ status }: Props) {
                         )}
                     </span>
 
-                    <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
                         {isRejected
                             ? "Your account isn't verified"
                             : 'Your account is being verified'}
                     </h1>
-                    <p className="mt-2 text-sm text-[#1F2A24]/70">
+                    <p className="mt-2 text-sm text-ink/70">
                         {isRejected
                             ? "The school couldn't verify your account, so you can't submit an enrollment application yet. See what needs fixing and try again."
                             : "You can't submit an enrollment application until the school verifies your account. We'll email you as soon as it's approved — usually within a few school days."}
                     </p>
 
-                    <ol className="mt-5 space-y-2 rounded-xl bg-[#FBF8F2] p-4 text-left text-sm">
+                    <ol className="mt-5 space-y-2 rounded-xl bg-cream p-4 text-left text-sm">
                         {STEPS.map((step, index) => {
                             const isDone = index === 0;
                             const isCurrent = index === 1;
@@ -61,12 +61,12 @@ export default function AccountNotApprovedNotice({ status }: Props) {
                                     <span
                                         className={`mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
                                             isDone
-                                                ? 'bg-[#2F6F4E] text-white'
+                                                ? 'bg-brand text-white'
                                                 : isCurrent
                                                   ? isRejected
-                                                      ? 'bg-[#C6473B] text-white'
-                                                      : 'bg-[#E8A33D] text-white'
-                                                  : 'bg-[#1F2A24]/10 text-[#1F2A24]/60'
+                                                      ? 'bg-danger text-white'
+                                                      : 'bg-warn text-white'
+                                                  : 'bg-ink/10 text-ink/60'
                                         }`}
                                         aria-hidden="true"
                                     >
@@ -75,8 +75,8 @@ export default function AccountNotApprovedNotice({ status }: Props) {
                                     <span
                                         className={
                                             isCurrent
-                                                ? 'font-medium text-[#1F2A24]'
-                                                : 'text-[#1F2A24]/70'
+                                                ? 'font-medium text-ink'
+                                                : 'text-ink/70'
                                         }
                                     >
                                         {step}
@@ -94,7 +94,7 @@ export default function AccountNotApprovedNotice({ status }: Props) {
 
                     <Link
                         href={route('portal.account-status')}
-                        className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E]"
+                        className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep"
                     >
                         <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                         {isRejected ? 'See what to fix' : 'Check my account status'}

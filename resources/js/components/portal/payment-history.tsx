@@ -64,7 +64,7 @@ function MethodLabel({ method }: { method: PortalPayment['method'] }) {
     return (
         <span className="inline-flex items-center gap-1.5">
             <Icon
-                className="h-3.5 w-3.5 text-[#1F2A24]/50"
+                className="h-3.5 w-3.5 text-ink/50"
                 aria-hidden="true"
             />
             {METHOD_LABELS[method] ?? method}
@@ -75,15 +75,15 @@ function MethodLabel({ method }: { method: PortalPayment['method'] }) {
 export default function PaymentHistory({ rows }: { rows: PaymentRow[] }) {
     if (rows.length === 0) {
         return (
-            <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-[#1F2A24]/20 bg-white px-6 py-10 text-center">
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-ink/20 bg-surface px-6 py-10 text-center">
                 <Receipt
-                    className="h-8 w-8 text-[#1F2A24]/30"
+                    className="h-8 w-8 text-ink/30"
                     aria-hidden="true"
                 />
-                <p className="text-sm font-medium text-[#1F2A24]">
+                <p className="text-sm font-medium text-ink">
                     No payments yet
                 </p>
-                <p className="max-w-sm text-sm text-[#1F2A24]/65">
+                <p className="max-w-sm text-sm text-ink/65">
                     Payments appear here once an application is approved and
                     tuition is paid online or at the cashier.
                 </p>
@@ -92,21 +92,21 @@ export default function PaymentHistory({ rows }: { rows: PaymentRow[] }) {
     }
 
     return (
-        <div className="rounded-xl border border-[#1F2A24]/10 bg-white shadow-sm">
-            <ul className="divide-y divide-[#1F2A24]/5 sm:hidden">
+        <div className="rounded-xl border border-ink/10 bg-surface shadow-sm">
+            <ul className="divide-y divide-ink/5 sm:hidden">
                 {rows.map((payment) => (
                     <li key={payment.id} className="flex flex-col gap-1 p-4">
                         <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold text-[#1F2A24] tabular-nums">
+                            <span className="font-semibold text-ink tabular-nums">
                                 {formatCurrency(payment.amount)}
                             </span>
                             <StatusPill status={payment.status} />
                         </div>
-                        <p className="text-sm text-[#1F2A24]/80">
+                        <p className="text-sm text-ink/80">
                             {payment.student_name} · Installment #
                             {payment.installment_number}
                         </p>
-                        <p className="flex flex-wrap items-center gap-x-2 text-xs text-[#1F2A24]/65">
+                        <p className="flex flex-wrap items-center gap-x-2 text-xs text-ink/65">
                             <span>{paymentDate(payment)}</span>
                             <span aria-hidden="true">·</span>
                             <MethodLabel method={payment.method} />
@@ -127,7 +127,7 @@ export default function PaymentHistory({ rows }: { rows: PaymentRow[] }) {
                 <table className="w-full text-left text-sm">
                     <caption className="sr-only">Payment history</caption>
                     <thead>
-                        <tr className="text-xs text-[#1F2A24]/65">
+                        <tr className="text-xs text-ink/65">
                             <th scope="col" className="pb-2 font-medium">
                                 Date
                             </th>
@@ -154,25 +154,25 @@ export default function PaymentHistory({ rows }: { rows: PaymentRow[] }) {
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#1F2A24]/5">
+                    <tbody className="divide-y divide-ink/5">
                         {rows.map((payment) => (
                             <tr key={payment.id}>
-                                <td className="py-2.5 whitespace-nowrap text-[#1F2A24]/80">
+                                <td className="py-2.5 whitespace-nowrap text-ink/80">
                                     {paymentDate(payment)}
                                 </td>
-                                <td className="py-2.5 text-[#1F2A24]/80">
+                                <td className="py-2.5 text-ink/80">
                                     {payment.student_name}
                                 </td>
-                                <td className="py-2.5 text-[#1F2A24]/80 tabular-nums">
+                                <td className="py-2.5 text-ink/80 tabular-nums">
                                     #{payment.installment_number}
                                 </td>
-                                <td className="py-2.5 text-[#1F2A24]/80">
+                                <td className="py-2.5 text-ink/80">
                                     <MethodLabel method={payment.method} />
                                 </td>
-                                <td className="py-2.5 text-[#1F2A24]/80 tabular-nums">
+                                <td className="py-2.5 text-ink/80 tabular-nums">
                                     {payment.receipt_number ?? '—'}
                                 </td>
-                                <td className="py-2.5 text-right font-medium whitespace-nowrap text-[#1F2A24] tabular-nums">
+                                <td className="py-2.5 text-right font-medium whitespace-nowrap text-ink tabular-nums">
                                     {formatCurrency(payment.amount)}
                                 </td>
                                 <td className="py-2.5 pl-4">

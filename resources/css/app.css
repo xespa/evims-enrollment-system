@@ -7,6 +7,32 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The EVIMS palette as named colours (text-ink, bg-brand, bg-surface…), so
+   the admin can switch to dark below. "-ink" names are for text, which
+   needs to lighten on a dark page while backgrounds stay deep. */
+@theme {
+    --color-ink: #1f2a24;
+    --color-shade: #1f2a24;
+    --color-cream: #fbf8f2;
+    --color-surface: #ffffff;
+    --color-on-brand: #fbf8f2;
+    --color-brand: #2f6f4e;
+    --color-brand-ink: #2f6f4e;
+    --color-brand-deep: #25573e;
+    --color-brand-deep-ink: #25573e;
+    --color-brand-forest: #22613f;
+    --color-danger: #c6473b;
+    --color-danger-ink: #c6473b;
+    --color-danger-strong: #a3372d;
+    --color-danger-alert: #a83a30;
+    --color-danger-deep: #9a3329;
+    --color-danger-darker: #8a3128;
+    --color-warn: #e8a33d;
+    --color-warn-ink: #a4670f;
+    --color-warn-deep: #7a4d0b;
+    --color-warn-strong: #8a5a12;
+}
+
 @theme {
     --font-sans:
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
@@ -166,15 +192,44 @@
     }
 }
 
-/* The admin screens are light-only, so the page behind them stays cream
-   even when the device is in dark mode — otherwise the dark page shows
-   through when scrolling past the top or bottom. */
+/* The public site, portals and sign-in screens are light-only, so the page
+   behind them stays cream even when the device is in dark mode — otherwise
+   the dark page shows through when scrolling past the top or bottom. The
+   admin follows its light/dark switch instead. */
 html:has(.evims-admin),
 html:has(.evims-admin) body,
 html:has(.theme-light),
 html:has(.theme-light) body {
-    background-color: #fbf8f2;
+    background-color: var(--color-cream);
     color-scheme: light;
+}
+
+/* The admin's dark theme. Set on the root, so dialogs and menus (rendered
+   outside the page) follow it too. */
+html.dark:has(.evims-admin) {
+    --color-ink: #e3eae5;
+    --color-shade: #000000;
+    --color-cream: #0e1411;
+    --color-surface: #17201b;
+    --color-brand: #3a8660;
+    --color-brand-ink: #7fcba3;
+    --color-brand-deep: #449a6e;
+    --color-brand-deep-ink: #9ad7b5;
+    --color-brand-forest: #8fd3ae;
+    --color-danger: #d9584c;
+    --color-danger-ink: #f2958b;
+    --color-danger-strong: #f2958b;
+    --color-danger-alert: #f2958b;
+    --color-danger-deep: #f2958b;
+    --color-danger-darker: #f2958b;
+    --color-warn-ink: #f2be6b;
+    --color-warn-deep: #f3c77f;
+    --color-warn-strong: #f2be6b;
+}
+
+html.dark:has(.evims-admin),
+html.dark:has(.evims-admin) body {
+    color-scheme: dark;
 }
 
 /* In the base layer, so a text colour utility on the same element wins. */

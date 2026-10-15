@@ -40,24 +40,24 @@ export default function SectionCard({
     };
 
     return (
-        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-            <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+        <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+            <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                 <Users className="h-3.5 w-3.5" aria-hidden="true" />
                 Section
             </h2>
 
             {sections.length === 0 ? (
-                <p className="py-2 text-sm text-[#1F2A24]/65">
+                <p className="py-2 text-sm text-ink/65">
                     This grade level has no sections for the school year. Add
                     them in School Year Setup.
                 </p>
             ) : !isApproved ? (
-                <p className="py-2 text-sm text-[#1F2A24]/65">
+                <p className="py-2 text-sm text-ink/65">
                     Place the student in a section once the application is
                     approved.
                 </p>
             ) : !canManage ? (
-                <p className="py-2 text-sm font-medium text-[#1F2A24]">
+                <p className="py-2 text-sm font-medium text-ink">
                     {current ? `Section ${current.name}` : 'Not placed yet'}
                 </p>
             ) : (
@@ -78,7 +78,7 @@ export default function SectionCard({
                                     ? 'section_id-error'
                                     : undefined
                             }
-                            className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                            className="min-h-10 w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger"
                         >
                             <option value="">Not placed yet</option>
                             {sections.map((section) => {
@@ -102,7 +102,7 @@ export default function SectionCard({
                         {errors.section_id && (
                             <p
                                 id="section_id-error"
-                                className="mt-1 text-xs text-[#C6473B]"
+                                className="mt-1 text-xs text-danger-ink"
                             >
                                 {errors.section_id}
                             </p>
@@ -111,7 +111,7 @@ export default function SectionCard({
                     <button
                         type="submit"
                         disabled={processing || !isDirty}
-                        className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {processing && (
                             <Loader2

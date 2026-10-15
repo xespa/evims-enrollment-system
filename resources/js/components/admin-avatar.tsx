@@ -26,7 +26,7 @@ export default function AdminAvatar({
         <span
             aria-hidden="true"
             className={cn(
-                'flex shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] font-semibold text-white',
+                'flex shrink-0 items-center justify-center rounded-full bg-brand font-semibold text-white',
                 className,
             )}
         >

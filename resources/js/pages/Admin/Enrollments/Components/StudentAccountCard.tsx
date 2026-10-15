@@ -17,14 +17,14 @@ const STATUS_APPEARANCE: Record<
 > = {
     AWAITING_CONSENT: {
         icon: MailCheck,
-        badge: 'bg-[#E8A33D]/15 text-[#a4670f]',
+        badge: 'bg-warn/15 text-warn-ink',
     },
     CONSENT_GIVEN: {
         icon: ShieldQuestion,
-        badge: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+        badge: 'bg-brand/10 text-brand-ink',
     },
-    ACTIVE: { icon: ShieldCheck, badge: 'bg-[#2F6F4E]/10 text-[#2F6F4E]' },
-    DECLINED: { icon: ShieldX, badge: 'bg-[#C6473B]/10 text-[#A83A30]' },
+    ACTIVE: { icon: ShieldCheck, badge: 'bg-brand/10 text-brand-ink' },
+    DECLINED: { icon: ShieldX, badge: 'bg-danger/10 text-danger-alert' },
 };
 
 function formatDateTime(value: string) {
@@ -61,9 +61,9 @@ export default function StudentAccountCard({
     const StatusIcon = appearance?.icon ?? KeyRound;
 
     return (
-        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+        <div className="rounded-2xl border border-ink/10 bg-surface p-5 md:col-span-2">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                     Student Account
                 </h2>
                 {account.status_label && appearance && (
@@ -83,7 +83,7 @@ export default function StudentAccountCard({
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1 text-sm text-[#1F2A24]/75">
+                <div className="space-y-1 text-sm text-ink/75">
                     {account.status === null && (
                         <p>
                             No account yet. {studentName} would sign in with
@@ -95,7 +95,7 @@ export default function StudentAccountCard({
                         <>
                             <p>
                                 Consent email sent to{' '}
-                                <span className="font-medium text-[#1F2A24]">
+                                <span className="font-medium text-ink">
                                     {account.consent_email}
                                 </span>
                                 {account.requested_at &&
@@ -103,7 +103,7 @@ export default function StudentAccountCard({
                                 .
                             </p>
                             {account.expires_at && (
-                                <p className="text-xs text-[#1F2A24]/60">
+                                <p className="text-xs text-ink/60">
                                     The link expires{' '}
                                     {formatDateTime(account.expires_at)}. You
                                     can create the account once the parent
@@ -140,12 +140,12 @@ export default function StudentAccountCard({
                         </p>
                     )}
                     {account.blocker && account.status !== 'ACTIVE' && (
-                        <p className="text-xs text-[#a4670f]">
+                        <p className="text-xs text-warn-ink">
                             {account.blocker}
                         </p>
                     )}
                     {error && (
-                        <p role="alert" className="text-sm text-[#C6473B]">
+                        <p role="alert" className="text-sm text-danger-ink">
                             {error}
                         </p>
                     )}

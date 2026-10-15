@@ -52,13 +52,13 @@ export default function AdminSettingsShell({
     const tabs = TABS.filter((tab) => !tab.teachersOnly || can.teachSubjects);
 
     return (
-        <div className="min-h-full bg-[#FBF8F2] px-4 py-8">
+        <div className="min-h-full bg-cream px-4 py-8">
             <div className="mx-auto max-w-6xl">
                 <header>
-                    <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
                         Settings
                     </h1>
-                    <p className="mt-1 text-sm text-[#1F2A24]/70">
+                    <p className="mt-1 text-sm text-ink/70">
                         Manage your profile and account security.
                     </p>
                 </header>
@@ -67,7 +67,7 @@ export default function AdminSettingsShell({
                     <aside className="w-full lg:sticky lg:top-6 lg:w-60 lg:shrink-0 lg:self-start">
                         <nav
                             aria-label="Settings"
-                            className="grid grid-cols-2 gap-1 rounded-xl border border-[#1F2A24]/10 bg-white p-1 lg:flex lg:flex-col lg:gap-1 lg:p-2"
+                            className="grid grid-cols-2 gap-1 rounded-xl border border-ink/10 bg-surface p-1 lg:flex lg:flex-col lg:gap-1 lg:p-2"
                         >
                             {tabs.map((tab) => {
                                 const isActive = isCurrentOrParentUrl(tab.href);
@@ -80,10 +80,10 @@ export default function AdminSettingsShell({
                                         aria-current={
                                             isActive ? 'page' : undefined
                                         }
-                                        className={`group flex min-h-11 items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none lg:justify-start ${
+                                        className={`group flex min-h-11 items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none lg:justify-start ${
                                             isActive
-                                                ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                                                : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]'
+                                                ? 'bg-brand/10 text-brand-ink'
+                                                : 'text-ink/70 hover:bg-ink/5 hover:text-ink'
                                         }`}
                                     >
                                         <Icon
@@ -95,8 +95,8 @@ export default function AdminSettingsShell({
                                             <span
                                                 className={`hidden text-xs font-normal lg:block ${
                                                     isActive
-                                                        ? 'text-[#2F6F4E]/75'
-                                                        : 'text-[#1F2A24]/50'
+                                                        ? 'text-brand-ink/75'
+                                                        : 'text-ink/50'
                                                 }`}
                                             >
                                                 {tab.description}

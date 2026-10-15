@@ -112,13 +112,13 @@ function MonthGrid({
 
     return (
         <div className="w-[15.5rem]">
-            <p className="mb-2 text-center text-sm font-semibold text-[#1F2A24]">
+            <p className="mb-2 text-center text-sm font-semibold text-ink">
                 {month.toLocaleDateString('en-PH', {
                     month: 'long',
                     year: 'numeric',
                 })}
             </p>
-            <div className="grid grid-cols-7 text-center text-xs font-medium text-[#1F2A24]/50">
+            <div className="grid grid-cols-7 text-center text-xs font-medium text-ink/50">
                 {WEEKDAYS.map((day) => (
                     <span key={day} className="py-1">
                         {day}
@@ -156,12 +156,12 @@ function MonthGrid({
                                 year: 'numeric',
                             })}
                             aria-pressed={isEndpoint}
-                            className={`h-9 text-sm tabular-nums transition-colors focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:text-[#1F2A24]/25 ${
+                            className={`h-9 text-sm tabular-nums transition-colors focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:text-ink/25 ${
                                 isEndpoint
-                                    ? 'rounded-full bg-[#2F6F4E] font-semibold text-white'
+                                    ? 'rounded-full bg-brand font-semibold text-white'
                                     : isBetween
-                                      ? 'bg-[#2F6F4E]/10 text-[#1F2A24]'
-                                      : 'rounded-full text-[#1F2A24] enabled:hover:bg-[#1F2A24]/5'
+                                      ? 'bg-brand/10 text-ink'
+                                      : 'rounded-full text-ink enabled:hover:bg-ink/5'
                             }`}
                         >
                             {i + 1}
@@ -245,7 +245,7 @@ export default function DateRangePicker({
 
     return (
         <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-[#1F2A24]/60">
+            <span className="text-xs font-medium text-ink/60">
                 {label}
             </span>
             <div className="flex">
@@ -253,14 +253,14 @@ export default function DateRangePicker({
                     type="button"
                     onClick={open}
                     aria-haspopup="dialog"
-                    className={`inline-flex min-h-10 items-center gap-2 border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm whitespace-nowrap focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
+                    className={`inline-flex min-h-10 items-center gap-2 border border-ink/15 bg-surface px-3 py-2 text-sm whitespace-nowrap focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none ${
                         hasValue
-                            ? 'rounded-l-lg text-[#1F2A24]'
-                            : 'rounded-lg text-[#1F2A24]/60'
+                            ? 'rounded-l-lg text-ink'
+                            : 'rounded-lg text-ink/60'
                     }`}
                 >
                     <CalendarDays
-                        className="h-4 w-4 text-[#1F2A24]/50"
+                        className="h-4 w-4 text-ink/50"
                         aria-hidden="true"
                     />
                     {summary}
@@ -270,7 +270,7 @@ export default function DateRangePicker({
                         type="button"
                         onClick={() => commit({ from: '', to: '' })}
                         aria-label="Clear date range"
-                        className="inline-flex min-h-10 items-center rounded-r-lg border border-l-0 border-[#1F2A24]/15 bg-white px-2 text-[#1F2A24]/50 hover:text-[#1F2A24] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                        className="inline-flex min-h-10 items-center rounded-r-lg border border-l-0 border-ink/15 bg-surface px-2 text-ink/50 hover:text-ink focus:ring-2 focus:ring-brand/30 focus:outline-none"
                     >
                         <X className="h-4 w-4" aria-hidden="true" />
                     </button>
@@ -278,13 +278,13 @@ export default function DateRangePicker({
             </div>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 sm:max-w-fit">
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-5 py-4 pr-12 text-left">
-                        <DialogTitle className="font-serif text-lg text-[#1F2A24]">
+                <DialogContent className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 sm:max-w-fit">
+                    <DialogHeader className="border-b border-ink/10 px-5 py-4 pr-12 text-left">
+                        <DialogTitle className="font-serif text-lg text-ink">
                             Choose a date range
                         </DialogTitle>
                         <DialogDescription
-                            className="text-sm text-[#1F2A24]/60"
+                            className="text-sm text-ink/60"
                             aria-live="polite"
                         >
                             {pickingEnd
@@ -294,13 +294,13 @@ export default function DateRangePicker({
                     </DialogHeader>
 
                     <div className="flex flex-col sm:flex-row">
-                        <ul className="flex gap-1 overflow-x-auto border-b border-[#1F2A24]/10 p-2 sm:flex-col sm:border-r sm:border-b-0">
+                        <ul className="flex gap-1 overflow-x-auto border-b border-ink/10 p-2 sm:flex-col sm:border-r sm:border-b-0">
                             {presets(today).map((preset) => (
                                 <li key={preset.label}>
                                     <button
                                         type="button"
                                         onClick={() => commit(preset.range)}
-                                        className="min-h-9 w-full rounded-lg px-3 text-left text-sm whitespace-nowrap text-[#1F2A24]/80 hover:bg-[#2F6F4E]/5 hover:text-[#2F6F4E]"
+                                        className="min-h-9 w-full rounded-lg px-3 text-left text-sm whitespace-nowrap text-ink/80 hover:bg-brand/5 hover:text-brand-ink"
                                     >
                                         {preset.label}
                                     </button>
@@ -315,7 +315,7 @@ export default function DateRangePicker({
                                     setViewMonth((m) => addMonths(m, -1))
                                 }
                                 aria-label="Previous month"
-                                className="absolute top-4 left-4 inline-flex h-7 w-7 items-center justify-center rounded-full text-[#1F2A24]/60 hover:bg-[#1F2A24]/5"
+                                className="absolute top-4 left-4 inline-flex h-7 w-7 items-center justify-center rounded-full text-ink/60 hover:bg-ink/5"
                             >
                                 <ChevronLeft
                                     className="h-4 w-4"
@@ -331,7 +331,7 @@ export default function DateRangePicker({
                                 // always reachable, even on phones (one month shown).
                                 disabled={viewMonth >= addMonths(today, 0)}
                                 aria-label="Next month"
-                                className="absolute top-4 right-4 inline-flex h-7 w-7 items-center justify-center rounded-full text-[#1F2A24]/60 hover:bg-[#1F2A24]/5 disabled:cursor-not-allowed disabled:opacity-30"
+                                className="absolute top-4 right-4 inline-flex h-7 w-7 items-center justify-center rounded-full text-ink/60 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"
                             >
                                 <ChevronRight
                                     className="h-4 w-4"
@@ -367,12 +367,12 @@ export default function DateRangePicker({
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#1F2A24]/10 px-5 py-3">
+                    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-ink/10 px-5 py-3">
                         {hasValue && (
                             <button
                                 type="button"
                                 onClick={() => commit({ from: '', to: '' })}
-                                className="min-h-10 rounded-full px-4 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                                className="min-h-10 rounded-full px-4 text-sm font-medium text-ink/60 hover:text-ink"
                             >
                                 Clear dates
                             </button>
@@ -380,7 +380,7 @@ export default function DateRangePicker({
                         <DialogClose asChild>
                             <button
                                 type="button"
-                                className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                                className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink hover:bg-ink/5"
                             >
                                 Cancel
                             </button>

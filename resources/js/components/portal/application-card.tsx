@@ -28,9 +28,9 @@ function PaymentProgress({
 
     return (
         <div className="mt-3">
-            <div className="flex items-baseline justify-between gap-2 text-xs text-[#1F2A24]/70">
+            <div className="flex items-baseline justify-between gap-2 text-xs text-ink/70">
                 <span>
-                    <span className="font-semibold text-[#1F2A24] tabular-nums">
+                    <span className="font-semibold text-ink tabular-nums">
                         {formatCurrency(paid)}
                     </span>{' '}
                     paid of{' '}
@@ -46,10 +46,10 @@ function PaymentProgress({
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={percentage}
-                className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/10"
             >
                 <div
-                    className="h-full rounded-full bg-[#2F6F4E] transition-[width] duration-500"
+                    className="h-full rounded-full bg-brand transition-[width] duration-500"
                     style={{ width: `${percentage}%` }}
                 />
             </div>
@@ -61,12 +61,12 @@ const INSTALLMENT_STATUS: Record<
     PortalInstallment['status'],
     { label: string; className: string }
 > = {
-    UNPAID: { label: 'Unpaid', className: 'bg-[#1F2A24]/5 text-[#1F2A24]/70' },
+    UNPAID: { label: 'Unpaid', className: 'bg-ink/5 text-ink/70' },
     PARTIALLY_PAID: {
         label: 'Partially paid',
-        className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+        className: 'bg-warn/15 text-warn-ink',
     },
-    PAID: { label: 'Paid', className: 'bg-[#2F6F4E]/10 text-[#2F6F4E]' },
+    PAID: { label: 'Paid', className: 'bg-brand/10 text-brand-ink' },
 };
 
 /**
@@ -83,15 +83,15 @@ function InstallmentSchedule({
     }
 
     return (
-        <details className="group mt-3 rounded-lg border border-[#1F2A24]/10 bg-white">
-            <summary className="flex min-h-11 cursor-pointer items-center justify-between px-3 text-sm font-medium text-[#1F2A24]">
+        <details className="group mt-3 rounded-lg border border-ink/10 bg-surface">
+            <summary className="flex min-h-11 cursor-pointer items-center justify-between px-3 text-sm font-medium text-ink">
                 Installments
-                <span className="text-xs text-[#1F2A24]/60">
+                <span className="text-xs text-ink/60">
                     {installments.filter((i) => i.status === 'PAID').length} of{' '}
                     {installments.length} paid
                 </span>
             </summary>
-            <ol className="divide-y divide-[#1F2A24]/5 border-t border-[#1F2A24]/10">
+            <ol className="divide-y divide-ink/5 border-t border-ink/10">
                 {installments.map((installment) => {
                     const status = INSTALLMENT_STATUS[installment.status];
 
@@ -100,7 +100,7 @@ function InstallmentSchedule({
                             key={installment.id}
                             className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
                         >
-                            <span className="text-[#1F2A24]/80">
+                            <span className="text-ink/80">
                                 #{installment.installment_number} · Due{' '}
                                 {new Date(
                                     installment.due_date,
@@ -111,7 +111,7 @@ function InstallmentSchedule({
                                 })}
                             </span>
                             <span className="flex items-center gap-2">
-                                <span className="font-medium text-[#1F2A24] tabular-nums">
+                                <span className="font-medium text-ink tabular-nums">
                                     {formatCurrency(installment.amount_due)}
                                 </span>
                                 <span
@@ -131,8 +131,8 @@ function InstallmentSchedule({
 function Detail({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div>
-            <dt className="text-xs text-[#1F2A24]/65">{label}</dt>
-            <dd className="text-sm text-[#1F2A24]">{children}</dd>
+            <dt className="text-xs text-ink/65">{label}</dt>
+            <dd className="text-sm text-ink">{children}</dd>
         </div>
     );
 }
@@ -169,17 +169,17 @@ export default function ApplicationCard({
     return (
         <article
             aria-labelledby={`application-${enrollment.id}-title`}
-            className={`rounded-xl border border-[#1F2A24]/10 bg-white p-5 shadow-sm ${isCancelled ? 'opacity-75' : ''}`}
+            className={`rounded-xl border border-ink/10 bg-surface p-5 shadow-sm ${isCancelled ? 'opacity-75' : ''}`}
         >
             <header className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                     <h3
                         id={`application-${enrollment.id}-title`}
-                        className="font-semibold text-[#1F2A24]"
+                        className="font-semibold text-ink"
                     >
                         {studentName(enrollment)}
                     </h3>
-                    <p className="text-sm text-[#1F2A24]/70">
+                    <p className="text-sm text-ink/70">
                         {enrollment.grade_level.name} · SY{' '}
                         {enrollment.school_year} · Ref.{' '}
                         <span className="tabular-nums">#{enrollment.id}</span>
@@ -194,7 +194,7 @@ export default function ApplicationCard({
                 </div>
             )}
 
-            <dl className="mt-4 grid grid-cols-1 gap-3 border-t border-[#1F2A24]/10 pt-4 sm:grid-cols-3">
+            <dl className="mt-4 grid grid-cols-1 gap-3 border-t border-ink/10 pt-4 sm:grid-cols-3">
                 <Detail label="Grade Level">
                     {enrollment.grade_level.name}
                 </Detail>
@@ -204,7 +204,7 @@ export default function ApplicationCard({
                 </Detail>
                 <Detail label="LRN">
                     {enrollment.student.lrn ?? (
-                        <span className="text-[#1F2A24]/65 italic">
+                        <span className="text-ink/65 italic">
                             Not yet assigned
                         </span>
                     )}
@@ -212,8 +212,8 @@ export default function ApplicationCard({
             </dl>
 
             {showRejection && (
-                <div className="mt-4 rounded-lg border border-[#C6473B]/20 bg-[#C6473B]/5 p-4 text-sm text-[#1F2A24]">
-                    <p className="font-medium text-[#A83A30]">
+                <div className="mt-4 rounded-lg border border-danger/20 bg-danger/5 p-4 text-sm text-ink">
+                    <p className="font-medium text-danger-alert">
                         Why this application was not approved
                     </p>
                     {enrollment.rejection_details.length > 0 && (
@@ -240,30 +240,30 @@ export default function ApplicationCard({
             )}
 
             {!isCancelled && (
-                <div className="mt-4 border-t border-[#1F2A24]/10 pt-4">
+                <div className="mt-4 border-t border-ink/10 pt-4">
                     {!isApproved && (
-                        <p className="text-sm text-[#1F2A24]/65">
+                        <p className="text-sm text-ink/65">
                             Tuition payment will be available here once your
                             application is approved.
                         </p>
                     )}
 
                     {isApproved && billing && !isFullyPaid && (
-                        <div className="rounded-lg bg-[#2F6F4E]/5 p-4">
+                        <div className="rounded-lg bg-brand/5 p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex gap-3">
                                     <PartyPopper
-                                        className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                                        className="mt-0.5 h-5 w-5 shrink-0 text-brand-ink"
                                         aria-hidden="true"
                                     />
                                     <div>
-                                        <p className="text-sm font-medium text-[#1F2A24]">
+                                        <p className="text-sm font-medium text-ink">
                                             You're approved! You can now pay
                                             your tuition.
                                         </p>
-                                        <p className="text-sm text-[#1F2A24]/70">
+                                        <p className="text-sm text-ink/70">
                                             Remaining balance:{' '}
-                                            <span className="font-semibold text-[#2F6F4E] tabular-nums">
+                                            <span className="font-semibold text-brand-ink tabular-nums">
                                                 {formatCurrency(
                                                     billing.remaining,
                                                 )}
@@ -277,7 +277,7 @@ export default function ApplicationCard({
                                         setPaySession((n) => n + 1);
                                         setIsPaying(true);
                                     }}
-                                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F6F4E] px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-2 text-center text-sm font-semibold whitespace-nowrap text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                                 >
                                     Pay Tuition
                                 </button>
@@ -303,7 +303,7 @@ export default function ApplicationCard({
                     )}
 
                     {isApproved && isFullyPaid && (
-                        <div className="flex items-center gap-2 rounded-lg bg-[#2F6F4E]/5 p-4 text-sm font-medium text-[#2F6F4E]">
+                        <div className="flex items-center gap-2 rounded-lg bg-brand/5 p-4 text-sm font-medium text-brand-ink">
                             <CheckCircle2
                                 className="h-4 w-4 shrink-0"
                                 aria-hidden="true"
@@ -313,7 +313,7 @@ export default function ApplicationCard({
                     )}
 
                     {isApproved && !billing && (
-                        <p className="text-sm text-[#1F2A24]/65">
+                        <p className="text-sm text-ink/65">
                             Billing details aren't set up yet for this
                             enrollment. Please check back soon.
                         </p>
@@ -321,14 +321,14 @@ export default function ApplicationCard({
 
                     {isApproved && (
                         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="text-sm text-[#1F2A24]/70">
+                            <p className="text-sm text-ink/70">
                                 Your registration form was emailed to you when
                                 this application was approved.
                             </p>
                             {/* A plain link, since the browser downloads the PDF. */}
                             <a
                                 href={registrationFormShow(enrollment.id).url}
-                                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold whitespace-nowrap text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-brand/30 px-4 text-sm font-semibold whitespace-nowrap text-brand-ink transition-colors hover:bg-brand/5"
                             >
                                 <FileDown
                                     className="h-4 w-4"
@@ -342,11 +342,11 @@ export default function ApplicationCard({
             )}
 
             {!isCancelled && isPending && (
-                <div className="mt-4 border-t border-[#1F2A24]/10 pt-4 text-right">
+                <div className="mt-4 border-t border-ink/10 pt-4 text-right">
                     <button
                         type="button"
                         onClick={() => onCancel(enrollment)}
-                        className="min-h-10 rounded-full px-3 text-sm font-medium text-[#C6473B] transition-colors hover:bg-[#C6473B]/5"
+                        className="min-h-10 rounded-full px-3 text-sm font-medium text-danger-ink transition-colors hover:bg-danger/5"
                     >
                         Cancel Application
                     </button>

@@ -64,8 +64,8 @@ export type RecognitionOption = { value: string; label: string };
 
 const AWARD_STYLES: Record<AwardType, string> = {
     ACADEMIC_EXCELLENCE:
-        'bg-[#E8A33D]/20 text-[#7a4d0b] ring-1 ring-[#E8A33D]/40',
-    LEARNING_AREA_EXCELLENCE: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+        'bg-warn/20 text-warn-deep ring-1 ring-warn/40',
+    LEARNING_AREA_EXCELLENCE: 'bg-brand/10 text-brand-ink',
 };
 
 /** Mirrors IndexAwardRequest::matches(). */
@@ -120,7 +120,7 @@ function Recognition({ student }: { student: StudentStanding }) {
         <p
             className={cn(
                 'flex items-start gap-1.5 text-xs',
-                isIncomplete ? 'text-[#1F2A24]/60' : 'text-[#A3372D]',
+                isIncomplete ? 'text-ink/60' : 'text-danger-strong',
             )}
         >
             <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -140,10 +140,10 @@ function FinalGrades({ student }: { student: StudentStanding }) {
                         className={cn(
                             'rounded-md border px-2 py-1 text-xs',
                             grade === null
-                                ? 'border-dashed border-[#1F2A24]/20 text-[#1F2A24]/50'
+                                ? 'border-dashed border-ink/20 text-ink/50'
                                 : grade < 80
-                                  ? 'border-[#C6473B]/30 bg-[#C6473B]/5 text-[#A3372D]'
-                                  : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/80',
+                                  ? 'border-danger/30 bg-danger/5 text-danger-strong'
+                                  : 'border-ink/10 bg-surface text-ink/80',
                         )}
                     >
                         {learningArea}{' '}
@@ -165,16 +165,16 @@ function StudentRow({ student }: { student: StudentStanding }) {
         <li className="px-4 py-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                    <p className="font-medium text-[#1F2A24]">{student.name}</p>
-                    <p className="text-xs text-[#1F2A24]/60">
+                    <p className="font-medium text-ink">{student.name}</p>
+                    <p className="text-xs text-ink/60">
                         General average{' '}
                         <span
                             className={cn(
                                 'font-semibold tabular-nums',
                                 student.general_average !== null &&
                                     student.general_average >= 90
-                                    ? 'text-[#2F6F4E]'
-                                    : 'text-[#1F2A24]',
+                                    ? 'text-brand-ink'
+                                    : 'text-ink',
                             )}
                         >
                             {student.general_average ?? '—'}
@@ -185,8 +185,8 @@ function StudentRow({ student }: { student: StudentStanding }) {
                                 'font-semibold tabular-nums',
                                 student.lowest_final_grade !== null &&
                                     student.lowest_final_grade < 80
-                                    ? 'text-[#A3372D]'
-                                    : 'text-[#1F2A24]',
+                                    ? 'text-danger-strong'
+                                    : 'text-ink',
                             )}
                         >
                             {student.lowest_final_grade ?? '—'}
@@ -201,7 +201,7 @@ function StudentRow({ student }: { student: StudentStanding }) {
                     onClick={() => setIsOpen((open) => !open)}
                     aria-expanded={isOpen}
                     aria-controls={detailsId}
-                    className="inline-flex min-h-10 shrink-0 items-center gap-1 self-start rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                    className="inline-flex min-h-10 shrink-0 items-center gap-1 self-start rounded-full px-3 text-xs font-semibold text-brand-ink hover:bg-brand/5"
                 >
                     Grades
                     <ChevronDown
@@ -272,14 +272,14 @@ export default function AwardsDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-3xl">
-                <DialogHeader className="border-b border-[#1F2A24]/10 p-5 pr-12 text-left">
+            <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-3xl">
+                <DialogHeader className="border-b border-ink/10 p-5 pr-12 text-left">
                     <DialogTitle className="font-serif text-xl">
                         Academic awards
                         {awards &&
                             ` · ${awards.grade_level} · S.Y. ${awards.school_year}`}
                     </DialogTitle>
-                    <DialogDescription className="text-[#1F2A24]/65">
+                    <DialogDescription className="text-ink/65">
                         Worked out from every subject's grade sheet under DepEd
                         Order No. 015, s. 2026. Awardees are listed
                         alphabetically, not ranked.
@@ -297,7 +297,7 @@ export default function AwardsDialog({
                             return (
                                 <div
                                     key={award.type}
-                                    className="flex gap-2.5 rounded-xl border border-[#1F2A24]/10 p-3"
+                                    className="flex gap-2.5 rounded-xl border border-ink/10 p-3"
                                 >
                                     <span
                                         aria-hidden="true"
@@ -309,10 +309,10 @@ export default function AwardsDialog({
                                         <Icon className="h-4 w-4" />
                                     </span>
                                     <div>
-                                        <p className="text-sm font-semibold text-[#1F2A24]">
+                                        <p className="text-sm font-semibold text-ink">
                                             {award.label}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/70">
+                                        <p className="text-xs text-ink/70">
                                             {award.criteria}
                                         </p>
                                     </div>
@@ -323,7 +323,7 @@ export default function AwardsDialog({
 
                     <p
                         role="note"
-                        className="mb-4 flex items-start gap-2 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2 text-xs text-[#7a4d0b]"
+                        className="mb-4 flex items-start gap-2 rounded-xl border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn-deep"
                     >
                         <Info
                             className="mt-0.5 h-3.5 w-3.5 shrink-0"
@@ -343,7 +343,7 @@ export default function AwardsDialog({
                     {awards === undefined || isLoading ? (
                         <div
                             role="status"
-                            className="flex items-center justify-center gap-2 py-12 text-sm text-[#1F2A24]/65"
+                            className="flex items-center justify-center gap-2 py-12 text-sm text-ink/65"
                         >
                             <Loader2
                                 className="h-5 w-5 animate-spin"
@@ -366,7 +366,7 @@ export default function AwardsDialog({
                                     onChange={(e) =>
                                         setRecognition(e.target.value)
                                     }
-                                    className="min-h-11 rounded-lg border border-[#2F6F4E]/40 bg-[#2F6F4E]/5 px-3 py-2 text-sm font-medium text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                    className="min-h-11 rounded-lg border border-brand/40 bg-brand/5 px-3 py-2 text-sm font-medium text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                                 >
                                     {recognitionOptions.map((option) => (
                                         <option
@@ -392,7 +392,7 @@ export default function AwardsDialog({
                                     })}
                                     target="_blank"
                                     rel="noopener"
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E]"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep"
                                 >
                                     <Printer
                                         className="h-4 w-4"
@@ -403,24 +403,24 @@ export default function AwardsDialog({
                             </div>
 
                             {shown.length === 0 ? (
-                                <div className="flex flex-col items-center rounded-xl border border-dashed border-[#1F2A24]/15 px-6 py-10 text-center">
+                                <div className="flex flex-col items-center rounded-xl border border-dashed border-ink/15 px-6 py-10 text-center">
                                     <Users
-                                        className="h-8 w-8 text-[#2F6F4E]/60"
+                                        className="h-8 w-8 text-brand-ink/60"
                                         aria-hidden="true"
                                     />
-                                    <p className="mt-2 font-medium text-[#1F2A24]">
+                                    <p className="mt-2 font-medium text-ink">
                                         {awards.summary.students === 0
                                             ? `No approved ${awards.grade_level} students this school year`
                                             : 'No students match this filter'}
                                     </p>
-                                    <p className="mt-1 max-w-md text-sm text-[#1F2A24]/65">
+                                    <p className="mt-1 max-w-md text-sm text-ink/65">
                                         {awards.summary.incomplete > 0
                                             ? 'Some grades are still incomplete. Recognitions appear as teachers finish their grade sheets.'
                                             : 'Try another recognition.'}
                                     </p>
                                 </div>
                             ) : (
-                                <ul className="divide-y divide-[#1F2A24]/10 rounded-xl border border-[#1F2A24]/10">
+                                <ul className="divide-y divide-ink/10 rounded-xl border border-ink/10">
                                     {shown.map((student) => (
                                         <StudentRow
                                             key={student.enrollment_id}
@@ -433,8 +433,8 @@ export default function AwardsDialog({
                     )}
                 </div>
 
-                <div className="flex items-center justify-between gap-2 border-t border-[#1F2A24]/10 p-4">
-                    <p aria-live="polite" className="text-sm text-[#1F2A24]/65">
+                <div className="flex items-center justify-between gap-2 border-t border-ink/10 p-4">
+                    <p aria-live="polite" className="text-sm text-ink/65">
                         {awards
                             ? shown.length === 1
                                 ? '1 student shown'
@@ -444,7 +444,7 @@ export default function AwardsDialog({
                     <button
                         type="button"
                         onClick={() => onOpenChange(false)}
-                        className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                        className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                     >
                         Close
                     </button>

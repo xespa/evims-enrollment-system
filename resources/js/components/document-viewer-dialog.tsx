@@ -142,15 +142,15 @@ export default function DocumentViewerDialog({
     };
 
     const toolbarButton =
-        'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 hover:text-[#1F2A24] disabled:cursor-not-allowed disabled:opacity-40';
+        'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full text-ink/75 transition-colors hover:bg-ink/5 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40';
 
     return (
         <Dialog open={open} onOpenChange={close}>
             <DialogContent
                 onKeyDown={handleKeyDown}
-                className="flex h-[90vh] flex-col gap-0 overflow-hidden rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-4xl"
+                className="flex h-[90vh] flex-col gap-0 overflow-hidden rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-4xl"
             >
-                <DialogHeader className="flex flex-row flex-wrap items-center justify-between gap-2 border-b border-[#1F2A24]/10 px-4 py-3 pr-12 text-left">
+                <DialogHeader className="flex flex-row flex-wrap items-center justify-between gap-2 border-b border-ink/10 px-4 py-3 pr-12 text-left">
                     <DialogTitle className="font-serif text-lg font-semibold">
                         {title}
                     </DialogTitle>
@@ -176,7 +176,7 @@ export default function DocumentViewerDialog({
                                     />
                                 </button>
                                 <span
-                                    className="w-12 text-center text-xs text-[#1F2A24]/70 tabular-nums"
+                                    className="w-12 text-center text-xs text-ink/70 tabular-nums"
                                     aria-live="polite"
                                 >
                                     {Math.round(scale * 100)}%
@@ -224,7 +224,7 @@ export default function DocumentViewerDialog({
                         <a
                             href={url}
                             download={downloadName(title, url)}
-                            className="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                            className="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-xs font-semibold text-white transition-colors hover:bg-brand-deep"
                         >
                             <Download className="h-4 w-4" aria-hidden="true" />
                             Download
@@ -236,7 +236,7 @@ export default function DocumentViewerDialog({
                     <iframe
                         src={url}
                         title={title}
-                        className="min-h-0 flex-1 bg-[#1F2A24]/5"
+                        className="min-h-0 flex-1 bg-ink/5"
                     />
                 ) : (
                     <div
@@ -248,7 +248,7 @@ export default function DocumentViewerDialog({
                         onDoubleClick={() =>
                             zoomTo(scale > MIN_SCALE ? MIN_SCALE : 2.5)
                         }
-                        className={`flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden bg-[#1F2A24]/5 select-none ${scale > MIN_SCALE ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
+                        className={`flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden bg-ink/5 select-none ${scale > MIN_SCALE ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
                     >
                         <img
                             src={url}

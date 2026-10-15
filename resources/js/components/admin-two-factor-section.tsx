@@ -40,10 +40,10 @@ function CopyButton({ text, label }: { text: string; label: string }) {
         <button
             type="button"
             onClick={copy}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white px-3 text-xs font-semibold text-[#1F2A24]/75 hover:bg-[#1F2A24]/5"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-ink/15 bg-surface px-3 text-xs font-semibold text-ink/75 hover:bg-ink/5"
         >
             {isCopied ? (
-                <Check className="size-3.5 text-[#2F6F4E]" aria-hidden="true" />
+                <Check className="size-3.5 text-brand-ink" aria-hidden="true" />
             ) : (
                 <Copy className="size-3.5" aria-hidden="true" />
             )}
@@ -53,9 +53,9 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 }
 
 const primaryButton =
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50';
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50';
 const secondaryButton =
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-5 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 disabled:opacity-50';
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-ink/15 bg-surface px-5 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5 disabled:opacity-50';
 
 /**
  * Turning two-factor authentication on (scan, then confirm a code), and
@@ -134,7 +134,7 @@ export default function AdminTwoFactorSection({
             <div className="space-y-5 px-6 py-5">
                 {twoFactor.isEnabled && (
                     <>
-                        <p className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-sm font-semibold text-[#2F6F4E]">
+                        <p className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-sm font-semibold text-brand-ink">
                             <ShieldCheck
                                 className="size-4"
                                 aria-hidden="true"
@@ -142,17 +142,17 @@ export default function AdminTwoFactorSection({
                             On
                         </p>
 
-                        <div className="rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-4">
+                        <div className="rounded-xl border border-ink/10 bg-cream p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1F2A24]">
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
                                         <KeyRound
                                             className="size-4"
                                             aria-hidden="true"
                                         />
                                         Recovery codes
                                     </h3>
-                                    <p className="mt-0.5 text-sm text-[#1F2A24]/70">
+                                    <p className="mt-0.5 text-sm text-ink/70">
                                         Each one signs you in once if you lose
                                         your phone. Keep them somewhere safe.
                                     </p>
@@ -166,7 +166,7 @@ export default function AdminTwoFactorSection({
                             </div>
 
                             {recoveryCodes && recoveryCodes.length > 0 ? (
-                                <ul className="mt-3 grid gap-1.5 rounded-lg bg-white p-3 font-mono text-sm text-[#1F2A24] sm:grid-cols-2">
+                                <ul className="mt-3 grid gap-1.5 rounded-lg bg-surface p-3 font-mono text-sm text-ink sm:grid-cols-2">
                                     {recoveryCodes.map((code) => (
                                         <li key={code}>{code}</li>
                                     ))}
@@ -201,7 +201,7 @@ export default function AdminTwoFactorSection({
                                     type="button"
                                     onClick={turnOff}
                                     disabled={isBusy}
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#C6473B]/40 bg-white px-5 text-sm font-semibold text-[#A3372D] transition-colors hover:bg-[#C6473B]/5 disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-danger/40 bg-surface px-5 text-sm font-semibold text-danger-strong transition-colors hover:bg-danger/5 disabled:opacity-50"
                                 >
                                     <ShieldOff
                                         className="size-4"
@@ -212,7 +212,7 @@ export default function AdminTwoFactorSection({
                             )}
                         </div>
                         {twoFactor.isRequired && (
-                            <p className="text-xs text-[#1F2A24]/60">
+                            <p className="text-xs text-ink/60">
                                 Two-factor authentication is required for your
                                 role, so it can't be turned off.
                             </p>
@@ -223,10 +223,10 @@ export default function AdminTwoFactorSection({
                 {twoFactor.isPending && (
                     <ol className="space-y-5">
                         <li>
-                            <p className="text-sm font-semibold text-[#1F2A24]">
+                            <p className="text-sm font-semibold text-ink">
                                 1. Scan this code with your authenticator app
                             </p>
-                            <p className="mt-0.5 text-sm text-[#1F2A24]/70">
+                            <p className="mt-0.5 text-sm text-ink/70">
                                 For example Google Authenticator or Microsoft
                                 Authenticator.
                             </p>
@@ -235,7 +235,7 @@ export default function AdminTwoFactorSection({
                                     <div
                                         role="img"
                                         aria-label="QR code for your authenticator app"
-                                        className="w-fit rounded-xl border border-[#1F2A24]/10 bg-white p-3 [&_svg]:size-44"
+                                        className="w-fit rounded-xl border border-ink/10 bg-surface p-3 [&_svg]:size-44"
                                         // Generated on the server from the account's own secret.
                                         dangerouslySetInnerHTML={{
                                             __html: twoFactor.qrCodeSvg,
@@ -244,11 +244,11 @@ export default function AdminTwoFactorSection({
                                 )}
                                 {twoFactor.setupKey && (
                                     <div className="min-w-0">
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-ink/60">
                                             Can't scan it? Enter this key
                                             instead:
                                         </p>
-                                        <p className="mt-1 font-mono text-sm break-all text-[#1F2A24]">
+                                        <p className="mt-1 font-mono text-sm break-all text-ink">
                                             {twoFactor.setupKey}
                                         </p>
                                         <div className="mt-2">
@@ -265,7 +265,7 @@ export default function AdminTwoFactorSection({
                             <form onSubmit={submitCode} noValidate>
                                 <label
                                     htmlFor="two-factor-code"
-                                    className="text-sm font-semibold text-[#1F2A24]"
+                                    className="text-sm font-semibold text-ink"
                                 >
                                     2. Enter the 6-digit code it shows
                                 </label>
@@ -290,7 +290,7 @@ export default function AdminTwoFactorSection({
                                                 ? 'two-factor-code-error'
                                                 : undefined
                                         }
-                                        className="min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-center font-mono text-lg tracking-[0.4em] text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] sm:w-44"
+                                        className="min-h-11 w-full rounded-lg border border-ink/15 bg-surface px-3 text-center font-mono text-lg tracking-[0.4em] text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger sm:w-44"
                                     />
                                     <button
                                         type="submit"
@@ -321,7 +321,7 @@ export default function AdminTwoFactorSection({
                                     <p
                                         id="two-factor-code-error"
                                         role="alert"
-                                        className="mt-1.5 text-xs text-[#C6473B]"
+                                        className="mt-1.5 text-xs text-danger-ink"
                                     >
                                         {confirmForm.errors.code}
                                     </p>
@@ -333,7 +333,7 @@ export default function AdminTwoFactorSection({
 
                 {!twoFactor.isEnabled && !twoFactor.isPending && (
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm text-[#1F2A24]/75">
+                        <p className="text-sm text-ink/75">
                             Off. Even if someone learns your password, they
                             won't be able to sign in without your phone.
                         </p>

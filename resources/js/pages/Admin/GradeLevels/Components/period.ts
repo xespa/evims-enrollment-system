@@ -36,17 +36,17 @@ export function periodStatus(period: EnrollmentPeriod, today: string) {
     if (today < period.opens_on) {
         return {
             label: `Opens ${inDays(daysBetween(today, period.opens_on))}`,
-            tone: 'bg-[#E8A33D]/15 text-[#a4670f]',
+            tone: 'bg-warn/15 text-warn-ink',
         };
     }
 
     if (today > period.closes_on) {
-        return { label: 'Closed', tone: 'bg-[#C6473B]/10 text-[#9A3329]' };
+        return { label: 'Closed', tone: 'bg-danger/10 text-danger-deep' };
     }
 
     return {
         // The closing date is the last day applications are taken.
         label: `Open · last day ${inDays(daysBetween(today, period.closes_on))}`,
-        tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+        tone: 'bg-brand/10 text-brand-ink',
     };
 }

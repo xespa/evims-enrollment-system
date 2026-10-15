@@ -82,25 +82,25 @@ export default function InstallmentsDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-lg">
-                <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-lg">
+                <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                     <DialogTitle className="font-serif text-xl font-semibold">
                         Installments · {studentName}
                     </DialogTitle>
-                    <DialogDescription className="text-sm text-[#1F2A24]/70">
+                    <DialogDescription className="text-sm text-ink/70">
                         Paid{' '}
-                        <span className="font-semibold text-[#2F6F4E] tabular-nums">
+                        <span className="font-semibold text-brand-ink tabular-nums">
                             {formatCurrency(totalPaid)}
                         </span>{' '}
                         of{' '}
-                        <span className="font-semibold text-[#1F2A24] tabular-nums">
+                        <span className="font-semibold text-ink tabular-nums">
                             {formatCurrency(totalDue)}
                         </span>{' '}
                         · Pays with {channelLabel}
                     </DialogDescription>
                 </DialogHeader>
 
-                <ol className="divide-y divide-[#1F2A24]/10 px-6">
+                <ol className="divide-y divide-ink/10 px-6">
                     {installments.map((installment) => {
                         const status = STATUS[installment.status];
 
@@ -112,7 +112,7 @@ export default function InstallmentsDialog({
                                             Installment #
                                             {installment.installment_number}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-ink/60">
                                             Due{' '}
                                             {formatShortDate(
                                                 installment.due_date,
@@ -122,7 +122,7 @@ export default function InstallmentsDialog({
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm tabular-nums">
                                             {formatCurrency(installment.paid)}{' '}
-                                            <span className="text-[#1F2A24]/55">
+                                            <span className="text-ink/55">
                                                 /{' '}
                                                 {formatCurrency(
                                                     installment.amount_due,
@@ -147,7 +147,7 @@ export default function InstallmentsDialog({
                                                         )
                                                     }
                                                     title={`Record a counter payment that settles up to installment #${installment.installment_number}`}
-                                                    className="inline-flex min-h-8 items-center gap-1 rounded-full border border-[#2F6F4E]/30 px-2.5 text-xs font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                                    className="inline-flex min-h-8 items-center gap-1 rounded-full border border-brand/30 px-2.5 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand/5"
                                                 >
                                                     <Plus
                                                         className="h-3.5 w-3.5"
@@ -160,7 +160,7 @@ export default function InstallmentsDialog({
                                 </div>
 
                                 {installment.payments.length > 0 && (
-                                    <ul className="mt-2 space-y-1 rounded-lg bg-[#1F2A24]/[0.03] px-3 py-2">
+                                    <ul className="mt-2 space-y-1 rounded-lg bg-ink/[0.03] px-3 py-2">
                                         {installment.payments.map((payment) => {
                                             const isVoided =
                                                 payment.status === 'VOIDED';
@@ -169,7 +169,7 @@ export default function InstallmentsDialog({
                                                 <li
                                                     key={payment.id}
                                                     className={cn(
-                                                        'flex flex-wrap justify-between gap-x-3 text-xs text-[#1F2A24]/75',
+                                                        'flex flex-wrap justify-between gap-x-3 text-xs text-ink/75',
                                                         isVoided &&
                                                             'line-through opacity-60',
                                                     )}
@@ -200,19 +200,19 @@ export default function InstallmentsDialog({
                     })}
                 </ol>
 
-                <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#1F2A24]/10 px-6 py-4">
+                <div className="flex flex-wrap items-center justify-end gap-3 border-t border-ink/10 px-6 py-4">
                     {onRecordPayment && (
                         <button
                             type="button"
                             onClick={() => onRecordPayment()}
-                            className="min-h-9 rounded-full bg-[#2F6F4E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#25573E]"
+                            className="min-h-9 rounded-full bg-brand px-4 text-xs font-semibold text-white transition-colors hover:bg-brand-deep"
                         >
                             Record counter payment
                         </button>
                     )}
                     <Link
                         href={enrollmentShow(enrollmentId).url}
-                        className="text-sm font-semibold text-[#2F6F4E] hover:underline"
+                        className="text-sm font-semibold text-brand-ink hover:underline"
                     >
                         Open application
                     </Link>

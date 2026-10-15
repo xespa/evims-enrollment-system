@@ -9,7 +9,7 @@ export default function AuthSimpleLayout({
 }: AuthLayoutProps) {
     return (
         // The staff sign-in screens are designed light-only.
-        <div className="theme-light flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FBF8F2] px-4 py-12 sm:py-16">
+        <div className="theme-light flex min-h-screen flex-col items-center justify-center gap-6 bg-cream px-4 py-12 sm:py-16">
             <div className="w-full max-w-md">
                 <div className="mb-6 text-center">
                     <Link
@@ -25,18 +25,18 @@ export default function AuthSimpleLayout({
                     </Link>
 
                     {title && (
-                        <h1 className="mt-3 font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
+                        <h1 className="mt-3 font-serif text-2xl font-semibold text-ink sm:text-3xl">
                             {title}
                         </h1>
                     )}
                     {description && (
-                        <p className="mt-1 text-sm text-[#1F2A24]/70">
+                        <p className="mt-1 text-sm text-ink/70">
                             {description}
                         </p>
                     )}
                 </div>
 
-                <div className="rounded-[2rem] border border-[#1F2A24]/10 bg-white p-6 shadow-xl shadow-[#1F2A24]/5 sm:p-8">
+                <div className="rounded-[2rem] border border-ink/10 bg-surface p-6 shadow-xl shadow-shade/5 sm:p-8">
                     {children}
                 </div>
             </div>

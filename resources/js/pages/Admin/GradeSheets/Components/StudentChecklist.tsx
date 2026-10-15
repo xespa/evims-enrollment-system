@@ -47,11 +47,11 @@ export default function StudentChecklist({
 
     return (
         <div>
-            <div className="space-y-2 border-b border-[#1F2A24]/10 pb-2">
+            <div className="space-y-2 border-b border-ink/10 pb-2">
                 {students.length > 8 && (
                     <div className="relative">
                         <Search
-                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                             aria-hidden="true"
                         />
                         <input
@@ -60,11 +60,11 @@ export default function StudentChecklist({
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search by name or LRN"
                             aria-label="Search students"
-                            className="min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white py-2 pr-3 pl-9 text-base text-[#1F2A24] placeholder-[#1F2A24]/40 focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:text-sm"
+                            className="min-h-10 w-full rounded-lg border border-ink/15 bg-surface py-2 pr-3 pl-9 text-base text-ink placeholder-ink/40 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none sm:text-sm"
                         />
                     </div>
                 )}
-                <label className="flex min-h-10 cursor-pointer items-center gap-3 rounded-lg px-1 text-sm font-semibold text-[#1F2A24]">
+                <label className="flex min-h-10 cursor-pointer items-center gap-3 rounded-lg px-1 text-sm font-semibold text-ink">
                     <input
                         type="checkbox"
                         checked={allSelected}
@@ -75,7 +75,7 @@ export default function StudentChecklist({
                             }
                         }}
                         onChange={toggleAll}
-                        className="h-4 w-4 accent-[#2F6F4E]"
+                        className="h-4 w-4 accent-brand"
                     />
                     Select all ({students.length})
                 </label>
@@ -84,12 +84,12 @@ export default function StudentChecklist({
             <ul
                 aria-label="Students"
                 className={cn(
-                    'divide-y divide-[#1F2A24]/5 overflow-y-auto',
+                    'divide-y divide-ink/5 overflow-y-auto',
                     listClassName,
                 )}
             >
                 {visibleStudents.length === 0 ? (
-                    <li className="py-6 text-center text-sm text-[#1F2A24]/60">
+                    <li className="py-6 text-center text-sm text-ink/60">
                         No student matches "{search}".
                     </li>
                 ) : (
@@ -104,13 +104,13 @@ export default function StudentChecklist({
                                     onChange={() =>
                                         toggle(student.enrollment_id)
                                     }
-                                    className="h-4 w-4 accent-[#2F6F4E]"
+                                    className="h-4 w-4 accent-brand"
                                 />
                                 <span className="min-w-0">
-                                    <span className="block truncate text-sm font-medium text-[#1F2A24]">
+                                    <span className="block truncate text-sm font-medium text-ink">
                                         {student.name}
                                     </span>
-                                    <span className="block text-xs text-[#1F2A24]/55">
+                                    <span className="block text-xs text-ink/55">
                                         {student.lrn
                                             ? `LRN ${student.lrn}`
                                             : 'No LRN yet'}

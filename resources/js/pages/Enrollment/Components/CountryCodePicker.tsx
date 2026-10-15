@@ -136,14 +136,14 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 aria-label={`${label} country code: ${country.name} +${country.code}. Change`}
-                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-l-lg border-r border-[#1F2A24]/15 bg-[#1F2A24]/[0.04] pr-2.5 pl-3 text-sm font-medium text-[#1F2A24] tabular-nums transition-colors hover:bg-[#2F6F4E]/10 focus-visible:bg-[#2F6F4E]/10 focus-visible:outline-none"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-l-lg border-r border-ink/15 bg-ink/[0.04] pr-2.5 pl-3 text-sm font-medium text-ink tabular-nums transition-colors hover:bg-brand/10 focus-visible:bg-brand/10 focus-visible:outline-none"
             >
-                <span className="rounded bg-[#2F6F4E]/10 px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-[#2F6F4E]">
+                <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[11px] font-semibold tracking-wide text-brand-ink">
                     {country.iso}
                 </span>
                 <span>+{country.code}</span>
                 <ChevronDown
-                    className={`h-4 w-4 text-[#1F2A24]/55 transition-transform duration-150 motion-reduce:transition-none ${
+                    className={`h-4 w-4 text-ink/55 transition-transform duration-150 motion-reduce:transition-none ${
                         isOpen ? 'rotate-180' : ''
                     }`}
                     aria-hidden="true"
@@ -151,10 +151,10 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full right-0 left-0 z-30 mt-1.5 overflow-hidden rounded-xl border border-[#1F2A24]/10 bg-white shadow-xl shadow-[#1F2A24]/10 sm:right-auto sm:w-80">
-                    <div className="relative border-b border-[#1F2A24]/10">
+                <div className="absolute top-full right-0 left-0 z-30 mt-1.5 overflow-hidden rounded-xl border border-ink/10 bg-surface shadow-xl shadow-shade/10 sm:right-auto sm:w-80">
+                    <div className="relative border-b border-ink/10">
                         <Search
-                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/45"
+                            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/45"
                             aria-hidden="true"
                         />
                         <input
@@ -174,7 +174,7 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
                             aria-label="Search country or code"
                             placeholder="Search country or code"
                             autoComplete="off"
-                            className="min-h-11 w-full bg-transparent py-2 pr-3 pl-9 text-base text-[#1F2A24] placeholder-[#1F2A24]/45 focus:outline-none sm:text-sm"
+                            className="min-h-11 w-full bg-transparent py-2 pr-3 pl-9 text-base text-ink placeholder-ink/45 focus:outline-none sm:text-sm"
                         />
                     </div>
 
@@ -186,7 +186,7 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
                         className="max-h-64 overflow-y-auto overscroll-contain py-1"
                     >
                         {results.length === 0 && (
-                            <li className="px-4 py-6 text-center text-sm text-[#1F2A24]/60">
+                            <li className="px-4 py-6 text-center text-sm text-ink/60">
                                 No country matches “{search.trim()}”.
                             </li>
                         )}
@@ -203,7 +203,7 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
                                     {startsOtherCountries && (
                                         <li
                                             role="presentation"
-                                            className="mx-3 my-1 border-t border-[#1F2A24]/10"
+                                            className="mx-3 my-1 border-t border-ink/10"
                                         />
                                     )}
                                     <li
@@ -217,21 +217,21 @@ export default function CountryCodePicker({ country, onSelect, label }: Props) {
                                         onClick={() => choose(c)}
                                         className={`mx-1 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 text-sm ${
                                             isActive
-                                                ? 'bg-[#2F6F4E]/10 text-[#1F2A24]'
-                                                : 'text-[#1F2A24]/85'
+                                                ? 'bg-brand/10 text-ink'
+                                                : 'text-ink/85'
                                         }`}
                                     >
-                                        <span className="w-7 shrink-0 text-[11px] font-semibold tracking-wide text-[#1F2A24]/50">
+                                        <span className="w-7 shrink-0 text-[11px] font-semibold tracking-wide text-ink/50">
                                             {c.iso}
                                         </span>
                                         <span className="min-w-0 flex-1 truncate">
                                             {c.name}
                                         </span>
-                                        <span className="shrink-0 text-[#1F2A24]/55 tabular-nums">
+                                        <span className="shrink-0 text-ink/55 tabular-nums">
                                             +{c.code}
                                         </span>
                                         <Check
-                                            className={`h-4 w-4 shrink-0 text-[#2F6F4E] ${
+                                            className={`h-4 w-4 shrink-0 text-brand-ink ${
                                                 isSelected ? '' : 'invisible'
                                             }`}
                                             aria-hidden="true"

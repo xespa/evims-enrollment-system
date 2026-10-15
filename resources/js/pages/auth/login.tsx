@@ -34,12 +34,12 @@ type Props = {
 };
 
 const INPUT_CLASS =
-    'h-10 border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30 aria-[invalid=true]:border-[#C6473B]';
+    'h-10 border-ink/15 focus-visible:border-brand focus-visible:ring-brand/30 aria-[invalid=true]:border-danger';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
+const LABEL_CLASS = 'mb-1 block text-sm font-medium text-ink/80';
 
 const LINK_CLASS =
-    'font-semibold text-[#2F6F4E] underline-offset-2 hover:text-[#25573E] hover:underline';
+    'font-semibold text-brand-ink underline-offset-2 hover:text-brand-deep-ink hover:underline';
 
 /**
  * Where the form signs in, by role. Staff go through Fortify (so two-factor
@@ -109,7 +109,7 @@ export default function Login({
                     notice && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2.5 text-[13px] leading-snug text-[#1F2A24]/80"
+                            className="mb-4 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-[13px] leading-snug text-ink/80"
                         >
                             {notice}
                         </div>
@@ -128,7 +128,7 @@ export default function Login({
                                 Create one
                             </TextLink>
                         </p>
-                        <p className="text-xs text-[#1F2A24]/55">
+                        <p className="text-xs text-ink/55">
                             Logging in uses only essential cookies.{' '}
                             <TextLink
                                 href={`${terms.url()}#cookies`}
@@ -210,7 +210,7 @@ export default function Login({
                                         isStudent && (
                                             <p
                                                 id="identifier-hint"
-                                                className="mt-1 text-xs text-[#1F2A24]/55"
+                                                className="mt-1 text-xs text-ink/55"
                                             >
                                                 Enrolled students can use the
                                                 LRN on their report card. The
@@ -225,14 +225,14 @@ export default function Login({
                                     <div className="mb-1 flex items-center justify-between gap-2">
                                         <Label
                                             htmlFor="password"
-                                            className="text-sm font-medium text-[#1F2A24]/80"
+                                            className="text-sm font-medium text-ink/80"
                                         >
                                             Password
                                         </Label>
                                         {isStaff && canResetPassword && (
                                             <TextLink
                                                 href={request()}
-                                                className="text-xs font-medium text-[#2F6F4E] hover:text-[#25573E]"
+                                                className="text-xs font-medium text-brand-ink hover:text-brand-deep-ink"
                                             >
                                                 Forgot password?
                                             </TextLink>
@@ -260,7 +260,7 @@ export default function Login({
                                         <p
                                             id="caps-lock-warning"
                                             role="status"
-                                            className="mt-1 flex items-center gap-1.5 text-xs font-medium text-[#a4670f]"
+                                            className="mt-1 flex items-center gap-1.5 text-xs font-medium text-warn-ink"
                                         >
                                             <TriangleAlert
                                                 className="h-3.5 w-3.5"
@@ -276,11 +276,11 @@ export default function Login({
                                     <Checkbox
                                         id="remember"
                                         name="remember"
-                                        className="data-[state=checked]:border-[#2F6F4E] data-[state=checked]:bg-[#2F6F4E]"
+                                        className="data-[state=checked]:border-brand data-[state=checked]:bg-brand"
                                     />
                                     <Label
                                         htmlFor="remember"
-                                        className="text-sm font-normal text-[#1F2A24]/75"
+                                        className="text-sm font-normal text-ink/75"
                                     >
                                         Keep me logged in on this device
                                     </Label>
@@ -290,7 +290,7 @@ export default function Login({
                                     type="submit"
                                     disabled={processing}
                                     data-test="login-button"
-                                    className="h-10 w-full rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                    className="h-10 w-full rounded-full bg-brand text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                                 >
                                     {processing && <Spinner />}
                                     {processing ? 'Logging in…' : 'Log in'}

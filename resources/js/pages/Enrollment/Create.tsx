@@ -907,8 +907,8 @@ export default function Create({
     };
 
     const fastTrackSelectClass = (field: string) =>
-        `mt-1.5 min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:cursor-not-allowed disabled:bg-[#1F2A24]/5 disabled:text-[#1F2A24]/70 ${
-            stepProps.errors[field] ? 'border-[#C6473B]' : 'border-[#1F2A24]/15'
+        `mt-1.5 min-h-10 w-full rounded-lg border bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none disabled:cursor-not-allowed disabled:bg-ink/5 disabled:text-ink/70 ${
+            stepProps.errors[field] ? 'border-danger' : 'border-ink/15'
         }`;
 
     if (accountStatus !== 'APPROVED') {
@@ -919,15 +919,15 @@ export default function Create({
         return (
             <>
                 <Head title="Enrollment Application" />
-                <div className="flex min-h-screen items-center justify-center bg-[#FBF8F2] px-4 py-12">
+                <div className="flex min-h-screen items-center justify-center bg-cream px-4 py-12">
                     <div
                         role="status"
-                        className="w-full max-w-md rounded-[2rem] border border-[#1F2A24]/10 bg-white p-8 text-center shadow-xl shadow-[#1F2A24]/5"
+                        className="w-full max-w-md rounded-[2rem] border border-ink/10 bg-surface p-8 text-center shadow-xl shadow-shade/5"
                     >
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             Enrollment isn't open yet
                         </h1>
-                        <p className="mt-2 text-sm text-[#1F2A24]/70">
+                        <p className="mt-2 text-sm text-ink/70">
                             The school is still preparing the fees and subjects
                             for the coming school year. Please check back soon.
                         </p>
@@ -960,24 +960,24 @@ export default function Create({
         <>
             <Head title="Enrollment Application" />
 
-            <div className="min-h-screen bg-[#FBF8F2] px-4 py-8 sm:py-10">
+            <div className="min-h-screen bg-cream px-4 py-8 sm:py-10">
                 <div className="mx-auto max-w-5xl">
                     <div className="mb-6 text-center">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                             School Year {data.school_year}
                         </span>
-                        <h1 className="mt-3 font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
+                        <h1 className="mt-3 font-serif text-2xl font-semibold text-ink sm:text-3xl">
                             Enrollment Application
                         </h1>
                         {applicantName || selectedGradeName ? (
-                            <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm text-[#1F2A24]/80 shadow-sm ring-1 ring-[#1F2A24]/10">
+                            <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-sm text-ink/80 shadow-sm ring-1 ring-ink/10">
                                 <UserRound
-                                    className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                    className="h-4 w-4 shrink-0 text-brand-ink"
                                     aria-hidden="true"
                                 />
                                 <span className="truncate">
                                     Applying for{' '}
-                                    <span className="font-semibold text-[#1F2A24]">
+                                    <span className="font-semibold text-ink">
                                         {applicantName || 'your child'}
                                     </span>
                                     {selectedGradeName &&
@@ -985,10 +985,10 @@ export default function Create({
                                 </span>
                             </p>
                         ) : (
-                            <p className="mt-1 text-sm text-[#1F2A24]/70">
+                            <p className="mt-1 text-sm text-ink/70">
                                 A few short steps and your child's seat is
                                 reserved. Fields marked{' '}
-                                <span className="text-[#C6473B]">*</span> are
+                                <span className="text-danger-ink">*</span> are
                                 required.
                             </p>
                         )}
@@ -997,15 +997,15 @@ export default function Create({
                     {draftRestoredAt && (
                         <div
                             role="status"
-                            className="mb-4 flex flex-col gap-3 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80 sm:flex-row sm:items-center sm:justify-between"
+                            className="mb-4 flex flex-col gap-3 rounded-2xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-ink/80 sm:flex-row sm:items-center sm:justify-between"
                         >
                             <p className="flex items-start gap-2">
                                 <History
-                                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                    className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                                     aria-hidden="true"
                                 />
                                 <span>
-                                    <span className="font-medium text-[#1F2A24]">
+                                    <span className="font-medium text-ink">
                                         We kept your unfinished application
                                     </span>{' '}
                                     from{' '}
@@ -1022,7 +1022,7 @@ export default function Create({
                             <button
                                 type="button"
                                 onClick={startOver}
-                                className="min-h-10 shrink-0 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-medium text-[#1F2A24]/80 transition-colors hover:bg-[#1F2A24]/5"
+                                className="min-h-10 shrink-0 rounded-full border border-ink/15 bg-surface px-4 text-sm font-medium text-ink/80 transition-colors hover:bg-ink/5"
                             >
                                 Start over
                             </button>
@@ -1038,7 +1038,7 @@ export default function Create({
                     ) : (
                         <>
                             {fastTrack && step === 6 && (
-                                <div className="mb-4 rounded-2xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#1F2A24]/80">
+                                <div className="mb-4 rounded-2xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-ink/80">
                                     <p>
                                         We matched this child's LRN to your
                                         account — their student, address,
@@ -1052,7 +1052,7 @@ export default function Create({
                                         <div>
                                             <label
                                                 htmlFor="fast-track-school_year"
-                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                                className="block text-sm font-medium text-ink/80"
                                             >
                                                 School Year
                                             </label>
@@ -1083,7 +1083,7 @@ export default function Create({
                                         <div>
                                             <label
                                                 htmlFor="fast-track-grade_level_id"
-                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                                className="block text-sm font-medium text-ink/80"
                                             >
                                                 Grade Level
                                             </label>
@@ -1129,7 +1129,7 @@ export default function Create({
                                             ) ? (
                                                 <p
                                                     role="alert"
-                                                    className="mt-1 text-xs font-medium text-[#A3372D]"
+                                                    className="mt-1 text-xs font-medium text-danger-strong"
                                                 >
                                                     {gradeLevelFullMessage(
                                                         chosenGradeLevel,
@@ -1137,7 +1137,7 @@ export default function Create({
                                                     )}
                                                 </p>
                                             ) : (
-                                                <p className="mt-1 text-xs text-[#1F2A24]/65">
+                                                <p className="mt-1 text-xs text-ink/65">
                                                     Defaulted to the next grade
                                                     up from last year.
                                                 </p>
@@ -1147,7 +1147,7 @@ export default function Create({
                                         <div>
                                             <label
                                                 htmlFor="fast-track-session_time_preference"
-                                                className="block text-sm font-medium text-[#1F2A24]/80"
+                                                className="block text-sm font-medium text-ink/80"
                                             >
                                                 Session Time Preference
                                             </label>
@@ -1200,7 +1200,7 @@ export default function Create({
                                 {Object.keys(errorsByStep).length > 0 && (
                                     <div
                                         role="alert"
-                                        className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
+                                        className="mb-4 rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger-darker"
                                     >
                                         <p className="flex items-center gap-2 font-semibold">
                                             <CircleAlert
@@ -1226,7 +1226,7 @@ export default function Create({
                                                                     ),
                                                                 )
                                                             }
-                                                            className="font-semibold text-[#8a3128] underline underline-offset-2 hover:text-[#6b251e]"
+                                                            className="font-semibold text-danger-darker underline underline-offset-2 hover:text-[#6b251e]"
                                                         >
                                                             {
                                                                 STEP_LABELS[
@@ -1249,7 +1249,7 @@ export default function Create({
                                 {nextBlockedReason && (
                                     <div
                                         role="alert"
-                                        className="mb-4 flex items-start gap-2 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#8a3128]"
+                                        className="mb-4 flex items-start gap-2 rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger-darker"
                                     >
                                         <CircleAlert
                                             className="mt-0.5 h-4 w-4 shrink-0"
@@ -1264,7 +1264,7 @@ export default function Create({
                                     onSubmit={handleSubmit}
                                     onKeyDown={handleFormKeyDown}
                                     noValidate
-                                    className="rounded-[2rem] border border-[#1F2A24]/10 bg-white shadow-xl shadow-[#1F2A24]/5 [&_h2:focus]:outline-none"
+                                    className="rounded-[2rem] border border-ink/10 bg-surface shadow-xl shadow-shade/5 [&_h2:focus]:outline-none"
                                 >
                                     <div className="p-6 sm:p-8">
                                         {step === 1 && (
@@ -1301,7 +1301,7 @@ export default function Create({
                                     {/* Where the buttons rest at the end of the step. */}
                                     <div
                                         aria-hidden="true"
-                                        className="h-[4.75rem] border-t border-[#1F2A24]/10"
+                                        className="h-[4.75rem] border-t border-ink/10"
                                     />
 
                                     {/* Back and Next float on their own (no bar
@@ -1313,7 +1313,7 @@ export default function Create({
                                             type="button"
                                             onClick={goBack}
                                             disabled={step === 1}
-                                            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white px-4 py-2 text-sm font-semibold text-[#1F2A24] shadow-lg ring-4 shadow-[#1F2A24]/10 ring-white transition-colors hover:border-[#1F2A24]/30 hover:bg-[#F4F1EA] disabled:invisible sm:px-5"
+                                            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-ink/15 bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-4 shadow-shade/10 ring-white transition-colors hover:border-ink/30 hover:bg-[#F4F1EA] disabled:invisible sm:px-5"
                                         >
                                             <ArrowLeft
                                                 className="h-4 w-4"
@@ -1330,10 +1330,10 @@ export default function Create({
                                                 key="next"
                                                 type="button"
                                                 onClick={goNext}
-                                                className="group pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-lg ring-4 shadow-[#2F6F4E]/30 ring-white transition-colors hover:bg-[#25573E] sm:px-6"
+                                                className="group pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-lg ring-4 shadow-brand/30 ring-white transition-colors hover:bg-brand-deep sm:px-6"
                                             >
                                                 Next
-                                                <span className="hidden font-normal text-[#FBF8F2]/75 sm:inline">
+                                                <span className="hidden font-normal text-on-brand/75 sm:inline">
                                                     : {nextStepLabel}
                                                 </span>
                                                 <ArrowRight
@@ -1348,7 +1348,7 @@ export default function Create({
                                                 data-submit-application
                                                 disabled={processing}
                                                 aria-busy={processing}
-                                                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E8A33D] px-6 py-2 text-sm font-semibold text-[#1F2A24] shadow-lg ring-4 shadow-[#E8A33D]/40 ring-white transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
+                                                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-warn px-6 py-2 text-sm font-semibold text-ink shadow-lg ring-4 shadow-warn/40 ring-white transition-colors hover:bg-[#d6922e] disabled:cursor-wait disabled:opacity-60"
                                             >
                                                 {processing ? (
                                                     <Loader2

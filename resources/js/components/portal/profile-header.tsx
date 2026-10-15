@@ -37,14 +37,14 @@ export default function ProfileHeader({
 
     return (
         <>
-            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
+            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-brand to-brand-deep sm:h-36" />
 
             <div className="-mt-16 flex flex-col gap-4 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
                     <div className="relative h-24 w-24 sm:h-32 sm:w-32">
                         <label
                             htmlFor="profile-photo-input"
-                            className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-full border-4 border-[#FBF8F2] shadow-sm focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-2"
+                            className="group relative block h-full w-full cursor-pointer overflow-hidden rounded-full border-4 border-cream shadow-sm focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2"
                         >
                             {enrollee?.profile_photo_url ? (
                                 <img
@@ -53,7 +53,7 @@ export default function ProfileHeader({
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-[#2F6F4E] text-2xl font-semibold text-white sm:text-3xl">
+                                <div className="flex h-full w-full items-center justify-center bg-brand text-2xl font-semibold text-white sm:text-3xl">
                                     {initials(enrollee?.name)}
                                 </div>
                             )}
@@ -93,20 +93,20 @@ export default function ProfileHeader({
                             never appear on touch screens. */}
                         <span
                             aria-hidden="true"
-                            className="pointer-events-none absolute right-0.5 bottom-0.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FBF8F2] bg-[#2F6F4E] text-white shadow-sm sm:right-1.5 sm:bottom-1.5"
+                            className="pointer-events-none absolute right-0.5 bottom-0.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-cream bg-brand text-white shadow-sm sm:right-1.5 sm:bottom-1.5"
                         >
                             <Camera className="h-4 w-4" />
                         </span>
                     </div>
                     <div className="pb-1 text-center sm:text-left">
                         <div className="flex items-center justify-center gap-2 sm:justify-start">
-                            <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">
+                            <h1 className="font-serif text-xl font-semibold text-ink sm:text-2xl">
                                 {enrollee?.name}
                             </h1>
                             {enrollee?.email_verified_at && (
                                 <span
                                     title="Verified email"
-                                    className="text-[#2F6F4E]"
+                                    className="text-brand-ink"
                                 >
                                     <BadgeCheck
                                         className="h-5 w-5"
@@ -118,7 +118,7 @@ export default function ProfileHeader({
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm break-all text-[#1F2A24]/70">
+                        <p className="text-sm break-all text-ink/70">
                             {enrollee?.email}
                         </p>
                     </div>
@@ -127,7 +127,7 @@ export default function ProfileHeader({
                 <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
                     <Link
                         href={admissionCreate().url}
-                        className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                        className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                     >
                         <Plus className="h-4 w-4" aria-hidden="true" />
                         New Enrollment
@@ -135,7 +135,7 @@ export default function ProfileHeader({
                     <button
                         type="button"
                         onClick={onLogout}
-                        className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
+                        className="min-h-11 rounded-full border border-ink/15 bg-surface px-5 py-2 text-sm font-semibold text-ink/70 shadow-sm transition-colors hover:bg-ink/5"
                     >
                         Log Out
                     </button>

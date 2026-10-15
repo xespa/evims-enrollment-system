@@ -150,10 +150,10 @@ function RejectAccountDialog({
         <Dialog open={open} onOpenChange={close}>
             <DialogContent
                 aria-describedby="reject-account-summary"
-                className="rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md"
+                className="rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-md"
             >
                 <form onSubmit={submit}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             Reject {account.name}'s account?
                         </DialogTitle>
@@ -162,7 +162,7 @@ function RejectAccountDialog({
                     <div className="space-y-4 px-6 py-5">
                         <p
                             id="reject-account-summary"
-                            className="text-sm text-[#1F2A24]/75"
+                            className="text-sm text-ink/75"
                         >
                             We'll email {account.email} what's wrong and how to
                             fix it. They can upload a new ID, which sends the
@@ -170,10 +170,10 @@ function RejectAccountDialog({
                         </p>
 
                         <fieldset>
-                            <legend className="mb-2 text-sm font-medium text-[#1F2A24]/80">
+                            <legend className="mb-2 text-sm font-medium text-ink/80">
                                 What's wrong?{' '}
                                 <span
-                                    className="text-[#C6473B]"
+                                    className="text-danger-ink"
                                     aria-hidden="true"
                                 >
                                     *
@@ -186,7 +186,7 @@ function RejectAccountDialog({
                                     return (
                                         <div
                                             key={reason.value}
-                                            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-[#1F2A24]/5"
+                                            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-ink/5"
                                         >
                                             <Checkbox
                                                 id={checkboxId}
@@ -199,11 +199,11 @@ function RejectAccountDialog({
                                                         checked === true,
                                                     )
                                                 }
-                                                className="data-[state=checked]:border-[#C6473B] data-[state=checked]:bg-[#C6473B]"
+                                                className="data-[state=checked]:border-danger data-[state=checked]:bg-danger"
                                             />
                                             <label
                                                 htmlFor={checkboxId}
-                                                className="flex-1 cursor-pointer text-sm text-[#1F2A24]"
+                                                className="flex-1 cursor-pointer text-sm text-ink"
                                             >
                                                 {reason.label}
                                             </label>
@@ -212,7 +212,7 @@ function RejectAccountDialog({
                                 })}
                             </div>
                             {reasonsError && (
-                                <p className="mt-1 text-xs text-[#C6473B]">
+                                <p className="mt-1 text-xs text-danger-ink">
                                     {reasonsError}
                                 </p>
                             )}
@@ -221,18 +221,18 @@ function RejectAccountDialog({
                         <div>
                             <label
                                 htmlFor="rejection-note"
-                                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                                className="mb-1 block text-sm font-medium text-ink/80"
                             >
                                 Note to the account holder{' '}
                                 {needsNote ? (
                                     <span
-                                        className="text-[#C6473B]"
+                                        className="text-danger-ink"
                                         aria-hidden="true"
                                     >
                                         *
                                     </span>
                                 ) : (
-                                    <span className="font-normal text-[#1F2A24]/50">
+                                    <span className="font-normal text-ink/50">
                                         (optional)
                                     </span>
                                 )}
@@ -250,21 +250,21 @@ function RejectAccountDialog({
                                 aria-invalid={
                                     errors.rejection_reason ? true : undefined
                                 }
-                                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                                className="w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger"
                             />
                             {errors.rejection_reason && (
-                                <p className="mt-1 text-xs text-[#C6473B]">
+                                <p className="mt-1 text-xs text-danger-ink">
                                     {errors.rejection_reason}
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 border-t border-[#1F2A24]/10 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-ink/10 px-6 py-4">
                         <button
                             type="button"
                             onClick={() => close(false)}
-                            className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                            className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                         >
                             Cancel
                         </button>
@@ -274,7 +274,7 @@ function RejectAccountDialog({
                                 processing ||
                                 data.rejection_reasons.length === 0
                             }
-                            className="min-h-10 rounded-full bg-[#C6473B] px-5 text-sm font-semibold text-white hover:bg-[#A93A30] disabled:opacity-60"
+                            className="min-h-10 rounded-full bg-danger px-5 text-sm font-semibold text-white hover:bg-[#A93A30] disabled:opacity-60"
                         >
                             Reject &amp; Email
                         </button>
@@ -298,21 +298,21 @@ function AccountSummary({
             <span className="block font-medium break-words">
                 {account.name}
             </span>
-            <span className="mt-0.5 block w-fit rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
+            <span className="mt-0.5 block w-fit rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand-ink">
                 {account.account_type
                     ? ACCOUNT_TYPE_LABELS[account.account_type]
                     : 'Type not given'}
             </span>
-            <span className="block break-all text-[#1F2A24]/70">
+            <span className="block break-all text-ink/70">
                 {account.email}
             </span>
             {account.email_verified_at ? (
-                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-medium text-[#2F6F4E]">
+                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand-ink">
                     <MailCheck className="h-3 w-3" aria-hidden="true" />
                     Email confirmed
                 </span>
             ) : (
-                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-warn/15 px-2 py-0.5 text-xs font-medium text-warn-ink">
                     <MailWarning className="h-3 w-3" aria-hidden="true" />
                     Email not confirmed
                 </span>
@@ -324,13 +324,13 @@ function AccountSummary({
                 <button
                     type="button"
                     onClick={onViewId}
-                    className="mt-1 flex min-h-9 items-center gap-1 text-xs font-medium text-[#2F6F4E] hover:underline"
+                    className="mt-1 flex min-h-9 items-center gap-1 text-xs font-medium text-brand-ink hover:underline"
                 >
                     <IdCard className="h-3.5 w-3.5" aria-hidden="true" />
                     View valid ID
                 </button>
             ) : (
-                <span className="mt-1 block w-fit rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/65">
+                <span className="mt-1 block w-fit rounded-full bg-ink/5 px-2 py-0.5 text-xs font-medium text-ink/65">
                     No ID on file
                 </span>
             )}
@@ -352,10 +352,10 @@ function ParentConfirmationBadge({ account }: { account: EnrolleeAccount }) {
             title={account.parent_email ?? undefined}
             className={`mt-1 flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                 isConfirmed
-                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
+                    ? 'bg-brand/10 text-brand-ink'
                     : account.parent_confirmation_status === 'DECLINED'
-                      ? 'bg-[#C6473B]/10 text-[#9A3329]'
-                      : 'bg-[#E8A33D]/15 text-[#a4670f]'
+                      ? 'bg-danger/10 text-danger-deep'
+                      : 'bg-warn/15 text-warn-ink'
             }`}
         >
             <UserRoundCheck className="h-3 w-3" aria-hidden="true" />
@@ -392,7 +392,7 @@ function LinkedApplications({
                 <li key={enrollment.id}>
                     <Link
                         href={route('admin.enrollments.show', enrollment.id)}
-                        className="font-medium text-[#2F6F4E] hover:underline"
+                        className="font-medium text-brand-ink hover:underline"
                     >
                         {enrollment.student?.first_name}{' '}
                         {enrollment.student?.last_name}
@@ -426,7 +426,7 @@ function ReviewDetails({
                 {account.reviewer && ` by ${account.reviewer.name}`}
             </span>
             {account.account_status === 'PENDING' && (
-                <span className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]">
+                <span className="mt-1 block w-fit rounded-full bg-warn/15 px-2 py-0.5 text-xs font-medium text-warn-ink">
                     New ID sent — review again
                 </span>
             )}
@@ -483,7 +483,7 @@ function AccountActions({
                         <button
                             type="button"
                             onClick={onApprove}
-                            className={`${buttonSize} rounded-full bg-[#2F6F4E] font-semibold text-white hover:bg-[#25573E]`}
+                            className={`${buttonSize} rounded-full bg-brand font-semibold text-white hover:bg-brand-deep`}
                         >
                             Approve
                         </button>
@@ -493,7 +493,7 @@ function AccountActions({
                             disabled
                             aria-describedby={blockedHintId}
                             title={`Can't approve yet — ${blockedReason}`}
-                            className={`${buttonSize} cursor-not-allowed rounded-full bg-[#1F2A24]/10 font-semibold text-[#1F2A24]/45`}
+                            className={`${buttonSize} cursor-not-allowed rounded-full bg-ink/10 font-semibold text-ink/45`}
                         >
                             Approve
                         </button>
@@ -502,7 +502,7 @@ function AccountActions({
                     <button
                         type="button"
                         onClick={onReject}
-                        className={`${buttonSize} rounded-full border border-[#C6473B]/40 font-semibold text-[#C6473B] hover:bg-[#C6473B]/5`}
+                        className={`${buttonSize} rounded-full border border-danger/40 font-semibold text-danger-ink hover:bg-danger/5`}
                     >
                         {account.account_status === 'APPROVED'
                             ? 'Revoke'
@@ -513,7 +513,7 @@ function AccountActions({
             {isApprovalBlocked && (
                 <p
                     id={blockedHintId}
-                    className={`mt-1.5 text-xs leading-snug text-[#a4670f] ${
+                    className={`mt-1.5 text-xs leading-snug text-warn-ink ${
                         isStacked ? '' : 'max-w-[12rem]'
                     }`}
                 >
@@ -586,13 +586,13 @@ export default function Index({
             <Head title="Portal Accounts" />
             {confirmDialog}
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             Portal Accounts
                         </h1>
-                        <p className="text-sm text-[#1F2A24]/70">
+                        <p className="text-sm text-ink/70">
                             Approve portal accounts before they can view
                             applications, upload documents, or pay online.
                         </p>
@@ -601,7 +601,7 @@ export default function Index({
                     {props.flash?.success && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {props.flash.success}
                         </div>
@@ -610,7 +610,7 @@ export default function Index({
                     {props.errors?.account_status && (
                         <div
                             role="alert"
-                            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#9A3329]"
+                            className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger-deep"
                         >
                             {props.errors.account_status}
                         </div>
@@ -619,10 +619,10 @@ export default function Index({
                     {filters.status === 'PENDING' && awaitingEmailCount > 0 && (
                         <div
                             role="status"
-                            className="mb-4 flex items-start gap-2.5 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#1F2A24]"
+                            className="mb-4 flex items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-ink"
                         >
                             <MailWarning
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#a4670f]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-warn-ink"
                                 aria-hidden="true"
                             />
                             <p>
@@ -658,8 +658,8 @@ export default function Index({
                                     }
                                     className={`min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap ${
                                         isActive
-                                            ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                            : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                            ? 'border-brand bg-brand text-white'
+                                            : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                     }`}
                                 >
                                     {tab.label}{' '}
@@ -679,7 +679,7 @@ export default function Index({
                         })}
                     </div>
 
-                    <div className="mb-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                    <div className="mb-4 rounded-2xl border border-ink/10 bg-surface p-4">
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -694,11 +694,11 @@ export default function Index({
                                 placeholder="Search by name or email..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="min-h-11 w-full min-w-0 flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:min-h-10 sm:w-auto sm:min-w-[200px]"
+                                className="min-h-11 w-full min-w-0 flex-1 rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none sm:min-h-10 sm:w-auto sm:min-w-[200px]"
                             />
                             <button
                                 type="submit"
-                                className="min-h-11 w-full rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:min-h-10 sm:w-auto"
+                                className="min-h-11 w-full rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-deep sm:min-h-10 sm:w-auto"
                             >
                                 Search
                             </button>
@@ -710,16 +710,16 @@ export default function Index({
                         {accounts.data.map((account) => (
                             <li
                                 key={account.id}
-                                className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4 text-sm text-[#1F2A24]"
+                                className="rounded-2xl border border-ink/10 bg-surface p-4 text-sm text-ink"
                             >
                                 <AccountSummary
                                     account={account}
                                     onViewId={() => openValidId(account)}
                                 />
 
-                                <dl className="mt-3 space-y-3 border-t border-[#1F2A24]/10 pt-3 text-[#1F2A24]/70">
+                                <dl className="mt-3 space-y-3 border-t border-ink/10 pt-3 text-ink/70">
                                     <div>
-                                        <dt className="text-xs text-[#1F2A24]/55">
+                                        <dt className="text-xs text-ink/55">
                                             Applications
                                         </dt>
                                         <dd className="mt-0.5">
@@ -731,7 +731,7 @@ export default function Index({
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-xs text-[#1F2A24]/55">
+                                        <dt className="text-xs text-ink/55">
                                             Registered
                                         </dt>
                                         <dd className="mt-0.5">
@@ -739,7 +739,7 @@ export default function Index({
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-xs text-[#1F2A24]/55">
+                                        <dt className="text-xs text-ink/55">
                                             Review
                                         </dt>
                                         <dd className="mt-0.5">
@@ -764,41 +764,41 @@ export default function Index({
                         ))}
 
                         {accounts.data.length === 0 && (
-                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-8 text-center text-sm text-[#1F2A24]/65">
+                            <li className="rounded-2xl border border-ink/10 bg-surface px-4 py-8 text-center text-sm text-ink/65">
                                 No accounts found.
                             </li>
                         )}
                     </ul>
 
                     {/* Table (tablets and up) */}
-                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
-                        <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
-                            <thead className="bg-[#2F6F4E]/5">
+                    <div className="hidden overflow-x-auto rounded-2xl border border-ink/10 bg-surface md:block">
+                        <table className="min-w-full divide-y divide-ink/10 text-sm">
+                            <thead className="bg-brand/5">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Account
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Applications
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Registered
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Review
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Action
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
+                            <tbody className="divide-y divide-ink/10">
                                 {accounts.data.map((account) => (
                                     <tr
                                         key={account.id}
-                                        className="align-top hover:bg-[#2F6F4E]/5"
+                                        className="align-top hover:bg-brand/5"
                                     >
-                                        <td className="px-4 py-3 text-[#1F2A24]">
+                                        <td className="px-4 py-3 text-ink">
                                             <AccountSummary
                                                 account={account}
                                                 onViewId={() =>
@@ -806,17 +806,17 @@ export default function Index({
                                                 }
                                             />
                                         </td>
-                                        <td className="px-4 py-3 text-[#1F2A24]/70">
+                                        <td className="px-4 py-3 text-ink/70">
                                             <LinkedApplications
                                                 enrollments={
                                                     account.enrollments
                                                 }
                                             />
                                         </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-[#1F2A24]/70">
+                                        <td className="px-4 py-3 whitespace-nowrap text-ink/70">
                                             {formatDate(account.created_at)}
                                         </td>
-                                        <td className="px-4 py-3 text-[#1F2A24]/70">
+                                        <td className="px-4 py-3 text-ink/70">
                                             <ReviewDetails
                                                 account={account}
                                                 reasonLabels={reasonLabels}
@@ -841,7 +841,7 @@ export default function Index({
                                     <tr>
                                         <td
                                             colSpan={5}
-                                            className="px-4 py-8 text-center text-[#1F2A24]/65"
+                                            className="px-4 py-8 text-center text-ink/65"
                                         >
                                             No accounts found.
                                         </td>
@@ -860,8 +860,8 @@ export default function Index({
                                 preserveScroll
                                 className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                     link.active
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                        : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                        ? 'border-brand bg-brand text-white'
+                                        : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                 } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                             />
                         ))}

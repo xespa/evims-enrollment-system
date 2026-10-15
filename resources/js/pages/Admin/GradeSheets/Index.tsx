@@ -59,16 +59,16 @@ export default function Index({
         <>
             <Head title="Grade Sheets" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
                         <div>
-                            <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                            <h1 className="font-serif text-2xl font-semibold text-ink">
                                 {showsArchive
                                     ? 'Archived Grade Sheets'
                                     : 'Grade Sheets'}
                             </h1>
-                            <p className="text-sm text-[#1F2A24]/70">
+                            <p className="text-sm text-ink/70">
                                 {showsArchive
                                     ? 'Sheets taken out of use. Open one to restore it.'
                                     : "Record each student's Term 1, 2 and 3 grades, one sheet per subject."}
@@ -84,7 +84,7 @@ export default function Index({
                                     })
                                 }
                                 aria-pressed={showsArchive}
-                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
                             >
                                 {showsArchive ? (
                                     <>
@@ -102,7 +102,7 @@ export default function Index({
                                         />
                                         Archive
                                         {archivedCount > 0 && (
-                                            <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                            <span className="rounded-full bg-brand/10 px-1.5 text-xs tabular-nums">
                                                 {archivedCount}
                                             </span>
                                         )}
@@ -111,7 +111,7 @@ export default function Index({
                             </button>
                             <Link
                                 href={gradeSheetRoutes.create.url()}
-                                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
                             >
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                                 New Grade Sheet
@@ -122,7 +122,7 @@ export default function Index({
                     {props.flash?.success && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {props.flash.success}
                         </div>
@@ -132,7 +132,7 @@ export default function Index({
                         <MySubjects subjects={mySubjects} />
                     )}
 
-                    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-ink/10 bg-surface p-4">
                         <select
                             aria-label="Filter by school year"
                             value={filters.school_year}
@@ -148,7 +148,7 @@ export default function Index({
                         </select>
                         <p
                             aria-live="polite"
-                            className="text-sm text-[#1F2A24]/65 sm:ml-auto"
+                            className="text-sm text-ink/65 sm:ml-auto"
                         >
                             {gradeSheets.total === 1
                                 ? '1 grade sheet'
@@ -158,17 +158,17 @@ export default function Index({
                     </div>
 
                     {gradeSheets.data.length === 0 ? (
-                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-[#1F2A24]/15 bg-white px-6 py-14 text-center">
+                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink/15 bg-surface px-6 py-14 text-center">
                             <ClipboardList
-                                className="h-10 w-10 text-[#2F6F4E]/60"
+                                className="h-10 w-10 text-brand-ink/60"
                                 aria-hidden="true"
                             />
-                            <p className="mt-3 font-medium text-[#1F2A24]">
+                            <p className="mt-3 font-medium text-ink">
                                 {showsArchive
                                     ? 'No archived grade sheets'
                                     : 'No grade sheets yet'}
                             </p>
-                            <p className="mt-1 text-sm text-[#1F2A24]/65">
+                            <p className="mt-1 text-sm text-ink/65">
                                 {showsArchive
                                     ? 'Sheets you archive show here, ready to restore.'
                                     : 'Create one for a subject you teach to start recording grades.'}
@@ -176,7 +176,7 @@ export default function Index({
                             {!showsArchive && (
                                 <Link
                                     href={gradeSheetRoutes.create.url()}
-                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     <Plus
                                         className="h-4 w-4"
@@ -196,20 +196,20 @@ export default function Index({
                                             href={gradeSheetRoutes.show.url(
                                                 gradeSheet.id,
                                             )}
-                                            className="flex items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4 transition-colors hover:bg-[#2F6F4E]/[0.03] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                                            className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-surface p-4 transition-colors hover:bg-brand/[0.03] focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
                                         >
                                             <div className="min-w-0 flex-1">
-                                                <p className="font-mono text-xs font-semibold text-[#2F6F4E]">
+                                                <p className="font-mono text-xs font-semibold text-brand-ink">
                                                     {gradeSheet.number}
                                                 </p>
-                                                <p className="font-medium break-words text-[#1F2A24]">
+                                                <p className="font-medium break-words text-ink">
                                                     {gradeSheet.subject}
                                                 </p>
-                                                <p className="text-xs text-[#1F2A24]/60">
+                                                <p className="text-xs text-ink/60">
                                                     {gradeSheet.grade_level} ·
                                                     SY {gradeSheet.school_year}
                                                 </p>
-                                                <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-[#1F2A24]/70">
+                                                <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-ink/70">
                                                     <span>
                                                         {gradeSheet.teacher}
                                                     </span>
@@ -222,7 +222,7 @@ export default function Index({
                                                 </p>
                                             </div>
                                             <ChevronRight
-                                                className="h-5 w-5 shrink-0 text-[#2F6F4E]/70"
+                                                className="h-5 w-5 shrink-0 text-brand-ink/70"
                                                 aria-hidden="true"
                                             />
                                         </Link>
@@ -231,9 +231,9 @@ export default function Index({
                             </ul>
 
                             {/* Table (tablets and up) */}
-                            <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
+                            <div className="hidden overflow-x-auto rounded-2xl border border-ink/10 bg-surface md:block">
                                 <table className="w-full text-left text-sm">
-                                    <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
+                                    <thead className="border-b border-ink/10 bg-ink/[0.03] text-xs tracking-wide text-ink/60 uppercase">
                                         <tr>
                                             <th className="px-4 py-3 font-semibold">
                                                 Grade Sheet No.
@@ -257,30 +257,30 @@ export default function Index({
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#1F2A24]/10">
+                                    <tbody className="divide-y divide-ink/10">
                                         {gradeSheets.data.map((gradeSheet) => (
                                             <tr
                                                 key={gradeSheet.id}
-                                                className="hover:bg-[#1F2A24]/[0.02]"
+                                                className="hover:bg-ink/[0.02]"
                                             >
-                                                <td className="px-4 py-3 font-mono font-semibold text-[#2F6F4E]">
+                                                <td className="px-4 py-3 font-mono font-semibold text-brand-ink">
                                                     {gradeSheet.number}
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <span className="block font-medium text-[#1F2A24]">
+                                                    <span className="block font-medium text-ink">
                                                         {gradeSheet.subject}
                                                     </span>
-                                                    <span className="text-xs text-[#1F2A24]/60">
+                                                    <span className="text-xs text-ink/60">
                                                         {gradeSheet.grade_level}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 text-[#1F2A24]/80">
+                                                <td className="px-4 py-3 text-ink/80">
                                                     {gradeSheet.school_year}
                                                 </td>
-                                                <td className="px-4 py-3 text-[#1F2A24]/80">
+                                                <td className="px-4 py-3 text-ink/80">
                                                     {gradeSheet.teacher}
                                                 </td>
-                                                <td className="px-4 py-3 text-right text-[#1F2A24]/80 tabular-nums">
+                                                <td className="px-4 py-3 text-right text-ink/80 tabular-nums">
                                                     {gradeSheet.students_count}
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
@@ -288,7 +288,7 @@ export default function Index({
                                                         href={gradeSheetRoutes.show.url(
                                                             gradeSheet.id,
                                                         )}
-                                                        className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                                        className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                                     >
                                                         Open
                                                         <span className="sr-only">
@@ -321,8 +321,8 @@ export default function Index({
                                     preserveScroll
                                     className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                         link.active
-                                            ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                            : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                            ? 'border-brand bg-brand text-white'
+                                            : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                     } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                 />
                             ))}

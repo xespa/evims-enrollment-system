@@ -41,11 +41,11 @@ export default function LrnInput({
         <div className="mb-4">
             <label
                 htmlFor="lrn"
-                className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1.5 block text-sm font-medium text-ink/80"
             >
                 LRN (Learner Reference Number){' '}
                 {isTransferee && (
-                    <span className="text-[#C6473B]" aria-hidden="true">
+                    <span className="text-danger-ink" aria-hidden="true">
                         *
                     </span>
                 )}
@@ -53,10 +53,10 @@ export default function LrnInput({
 
             <div
                 id={hintId}
-                className="mb-2 flex gap-2.5 rounded-xl border border-[#2F6F4E]/15 bg-[#2F6F4E]/5 px-3 py-2.5 text-[13px] leading-snug text-[#1F2A24]/80"
+                className="mb-2 flex gap-2.5 rounded-xl border border-brand/15 bg-brand/5 px-3 py-2.5 text-[13px] leading-snug text-ink/80"
             >
                 <IdCard
-                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                    className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                     aria-hidden="true"
                 />
                 {isTransferee ? (
@@ -98,24 +98,24 @@ export default function LrnInput({
                         hintId,
                         error ? errorId : 'lrn-status',
                     ].join(' ')}
-                    className={`min-h-10 w-full rounded-lg border bg-white px-3 py-2 pr-10 text-sm tracking-wider text-[#1F2A24] tabular-nums placeholder-[#1F2A24]/35 shadow-sm transition-colors focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none ${
+                    className={`min-h-10 w-full rounded-lg border bg-surface px-3 py-2 pr-10 text-sm tracking-wider text-ink tabular-nums placeholder-ink/35 shadow-sm transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none ${
                         error
-                            ? 'border-[#C6473B] bg-[#C6473B]/[0.03]'
+                            ? 'border-danger bg-danger/[0.03]'
                             : isComplete
-                              ? 'border-[#2F6F4E]/50'
-                              : 'border-[#1F2A24]/15'
+                              ? 'border-brand/50'
+                              : 'border-ink/15'
                     }`}
                 />
                 {isComplete && (
                     <CircleCheck
-                        className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-[#2F6F4E]"
+                        className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-brand-ink"
                         aria-hidden="true"
                     />
                 )}
             </div>
 
             {error ? (
-                <p id={errorId} className="mt-1 text-sm text-[#C6473B]">
+                <p id={errorId} className="mt-1 text-sm text-danger-ink">
                     {error}
                 </p>
             ) : (
@@ -123,7 +123,7 @@ export default function LrnInput({
                     <p
                         id="lrn-status"
                         aria-live="polite"
-                        className={`mt-1 text-xs ${isComplete ? 'text-[#2F6F4E]' : 'text-[#1F2A24]/60'}`}
+                        className={`mt-1 text-xs ${isComplete ? 'text-brand-ink' : 'text-ink/60'}`}
                     >
                         {status}
                     </p>

@@ -258,23 +258,23 @@ export default function Library() {
                 title="Library Events & Programs"
                 description="Workshops, reading programs, and cultural events are posted with the school's events."
             >
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#1F2A24]/15 px-6 py-14 text-center">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2F6F4E]/10">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink/15 px-6 py-14 text-center">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10">
                         <CalendarOff
-                            className="h-6 w-6 text-[#2F6F4E]"
+                            className="h-6 w-6 text-brand-ink"
                             aria-hidden="true"
                         />
                     </span>
-                    <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
+                    <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
                         No library events right now
                     </h3>
-                    <p className="mt-2 max-w-md text-sm text-[#1F2A24]/70">
+                    <p className="mt-2 max-w-md text-sm text-ink/70">
                         Check the school's Events page for workshops, seminars,
                         and library programs.
                     </p>
                     <Link
                         href="/events"
-                        className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                        className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                     >
                         See school events
                     </Link>

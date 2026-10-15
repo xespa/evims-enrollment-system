@@ -50,15 +50,15 @@ const ALLOWED_DOCUMENT_EXTENSIONS = /\.(pdf|jpe?g|png)$/i;
 
 function EmptyState({ message }: { message: string }) {
     return (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[#1F2A24]/20 bg-white px-6 py-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-ink/20 bg-surface px-6 py-10 text-center">
             <FolderOpen
-                className="h-8 w-8 text-[#1F2A24]/30"
+                className="h-8 w-8 text-ink/30"
                 aria-hidden="true"
             />
-            <p className="text-sm text-[#1F2A24]/65">{message}</p>
+            <p className="text-sm text-ink/65">{message}</p>
             <Link
                 href={admissionCreate().url}
-                className="inline-flex min-h-11 items-center rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                className="inline-flex min-h-11 items-center rounded-full bg-brand px-5 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
             >
                 Start an application
             </Link>
@@ -259,7 +259,7 @@ export default function Dashboard({
                 {props.flash?.success && errorMessages.length === 0 && (
                     <div
                         role="status"
-                        className="flex items-start gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        className="flex items-start gap-2 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                     >
                         <CheckCircle2
                             className="mt-0.5 h-4 w-4 shrink-0"
@@ -272,7 +272,7 @@ export default function Dashboard({
                 {errorMessages.length > 0 && (
                     <div
                         role="alert"
-                        className="flex items-start gap-2 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A83A30]"
+                        className="flex items-start gap-2 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger-alert"
                     >
                         <AlertCircle
                             className="mt-0.5 h-4 w-4 shrink-0"
@@ -287,7 +287,7 @@ export default function Dashboard({
                             <button
                                 type="button"
                                 onClick={() => setClientError(null)}
-                                className="-m-1 rounded-full p-1 hover:bg-[#C6473B]/10"
+                                className="-m-1 rounded-full p-1 hover:bg-danger/10"
                             >
                                 <X className="h-4 w-4" aria-hidden="true" />
                                 <span className="sr-only">Dismiss</span>
@@ -327,7 +327,7 @@ export default function Dashboard({
 
             <div
                 id="portal-tabs"
-                className="mt-8 scroll-mt-24 overflow-x-auto border-b border-[#1F2A24]/10"
+                className="mt-8 scroll-mt-24 overflow-x-auto border-b border-ink/10"
             >
                 <div
                     role="tablist"
@@ -353,8 +353,8 @@ export default function Dashboard({
                                 className={cn(
                                     'inline-flex min-h-11 items-center gap-2 border-b-2 px-1 pb-3 text-sm font-medium whitespace-nowrap transition-colors',
                                     isActive
-                                        ? 'border-[#2F6F4E] text-[#2F6F4E]'
-                                        : 'border-transparent text-[#1F2A24]/65 hover:text-[#1F2A24]/80',
+                                        ? 'border-brand text-brand-ink'
+                                        : 'border-transparent text-ink/65 hover:text-ink/80',
                                 )}
                             >
                                 {tab}
@@ -363,8 +363,8 @@ export default function Dashboard({
                                         className={cn(
                                             'rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold tabular-nums',
                                             needsAttention
-                                                ? 'bg-[#E8A33D]/20 text-[#a4670f]'
-                                                : 'bg-[#1F2A24]/5 text-[#1F2A24]/65',
+                                                ? 'bg-warn/20 text-warn-ink'
+                                                : 'bg-ink/5 text-ink/65',
                                         )}
                                     >
                                         {count}

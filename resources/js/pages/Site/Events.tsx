@@ -177,9 +177,9 @@ function EventImage({
             className={`h-full w-full object-cover ${className}`}
         />
     ) : (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#2F6F4E]/15 to-[#E8A33D]/15">
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand/15 to-warn/15">
             <CalendarDays
-                className="h-10 w-10 text-[#2F6F4E]/40"
+                className="h-10 w-10 text-brand-ink/40"
                 aria-hidden="true"
             />
         </div>
@@ -188,11 +188,11 @@ function EventImage({
 
 function DateBadge({ date }: { date: Date }) {
     return (
-        <div className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-white py-1.5 shadow-md">
-            <span className="text-[11px] font-semibold tracking-wide text-[#C6473B] uppercase">
+        <div className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-surface py-1.5 shadow-md">
+            <span className="text-[11px] font-semibold tracking-wide text-danger-ink uppercase">
                 {date.toLocaleDateString('en-PH', { month: 'short' })}
             </span>
-            <span className="font-serif text-xl leading-none font-semibold text-[#1F2A24]">
+            <span className="font-serif text-xl leading-none font-semibold text-ink">
                 {date.getDate()}
             </span>
         </div>
@@ -203,12 +203,12 @@ function EventMeta({ event }: { event: SchoolEvent }) {
     const time = timeRange(event);
 
     return (
-        <dl className="space-y-1 text-sm text-[#1F2A24]/70">
+        <dl className="space-y-1 text-sm text-ink/70">
             {time && (
                 <div className="flex items-center gap-2">
                     <dt className="sr-only">Time</dt>
                     <Clock
-                        className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                        className="h-4 w-4 shrink-0 text-brand-ink"
                         aria-hidden="true"
                     />
                     <dd>{time}</dd>
@@ -218,7 +218,7 @@ function EventMeta({ event }: { event: SchoolEvent }) {
                 <div className="flex items-center gap-2">
                     <dt className="sr-only">Location</dt>
                     <MapPin
-                        className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                        className="h-4 w-4 shrink-0 text-brand-ink"
                         aria-hidden="true"
                     />
                     <dd className="truncate">{event.location}</dd>
@@ -242,7 +242,7 @@ function EventCard({
             <button
                 type="button"
                 onClick={() => onOpen(event)}
-                className={`group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#2F6F4E]/25 hover:shadow-lg hover:shadow-[#1F2A24]/5 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+                className={`group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-lg hover:shadow-shade/5 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
                 <div className="relative aspect-[16/9] w-full overflow-hidden">
                     <EventImage
@@ -253,22 +253,22 @@ function EventCard({
                         <DateBadge date={date} />
                     </div>
                     {event.tag && (
-                        <span className="absolute top-3 right-3 rounded-full bg-[#E8A33D] px-2.5 py-1 text-xs font-semibold text-[#1F2A24]">
+                        <span className="absolute top-3 right-3 rounded-full bg-warn px-2.5 py-1 text-xs font-semibold text-ink">
                             {event.tag}
                         </span>
                     )}
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                    <p className="text-xs font-semibold text-[#2F6F4E]">
+                    <p className="text-xs font-semibold text-brand-ink">
                         {longDate(date)}
                     </p>
-                    <h3 className="mt-1.5 font-serif text-lg leading-snug font-semibold text-[#1F2A24]">
+                    <h3 className="mt-1.5 font-serif text-lg leading-snug font-semibold text-ink">
                         {event.title}
                     </h3>
                     <div className="mt-3">
                         <EventMeta event={event} />
                     </div>
-                    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-[#2F6F4E]">
+                    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-brand-ink">
                         View details
                         <ArrowRight
                             className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
@@ -295,19 +295,19 @@ function EventDetailsDialog({
             open={event !== null}
             onOpenChange={(open) => !open && onClose()}
         >
-            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-xl">
+            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-xl">
                 {event && date && (
                     <>
                         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-2xl">
                             <EventImage event={event} />
                             {event.tag && (
-                                <span className="absolute bottom-3 left-4 rounded-full bg-[#E8A33D] px-2.5 py-1 text-xs font-semibold text-[#1F2A24]">
+                                <span className="absolute bottom-3 left-4 rounded-full bg-warn px-2.5 py-1 text-xs font-semibold text-ink">
                                     {event.tag}
                                 </span>
                             )}
                         </div>
                         <div className="p-6">
-                            <p className="text-sm font-semibold text-[#2F6F4E]">
+                            <p className="text-sm font-semibold text-brand-ink">
                                 {longDate(date)}
                             </p>
                             <DialogTitle className="mt-1.5 font-serif text-2xl leading-tight font-semibold">
@@ -317,7 +317,7 @@ function EventDetailsDialog({
                                 <EventMeta event={event} />
                             </div>
                             <DialogDescription asChild>
-                                <div className="mt-5 border-t border-[#1F2A24]/10 pt-5 text-[15px] leading-relaxed whitespace-pre-line text-[#1F2A24]/80">
+                                <div className="mt-5 border-t border-ink/10 pt-5 text-[15px] leading-relaxed whitespace-pre-line text-ink/80">
                                     {event.description ||
                                         'More details will be shared by your child’s homeroom teacher.'}
                                 </div>
@@ -325,7 +325,7 @@ function EventDetailsDialog({
                             <button
                                 type="button"
                                 onClick={() => downloadCalendarFile(event)}
-                                className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:w-auto"
+                                className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep sm:w-auto"
                             >
                                 <CalendarPlus
                                     className="h-4 w-4"
@@ -359,37 +359,37 @@ export default function Events({ events = [] }: Props) {
             {/* Hero, featuring the latest event */}
             <section className="relative overflow-hidden">
                 <div
-                    className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-[#E8A33D]/15 blur-3xl"
+                    className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-warn/15 blur-3xl"
                     aria-hidden="true"
                 />
                 <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-[1fr_1.05fr] lg:py-20">
                     <div>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                             School Events &amp; Calendar
                         </span>
-                        <h1 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl">
+                        <h1 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight text-ink sm:text-5xl">
                             Moments worth showing up
-                            <span className="text-[#2F6F4E]"> for.</span>
+                            <span className="text-brand-ink"> for.</span>
                         </h1>
-                        <p className="mt-6 max-w-xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
+                        <p className="mt-6 max-w-xl text-base leading-relaxed text-ink/70 sm:text-lg">
                             From Foundation Day to quarterly recognition
                             programs, EVIMS keeps families close to campus life.
                             Here's what's happening at EVIMS.
                         </p>
                         <dl className="mt-8 flex flex-wrap gap-3">
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white px-5 py-3">
-                                <dt className="text-xs text-[#1F2A24]/60">
+                            <div className="rounded-2xl border border-ink/10 bg-surface px-5 py-3">
+                                <dt className="text-xs text-ink/60">
                                     Posted events
                                 </dt>
-                                <dd className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                                <dd className="font-serif text-2xl font-semibold text-ink">
                                     {events.length}
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white px-5 py-3">
-                                <dt className="text-xs text-[#1F2A24]/60">
+                            <div className="rounded-2xl border border-ink/10 bg-surface px-5 py-3">
+                                <dt className="text-xs text-ink/60">
                                     Recognition days a year
                                 </dt>
-                                <dd className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                                <dd className="font-serif text-2xl font-semibold text-ink">
                                     4
                                 </dd>
                             </div>
@@ -400,7 +400,7 @@ export default function Events({ events = [] }: Props) {
                         <button
                             type="button"
                             onClick={() => setOpenEvent(latestEvent)}
-                            className="group relative overflow-hidden rounded-[2rem] bg-[#1B4D34] text-left shadow-2xl shadow-[#1F2A24]/15"
+                            className="group relative overflow-hidden rounded-[2rem] bg-[#1B4D34] text-left shadow-2xl shadow-shade/15"
                         >
                             <div className="aspect-[16/10] w-full">
                                 <EventImage
@@ -410,7 +410,7 @@ export default function Events({ events = [] }: Props) {
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0F2A1C] via-[#0F2A1C]/55 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8A33D] px-3 py-1 text-xs font-semibold text-[#1F2A24]">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-warn px-3 py-1 text-xs font-semibold text-ink">
                                     <CalendarCheck
                                         className="h-3.5 w-3.5"
                                         aria-hidden="true"
@@ -439,15 +439,15 @@ export default function Events({ events = [] }: Props) {
                             </div>
                         </button>
                     ) : (
-                        <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-[#1F2A24]/20 bg-white px-8 py-16 text-center">
+                        <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-ink/20 bg-surface px-8 py-16 text-center">
                             <CalendarDays
-                                className="h-12 w-12 text-[#2F6F4E]/50"
+                                className="h-12 w-12 text-brand-ink/50"
                                 aria-hidden="true"
                             />
-                            <p className="mt-4 font-serif text-xl font-semibold text-[#1F2A24]">
+                            <p className="mt-4 font-serif text-xl font-semibold text-ink">
                                 No events posted yet
                             </p>
-                            <p className="mt-1 max-w-sm text-sm text-[#1F2A24]/65">
+                            <p className="mt-1 max-w-sm text-sm text-ink/65">
                                 School events are posted here as soon as they're
                                 announced — check back soon.
                             </p>
@@ -458,12 +458,12 @@ export default function Events({ events = [] }: Props) {
 
             {/* Every other posted event */}
             {otherEvents.length > 0 && (
-                <section className="border-y border-[#1F2A24]/10 bg-white">
+                <section className="border-y border-ink/10 bg-surface">
                     <div className="mx-auto max-w-7xl px-5 py-16">
-                        <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                        <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                             School events
                         </p>
-                        <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                        <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                             More events
                         </h2>
                         <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -482,10 +482,10 @@ export default function Events({ events = [] }: Props) {
             {/* Annual traditions */}
             <section>
                 <div className="mx-auto max-w-7xl px-5 py-16">
-                    <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                         Traditions we look forward to
                     </p>
-                    <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                    <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                         Annual highlights
                     </h2>
 
@@ -493,23 +493,23 @@ export default function Events({ events = [] }: Props) {
                         {ANNUAL_HIGHLIGHTS.map(({ icon: Icon, ...item }) => (
                             <div
                                 key={item.title}
-                                className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
+                                className="rounded-2xl border border-ink/10 bg-surface p-6"
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E8A33D]/15 text-[#8A5A12]">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-warn/15 text-warn-strong">
                                         <Icon
                                             className="h-5 w-5"
                                             aria-hidden="true"
                                         />
                                     </span>
-                                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#2F6F4E]">
+                                    <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-brand-ink">
                                         Every {item.label}
                                     </span>
                                 </div>
-                                <h3 className="mt-4 font-serif text-xl font-semibold text-[#1F2A24]">
+                                <h3 className="mt-4 font-serif text-xl font-semibold text-ink">
                                     {item.title}
                                 </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                                <p className="mt-2 text-sm leading-relaxed text-ink/70">
                                     {item.copy}
                                 </p>
                             </div>
@@ -520,10 +520,10 @@ export default function Events({ events = [] }: Props) {
 
             {/* Staying updated */}
             <section className="mx-auto max-w-7xl px-5 py-16">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[#2F6F4E] uppercase">
+                <p className="text-xs font-semibold tracking-[0.14em] text-brand-ink uppercase">
                     Never miss a date
                 </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-[#1F2A24]">
+                <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">
                     How families stay updated
                 </h2>
 
@@ -532,10 +532,10 @@ export default function Events({ events = [] }: Props) {
                         ({ icon: Icon, ...step }, index) => (
                             <li
                                 key={step.title}
-                                className="rounded-2xl bg-[#1B4D34] p-6 text-[#FBF8F2]"
+                                className="rounded-2xl bg-[#1B4D34] p-6 text-on-brand"
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-[#E8A33D]">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-warn">
                                         <Icon
                                             className="h-5 w-5"
                                             aria-hidden="true"
@@ -551,7 +551,7 @@ export default function Events({ events = [] }: Props) {
                                 <h3 className="mt-4 font-serif text-lg font-semibold">
                                     {step.title}
                                 </h3>
-                                <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/75">
+                                <p className="mt-2 text-sm leading-relaxed text-on-brand/75">
                                     {step.copy}
                                 </p>
                             </li>
@@ -564,15 +564,15 @@ export default function Events({ events = [] }: Props) {
             <section className="px-5 pb-16">
                 <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1B4D34] px-6 py-12 sm:px-12">
                     <div
-                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#E8A33D]/20 blur-2xl"
+                        className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-warn/20 blur-2xl"
                         aria-hidden="true"
                     />
                     <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
+                            <h2 className="font-serif text-3xl font-semibold text-on-brand">
                                 Questions about an event?
                             </h2>
-                            <p className="mt-2 max-w-lg text-sm text-[#FBF8F2]/80">
+                            <p className="mt-2 max-w-lg text-sm text-on-brand/80">
                                 Our office is happy to help with schedules, what
                                 to bring, and who can attend.
                             </p>
@@ -580,13 +580,13 @@ export default function Events({ events = [] }: Props) {
                         <div className="flex shrink-0 flex-wrap gap-3">
                             <Link
                                 href="/contact"
-                                className="inline-flex min-h-12 items-center rounded-full border border-[#FBF8F2]/40 px-6 text-sm font-semibold text-[#FBF8F2] transition-colors hover:border-[#FBF8F2] hover:bg-white/5"
+                                className="inline-flex min-h-12 items-center rounded-full border border-cream/40 px-6 text-sm font-semibold text-on-brand transition-colors hover:border-cream hover:bg-white/5"
                             >
                                 Contact Us
                             </Link>
                             <Link
                                 href="/admission"
-                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#E8A33D] px-6 text-sm font-semibold text-[#1F2A24] shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-warn px-6 text-sm font-semibold text-ink shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
                             >
                                 Enroll Now
                                 <ArrowRight

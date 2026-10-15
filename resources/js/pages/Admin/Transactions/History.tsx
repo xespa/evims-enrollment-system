@@ -56,9 +56,9 @@ type Props = {
 };
 
 const INPUT_CLASS =
-    'min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+    'min-h-10 rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none';
 
-const TH_CLASS = 'px-4 py-3 text-left font-semibold text-[#1F2A24]/70';
+const TH_CLASS = 'px-4 py-3 text-left font-semibold text-ink/70';
 
 const EMPTY_FILTERS: Filters = {
     status: '',
@@ -145,20 +145,20 @@ export default function History({
         <>
             <Head title="Payment History" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <Link
                         href={transactionsIndex().url}
-                        className="mb-3 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#2F6F4E] hover:underline"
+                        className="mb-3 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-brand-ink hover:underline"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Billing &amp; Collections
                     </Link>
                     <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             Payment History
                         </h1>
-                        <p className="mt-1 text-sm text-[#1F2A24]/65">
+                        <p className="mt-1 text-sm text-ink/65">
                             Every GCash and cash payment, newest first. Voided
                             payments stay listed so the record is complete.
                         </p>
@@ -171,13 +171,13 @@ export default function History({
                             e.preventDefault();
                             visit({});
                         }}
-                        className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4"
+                        className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-ink/10 bg-surface p-4"
                     >
-                        <label className="flex w-full flex-col gap-1 text-xs font-medium text-[#1F2A24]/60 sm:w-auto sm:min-w-[220px] sm:flex-1">
+                        <label className="flex w-full flex-col gap-1 text-xs font-medium text-ink/60 sm:w-auto sm:min-w-[220px] sm:flex-1">
                             Search
                             <span className="relative">
                                 <Search
-                                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                                     aria-hidden="true"
                                 />
                                 <input
@@ -198,7 +198,7 @@ export default function History({
                         {selects.map((select) => (
                             <label
                                 key={select.key}
-                                className="flex w-[calc(50%-0.375rem)] flex-col gap-1 text-xs font-medium text-[#1F2A24]/60 sm:w-auto"
+                                className="flex w-[calc(50%-0.375rem)] flex-col gap-1 text-xs font-medium text-ink/60 sm:w-auto"
                             >
                                 {select.label}
                                 <select
@@ -229,7 +229,7 @@ export default function History({
 
                         <button
                             type="submit"
-                            className="min-h-11 flex-1 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:flex-none"
+                            className="min-h-11 flex-1 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-deep sm:flex-none"
                         >
                             Search
                         </button>
@@ -241,7 +241,7 @@ export default function History({
                                     setDraft(EMPTY_FILTERS);
                                     visit(EMPTY_FILTERS);
                                 }}
-                                className="min-h-10 rounded-full px-3 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                                className="min-h-10 rounded-full px-3 text-sm font-medium text-ink/60 hover:text-ink"
                             >
                                 Clear
                             </button>
@@ -258,11 +258,11 @@ export default function History({
                                 <li key={payment.id}>
                                     <Link
                                         href={transactionShow(payment.id).url}
-                                        className="block rounded-2xl border border-[#1F2A24]/10 bg-white p-4 transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none"
+                                        className="block rounded-2xl border border-ink/10 bg-surface p-4 transition-colors hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
                                     >
                                         <div className="flex items-start justify-between gap-3">
                                             <span
-                                                className={`text-lg font-semibold tabular-nums ${isVoided ? 'text-[#1F2A24]/50 line-through' : 'text-[#1F2A24]'}`}
+                                                className={`text-lg font-semibold tabular-nums ${isVoided ? 'text-ink/50 line-through' : 'text-ink'}`}
                                             >
                                                 {formatCurrency(payment.amount)}
                                             </span>
@@ -272,11 +272,11 @@ export default function History({
                                                 {STATUS_LABELS[payment.status]}
                                             </span>
                                         </div>
-                                        <p className="mt-1 font-medium break-words text-[#1F2A24]">
+                                        <p className="mt-1 font-medium break-words text-ink">
                                             {student.last_name},{' '}
                                             {student.first_name}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-ink/60">
                                             Installment #
                                             {
                                                 payment.installment
@@ -285,7 +285,7 @@ export default function History({
                                             · Application #
                                             {payment.enrollment_id}
                                         </p>
-                                        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-[#1F2A24]/10 pt-3 text-xs text-[#1F2A24]/70">
+                                        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-ink/10 pt-3 text-xs text-ink/70">
                                             <MethodLabel
                                                 method={payment.method}
                                             />
@@ -294,7 +294,7 @@ export default function History({
                                                     payment.created_at,
                                                 )}
                                             </span>
-                                            <span className="w-full truncate font-mono text-[#1F2A24]/60">
+                                            <span className="w-full truncate font-mono text-ink/60">
                                                 {referenceId(payment)}
                                             </span>
                                         </div>
@@ -304,16 +304,16 @@ export default function History({
                         })}
 
                         {payments.data.length === 0 && (
-                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-10 text-center text-sm text-[#1F2A24]/65">
+                            <li className="rounded-2xl border border-ink/10 bg-surface px-4 py-10 text-center text-sm text-ink/65">
                                 No payments found.
                             </li>
                         )}
                     </ul>
 
                     {/* Table from tablet width up */}
-                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
-                        <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
-                            <thead className="bg-[#2F6F4E]/5">
+                    <div className="hidden overflow-x-auto rounded-2xl border border-ink/10 bg-surface md:block">
+                        <table className="min-w-full divide-y divide-ink/10 text-sm">
+                            <thead className="bg-brand/5">
                                 <tr>
                                     <th
                                         scope="col"
@@ -338,7 +338,7 @@ export default function History({
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
+                            <tbody className="divide-y divide-ink/10">
                                 {payments.data.map((payment) => {
                                     const student = payment.enrollment.student;
                                     const href = transactionShow(
@@ -351,10 +351,10 @@ export default function History({
                                         <tr
                                             key={payment.id}
                                             onClick={() => router.visit(href)}
-                                            className="cursor-pointer hover:bg-[#2F6F4E]/5"
+                                            className="cursor-pointer hover:bg-brand/5"
                                         >
                                             <td
-                                                className={`px-4 py-3 text-right font-semibold whitespace-nowrap tabular-nums ${isVoided ? 'text-[#1F2A24]/50 line-through' : 'text-[#1F2A24]'}`}
+                                                className={`px-4 py-3 text-right font-semibold whitespace-nowrap tabular-nums ${isVoided ? 'text-ink/50 line-through' : 'text-ink'}`}
                                             >
                                                 <Link
                                                     href={href}
@@ -384,10 +384,10 @@ export default function History({
                                                     method={payment.method}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]">
+                                            <td className="px-4 py-3 text-ink">
                                                 {student.last_name},{' '}
                                                 {student.first_name}
-                                                <span className="block text-xs text-[#1F2A24]/60">
+                                                <span className="block text-xs text-ink/60">
                                                     Installment #
                                                     {
                                                         payment.installment
@@ -397,10 +397,10 @@ export default function History({
                                                     {payment.enrollment_id}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-[#1F2A24]/70">
+                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-ink/70">
                                                 {referenceId(payment)}
                                             </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-[#1F2A24]/70">
+                                            <td className="px-4 py-3 whitespace-nowrap text-ink/70">
                                                 {formatDateTime(
                                                     payment.created_at,
                                                 )}
@@ -413,7 +413,7 @@ export default function History({
                                     <tr>
                                         <td
                                             colSpan={6}
-                                            className="px-4 py-10 text-center text-[#1F2A24]/65"
+                                            className="px-4 py-10 text-center text-ink/65"
                                         >
                                             No payments found.
                                         </td>
@@ -425,7 +425,7 @@ export default function History({
 
                     {/* Pagination */}
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <p className="text-sm text-[#1F2A24]/60">
+                        <p className="text-sm text-ink/60">
                             {payments.total > 0
                                 ? `Showing ${payments.from}–${payments.to} of ${payments.total}`
                                 : 'Showing 0 results'}
@@ -441,8 +441,8 @@ export default function History({
                                     preserveScroll
                                     className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm ${
                                         link.active
-                                            ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                            : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                            ? 'border-brand bg-brand text-white'
+                                            : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                     } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                 />
                             ))}

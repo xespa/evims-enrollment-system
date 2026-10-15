@@ -37,19 +37,19 @@ export default function CookieNotice() {
     return (
         <section
             aria-label="Cookie notice"
-            className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-3xl rounded-2xl border border-[#1F2A24]/10 bg-white p-4 text-[#1F2A24] shadow-lg sm:flex sm:items-center sm:gap-4 sm:p-5"
+            className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-3xl rounded-2xl border border-ink/10 bg-surface p-4 text-ink shadow-lg sm:flex sm:items-center sm:gap-4 sm:p-5"
         >
             <div className="flex gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand-ink">
                     <Cookie className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <p className="text-sm leading-relaxed text-[#1F2A24]/80">
+                <p className="text-sm leading-relaxed text-ink/80">
                     We use cookies only to keep you signed in, protect your
                     forms and payments, and remember your settings. No
                     tracking or ads.{' '}
                     <Link
                         href={`${terms.url()}#cookies`}
-                        className="font-medium text-[#2F6F4E] underline underline-offset-2 hover:no-underline"
+                        className="font-medium text-brand-ink underline underline-offset-2 hover:no-underline"
                     >
                         Learn more
                     </Link>
@@ -58,7 +58,7 @@ export default function CookieNotice() {
             <button
                 type="button"
                 onClick={dismiss}
-                className="mt-3 min-h-10 w-full shrink-0 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none sm:mt-0 sm:w-auto"
+                className="mt-3 min-h-10 w-full shrink-0 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:outline-none sm:mt-0 sm:w-auto"
             >
                 Got it
             </button>

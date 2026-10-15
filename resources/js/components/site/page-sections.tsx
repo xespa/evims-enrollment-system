@@ -63,15 +63,15 @@ export function PageSwitcher({
                                 aria-current={isCurrent ? 'page' : undefined}
                                 className={`flex min-h-11 flex-col justify-center rounded-xl border px-4 py-1.5 transition-colors ${
                                     isCurrent
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                        : 'border-[#1F2A24]/10 bg-white text-[#1F2A24] hover:border-[#2F6F4E]/40 hover:bg-[#2F6F4E]/5'
+                                        ? 'border-brand bg-brand text-white'
+                                        : 'border-ink/10 bg-surface text-ink hover:border-brand/40 hover:bg-brand/5'
                                 }`}
                             >
                                 <span className="text-sm font-semibold">
                                     {page.title}
                                 </span>
                                 <span
-                                    className={`text-[11px] ${isCurrent ? 'text-white/75' : 'text-[#1F2A24]/55'}`}
+                                    className={`text-[11px] ${isCurrent ? 'text-white/75' : 'text-ink/55'}`}
                                 >
                                     {page.subtitle}
                                 </span>
@@ -107,11 +107,11 @@ export function PageHero({
     return (
         <section className="relative overflow-hidden">
             <div
-                className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-[#E8A33D]/15 blur-3xl"
+                className="absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-warn/15 blur-3xl"
                 aria-hidden="true"
             />
             <div
-                className="absolute top-1/2 -left-40 h-80 w-80 rounded-full bg-[#2F6F4E]/10 blur-3xl"
+                className="absolute top-1/2 -left-40 h-80 w-80 rounded-full bg-brand/10 blur-3xl"
                 aria-hidden="true"
             />
 
@@ -119,29 +119,29 @@ export function PageHero({
                 {nav}
 
                 <div className="mt-12 max-w-3xl lg:mt-16">
-                    <p className="text-sm font-medium text-[#1F2A24]/60">
+                    <p className="text-sm font-medium text-ink/60">
                         <Link
                             href="/"
-                            className="hover:text-[#2F6F4E] hover:underline"
+                            className="hover:text-brand-ink hover:underline"
                         >
                             Home
                         </Link>
                         <span aria-hidden="true"> / </span>
                         {section}
                     </p>
-                    <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                    <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                         {eyebrow}
                     </span>
-                    <h1 className="mt-4 font-serif text-4xl leading-[1.05] font-semibold tracking-tight text-[#1F2A24] sm:text-5xl lg:text-6xl">
+                    <h1 className="mt-4 font-serif text-4xl leading-[1.05] font-semibold tracking-tight text-ink sm:text-5xl lg:text-6xl">
                         {title}
                     </h1>
-                    <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#1F2A24]/70 sm:text-lg">
+                    <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink/70 sm:text-lg">
                         {intro}
                     </p>
                     <div className="mt-8 flex flex-wrap gap-3">
                         <Link
                             href={primaryAction.href}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                         >
                             {primaryAction.label}
                             <ArrowRight
@@ -151,7 +151,7 @@ export function PageHero({
                         </Link>
                         <Link
                             href={secondaryAction.href}
-                            className="inline-flex min-h-12 items-center rounded-full border border-[#1F2A24]/15 px-6 text-sm font-semibold text-[#1F2A24] transition-colors hover:border-[#1F2A24]/30 hover:bg-[#1F2A24]/5"
+                            className="inline-flex min-h-12 items-center rounded-full border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-ink/5"
                         >
                             {secondaryAction.label}
                         </Link>
@@ -162,18 +162,18 @@ export function PageHero({
                     {stats.map(({ icon: Icon, value, label }, index) => (
                         <div
                             key={`${label}-${index}`}
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white/80 p-4 backdrop-blur sm:p-5"
+                            className="rounded-2xl border border-ink/10 bg-white/80 p-4 backdrop-blur sm:p-5"
                         >
                             <Icon
-                                className="h-5 w-5 text-[#2F6F4E]"
+                                className="h-5 w-5 text-brand-ink"
                                 aria-hidden="true"
                             />
                             <dt className="sr-only">{label}</dt>
                             <dd>
-                                <span className="mt-3 block font-serif text-2xl font-semibold text-[#1F2A24] sm:text-3xl">
+                                <span className="mt-3 block font-serif text-2xl font-semibold text-ink sm:text-3xl">
                                     {value}
                                 </span>
-                                <span className="mt-0.5 block text-xs text-[#1F2A24]/65 sm:text-sm">
+                                <span className="mt-0.5 block text-xs text-ink/65 sm:text-sm">
                                     {label}
                                 </span>
                             </dd>
@@ -200,11 +200,11 @@ export function PageSection({
     const inner = (
         <div className="mx-auto max-w-7xl px-5 py-16 lg:py-20">
             <div className="max-w-3xl">
-                <h2 className="font-serif text-3xl font-semibold text-[#1F2A24] sm:text-4xl">
+                <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
                     {title}
                 </h2>
                 {description && (
-                    <p className="mt-3 text-base leading-relaxed text-[#1F2A24]/65">
+                    <p className="mt-3 text-base leading-relaxed text-ink/65">
                         {description}
                     </p>
                 )}
@@ -214,7 +214,7 @@ export function PageSection({
     );
 
     return tone === 'white' ? (
-        <section className="border-y border-[#1F2A24]/10 bg-white">
+        <section className="border-y border-ink/10 bg-surface">
             {inner}
         </section>
     ) : (
@@ -237,25 +237,25 @@ export function FeatureCards({
             {items.map(({ icon: Icon, title, copy, features }) => (
                 <article
                     key={title}
-                    className="flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-6 transition-[border-color,box-shadow] duration-200 hover:border-[#2F6F4E]/25 hover:shadow-lg hover:shadow-[#1F2A24]/5 motion-reduce:transition-none"
+                    className="flex flex-col rounded-2xl border border-ink/10 bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-brand/25 hover:shadow-lg hover:shadow-shade/5 motion-reduce:transition-none"
                 >
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2F6F4E] text-white">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand text-white">
                         <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 font-serif text-xl font-semibold text-[#1F2A24]">
+                    <h3 className="mt-4 font-serif text-xl font-semibold text-ink">
                         {title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#1F2A24]/70">
+                    <p className="mt-2 text-sm leading-relaxed text-ink/70">
                         {copy}
                     </p>
-                    <ul className="mt-5 space-y-2 border-t border-[#1F2A24]/10 pt-5">
+                    <ul className="mt-5 space-y-2 border-t border-ink/10 pt-5">
                         {features.map((feature) => (
                             <li
                                 key={feature}
-                                className="flex items-start gap-2 text-sm text-[#1F2A24]/80"
+                                className="flex items-start gap-2 text-sm text-ink/80"
                             >
                                 <CheckCircle2
-                                    className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                    className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                                     aria-hidden="true"
                                 />
                                 {feature}
@@ -289,26 +289,26 @@ export function IconCards({
                     key={title}
                     className={`group rounded-2xl p-6 ${
                         isDark
-                            ? 'bg-[#1B4D34] text-[#FBF8F2]'
-                            : 'border border-[#1F2A24]/10 bg-white'
+                            ? 'bg-[#1B4D34] text-on-brand'
+                            : 'border border-ink/10 bg-surface'
                     }`}
                 >
                     <span
                         className={`flex h-11 w-11 items-center justify-center rounded-xl ${
                             isDark
-                                ? 'bg-white/10 text-[#E8A33D]'
-                                : 'bg-[#E8A33D]/15 text-[#8A5A12]'
+                                ? 'bg-white/10 text-warn'
+                                : 'bg-warn/15 text-warn-strong'
                         }`}
                     >
                         <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <h3
-                        className={`mt-4 font-serif text-lg font-semibold ${isDark ? '' : 'text-[#1F2A24]'}`}
+                        className={`mt-4 font-serif text-lg font-semibold ${isDark ? '' : 'text-ink'}`}
                     >
                         {title}
                     </h3>
                     <p
-                        className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-[#FBF8F2]/75' : 'text-[#1F2A24]/70'}`}
+                        className={`mt-2 text-sm leading-relaxed ${isDark ? 'text-on-brand/75' : 'text-ink/70'}`}
                     >
                         {copy}
                     </p>
@@ -339,18 +339,18 @@ export function DaySchedule({ slots }: { slots: ScheduleSlot[] }) {
                             {/* The line joining one slot to the next. */}
                             {index < column.length - 1 && (
                                 <span
-                                    className="absolute top-10 bottom-0 left-[2.75rem] w-px bg-[#1F2A24]/15"
+                                    className="absolute top-10 bottom-0 left-[2.75rem] w-px bg-ink/15"
                                     aria-hidden="true"
                                 />
                             )}
-                            <span className="flex h-10 w-[5.5rem] shrink-0 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-xs font-semibold text-[#2F6F4E] tabular-nums">
+                            <span className="flex h-10 w-[5.5rem] shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-ink tabular-nums">
                                 {slot.time}
                             </span>
-                            <div className="min-w-0 flex-1 rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3">
-                                <h3 className="font-semibold text-[#1F2A24]">
+                            <div className="min-w-0 flex-1 rounded-xl border border-ink/10 bg-surface px-4 py-3">
+                                <h3 className="font-semibold text-ink">
                                     {slot.title}
                                 </h3>
-                                <p className="mt-0.5 text-sm text-[#1F2A24]/65">
+                                <p className="mt-0.5 text-sm text-ink/65">
                                     {slot.copy}
                                 </p>
                             </div>
@@ -377,27 +377,27 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
             {items.map((item) => (
                 <figure
                     key={item.name}
-                    className="flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
+                    className="flex flex-col rounded-2xl border border-ink/10 bg-surface p-6"
                 >
                     <Quote
-                        className="h-7 w-7 text-[#E8A33D]"
+                        className="h-7 w-7 text-warn"
                         aria-hidden="true"
                     />
-                    <blockquote className="mt-3 flex-1 text-[15px] leading-relaxed text-[#1F2A24]/80">
+                    <blockquote className="mt-3 flex-1 text-[15px] leading-relaxed text-ink/80">
                         “{item.quote}”
                     </blockquote>
-                    <figcaption className="mt-5 flex items-center gap-3 border-t border-[#1F2A24]/10 pt-4">
+                    <figcaption className="mt-5 flex items-center gap-3 border-t border-ink/10 pt-4">
                         <span
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-sm font-semibold text-[#2F6F4E]"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand-ink"
                             aria-hidden="true"
                         >
                             {initials(item.name)}
                         </span>
                         <span>
-                            <span className="block font-semibold text-[#1F2A24]">
+                            <span className="block font-semibold text-ink">
                                 {item.name}
                             </span>
-                            <span className="block text-xs text-[#1F2A24]/60">
+                            <span className="block text-xs text-ink/60">
                                 {item.relation}
                             </span>
                         </span>
@@ -415,15 +415,15 @@ export function Highlights({ items }: { items: Highlight[] }) {
             {items.map((item) => (
                 <div
                     key={item.title}
-                    className="rounded-2xl bg-[#1B4D34] p-8 text-center text-[#FBF8F2]"
+                    className="rounded-2xl bg-[#1B4D34] p-8 text-center text-on-brand"
                 >
-                    <p className="font-serif text-5xl font-semibold text-[#E8A33D]">
+                    <p className="font-serif text-5xl font-semibold text-warn">
                         {item.value}
                     </p>
                     <h3 className="mt-3 font-serif text-lg font-semibold">
                         {item.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#FBF8F2]/75">
+                    <p className="mt-2 text-sm leading-relaxed text-on-brand/75">
                         {item.copy}
                     </p>
                 </div>
@@ -439,23 +439,23 @@ export function TeamCards({ members }: { members: TeamMember[] }) {
             {members.map((member) => (
                 <article
                     key={member.name}
-                    className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6 text-center"
+                    className="rounded-2xl border border-ink/10 bg-surface p-6 text-center"
                 >
                     <span
-                        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#2F6F4E] to-[#1B4D34] font-serif text-xl font-semibold text-white ring-4 ring-[#E8A33D]/30"
+                        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand to-[#1B4D34] font-serif text-xl font-semibold text-white ring-4 ring-warn/30"
                         aria-hidden="true"
                     >
                         {initials(member.name) || (
                             <UserRound className="h-7 w-7" />
                         )}
                     </span>
-                    <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
+                    <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
                         {member.name}
                     </h3>
-                    <p className="mt-0.5 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                    <p className="mt-0.5 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                         {member.role}
                     </p>
-                    <p className="mt-3 text-sm leading-relaxed text-[#1F2A24]/70">
+                    <p className="mt-3 text-sm leading-relaxed text-ink/70">
                         {member.bio}
                     </p>
                 </article>
@@ -473,10 +473,10 @@ export function ContactCards({ items }: { items: ContactCard[] }) {
             {items.map(({ icon: Icon, title, lines, href, action }) => {
                 const body = (
                     <>
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-[#E8A33D]">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-warn">
                             <Icon className="h-5 w-5" aria-hidden="true" />
                         </span>
-                        <h3 className="mt-4 font-serif text-lg font-semibold text-[#FBF8F2]">
+                        <h3 className="mt-4 font-serif text-lg font-semibold text-on-brand">
                             {title}
                         </h3>
                         {lines.map((line, index) => (
@@ -484,15 +484,15 @@ export function ContactCards({ items }: { items: ContactCard[] }) {
                                 key={line}
                                 className={
                                     index === 0
-                                        ? 'mt-1.5 font-semibold break-words text-[#FBF8F2]'
-                                        : 'mt-0.5 text-sm text-[#FBF8F2]/70'
+                                        ? 'mt-1.5 font-semibold break-words text-on-brand'
+                                        : 'mt-0.5 text-sm text-on-brand/70'
                                 }
                             >
                                 {line}
                             </p>
                         ))}
                         {href && action && (
-                            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#E8A33D]">
+                            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-warn">
                                 {action}
                                 <ArrowRight
                                     className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
@@ -539,24 +539,24 @@ export function HoursCards({
             {items.map(({ icon: Icon, title, rows }) => (
                 <div
                     key={title}
-                    className="rounded-2xl border border-[#1F2A24]/10 bg-white p-6"
+                    className="rounded-2xl border border-ink/10 bg-surface p-6"
                 >
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand-ink">
                         <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 font-serif text-lg font-semibold text-[#1F2A24]">
+                    <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
                         {title}
                     </h3>
-                    <dl className="mt-3 divide-y divide-[#1F2A24]/10 text-sm">
+                    <dl className="mt-3 divide-y divide-ink/10 text-sm">
                         {rows.map((row) => (
                             <div
                                 key={row.label}
                                 className="flex items-baseline justify-between gap-3 py-2"
                             >
-                                <dt className="text-[#1F2A24]/65">
+                                <dt className="text-ink/65">
                                     {row.label}
                                 </dt>
-                                <dd className="text-right font-semibold text-[#1F2A24]">
+                                <dd className="text-right font-semibold text-ink">
                                     {row.value}
                                 </dd>
                             </div>
@@ -593,21 +593,21 @@ export function ClosingCta({
         <section className="px-5 pb-16">
             <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1B4D34] px-6 py-12 sm:px-12">
                 <div
-                    className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#E8A33D]/20 blur-2xl"
+                    className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-warn/20 blur-2xl"
                     aria-hidden="true"
                 />
                 <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 className="font-serif text-3xl font-semibold text-[#FBF8F2]">
+                        <h2 className="font-serif text-3xl font-semibold text-on-brand">
                             {title}
                         </h2>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#FBF8F2]/80">
+                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-on-brand/80">
                             {copy}
                         </p>
                     </div>
                     <Link
                         href={primaryAction.href}
-                        className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-[#E8A33D] px-7 text-base font-semibold text-[#1F2A24] shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
+                        className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-warn px-7 text-base font-semibold text-ink shadow-lg shadow-black/20 transition-colors hover:bg-[#F0B458]"
                     >
                         {primaryAction.label}
                         <ArrowRight className="h-5 w-5" aria-hidden="true" />
@@ -622,17 +622,17 @@ export function ClosingCta({
                 {previous ? (
                     <Link
                         href={previous.href}
-                        className="group flex min-h-16 items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white px-5 py-3 transition-colors hover:border-[#2F6F4E]/30"
+                        className="group flex min-h-16 items-center gap-3 rounded-2xl border border-ink/10 bg-surface px-5 py-3 transition-colors hover:border-brand/30"
                     >
                         <ArrowLeft
-                            className="h-5 w-5 shrink-0 text-[#2F6F4E] transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none"
+                            className="h-5 w-5 shrink-0 text-brand-ink transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none"
                             aria-hidden="true"
                         />
                         <span>
-                            <span className="block text-xs text-[#1F2A24]/55">
+                            <span className="block text-xs text-ink/55">
                                 Previous {siblingNoun}
                             </span>
-                            <span className="block font-semibold text-[#1F2A24]">
+                            <span className="block font-semibold text-ink">
                                 {previous.title}
                             </span>
                         </span>
@@ -643,18 +643,18 @@ export function ClosingCta({
                 {next && (
                     <Link
                         href={next.href}
-                        className="group col-start-2 flex min-h-16 items-center justify-end gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white px-5 py-3 text-right transition-colors hover:border-[#2F6F4E]/30"
+                        className="group col-start-2 flex min-h-16 items-center justify-end gap-3 rounded-2xl border border-ink/10 bg-surface px-5 py-3 text-right transition-colors hover:border-brand/30"
                     >
                         <span>
-                            <span className="block text-xs text-[#1F2A24]/55">
+                            <span className="block text-xs text-ink/55">
                                 Next {siblingNoun}
                             </span>
-                            <span className="block font-semibold text-[#1F2A24]">
+                            <span className="block font-semibold text-ink">
                                 {next.title}
                             </span>
                         </span>
                         <ArrowRight
-                            className="h-5 w-5 shrink-0 text-[#2F6F4E] transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                            className="h-5 w-5 shrink-0 text-brand-ink transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
                             aria-hidden="true"
                         />
                     </Link>

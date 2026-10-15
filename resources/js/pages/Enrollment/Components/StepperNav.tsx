@@ -42,28 +42,28 @@ export default function StepperNav({
                 aria-hidden="true"
                 className="mb-3 flex items-end justify-between gap-3"
             >
-                <p className="text-sm text-[#1F2A24]/70">
+                <p className="text-sm text-ink/70">
                     Step{' '}
-                    <span className="font-semibold text-[#1F2A24]">
+                    <span className="font-semibold text-ink">
                         {currentStep}
                     </span>{' '}
                     of {total}
-                    <span className="mx-1.5 text-[#1F2A24]/30">·</span>
-                    <span className="font-semibold text-[#2F6F4E]">
+                    <span className="mx-1.5 text-ink/30">·</span>
+                    <span className="font-semibold text-brand-ink">
                         {STEP_LABELS[currentStep - 1]}
                     </span>
                     {isOptional && (
-                        <span className="ml-2 rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-[11px] font-medium text-[#1F2A24]/60">
+                        <span className="ml-2 rounded-full bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/60">
                             Optional
                         </span>
                     )}
                 </p>
-                <p className="text-xs font-semibold text-[#1F2A24]/55 tabular-nums">
+                <p className="text-xs font-semibold text-ink/55 tabular-nums">
                     {progress}%
                 </p>
             </div>
             <div
-                className="mb-4 h-1.5 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                className="mb-4 h-1.5 overflow-hidden rounded-full bg-ink/10"
                 role="progressbar"
                 aria-label="Application progress"
                 aria-valuemin={0}
@@ -71,7 +71,7 @@ export default function StepperNav({
                 aria-valuenow={progress}
             >
                 <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#2F6F4E] to-[#3E8A63] transition-[width] duration-500 ease-out"
+                    className="h-full rounded-full bg-gradient-to-r from-brand to-[#3E8A63] transition-[width] duration-500 ease-out"
                     style={{ width: `${Math.max(progress, 4)}%` }}
                 />
             </div>
@@ -99,7 +99,7 @@ export default function StepperNav({
                                     disabled={!isReachable}
                                     aria-current={isActive ? 'step' : undefined}
                                     aria-label={`Step ${stepNumber}: ${label}${isStepOptional ? ', optional' : ''}${isCompleted ? ' (visited)' : ''}`}
-                                    className={`group flex w-[4.75rem] flex-col items-center rounded-lg px-0.5 py-1 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none ${
+                                    className={`group flex w-[4.75rem] flex-col items-center rounded-lg px-0.5 py-1 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none ${
                                         isReachable && !isActive
                                             ? 'cursor-pointer'
                                             : isActive
@@ -110,10 +110,10 @@ export default function StepperNav({
                                     <span
                                         className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all ${
                                             isCompleted
-                                                ? 'bg-[#2F6F4E] text-[#FBF8F2] group-hover:scale-105 group-hover:bg-[#25573E]'
+                                                ? 'bg-brand text-on-brand group-hover:scale-105 group-hover:bg-brand-deep'
                                                 : isActive
-                                                  ? 'bg-[#E8A33D] text-[#1F2A24] ring-4 ring-[#E8A33D]/25'
-                                                  : 'border border-dashed border-[#1F2A24]/20 bg-white text-[#1F2A24]/50'
+                                                  ? 'bg-warn text-ink ring-4 ring-warn/25'
+                                                  : 'border border-dashed border-ink/20 bg-surface text-ink/50'
                                         }`}
                                     >
                                         {isCompleted ? (
@@ -129,16 +129,16 @@ export default function StepperNav({
                                     <span
                                         className={`mt-1.5 text-center text-[11px] leading-tight ${
                                             isActive
-                                                ? 'font-semibold text-[#2F6F4E]'
+                                                ? 'font-semibold text-brand-ink'
                                                 : isCompleted
-                                                  ? 'text-[#1F2A24]/75'
-                                                  : 'text-[#1F2A24]/50'
+                                                  ? 'text-ink/75'
+                                                  : 'text-ink/50'
                                         }`}
                                     >
                                         {label}
                                     </span>
                                     {isStepOptional && (
-                                        <span className="text-[10px] text-[#1F2A24]/40">
+                                        <span className="text-[10px] text-ink/40">
                                             Optional
                                         </span>
                                     )}
@@ -146,7 +146,7 @@ export default function StepperNav({
                                 {stepNumber < STEP_LABELS.length && (
                                     <div
                                         aria-hidden="true"
-                                        className={`mt-4 h-0.5 w-4 lg:w-6 ${stepNumber < currentStep ? 'bg-[#2F6F4E]' : 'bg-[#1F2A24]/10'}`}
+                                        className={`mt-4 h-0.5 w-4 lg:w-6 ${stepNumber < currentStep ? 'bg-brand' : 'bg-ink/10'}`}
                                     />
                                 )}
                             </li>

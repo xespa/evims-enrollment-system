@@ -84,12 +84,12 @@ export default function Show({ enrollment }: Props) {
         <>
             <Head title="Tuition Payments" />
 
-            <div className="min-h-screen bg-[#FBF8F2] px-4 py-10 sm:py-12">
+            <div className="min-h-screen bg-cream px-4 py-10 sm:py-12">
                 <div className="mx-auto max-w-3xl">
                     {enrollee && (
                         <Link
                             href={route('portal.dashboard')}
-                            className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#2F6F4E] hover:underline"
+                            className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-brand-ink hover:underline"
                         >
                             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                             Back to dashboard
@@ -97,16 +97,16 @@ export default function Show({ enrollment }: Props) {
                     )}
 
                     <div className="mb-6">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold tracking-wide text-[#2F6F4E] uppercase">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-ink uppercase">
                             School Year {enrollment.school_year}
                         </span>
-                        <h1 className="mt-3 font-serif text-3xl font-semibold text-[#1F2A24]">
+                        <h1 className="mt-3 font-serif text-3xl font-semibold text-ink">
                             Tuition Payments
                         </h1>
-                        <p className="mt-1 text-sm text-[#1F2A24]/70">
+                        <p className="mt-1 text-sm text-ink/70">
                             {enrollment.student.first_name}{' '}
                             {enrollment.student.last_name} · Reference No.{' '}
-                            <span className="font-semibold text-[#1F2A24] tabular-nums">
+                            <span className="font-semibold text-ink tabular-nums">
                                 #{enrollment.id}
                             </span>
                         </p>
@@ -115,7 +115,7 @@ export default function Show({ enrollment }: Props) {
                     {successMsg && (
                         <div
                             role="status"
-                            className="mb-4 rounded-2xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-2xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {successMsg}
                         </div>
@@ -124,7 +124,7 @@ export default function Show({ enrollment }: Props) {
                     {errorMsg && (
                         <div
                             role="alert"
-                            className="mb-4 rounded-2xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A83A30]"
+                            className="mb-4 rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger-alert"
                         >
                             {errorMsg}
                         </div>
@@ -132,34 +132,34 @@ export default function Show({ enrollment }: Props) {
 
                     {enrollment.billing_contract && (
                         <dl className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                                <dt className="text-xs font-medium text-[#1F2A24]/60">
+                            <div className="rounded-2xl border border-ink/10 bg-surface p-4">
+                                <dt className="text-xs font-medium text-ink/60">
                                     Total Amount
                                 </dt>
-                                <dd className="mt-1 text-lg font-semibold text-[#1F2A24] tabular-nums">
+                                <dd className="mt-1 text-lg font-semibold text-ink tabular-nums">
                                     {formatCurrency(totalFee)}
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                                <dt className="text-xs font-medium text-[#1F2A24]/60">
+                            <div className="rounded-2xl border border-ink/10 bg-surface p-4">
+                                <dt className="text-xs font-medium text-ink/60">
                                     Paid
                                 </dt>
-                                <dd className="mt-1 text-lg font-semibold text-[#2F6F4E] tabular-nums">
+                                <dd className="mt-1 text-lg font-semibold text-brand-ink tabular-nums">
                                     {formatCurrency(totalPaid)}
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                                <dt className="text-xs font-medium text-[#1F2A24]/60">
+                            <div className="rounded-2xl border border-ink/10 bg-surface p-4">
+                                <dt className="text-xs font-medium text-ink/60">
                                     Balance
                                 </dt>
-                                <dd className="mt-1 text-lg font-semibold text-[#1F2A24] tabular-nums">
+                                <dd className="mt-1 text-lg font-semibold text-ink tabular-nums">
                                     {formatCurrency(totalFee - totalPaid)}
                                 </dd>
                             </div>
                         </dl>
                     )}
 
-                    <ul className="divide-y divide-[#1F2A24]/10 overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white">
+                    <ul className="divide-y divide-ink/10 overflow-hidden rounded-2xl border border-ink/10 bg-surface">
                         {installments.map((installment) => {
                             const paid = installmentPaid(installment);
                             const remaining =
@@ -173,22 +173,22 @@ export default function Show({ enrollment }: Props) {
                                     className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div>
-                                        <p className="text-sm font-semibold text-[#1F2A24]">
+                                        <p className="text-sm font-semibold text-ink">
                                             Installment #
                                             {installment.installment_number}
                                         </p>
-                                        <p className="text-xs text-[#1F2A24]/60">
+                                        <p className="text-xs text-ink/60">
                                             Due{' '}
                                             {formatDate(installment.due_date)}
                                         </p>
-                                        <p className="mt-0.5 text-sm text-[#1F2A24]/80 tabular-nums">
+                                        <p className="mt-0.5 text-sm text-ink/80 tabular-nums">
                                             {formatCurrency(
                                                 installment.amount_due,
                                             )}
                                             {paid > 0 &&
                                                 installment.status !==
                                                     'PAID' && (
-                                                    <span className="text-[#1F2A24]/60">
+                                                    <span className="text-ink/60">
                                                         {' '}
                                                         · {formatCurrency(
                                                             paid,
@@ -200,7 +200,7 @@ export default function Show({ enrollment }: Props) {
                                     </div>
 
                                     {installment.status === 'PAID' ? (
-                                        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#2F6F4E]/10 px-3 py-1 text-xs font-semibold text-[#2F6F4E]">
+                                        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand-ink">
                                             <CheckCircle2
                                                 className="h-3.5 w-3.5"
                                                 aria-hidden="true"
@@ -216,7 +216,7 @@ export default function Show({ enrollment }: Props) {
                                             disabled={
                                                 payingInstallmentId !== null
                                             }
-                                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-60"
+                                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep disabled:cursor-wait disabled:opacity-60"
                                         >
                                             {isPaying && (
                                                 <Loader2
@@ -233,7 +233,7 @@ export default function Show({ enrollment }: Props) {
                         })}
                     </ul>
 
-                    <p className="mt-4 text-xs text-[#1F2A24]/60">
+                    <p className="mt-4 text-xs text-ink/60">
                         You'll be taken to GCash to complete each payment
                         securely. Prefer to pay in person? Visit the school
                         cashier and we'll record it for you.

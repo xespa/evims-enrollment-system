@@ -40,7 +40,7 @@ function DateInput({
         <div>
             <label
                 htmlFor={id}
-                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1 block text-sm font-medium text-ink/80"
             >
                 {label}
             </label>
@@ -56,7 +56,7 @@ function DateInput({
                 className={INPUT_CLASS}
             />
             {error && (
-                <p id={`${id}-error`} className="mt-1 text-xs text-[#C6473B]">
+                <p id={`${id}-error`} className="mt-1 text-xs text-danger-ink">
                     {error}
                 </p>
             )}
@@ -99,10 +99,10 @@ export default function EnrollmentPeriodDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 aria-describedby={undefined}
-                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md"
+                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-md"
             >
                 <form onSubmit={save}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             {isReopening
                                 ? 'Reopen enrollment'
@@ -112,8 +112,8 @@ export default function EnrollmentPeriodDialog({
                     </DialogHeader>
 
                     <div className="space-y-5 px-6 py-5">
-                        <div className="rounded-xl bg-[#FBF8F2] p-4">
-                            <p className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
+                        <div className="rounded-xl bg-cream p-4">
+                            <p className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wide text-ink/55 uppercase">
                                 Current dates
                                 {status && (
                                     <span
@@ -126,20 +126,20 @@ export default function EnrollmentPeriodDialog({
                             {enrollmentPeriod ? (
                                 <dl className="mt-2 grid grid-cols-2 gap-3 text-sm">
                                     <div>
-                                        <dt className="text-[#1F2A24]/65">
+                                        <dt className="text-ink/65">
                                             Opens
                                         </dt>
-                                        <dd className="font-semibold text-[#1F2A24]">
+                                        <dd className="font-semibold text-ink">
                                             {formatDate(
                                                 enrollmentPeriod.opens_on,
                                             )}
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-[#1F2A24]/65">
+                                        <dt className="text-ink/65">
                                             Closes
                                         </dt>
-                                        <dd className="font-semibold text-[#1F2A24]">
+                                        <dd className="font-semibold text-ink">
                                             {formatDate(
                                                 enrollmentPeriod.closes_on,
                                             )}
@@ -147,7 +147,7 @@ export default function EnrollmentPeriodDialog({
                                     </div>
                                 </dl>
                             ) : (
-                                <p className="mt-2 text-sm text-[#1F2A24]/70">
+                                <p className="mt-2 text-sm text-ink/70">
                                     No dates set yet.
                                 </p>
                             )}
@@ -177,15 +177,15 @@ export default function EnrollmentPeriodDialog({
                             />
                         </div>
 
-                        <p className="text-sm text-[#1F2A24]/70">
+                        <p className="text-sm text-ink/70">
                             {isReopening
                                 ? `Enrollment for ${schoolYear} has closed. Pick a new closing date to accept applications for the same school year again, through the end of that day.`
                                 : 'Parents can apply from the opening date through the end of the closing date.'}
                         </p>
 
-                        <p className="flex gap-2 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2.5 text-xs leading-relaxed text-[#1F2A24]/80">
+                        <p className="flex gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-xs leading-relaxed text-ink/80">
                             <BellRing
-                                className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                                 aria-hidden="true"
                             />
                             <span>
@@ -196,11 +196,11 @@ export default function EnrollmentPeriodDialog({
                         </p>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-2 border-t border-ink/10 px-6 py-4 sm:flex-row sm:justify-end">
                         <DialogClose asChild>
                             <button
                                 type="button"
-                                className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                                className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink hover:bg-ink/5"
                             >
                                 Cancel
                             </button>
@@ -208,7 +208,7 @@ export default function EnrollmentPeriodDialog({
                         <button
                             type="submit"
                             disabled={processing || !isDirty}
-                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {processing && (
                                 <Loader2

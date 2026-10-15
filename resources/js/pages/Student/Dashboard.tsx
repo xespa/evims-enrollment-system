@@ -52,10 +52,10 @@ type Props = {
 };
 
 const PDF_LINK_CLASS =
-    'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-white px-4 py-2 text-sm font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none';
+    'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-brand/30 bg-surface px-4 py-2 text-sm font-semibold text-brand-ink shadow-sm transition-colors hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:outline-none';
 
 const MENU_ITEM_CLASS =
-    'min-h-10 cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]';
+    'min-h-10 cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink';
 
 /** The signed-in student's home, laid out like the parent portal's profile. */
 export default function Dashboard({
@@ -84,21 +84,21 @@ export default function Dashboard({
                 mustChangePassword={mustChangePassword}
             />
 
-            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
+            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-brand to-brand-deep sm:h-36" />
 
             <div className="-mt-16 flex flex-col gap-4 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
                     <div
                         aria-hidden="true"
-                        className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#FBF8F2] bg-[#2F6F4E] text-2xl font-semibold text-white shadow-sm sm:h-32 sm:w-32 sm:text-3xl"
+                        className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-cream bg-brand text-2xl font-semibold text-white shadow-sm sm:h-32 sm:w-32 sm:text-3xl"
                     >
                         {initials}
                     </div>
                     <div className="pb-1 text-center sm:text-left">
-                        <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">
+                        <h1 className="font-serif text-xl font-semibold text-ink sm:text-2xl">
                             {student.first_name} {student.last_name}
                         </h1>
-                        <p className="text-sm text-[#1F2A24]/70">
+                        <p className="text-sm text-ink/70">
                             Student · LRN{' '}
                             <span className="tabular-nums">{student.lrn}</span>
                         </p>
@@ -107,14 +107,14 @@ export default function Dashboard({
 
                 <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
                     <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none">
+                        <DropdownMenuTrigger className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:outline-none">
                             <Settings className="h-4 w-4" aria-hidden="true" />
                             Settings
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             align="end"
                             sideOffset={8}
-                            className="w-56 rounded-xl border-[#1F2A24]/10 bg-white p-1.5 text-[#1F2A24] shadow-lg"
+                            className="w-56 rounded-xl border-ink/10 bg-surface p-1.5 text-ink shadow-lg"
                         >
                             <DropdownMenuItem
                                 className={MENU_ITEM_CLASS}
@@ -123,7 +123,7 @@ export default function Dashboard({
                                 <KeyRound aria-hidden="true" />
                                 Change password
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-[#1F2A24]/10" />
+                            <DropdownMenuSeparator className="bg-ink/10" />
                             <DropdownMenuItem
                                 className={MENU_ITEM_CLASS}
                                 onSelect={() =>
@@ -140,7 +140,7 @@ export default function Dashboard({
                     <button
                         type="button"
                         onClick={() => router.post(logout().url)}
-                        className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
+                        className="min-h-11 rounded-full border border-ink/15 bg-surface px-5 py-2 text-sm font-semibold text-ink/70 shadow-sm transition-colors hover:bg-ink/5"
                     >
                         Log Out
                     </button>
@@ -151,7 +151,7 @@ export default function Dashboard({
                 {flashSuccess && (
                     <div
                         role="status"
-                        className="flex items-start gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        className="flex items-start gap-2 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                     >
                         <CheckCircle2
                             className="mt-0.5 h-4 w-4 shrink-0"
@@ -164,7 +164,7 @@ export default function Dashboard({
                 {needsNewPassword && (
                     <div
                         role="alert"
-                        className="flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn-deep sm:flex-row sm:items-center sm:justify-between"
                     >
                         <p className="flex items-start gap-2">
                             <ShieldAlert
@@ -191,7 +191,7 @@ export default function Dashboard({
                         <button
                             type="button"
                             onClick={() => setIsPasswordDialogOpen(true)}
-                            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-on-brand hover:bg-brand-deep"
                         >
                             Change password
                         </button>
@@ -226,10 +226,10 @@ export default function Dashboard({
 
             {!mustChangePassword && (
                 <section aria-labelledby="grades-heading" className="mt-8">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#1F2A24]/10 pb-3">
+                    <div className="flex items-center justify-between gap-3 border-b border-ink/10 pb-3">
                         <h2
                             id="grades-heading"
-                            className="text-sm font-medium text-[#2F6F4E]"
+                            className="text-sm font-medium text-brand-ink"
                         >
                             My grades
                         </h2>

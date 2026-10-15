@@ -7,9 +7,9 @@ import StepGuide from '../Components/StepGuide';
 
 function ReviewRow({ label, value }) {
     return (
-        <div className="flex justify-between border-b border-[#1F2A24]/10 py-1.5 text-sm">
-            <span className="text-[#1F2A24]/70">{label}</span>
-            <span className="font-medium text-[#1F2A24]">{value || '—'}</span>
+        <div className="flex justify-between border-b border-ink/10 py-1.5 text-sm">
+            <span className="text-ink/70">{label}</span>
+            <span className="font-medium text-ink">{value || '—'}</span>
         </div>
     );
 }
@@ -47,13 +47,13 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
 
     return (
         <div>
-            <h2 className="mb-3 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-3 font-serif text-xl font-semibold text-ink">
                 Review Your Application
             </h2>
             <StepGuide>Please check everything before submitting.</StepGuide>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Student
                 </h3>
                 <ReviewRow
@@ -71,7 +71,7 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Address
                 </h3>
                 <ReviewRow label="Barangay" value={data.barangay} />
@@ -83,7 +83,7 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Academic History
                 </h3>
                 <ReviewRow
@@ -97,14 +97,14 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Subjects
                 </h3>
                 <ReviewRow label="Enrolled in" value={subjectNames} />
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Documents
                 </h3>
                 <ReviewRow
@@ -126,7 +126,7 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
             </div>
 
             <div className="mb-4">
-                <h3 className="mb-1 text-sm font-semibold text-[#1F2A24]/75">
+                <h3 className="mb-1 text-sm font-semibold text-ink/75">
                     Billing
                 </h3>
                 <ReviewRow
@@ -135,10 +135,10 @@ export default function ReviewStep({ data, gradeLevels, documentsOnFile }) {
                 />
                 <ReviewRow label="Payment Schedule" value={planSummary} />
                 <div className="flex justify-between py-2 text-sm">
-                    <span className="font-semibold text-[#1F2A24]">
+                    <span className="font-semibold text-ink">
                         Total Amount to Pay
                     </span>
-                    <span className="text-base font-bold text-[#2F6F4E]">
+                    <span className="text-base font-bold text-brand-ink">
                         {selectedGrade
                             ? formatCurrency(selectedGrade.tuition_fee)
                             : '—'}

@@ -42,19 +42,19 @@ function toDateInputValue(date: Date) {
 }
 
 const INPUT_CLASS =
-    'min-h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] disabled:bg-[#1F2A24]/5 disabled:text-[#1F2A24]/40';
+    'min-h-10 w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger disabled:bg-ink/5 disabled:text-ink/40';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
+const LABEL_CLASS = 'mb-1 block text-sm font-medium text-ink/80';
 
 function FieldError({ message }: { message?: string }) {
     return message ? (
-        <p className="mt-1 text-xs text-[#C6473B]">{message}</p>
+        <p className="mt-1 text-xs text-danger-ink">{message}</p>
     ) : null;
 }
 
 function RequiredMark() {
     return (
-        <span className="text-[#C6473B]" aria-hidden="true">
+        <span className="text-danger-ink" aria-hidden="true">
             *
         </span>
     );
@@ -72,7 +72,7 @@ function SettlementRow({
 }) {
     return (
         <div
-            className={`flex justify-between gap-3 border-t border-[#1F2A24]/10 px-3 py-2 text-sm ${emphasis ? 'font-semibold' : ''}`}
+            className={`flex justify-between gap-3 border-t border-ink/10 px-3 py-2 text-sm ${emphasis ? 'font-semibold' : ''}`}
         >
             <span>{label}</span>
             <span className="tabular-nums">{children}</span>
@@ -164,15 +164,15 @@ export default function RecordCounterPaymentDialog({
     const amountButtonClass = (active: boolean) =>
         `min-h-9 rounded-full border px-3 text-xs font-medium transition-colors ${
             active
-                ? 'border-[#2F6F4E] bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                : 'border-[#1F2A24]/15 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                ? 'border-brand bg-brand/10 text-brand-ink'
+                : 'border-ink/15 text-ink/70 hover:bg-ink/5'
         }`;
 
     const formButtonClass = (active: boolean) =>
-        `flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#2F6F4E]/30 ${
+        `flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/30 ${
             active
-                ? 'border-[#2F6F4E] bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                : 'border-[#1F2A24]/15 text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                ? 'border-brand bg-brand/10 text-brand-ink'
+                : 'border-ink/15 text-ink/70 hover:bg-ink/5'
         }`;
 
     const checkDetailsMissing =
@@ -187,10 +187,10 @@ export default function RecordCounterPaymentDialog({
                 // With no student line there's no description; say so, so
                 // the dialog doesn't warn about a missing one.
                 {...(studentName ? {} : { 'aria-describedby': undefined })}
-                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-3xl"
+                className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-3xl"
             >
                 <form onSubmit={submit}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <div className="flex items-center gap-3">
                             <img
                                 src="/images/logoevims.png"
@@ -198,7 +198,7 @@ export default function RecordCounterPaymentDialog({
                                 className="h-12 w-12 shrink-0 rounded-full object-contain"
                             />
                             <div className="min-w-0">
-                                <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                                <p className="text-xs font-semibold tracking-wide text-ink/60 uppercase">
                                     Eastern Visayas International Montessori
                                     School
                                 </p>
@@ -206,7 +206,7 @@ export default function RecordCounterPaymentDialog({
                                     Acknowledgement Receipt
                                 </DialogTitle>
                                 {studentName && (
-                                    <DialogDescription className="text-sm text-[#1F2A24]/65">
+                                    <DialogDescription className="text-sm text-ink/65">
                                         {studentName} · Application #
                                         {enrollmentId}
                                     </DialogDescription>
@@ -244,7 +244,7 @@ export default function RecordCounterPaymentDialog({
                                                 ? true
                                                 : undefined
                                         }
-                                        className={`${INPUT_CLASS} font-mono tracking-wider text-[#C6473B]`}
+                                        className={`${INPUT_CLASS} font-mono tracking-wider text-danger-ink`}
                                     />
                                     <FieldError
                                         message={errors.receipt_number}
@@ -309,7 +309,7 @@ export default function RecordCounterPaymentDialog({
                                 </label>
                                 <div className="relative">
                                     <span
-                                        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-[#1F2A24]/50"
+                                        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-ink/50"
                                         aria-hidden="true"
                                     >
                                         ₱
@@ -339,7 +339,7 @@ export default function RecordCounterPaymentDialog({
                                 {amount > 0 && (
                                     <p
                                         id="counter-amount-words"
-                                        className="mt-1.5 border-b border-dashed border-[#1F2A24]/20 pb-1 text-sm text-[#1F2A24]/80 italic"
+                                        className="mt-1.5 border-b border-dashed border-ink/20 pb-1 text-sm text-ink/80 italic"
                                     >
                                         {amountInWords(amount)} Pesos (
                                         {formatCurrency(amount)})
@@ -385,7 +385,7 @@ export default function RecordCounterPaymentDialog({
                                 </div>
                                 <p
                                     id="counter-amount-help"
-                                    className={`mt-1 text-xs ${errors.amount || exceedsBalance ? 'text-[#C6473B]' : 'text-[#1F2A24]/55'}`}
+                                    className={`mt-1 text-xs ${errors.amount || exceedsBalance ? 'text-danger-ink' : 'text-ink/55'}`}
                                 >
                                     {errors.amount ??
                                         (exceedsBalance
@@ -396,11 +396,11 @@ export default function RecordCounterPaymentDialog({
                         </div>
 
                         <div className="space-y-4 md:order-1">
-                            <div className="overflow-hidden rounded-xl border border-[#1F2A24]/15">
-                                <p className="bg-[#FBF8F2] px-3 py-2 text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                            <div className="overflow-hidden rounded-xl border border-ink/15">
+                                <p className="bg-cream px-3 py-2 text-xs font-semibold tracking-wide text-ink/60 uppercase">
                                     In settlement of the following
                                 </p>
-                                <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-t border-[#1F2A24]/10 px-3 py-1.5 text-xs font-medium text-[#1F2A24]/55">
+                                <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-t border-ink/10 px-3 py-1.5 text-xs font-medium text-ink/55">
                                     <span>Particular</span>
                                     <span className="w-20 text-right">
                                         Unpaid
@@ -430,7 +430,7 @@ export default function RecordCounterPaymentDialog({
                                             return (
                                                 <li
                                                     key={installment.id}
-                                                    className="border-t border-[#1F2A24]/10"
+                                                    className="border-t border-ink/10"
                                                 >
                                                     <button
                                                         type="button"
@@ -443,7 +443,7 @@ export default function RecordCounterPaymentDialog({
                                                             )
                                                         }
                                                         title={`Pay ${formatCurrency(owedThroughHere)} to settle up to installment #${installment.installment_number}`}
-                                                        className={`grid w-full grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-[#2F6F4E]/5 focus-visible:bg-[#2F6F4E]/5 focus-visible:outline-none ${share ? '' : 'text-[#1F2A24]/55'}`}
+                                                        className={`grid w-full grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-brand/5 focus-visible:bg-brand/5 focus-visible:outline-none ${share ? '' : 'text-ink/55'}`}
                                                     >
                                                         <span>
                                                             Installment #
@@ -451,7 +451,7 @@ export default function RecordCounterPaymentDialog({
                                                                 installment.installment_number
                                                             }
                                                             {share && (
-                                                                <span className="ml-2 text-xs text-[#2F6F4E]">
+                                                                <span className="ml-2 text-xs text-brand-ink">
                                                                     {share.settles
                                                                         ? '→ Paid'
                                                                         : '→ Partially paid'}
@@ -526,7 +526,7 @@ export default function RecordCounterPaymentDialog({
                             </fieldset>
 
                             {isCheck && (
-                                <div className="space-y-3 rounded-xl bg-[#FBF8F2] p-4">
+                                <div className="space-y-3 rounded-xl bg-cream p-4">
                                     <div>
                                         <label
                                             htmlFor="counter-check-bank"
@@ -629,15 +629,15 @@ export default function RecordCounterPaymentDialog({
                         <CounterPaymentHistory enrollmentId={enrollmentId} />
                     </div>
 
-                    <div className="flex flex-col gap-4 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-col gap-4 border-t border-ink/10 px-6 py-4 sm:flex-row sm:items-end sm:justify-between">
                         <div className="text-sm">
                             <p>
-                                <span className="text-[#1F2A24]/60">By: </span>
+                                <span className="text-ink/60">By: </span>
                                 <span className="font-medium">
                                     {auth.user.name}
                                 </span>
                             </p>
-                            <p className="text-xs text-[#1F2A24]/55">
+                            <p className="text-xs text-ink/55">
                                 Cashier / Authorized Representative
                             </p>
                         </div>
@@ -645,7 +645,7 @@ export default function RecordCounterPaymentDialog({
                             <DialogClose asChild>
                                 <button
                                     type="button"
-                                    className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium hover:bg-[#1F2A24]/5"
+                                    className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-medium hover:bg-ink/5"
                                 >
                                     Cancel
                                 </button>
@@ -659,7 +659,7 @@ export default function RecordCounterPaymentDialog({
                                     !data.receipt_number.trim() ||
                                     checkDetailsMissing
                                 }
-                                className="min-h-10 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="min-h-10 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing ? 'Saving…' : 'Record payment'}
                             </button>

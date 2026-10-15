@@ -59,22 +59,22 @@ function ParentConfirmationCard({
             onSubmit={submit}
             className={`space-y-3 rounded-2xl border p-4 text-left text-sm ${
                 isDeclined
-                    ? 'border-[#C6473B]/25 bg-[#C6473B]/5'
-                    : 'border-[#E8A33D]/30 bg-[#E8A33D]/10'
+                    ? 'border-danger/25 bg-danger/5'
+                    : 'border-warn/30 bg-warn/10'
             }`}
         >
             <div className="flex items-start gap-2">
                 <UserRoundCheck
-                    className="mt-0.5 h-4 w-4 shrink-0 text-[#1F2A24]/70"
+                    className="mt-0.5 h-4 w-4 shrink-0 text-ink/70"
                     aria-hidden="true"
                 />
                 <div>
-                    <p className="font-semibold text-[#1F2A24]">
+                    <p className="font-semibold text-ink">
                         {isDeclined
                             ? 'Your parent or guardian declined your account'
                             : 'Waiting for your parent or guardian'}
                     </p>
-                    <p className="mt-0.5 text-[#1F2A24]/75">
+                    <p className="mt-0.5 text-ink/75">
                         {isDeclined
                             ? 'The school can only review your account once a parent or guardian confirms it. If this was a mistake, send the confirmation again.'
                             : parentConfirmation.isLinkExpired
@@ -89,7 +89,7 @@ function ParentConfirmationCard({
             <div>
                 <label
                     htmlFor="parent_email"
-                    className="mb-1 block text-xs font-medium text-[#1F2A24]/70"
+                    className="mb-1 block text-xs font-medium text-ink/70"
                 >
                     Parent or guardian's email
                 </label>
@@ -100,7 +100,7 @@ function ParentConfirmationCard({
                     value={data.parent_email}
                     onChange={(e) => setData('parent_email', e.target.value)}
                     aria-invalid={errors.parent_email ? true : undefined}
-                    className="h-10 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                    className="h-10 w-full rounded-lg border border-ink/15 bg-surface px-3 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger"
                 />
                 <InputError message={errors.parent_email} />
             </div>
@@ -108,7 +108,7 @@ function ParentConfirmationCard({
             <Button
                 type="submit"
                 disabled={processing}
-                className="h-10 w-full rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                className="h-10 w-full rounded-full bg-brand text-sm font-semibold text-on-brand hover:bg-brand-deep"
             >
                 {processing && <Spinner />}
                 Send confirmation email
@@ -132,17 +132,17 @@ function ResubmitIdForm() {
     return (
         <form
             onSubmit={submit}
-            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4 text-left"
+            className="rounded-2xl border border-ink/10 bg-surface p-4 text-left"
         >
             <div className="mb-2 flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-[#1F2A24]">
+                <h2 className="text-sm font-semibold text-ink">
                     Upload a new ID
                 </h2>
                 <AcceptedIdsDialog
                     trigger={
                         <button
                             type="button"
-                            className="text-xs font-semibold text-[#2F6F4E] underline-offset-2 hover:underline"
+                            className="text-xs font-semibold text-brand-ink underline-offset-2 hover:underline"
                         >
                             See accepted IDs
                         </button>
@@ -151,31 +151,31 @@ function ResubmitIdForm() {
             </div>
 
             <label
-                className={`flex h-11 cursor-pointer items-center gap-2 rounded-lg border border-dashed px-3 transition-colors focus-within:border-[#2F6F4E] focus-within:ring-[3px] focus-within:ring-[#2F6F4E]/30 hover:border-[#2F6F4E]/50 hover:bg-[#2F6F4E]/5 ${
+                className={`flex h-11 cursor-pointer items-center gap-2 rounded-lg border border-dashed px-3 transition-colors focus-within:border-brand focus-within:ring-[3px] focus-within:ring-brand/30 hover:border-brand/50 hover:bg-brand/5 ${
                     errors.valid_id
-                        ? 'border-[#C6473B]/60'
+                        ? 'border-danger/60'
                         : data.valid_id
-                          ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
-                          : 'border-[#1F2A24]/25'
+                          ? 'border-brand/40 bg-brand/5'
+                          : 'border-ink/25'
                 }`}
             >
                 {data.valid_id ? (
                     <FileCheck2
-                        className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                        className="h-4 w-4 shrink-0 text-brand-ink"
                         aria-hidden="true"
                     />
                 ) : (
                     <Upload
-                        className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                        className="h-4 w-4 shrink-0 text-brand-ink"
                         aria-hidden="true"
                     />
                 )}
                 <span
-                    className={`min-w-0 flex-1 truncate text-sm ${data.valid_id ? 'text-[#1F2A24]' : 'text-[#1F2A24]/50'}`}
+                    className={`min-w-0 flex-1 truncate text-sm ${data.valid_id ? 'text-ink' : 'text-ink/50'}`}
                 >
                     {data.valid_id?.name ?? 'Photo or scan of your ID'}
                 </span>
-                <span className="shrink-0 text-xs font-semibold text-[#2F6F4E]">
+                <span className="shrink-0 text-xs font-semibold text-brand-ink">
                     {data.valid_id ? 'Change' : 'Browse'}
                 </span>
                 <input
@@ -196,7 +196,7 @@ function ResubmitIdForm() {
                 <progress
                     value={progress.percentage}
                     max="100"
-                    className="mt-2 h-1.5 w-full overflow-hidden rounded-full accent-[#2F6F4E]"
+                    className="mt-2 h-1.5 w-full overflow-hidden rounded-full accent-brand"
                 >
                     {progress.percentage}%
                 </progress>
@@ -205,7 +205,7 @@ function ResubmitIdForm() {
             <Button
                 type="submit"
                 disabled={processing || !data.valid_id}
-                className="mt-3 h-10 w-full rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                className="mt-3 h-10 w-full rounded-full bg-brand text-sm font-semibold text-on-brand hover:bg-brand-deep"
             >
                 {processing && <Spinner />}
                 Send for review
@@ -231,7 +231,7 @@ export default function AccountStatus({
     const title = isRejected ? 'Account Not Approved' : 'Awaiting Approval';
 
     return (
-        <div className="flex justify-center bg-[#FBF8F2] px-4 py-10">
+        <div className="flex justify-center bg-cream px-4 py-10">
             <Head title={title} />
 
             <div className="w-full max-w-md space-y-4">
@@ -239,8 +239,8 @@ export default function AccountStatus({
                     <div
                         className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full ${
                             isRejected
-                                ? 'bg-[#C6473B]/10 text-[#C6473B]'
-                                : 'bg-[#E8A33D]/15 text-[#a4670f]'
+                                ? 'bg-danger/10 text-danger-ink'
+                                : 'bg-warn/15 text-warn-ink'
                         }`}
                     >
                         {isRejected ? (
@@ -252,7 +252,7 @@ export default function AccountStatus({
                             <Clock className="h-6 w-6" aria-hidden="true" />
                         )}
                     </div>
-                    <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
                         {title}
                     </h1>
                 </div>
@@ -260,7 +260,7 @@ export default function AccountStatus({
                 {props.flash?.success && (
                     <div
                         role="status"
-                        className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                     >
                         {props.flash.success}
                     </div>
@@ -269,7 +269,7 @@ export default function AccountStatus({
                 {props.flash?.error && (
                     <div
                         role="alert"
-                        className="rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#9A3329]"
+                        className="rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger-deep"
                     >
                         {props.flash.error}
                     </div>
@@ -277,7 +277,7 @@ export default function AccountStatus({
 
                 {isRejected ? (
                     <>
-                        <p className="text-center text-sm text-[#1F2A24]/70">
+                        <p className="text-center text-sm text-ink/70">
                             The school couldn't approve your account yet. Here's
                             what to fix:
                         </p>
@@ -286,12 +286,12 @@ export default function AccountStatus({
                             {rejectionReasons.map((reason) => (
                                 <li
                                     key={reason.label}
-                                    className="rounded-xl border border-[#C6473B]/20 bg-[#C6473B]/5 px-4 py-3 text-sm"
+                                    className="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm"
                                 >
-                                    <p className="font-semibold text-[#1F2A24]">
+                                    <p className="font-semibold text-ink">
                                         {reason.label}
                                     </p>
-                                    <p className="mt-0.5 text-[#1F2A24]/75">
+                                    <p className="mt-0.5 text-ink/75">
                                         {reason.guidance}
                                     </p>
                                 </li>
@@ -299,11 +299,11 @@ export default function AccountStatus({
                         </ul>
 
                         {rejectionNote && (
-                            <div className="rounded-xl border border-[#1F2A24]/10 bg-white px-4 py-3 text-sm">
-                                <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                            <div className="rounded-xl border border-ink/10 bg-surface px-4 py-3 text-sm">
+                                <p className="text-xs font-semibold tracking-wide text-ink/60 uppercase">
                                     Note from the school
                                 </p>
-                                <p className="mt-1 text-[#1F2A24]">
+                                <p className="mt-1 text-ink">
                                     {rejectionNote}
                                 </p>
                             </div>
@@ -311,7 +311,7 @@ export default function AccountStatus({
 
                         <ResubmitIdForm />
 
-                        <p className="text-center text-xs text-[#1F2A24]/60">
+                        <p className="text-center text-xs text-ink/60">
                             Questions? Contact the school registrar.
                         </p>
                     </>
@@ -322,7 +322,7 @@ export default function AccountStatus({
                                 parentConfirmation={parentConfirmation}
                             />
                         ) : (
-                            <p className="text-center text-sm text-[#1F2A24]/70">
+                            <p className="text-center text-sm text-ink/70">
                                 {hasResubmittedId
                                     ? 'We received your new ID. The school is checking it now.'
                                     : 'Your email is confirmed. The school is now checking your valid ID to verify your account.'}{' '}
@@ -331,11 +331,11 @@ export default function AccountStatus({
                             </p>
                         )}
 
-                        <div className="rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#1F2A24]">
+                        <div className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-ink">
                             <p className="font-semibold">
                                 You can't submit an enrollment application yet
                             </p>
-                            <p className="mt-0.5 text-[#1F2A24]/75">
+                            <p className="mt-0.5 text-ink/75">
                                 Applications open for your account once it's
                                 verified. Then you can enroll your children,
                                 upload documents, and pay online.
@@ -349,7 +349,7 @@ export default function AccountStatus({
                         href={route('portal.logout')}
                         method="post"
                         as="button"
-                        className="text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
+                        className="text-sm font-medium text-ink/60 hover:text-ink"
                     >
                         Log out
                     </Link>

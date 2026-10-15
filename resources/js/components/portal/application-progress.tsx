@@ -74,24 +74,24 @@ export default function ApplicationProgress({
                         aria-hidden="true"
                         className={cn(
                             'h-1.5 rounded-full',
-                            step.state === 'done' && 'bg-[#2F6F4E]',
-                            step.state === 'current' && 'bg-[#E8A33D]',
-                            step.state === 'upcoming' && 'bg-[#1F2A24]/10',
-                            step.state === 'failed' && 'bg-[#C6473B]',
+                            step.state === 'done' && 'bg-brand',
+                            step.state === 'current' && 'bg-warn',
+                            step.state === 'upcoming' && 'bg-ink/10',
+                            step.state === 'failed' && 'bg-danger',
                         )}
                     />
                     <span
                         className={cn(
                             'flex items-center gap-1 text-[11px] leading-tight font-medium sm:text-xs',
                             step.state === 'upcoming'
-                                ? 'text-[#1F2A24]/50'
-                                : 'text-[#1F2A24]/80',
-                            step.state === 'failed' && 'text-[#A83A30]',
+                                ? 'text-ink/50'
+                                : 'text-ink/80',
+                            step.state === 'failed' && 'text-danger-alert',
                         )}
                     >
                         {step.state === 'done' && (
                             <Check
-                                className="hidden h-3 w-3 shrink-0 text-[#2F6F4E] sm:block"
+                                className="hidden h-3 w-3 shrink-0 text-brand-ink sm:block"
                                 aria-hidden="true"
                             />
                         )}

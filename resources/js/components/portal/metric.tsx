@@ -14,14 +14,14 @@ export default function Metric({
     emphasis?: boolean;
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-xl border border-[#1F2A24]/10 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-3 rounded-xl border border-ink/10 bg-surface p-4 shadow-sm">
             <span
                 aria-hidden="true"
                 className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
                     emphasis
-                        ? 'bg-[#C6473B]/10 text-[#A83A30]'
-                        : 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+                        ? 'bg-danger/10 text-danger-alert'
+                        : 'bg-brand/10 text-brand-ink',
                 )}
             >
                 <Icon className="h-4 w-4" />
@@ -30,12 +30,12 @@ export default function Metric({
                 <p
                     className={cn(
                         'truncate text-lg font-semibold tabular-nums',
-                        emphasis ? 'text-[#A83A30]' : 'text-[#1F2A24]',
+                        emphasis ? 'text-danger-alert' : 'text-ink',
                     )}
                 >
                     {value}
                 </p>
-                <p className="text-xs text-[#1F2A24]/65">{label}</p>
+                <p className="text-xs text-ink/65">{label}</p>
             </div>
         </div>
     );

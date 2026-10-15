@@ -93,11 +93,11 @@ function enrollState(
 
 const TONES: Record<EnrollState['tone'], string> = {
     primary:
-        'bg-[#2F6F4E] text-[#FBF8F2] shadow-md shadow-[#2F6F4E]/25 hover:bg-[#25573E] hover:shadow-lg hover:shadow-[#2F6F4E]/30',
+        'bg-brand text-on-brand shadow-md shadow-brand/25 hover:bg-brand-deep hover:shadow-lg hover:shadow-brand/30',
     waiting:
-        'border border-[#E8A33D]/40 bg-[#E8A33D]/10 text-[#8A5A12] hover:bg-[#E8A33D]/20',
-    action: 'border border-[#C6473B]/30 bg-[#C6473B]/5 text-[#9A3329] hover:bg-[#C6473B]/10',
-    muted: 'border border-[#1F2A24]/15 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5',
+        'border border-warn/40 bg-warn/10 text-warn-strong hover:bg-warn/20',
+    action: 'border border-danger/30 bg-danger/5 text-danger-deep hover:bg-danger/10',
+    muted: 'border border-ink/15 bg-surface text-ink/70 hover:bg-ink/5',
 };
 
 export default function EnrollButton({
@@ -124,11 +124,11 @@ export default function EnrollButton({
             aria-label={
                 state.hint ? `${state.label}, ${state.hint}` : state.label
             }
-            className={`group relative inline-flex min-h-11 items-center gap-2.5 rounded-full py-1.5 pr-4 pl-3.5 text-left transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] ${
+            className={`group relative inline-flex min-h-11 items-center gap-2.5 rounded-full py-1.5 pr-4 pl-3.5 text-left transition-all duration-200 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] ${
                 fullWidth ? 'w-full justify-center' : ''
             } ${TONES[state.tone]} ${
                 isCurrentPage
-                    ? 'ring-2 ring-[#2F6F4E]/30 ring-offset-2 ring-offset-[#FBF8F2]'
+                    ? 'ring-2 ring-brand/30 ring-offset-2 ring-offset-cream'
                     : ''
             }`}
         >
@@ -137,8 +137,8 @@ export default function EnrollButton({
                     className="relative flex h-2 w-2 shrink-0"
                     aria-hidden="true"
                 >
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#E8A33D] opacity-75 motion-reduce:animate-none" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#E8A33D]" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warn opacity-75 motion-reduce:animate-none" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-warn" />
                 </span>
             )}
 
@@ -150,7 +150,7 @@ export default function EnrollButton({
                     <span
                         className={`text-[10.5px] font-medium tracking-wide whitespace-nowrap ${
                             state.tone === 'primary'
-                                ? 'text-[#FBF8F2]/75'
+                                ? 'text-on-brand/75'
                                 : 'opacity-75'
                         }`}
                     >

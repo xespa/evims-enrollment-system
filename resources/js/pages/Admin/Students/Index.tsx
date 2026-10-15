@@ -26,10 +26,10 @@ function countMissingDocuments(enrollment) {
 }
 
 const PAYMENT_STATUS = {
-    UNPAID: { label: 'Unpaid', className: 'bg-[#1F2A24]/5 text-[#1F2A24]/70' },
+    UNPAID: { label: 'Unpaid', className: 'bg-ink/5 text-ink/70' },
     PARTIALLY_PAID: {
         label: 'Partially paid',
-        className: 'bg-[#E8A33D]/15 text-[#a4670f]',
+        className: 'bg-warn/15 text-warn-ink',
     },
     PAID: { label: 'Fully paid', className: 'bg-green-100 text-green-800' },
 };
@@ -62,7 +62,7 @@ const SELECT_FILTER_KEYS = [
 ];
 
 const SELECT_CLASS =
-    'min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+    'min-h-10 rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none';
 
 function formatPeso(value) {
     return new Intl.NumberFormat('en-PH', {
@@ -93,7 +93,7 @@ function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
     const payment = enrollment.payment;
 
     if (!payment) {
-        return <span className="text-xs text-[#1F2A24]/50">Not billed</span>;
+        return <span className="text-xs text-ink/50">Not billed</span>;
     }
 
     const status = PAYMENT_STATUS[payment.status];
@@ -106,9 +106,9 @@ function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
             >
                 {status.label}
             </span>
-            <p className="mt-1 text-xs text-[#1F2A24]/60 tabular-nums">
+            <p className="mt-1 text-xs text-ink/60 tabular-nums">
                 {formatPeso(payment.paid)} of {formatPeso(payment.total)}
-                <span className="text-[#1F2A24]/45">
+                <span className="text-ink/45">
                     {' '}
                     · {payment.channel_label}
                 </span>
@@ -116,7 +116,7 @@ function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
             <button
                 type="button"
                 onClick={onViewInstallments}
-                className="mt-1 mr-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                className="mt-1 mr-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline"
             >
                 View installments
             </button>
@@ -124,14 +124,14 @@ function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
                 <button
                     type="button"
                     onClick={onRecord}
-                    className="mt-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                    className="mt-1 min-h-8 rounded-full px-1.5 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline"
                 >
                     Record payment
                 </button>
             ) : (
                 enrollment.enrollment_status !== 'APPROVED' &&
                 payment.balance > 0 && (
-                    <p className="mt-1 text-xs text-[#1F2A24]/45">
+                    <p className="mt-1 text-xs text-ink/45">
                         Payable once approved
                     </p>
                 )
@@ -189,7 +189,7 @@ function ApplicationStatusBadge({
 
 function DocumentsBadge({ missingCount }: { missingCount: number }) {
     return missingCount > 0 ? (
-        <span className="inline-block rounded-full bg-[#E8A33D]/15 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-[#a4670f]">
+        <span className="inline-block rounded-full bg-warn/15 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-warn-ink">
             {missingCount} missing
         </span>
     ) : (
@@ -202,7 +202,7 @@ function DocumentsBadge({ missingCount }: { missingCount: number }) {
 function EmailNotVerifiedBadge() {
     return (
         <span
-            className="mt-1 block w-fit rounded-full bg-[#E8A33D]/15 px-2 py-0.5 text-xs font-medium text-[#a4670f]"
+            className="mt-1 block w-fit rounded-full bg-warn/15 px-2 py-0.5 text-xs font-medium text-warn-ink"
             title="The student portal account's email address hasn't been confirmed yet."
         >
             Email not verified
@@ -221,7 +221,7 @@ function LrnValue({ student }: { student: ApplicationRow['student'] }) {
     return reviewApplications ? (
         <AssignLrnForm studentId={student.id} />
     ) : (
-        <span className="text-[#1F2A24]/50">Not assigned</span>
+        <span className="text-ink/50">Not assigned</span>
     );
 }
 
@@ -263,7 +263,7 @@ function SectionCell({
 
     if (!canPlace) {
         return (
-            <span className="text-[#1F2A24]/70">
+            <span className="text-ink/70">
                 {enrollment.section
                     ? `Section ${enrollment.section.name}`
                     : '—'}
@@ -292,7 +292,7 @@ function SectionCell({
                 disabled={isSaving}
                 aria-label={`Section of ${enrollment.student.first_name} ${enrollment.student.last_name} in ${enrollment.school_year}`}
                 aria-invalid={!!error}
-                className="min-h-9 w-full min-w-28 rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:opacity-60 aria-[invalid=true]:border-[#C6473B]"
+                className="min-h-9 w-full min-w-28 rounded-lg border border-ink/15 bg-surface px-2 py-1 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none disabled:opacity-60 aria-[invalid=true]:border-danger"
             >
                 <option value="">Not placed</option>
                 {sections.map((section) => {
@@ -313,7 +313,7 @@ function SectionCell({
                     );
                 })}
             </select>
-            {error && <p className="mt-1 text-xs text-[#C6473B]">{error}</p>}
+            {error && <p className="mt-1 text-xs text-danger-ink">{error}</p>}
         </div>
     );
 }
@@ -333,10 +333,10 @@ function ApplicationCard({
     const student = enrollment.student;
 
     return (
-        <li className="rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+        <li className="rounded-2xl border border-ink/10 bg-surface p-4">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="font-medium break-words text-[#1F2A24]">
+                    <p className="font-medium break-words text-ink">
                         {student.last_name}, {student.first_name}
                     </p>
                     {!enrollment.parent_email_verified && (
@@ -348,19 +348,19 @@ function ApplicationCard({
 
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/55">Grade Level</dt>
-                    <dd className="mt-0.5 text-[#1F2A24]/80">
+                    <dt className="text-xs text-ink/55">Grade Level</dt>
+                    <dd className="mt-0.5 text-ink/80">
                         {enrollment.grade_level?.name || '—'}
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/55">School Year</dt>
-                    <dd className="mt-0.5 text-[#1F2A24]/80">
+                    <dt className="text-xs text-ink/55">School Year</dt>
+                    <dd className="mt-0.5 text-ink/80">
                         {enrollment.school_year}
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/55">Section</dt>
+                    <dt className="text-xs text-ink/55">Section</dt>
                     <dd className="mt-0.5">
                         <SectionCell
                             enrollment={enrollment}
@@ -369,7 +369,7 @@ function ApplicationCard({
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/55">Documents</dt>
+                    <dt className="text-xs text-ink/55">Documents</dt>
                     <dd className="mt-1">
                         <DocumentsBadge
                             missingCount={countMissingDocuments(enrollment)}
@@ -378,13 +378,13 @@ function ApplicationCard({
                 </div>
                 {/* Full width when empty, so the Assign LRN form has room. */}
                 <div className={student.lrn ? '' : 'col-span-2'}>
-                    <dt className="text-xs text-[#1F2A24]/55">LRN</dt>
-                    <dd className="mt-0.5 text-[#1F2A24]/80 tabular-nums">
+                    <dt className="text-xs text-ink/55">LRN</dt>
+                    <dd className="mt-0.5 text-ink/80 tabular-nums">
                         <LrnValue student={student} />
                     </dd>
                 </div>
-                <div className="col-span-2 border-t border-[#1F2A24]/10 pt-3">
-                    <dt className="text-xs text-[#1F2A24]/55">Payment</dt>
+                <div className="col-span-2 border-t border-ink/10 pt-3">
+                    <dt className="text-xs text-ink/55">Payment</dt>
                     <dd className="mt-1">
                         <PaymentCell
                             enrollment={enrollment}
@@ -397,7 +397,7 @@ function ApplicationCard({
 
             <Link
                 href={route('admin.enrollments.show', enrollment.id)}
-                className="mt-4 flex min-h-11 items-center justify-center rounded-full border border-[#2F6F4E]/30 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                className="mt-4 flex min-h-11 items-center justify-center rounded-full border border-brand/30 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand/5"
             >
                 View application
             </Link>
@@ -522,10 +522,10 @@ export default function Index({
         <>
             <Head title="Students" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             Students
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
@@ -542,7 +542,7 @@ export default function Index({
                                     )}
                                     target="_blank"
                                     rel="noopener"
-                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-white px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand/30 bg-surface px-3 text-sm font-medium text-brand-ink transition-colors hover:bg-brand/5"
                                 >
                                     <Printer
                                         className="h-4 w-4"
@@ -554,7 +554,7 @@ export default function Index({
                             <div
                                 role="group"
                                 aria-label="Show active or archived applications"
-                                className="inline-flex rounded-full border border-[#1F2A24]/15 bg-white p-1"
+                                className="inline-flex rounded-full border border-ink/15 bg-surface p-1"
                             >
                                 {[
                                     { label: 'Active', archived: false },
@@ -573,7 +573,7 @@ export default function Index({
                                                     : undefined,
                                             })
                                         }
-                                        className="min-h-9 rounded-full px-4 text-sm font-semibold text-[#1F2A24]/70 transition-colors hover:text-[#1F2A24] aria-pressed:bg-[#2F6F4E] aria-pressed:text-white"
+                                        className="min-h-9 rounded-full px-4 text-sm font-semibold text-ink/70 transition-colors hover:text-ink aria-pressed:bg-brand aria-pressed:text-white"
                                     >
                                         {option.label}
                                     </button>
@@ -585,14 +585,14 @@ export default function Index({
                     {flashSuccess && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {flashSuccess}
                         </div>
                     )}
 
                     {/* Search */}
-                    <div className="mb-4 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
+                    <div className="mb-4 rounded-2xl border border-ink/10 bg-surface p-4">
                         <form
                             onSubmit={handleSearchSubmit}
                             role="search"
@@ -604,7 +604,7 @@ export default function Index({
                                 placeholder="Search by name or LRN..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none sm:min-h-10 sm:min-w-[200px]"
+                                className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none sm:min-h-10 sm:min-w-[200px]"
                             />
 
                             {SELECT_FILTER_KEYS.map((key) => (
@@ -617,7 +617,7 @@ export default function Index({
                                     }
                                     className={`${SELECT_CLASS} w-full min-w-0 last-of-type:col-span-2 sm:w-auto ${
                                         selected[key] !== ''
-                                            ? 'border-[#2F6F4E]/50 bg-[#2F6F4E]/5'
+                                            ? 'border-brand/50 bg-brand/5'
                                             : ''
                                     }`}
                                 >
@@ -639,13 +639,13 @@ export default function Index({
 
                             <button
                                 type="submit"
-                                className="col-span-2 min-h-11 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] sm:min-h-10"
+                                className="col-span-2 min-h-11 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-deep sm:min-h-10"
                             >
                                 Search
                             </button>
                         </form>
 
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-[#1F2A24]/65">
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-ink/65">
                             <p aria-live="polite">
                                 {applications.total}{' '}
                                 {applications.total === 1
@@ -657,7 +657,7 @@ export default function Index({
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="min-h-9 rounded-full px-3 font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                    className="min-h-9 rounded-full px-3 font-semibold text-brand-ink hover:bg-brand/5"
                                 >
                                     Clear filters
                                 </button>
@@ -682,47 +682,47 @@ export default function Index({
                         ))}
 
                         {applications.data.length === 0 && (
-                            <li className="rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-8 text-center text-sm text-[#1F2A24]/65">
+                            <li className="rounded-2xl border border-ink/10 bg-surface px-4 py-8 text-center text-sm text-ink/65">
                                 No applications found.
                             </li>
                         )}
                     </ul>
 
                     {/* Table (tablets and up) */}
-                    <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
-                        <table className="min-w-full divide-y divide-[#1F2A24]/10 text-sm">
-                            <thead className="bg-[#2F6F4E]/5">
+                    <div className="hidden overflow-x-auto rounded-2xl border border-ink/10 bg-surface md:block">
+                        <table className="min-w-full divide-y divide-ink/10 text-sm">
+                            <thead className="bg-brand/5">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Student Name
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         LRN
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Grade Level
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         School Year
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Section
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Status
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Documents
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Payment
                                     </th>
-                                    <th className="px-4 py-3 text-left font-semibold text-[#1F2A24]/70">
+                                    <th className="px-4 py-3 text-left font-semibold text-ink/70">
                                         Action
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#1F2A24]/10">
+                            <tbody className="divide-y divide-ink/10">
                                 {applications.data.map((enrollment) => {
                                     const student = enrollment.student;
                                     const missingCount =
@@ -731,23 +731,23 @@ export default function Index({
                                     return (
                                         <tr
                                             key={enrollment.id}
-                                            className="hover:bg-[#2F6F4E]/5"
+                                            className="hover:bg-brand/5"
                                         >
-                                            <td className="px-4 py-3 text-[#1F2A24]">
+                                            <td className="px-4 py-3 text-ink">
                                                 {student.last_name},{' '}
                                                 {student.first_name}
                                                 {!enrollment.parent_email_verified && (
                                                     <EmailNotVerifiedBadge />
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                            <td className="px-4 py-3 text-ink/70">
                                                 <LrnValue student={student} />
                                             </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                            <td className="px-4 py-3 text-ink/70">
                                                 {enrollment.grade_level?.name ||
                                                     '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/70">
+                                            <td className="px-4 py-3 text-ink/70">
                                                 {enrollment.school_year}
                                             </td>
                                             <td className="px-4 py-3">
@@ -789,7 +789,7 @@ export default function Index({
                                                         'admin.enrollments.show',
                                                         enrollment.id,
                                                     )}
-                                                    className="font-medium text-[#2F6F4E] hover:underline"
+                                                    className="font-medium text-brand-ink hover:underline"
                                                 >
                                                     View
                                                 </Link>
@@ -802,7 +802,7 @@ export default function Index({
                                     <tr>
                                         <td
                                             colSpan={9}
-                                            className="px-4 py-8 text-center text-[#1F2A24]/65"
+                                            className="px-4 py-8 text-center text-ink/65"
                                         >
                                             No applications found.
                                         </td>
@@ -822,8 +822,8 @@ export default function Index({
                                 preserveScroll
                                 className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 py-1.5 text-sm ${
                                     link.active
-                                        ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                        : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                        ? 'border-brand bg-brand text-white'
+                                        : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                 } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                             />
                         ))}

@@ -2,7 +2,7 @@ import { Check, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export const settingsInputClass =
-    'min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-base text-[#1F2A24] shadow-none placeholder:text-[#1F2A24]/40 focus-visible:border-[#2F6F4E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/30 focus-visible:outline-none aria-[invalid=true]:border-[#C6473B] aria-[invalid=true]:ring-[#C6473B]/20 sm:text-sm';
+    'min-h-11 w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-base text-ink shadow-none placeholder:text-ink/40 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/20 sm:text-sm';
 
 /** A titled card holding one group of settings. */
 export function SettingsSection({
@@ -18,27 +18,27 @@ export function SettingsSection({
 }) {
     return (
         <section
-            className={`overflow-hidden rounded-2xl border bg-white ${
+            className={`overflow-hidden rounded-2xl border bg-surface ${
                 tone === 'danger'
-                    ? 'border-[#C6473B]/30'
-                    : 'border-[#1F2A24]/10'
+                    ? 'border-danger/30'
+                    : 'border-ink/10'
             }`}
         >
             <div
                 className={`border-b px-6 py-4 ${
                     tone === 'danger'
-                        ? 'border-[#C6473B]/20 bg-[#C6473B]/5'
-                        : 'border-[#1F2A24]/10'
+                        ? 'border-danger/20 bg-danger/5'
+                        : 'border-ink/10'
                 }`}
             >
                 <h2
                     className={`font-serif text-lg font-semibold ${
-                        tone === 'danger' ? 'text-[#A3372D]' : 'text-[#1F2A24]'
+                        tone === 'danger' ? 'text-danger-strong' : 'text-ink'
                     }`}
                 >
                     {title}
                 </h2>
-                <p className="mt-0.5 text-sm text-[#1F2A24]/70">
+                <p className="mt-0.5 text-sm text-ink/70">
                     {description}
                 </p>
             </div>
@@ -65,7 +65,7 @@ export function SettingsField({
         <div>
             <label
                 htmlFor={id}
-                className="mb-1.5 block text-sm font-medium text-[#1F2A24]/85"
+                className="mb-1.5 block text-sm font-medium text-ink/85"
             >
                 {label}
             </label>
@@ -74,13 +74,13 @@ export function SettingsField({
                 <p
                     id={`${id}-error`}
                     role="alert"
-                    className="mt-1.5 text-xs text-[#C6473B]"
+                    className="mt-1.5 text-xs text-danger-ink"
                 >
                     {error}
                 </p>
             ) : (
                 hint && (
-                    <div className="mt-1.5 text-xs text-[#1F2A24]/60">
+                    <div className="mt-1.5 text-xs text-ink/60">
                         {hint}
                     </div>
                 )
@@ -109,10 +109,10 @@ export function SettingsFormFooter({
     onDiscard: () => void;
 }) {
     return (
-        <div className="flex flex-col-reverse gap-3 border-t border-[#1F2A24]/10 bg-[#FBF8F2]/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p aria-live="polite" className="min-h-5 text-sm text-[#1F2A24]/60">
+        <div className="flex flex-col-reverse gap-3 border-t border-ink/10 bg-cream/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p aria-live="polite" className="min-h-5 text-sm text-ink/60">
                 {recentlySuccessful && !isDirty ? (
-                    <span className="inline-flex items-center gap-1.5 font-medium text-[#2F6F4E]">
+                    <span className="inline-flex items-center gap-1.5 font-medium text-brand-ink">
                         <Check className="size-4" aria-hidden="true" />
                         Saved
                     </span>
@@ -127,7 +127,7 @@ export function SettingsFormFooter({
                         type="button"
                         onClick={onDiscard}
                         disabled={processing}
-                        className="min-h-11 flex-1 rounded-full border border-[#1F2A24]/15 bg-white px-5 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none disabled:opacity-50 sm:flex-none"
+                        className="min-h-11 flex-1 rounded-full border border-ink/15 bg-surface px-5 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none disabled:opacity-50 sm:flex-none"
                     >
                         Discard
                     </button>
@@ -135,7 +135,7 @@ export function SettingsFormFooter({
                 <button
                     type="submit"
                     disabled={!canSubmit || processing}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-deep focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                 >
                     {processing && (
                         <Loader2

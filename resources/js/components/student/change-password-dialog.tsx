@@ -14,9 +14,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { update as updatePassword } from '@/routes/student/password';
 
 const INPUT_CLASS =
-    'h-11 border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30';
+    'h-11 border-ink/15 focus-visible:border-brand focus-visible:ring-brand/30';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
+const LABEL_CLASS = 'mb-1 block text-sm font-medium text-ink/80';
 
 /**
  * The student's change-password form, opened from Settings. After a reset by
@@ -33,16 +33,16 @@ export default function ChangePasswordDialog({
 }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white text-[#1F2A24] sm:max-w-md">
+            <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-ink/10 bg-surface text-ink sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 font-serif text-xl">
                         <KeyRound
-                            className="h-5 w-5 text-[#2F6F4E]"
+                            className="h-5 w-5 text-brand-ink"
                             aria-hidden="true"
                         />
                         Change password
                     </DialogTitle>
-                    <DialogDescription className="text-[#1F2A24]/65">
+                    <DialogDescription className="text-ink/65">
                         {mustChangePassword
                             ? 'The school reset your password. Enter the password they gave you (or your LRN), then choose a new one.'
                             : 'Choose a password only you know. Your first password is your LRN.'}
@@ -109,14 +109,14 @@ export default function ChangePasswordDialog({
                                 <button
                                     type="button"
                                     onClick={() => onOpenChange(false)}
-                                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 bg-white px-5 text-sm font-semibold text-[#1F2A24]/75 hover:bg-[#1F2A24]/5"
+                                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 bg-surface px-5 text-sm font-semibold text-ink/75 hover:bg-ink/5"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E] disabled:opacity-60"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep disabled:opacity-60"
                                 >
                                     {processing && <Spinner />}
                                     Change password

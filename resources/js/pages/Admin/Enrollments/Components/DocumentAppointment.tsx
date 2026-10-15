@@ -24,7 +24,7 @@ interface DocumentAppointmentProps {
 }
 
 const INPUT_CLASS =
-    'w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1.5 text-xs text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+    'w-full rounded-lg border border-ink/15 bg-surface px-2 py-1.5 text-xs text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none';
 
 /**
  * Lets the registrar set a date for the parent to bring documents to the
@@ -104,12 +104,12 @@ export default function DocumentAppointment({
         documents.find((doc) => doc.type === type)?.label ?? type;
 
     return (
-        <div className="mb-3 rounded-xl border border-[#1F2A24]/10 p-3">
+        <div className="mb-3 rounded-xl border border-ink/10 p-3">
             {appointment && !open ? (
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="flex gap-2 text-xs text-[#1F2A24]">
+                    <div className="flex gap-2 text-xs text-ink">
                         <CalendarCheck
-                            className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                            className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                             aria-hidden="true"
                         />
                         <div>
@@ -117,12 +117,12 @@ export default function DocumentAppointment({
                                 In-person appointment ·{' '}
                                 {formatAppointment(appointment)}
                             </p>
-                            <p className="text-[#1F2A24]/70">
+                            <p className="text-ink/70">
                                 To bring:{' '}
                                 {appointment.documents.map(labelFor).join(', ')}
                             </p>
                             {appointment.note && (
-                                <p className="mt-0.5 text-[#1F2A24]/70 italic">
+                                <p className="mt-0.5 text-ink/70 italic">
                                     “{appointment.note}”
                                 </p>
                             )}
@@ -132,14 +132,14 @@ export default function DocumentAppointment({
                         <button
                             type="button"
                             onClick={toggleOpen}
-                            className="min-h-8 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                            className="min-h-8 rounded-full px-2 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline"
                         >
                             Reschedule
                         </button>
                         <button
                             type="button"
                             onClick={cancelAppointment}
-                            className="min-h-8 rounded-full px-2 text-xs font-medium text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]"
+                            className="min-h-8 rounded-full px-2 text-xs font-medium text-ink/70 hover:bg-ink/5 hover:text-ink"
                         >
                             Cancel
                         </button>
@@ -147,14 +147,14 @@ export default function DocumentAppointment({
                 </div>
             ) : !open ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-[#1F2A24]/70">
+                    <p className="text-xs text-ink/70">
                         Can't upload yet? Set a date for the parent to bring
                         documents to the office.
                     </p>
                     <button
                         type="button"
                         onClick={toggleOpen}
-                        className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                        className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-brand/30 px-3 text-xs font-semibold text-brand-ink hover:bg-brand/5"
                     >
                         <CalendarPlus
                             className="h-3.5 w-3.5"
@@ -165,7 +165,7 @@ export default function DocumentAppointment({
                 </div>
             ) : (
                 <form onSubmit={submit} className="space-y-2">
-                    <p className="text-xs font-semibold text-[#1F2A24]">
+                    <p className="text-xs font-semibold text-ink">
                         {appointment
                             ? 'Reschedule appointment'
                             : 'In-person document appointment'}
@@ -174,7 +174,7 @@ export default function DocumentAppointment({
                         <div>
                             <label
                                 htmlFor={`appointment-date-${enrollmentId}`}
-                                className="mb-1 block text-xs font-medium text-[#1F2A24]/80"
+                                className="mb-1 block text-xs font-medium text-ink/80"
                             >
                                 Date
                             </label>
@@ -194,7 +194,7 @@ export default function DocumentAppointment({
                         <div>
                             <label
                                 htmlFor={`appointment-time-${enrollmentId}`}
-                                className="mb-1 block text-xs font-medium text-[#1F2A24]/80"
+                                className="mb-1 block text-xs font-medium text-ink/80"
                             >
                                 Time (optional)
                             </label>
@@ -212,14 +212,14 @@ export default function DocumentAppointment({
                     </div>
 
                     <fieldset>
-                        <legend className="mb-1 text-xs font-medium text-[#1F2A24]/80">
+                        <legend className="mb-1 text-xs font-medium text-ink/80">
                             Documents to bring
                         </legend>
                         <div className="flex flex-wrap gap-x-4 gap-y-1">
                             {documents.map((doc) => (
                                 <label
                                     key={doc.type}
-                                    className="flex min-h-8 items-center gap-1.5 text-xs text-[#1F2A24]"
+                                    className="flex min-h-8 items-center gap-1.5 text-xs text-ink"
                                 >
                                     <input
                                         type="checkbox"
@@ -229,7 +229,7 @@ export default function DocumentAppointment({
                                         onChange={() =>
                                             toggleDocument(doc.type)
                                         }
-                                        className="h-4 w-4 accent-[#2F6F4E]"
+                                        className="h-4 w-4 accent-brand"
                                     />
                                     {doc.label}
                                 </label>
@@ -251,7 +251,7 @@ export default function DocumentAppointment({
                         errors.scheduled_time ||
                         errors.documents ||
                         errors.note) && (
-                        <p role="alert" className="text-xs text-[#C6473B]">
+                        <p role="alert" className="text-xs text-danger-ink">
                             {errors.scheduled_on ||
                                 errors.scheduled_time ||
                                 errors.documents ||
@@ -259,7 +259,7 @@ export default function DocumentAppointment({
                         </p>
                     )}
 
-                    <p className="text-xs text-[#1F2A24]/65">
+                    <p className="text-xs text-ink/65">
                         {hasEnrollee
                             ? 'The parent is notified in their portal.'
                             : 'No portal account on this application — let the parent know directly.'}
@@ -269,14 +269,14 @@ export default function DocumentAppointment({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="min-h-8 rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
+                            className="min-h-8 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-wait disabled:opacity-50"
                         >
                             {processing ? 'Saving…' : 'Save appointment'}
                         </button>
                         <button
                             type="button"
                             onClick={toggleOpen}
-                            className="min-h-8 rounded-full px-1.5 text-xs text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                            className="min-h-8 rounded-full px-1.5 text-xs text-ink/70 hover:text-ink"
                         >
                             Cancel
                         </button>

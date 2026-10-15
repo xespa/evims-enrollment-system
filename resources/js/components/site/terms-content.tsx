@@ -213,7 +213,7 @@ const SECTIONS: Section[] = [
                 visit the School registrar or reach us through the{' '}
                 <Link
                     href={route('site.contact')}
-                    className="font-medium text-[#2F6F4E] underline-offset-2 hover:underline"
+                    className="font-medium text-brand-ink underline-offset-2 hover:underline"
                 >
                     Contact Us
                 </Link>{' '}
@@ -229,20 +229,20 @@ const SECTIONS: Section[] = [
  */
 export default function TermsContent() {
     return (
-        <div className="space-y-5 text-sm leading-relaxed text-[#1F2A24]/80 [&_li]:mt-1.5 [&_ul]:list-disc [&_ul]:pl-5">
+        <div className="space-y-5 text-sm leading-relaxed text-ink/80 [&_li]:mt-1.5 [&_ul]:list-disc [&_ul]:pl-5">
             {SECTIONS.map((section, index) => (
                 <section
                     key={section.title}
                     id={section.id}
                     className="scroll-mt-24"
                 >
-                    <h2 className="mb-1.5 font-serif text-base font-semibold text-[#1F2A24]">
+                    <h2 className="mb-1.5 font-serif text-base font-semibold text-ink">
                         {index + 1}. {section.title}
                     </h2>
                     {section.body}
                 </section>
             ))}
-            <p className="text-xs text-[#1F2A24]/55">
+            <p className="text-xs text-ink/55">
                 Effective {TERMS_EFFECTIVE_DATE}.
             </p>
         </div>

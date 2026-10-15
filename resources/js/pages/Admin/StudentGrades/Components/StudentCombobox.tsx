@@ -104,7 +104,7 @@ export default function StudentCombobox({
     return (
         <div className="relative">
             <Search
-                className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                 aria-hidden="true"
             />
             <input
@@ -137,10 +137,10 @@ export default function StudentCombobox({
                 }
                 aria-invalid={invalid}
                 aria-describedby={describedBy}
-                className="min-h-11 w-full rounded-lg border border-[#1F2A24]/15 bg-white py-2 pr-10 pl-9 text-base text-[#1F2A24] placeholder-[#1F2A24]/40 focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B] sm:text-sm"
+                className="min-h-11 w-full rounded-lg border border-ink/15 bg-surface py-2 pr-10 pl-9 text-base text-ink placeholder-ink/40 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger sm:text-sm"
             />
             <ChevronsUpDown
-                className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                 aria-hidden="true"
             />
 
@@ -149,10 +149,10 @@ export default function StudentCombobox({
                     id={listboxId}
                     role="listbox"
                     aria-label="Students"
-                    className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-[#1F2A24]/10 bg-white p-1 shadow-lg"
+                    className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-ink/10 bg-surface p-1 shadow-lg"
                 >
                     {matches.length === 0 ? (
-                        <li className="px-3 py-2.5 text-sm text-[#1F2A24]/60">
+                        <li className="px-3 py-2.5 text-sm text-ink/60">
                             No student matches "{query}".
                         </li>
                     ) : (
@@ -172,19 +172,19 @@ export default function StudentCombobox({
                                     onMouseEnter={() => setActiveIndex(index)}
                                     className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                                         index === activeIndex
-                                            ? 'bg-[#2F6F4E]/10 text-[#1F2A24]'
-                                            : 'text-[#1F2A24]/85'
+                                            ? 'bg-brand/10 text-ink'
+                                            : 'text-ink/85'
                                     }`}
                                 >
                                     <Check
-                                        className={`h-4 w-4 shrink-0 text-[#2F6F4E] ${isSelected ? '' : 'invisible'}`}
+                                        className={`h-4 w-4 shrink-0 text-brand-ink ${isSelected ? '' : 'invisible'}`}
                                         aria-hidden="true"
                                     />
                                     <span className="min-w-0 flex-1">
                                         <span className="block truncate font-medium">
                                             {student.name}
                                         </span>
-                                        <span className="block text-xs text-[#1F2A24]/55">
+                                        <span className="block text-xs text-ink/55">
                                             {student.lrn
                                                 ? `LRN ${student.lrn}`
                                                 : 'No LRN yet'}

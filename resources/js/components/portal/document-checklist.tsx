@@ -29,22 +29,22 @@ const STATE_DISPLAY: Record<
     verified: {
         label: 'Verified',
         icon: CheckCircle2,
-        className: 'text-[#2F6F4E]',
+        className: 'text-brand-ink',
     },
     pending: {
         label: 'Pending review',
         icon: Clock,
-        className: 'text-[#a4670f]',
+        className: 'text-warn-ink',
     },
     missing: {
         label: 'Not uploaded yet',
         icon: Circle,
-        className: 'text-[#1F2A24]/50',
+        className: 'text-ink/50',
     },
     'school-provided': {
         label: 'The registrar will attach this',
         icon: School,
-        className: 'text-[#1F2A24]/65',
+        className: 'text-ink/65',
     },
 };
 
@@ -89,17 +89,17 @@ export default function DocumentChecklist({
     return (
         <article
             aria-labelledby={`documents-${enrollment.id}-title`}
-            className="rounded-xl border border-[#1F2A24]/10 bg-white p-5 shadow-sm"
+            className="rounded-xl border border-ink/10 bg-surface p-5 shadow-sm"
         >
             <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
                 <div>
                     <h3
                         id={`documents-${enrollment.id}-title`}
-                        className="font-semibold text-[#1F2A24]"
+                        className="font-semibold text-ink"
                     >
                         {studentName(enrollment)}
                     </h3>
-                    <p className="text-xs text-[#1F2A24]/65">
+                    <p className="text-xs text-ink/65">
                         {enrollment.grade_level.name} · SY{' '}
                         {enrollment.school_year} ·{' '}
                         <span className="font-medium tabular-nums">
@@ -114,10 +114,10 @@ export default function DocumentChecklist({
             {appointment && isEditable && (
                 <div
                     role="note"
-                    className="mb-4 flex gap-2 rounded-lg border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-3 text-sm text-[#1F2A24]"
+                    className="mb-4 flex gap-2 rounded-lg border border-brand/20 bg-brand/5 p-3 text-sm text-ink"
                 >
                     <CalendarCheck
-                        className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6F4E]"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-brand-ink"
                         aria-hidden="true"
                     />
                     <div>
@@ -125,7 +125,7 @@ export default function DocumentChecklist({
                             Bring documents to the registrar's office on{' '}
                             {formatAppointment(appointment)}
                         </p>
-                        <p className="text-xs text-[#1F2A24]/70">
+                        <p className="text-xs text-ink/70">
                             Please bring:{' '}
                             {appointment.documents
                                 .map(
@@ -137,7 +137,7 @@ export default function DocumentChecklist({
                                 .join(', ')}
                         </p>
                         {appointment.note && (
-                            <p className="mt-1 text-xs text-[#1F2A24]/70">
+                            <p className="mt-1 text-xs text-ink/70">
                                 Note from the registrar: “{appointment.note}”
                             </p>
                         )}
@@ -145,7 +145,7 @@ export default function DocumentChecklist({
                 </div>
             )}
 
-            <ul className="divide-y divide-[#1F2A24]/5">
+            <ul className="divide-y divide-ink/5">
                 {states.map(({ doc, state, path }) => {
                     const display = STATE_DISPLAY[state];
                     const StateIcon = display.icon;
@@ -166,7 +166,7 @@ export default function DocumentChecklist({
                                     aria-hidden="true"
                                 />
                                 <div>
-                                    <p className="text-sm text-[#1F2A24]">
+                                    <p className="text-sm text-ink">
                                         {doc.label}
                                     </p>
                                     <p
@@ -184,7 +184,7 @@ export default function DocumentChecklist({
                                     <button
                                         type="button"
                                         onClick={() => onView(doc.label, path)}
-                                        className="inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                        className="inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-brand-ink hover:bg-brand/5"
                                     >
                                         <Eye
                                             className="h-3.5 w-3.5"
@@ -199,16 +199,16 @@ export default function DocumentChecklist({
                                 )}
                                 {state ===
                                 'school-provided' ? null : !isEditable ? (
-                                    <span className="text-xs text-[#1F2A24]/65">
+                                    <span className="text-xs text-ink/65">
                                         {isCancelled ? 'Cancelled' : 'Locked'}
                                     </span>
                                 ) : (
                                     <label
                                         className={cn(
-                                            'relative inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E] focus-within:ring-offset-1',
+                                            'relative inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-1',
                                             state === 'missing'
-                                                ? 'bg-[#2F6F4E] text-[#FBF8F2] hover:bg-[#25573E]'
-                                                : 'border border-[#1F2A24]/15 text-[#1F2A24]/80 hover:bg-[#1F2A24]/5',
+                                                ? 'bg-brand text-on-brand hover:bg-brand-deep'
+                                                : 'border border-ink/15 text-ink/80 hover:bg-ink/5',
                                             isUploading &&
                                                 'pointer-events-none opacity-70',
                                         )}
@@ -251,7 +251,7 @@ export default function DocumentChecklist({
             </ul>
 
             {isEditable && (
-                <p className="mt-4 text-xs text-[#1F2A24]/60">
+                <p className="mt-4 text-xs text-ink/60">
                     PDF, JPG or PNG, up to 10 MB each.
                 </p>
             )}

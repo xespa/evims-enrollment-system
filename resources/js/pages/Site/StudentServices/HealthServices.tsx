@@ -268,16 +268,16 @@ export default function HealthServices() {
 
             {/* Emergency numbers first, where they're easy to find. */}
             <section className="px-5">
-                <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#C6473B]/20 bg-[#C6473B]/[0.04] p-6 sm:p-8">
+                <div className="mx-auto max-w-7xl rounded-[2rem] border border-danger/20 bg-danger/[0.04] p-6 sm:p-8">
                     <div className="flex items-start gap-3">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C6473B] text-white">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-danger text-white">
                             <Siren className="h-5 w-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                            <h2 className="font-serif text-2xl font-semibold text-ink">
                                 In an emergency
                             </h2>
-                            <p className="mt-1 text-sm text-[#1F2A24]/70">
+                            <p className="mt-1 text-sm text-ink/70">
                                 Call for help right away, then let the school
                                 know.
                             </p>

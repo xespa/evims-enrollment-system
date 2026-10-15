@@ -90,7 +90,7 @@ const EMPTY_FILTERS: Filters = {
 };
 
 const INPUT_CLASS =
-    'min-h-11 rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none';
+    'min-h-11 rounded-lg border border-ink/15 bg-surface px-3 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none';
 
 /** Each tab, shown as a figure card the list is picked from. */
 const TABS: Record<
@@ -108,9 +108,9 @@ const TABS: Record<
         description: 'Students who have paid',
         icon: Wallet,
         accent: {
-            active: 'border-[#2F6F4E] ring-2 ring-[#2F6F4E]/20',
-            icon: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
-            amount: 'text-[#2F6F4E]',
+            active: 'border-brand ring-2 ring-brand/20',
+            icon: 'bg-brand/10 text-brand-ink',
+            amount: 'text-brand-ink',
         },
         empty: {
             icon: Inbox,
@@ -123,9 +123,9 @@ const TABS: Record<
         description: 'Upcoming installments still owed',
         icon: CalendarClock,
         accent: {
-            active: 'border-[#a4670f] ring-2 ring-[#E8A33D]/25',
-            icon: 'bg-[#E8A33D]/15 text-[#a4670f]',
-            amount: 'text-[#1F2A24]',
+            active: 'border-[#a4670f] ring-2 ring-warn/25',
+            icon: 'bg-warn/15 text-warn-ink',
+            amount: 'text-ink',
         },
         empty: {
             icon: CheckCircle2,
@@ -138,9 +138,9 @@ const TABS: Record<
         description: 'Installments past their due date',
         icon: AlertTriangle,
         accent: {
-            active: 'border-[#C6473B] ring-2 ring-[#C6473B]/20',
-            icon: 'bg-[#C6473B]/10 text-[#A83A30]',
-            amount: 'text-[#A83A30]',
+            active: 'border-danger ring-2 ring-danger/20',
+            icon: 'bg-danger/10 text-danger-alert',
+            amount: 'text-danger-alert',
         },
         empty: {
             icon: CheckCircle2,
@@ -193,8 +193,8 @@ function TabCard({
             onClick={onSelect}
             aria-pressed={isActive}
             className={cn(
-                'flex min-h-11 w-full items-start gap-3 rounded-2xl border bg-white p-4 text-left transition-[border-color,box-shadow] duration-200 hover:border-[#1F2A24]/25 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none',
-                isActive ? config.accent.active : 'border-[#1F2A24]/10',
+                'flex min-h-11 w-full items-start gap-3 rounded-2xl border bg-surface p-4 text-left transition-[border-color,box-shadow] duration-200 hover:border-ink/25 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none',
+                isActive ? config.accent.active : 'border-ink/10',
             )}
         >
             <span
@@ -207,10 +207,10 @@ function TabCard({
                 <Icon className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-                <span className="flex items-center justify-between gap-2 text-sm font-medium text-[#1F2A24]/70">
+                <span className="flex items-center justify-between gap-2 text-sm font-medium text-ink/70">
                     {config.label}
                     {isActive && (
-                        <span className="rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/70">
+                        <span className="rounded-full bg-ink/5 px-2 py-0.5 text-xs font-medium text-ink/70">
                             Showing
                         </span>
                     )}
@@ -223,7 +223,7 @@ function TabCard({
                 >
                     {formatCurrency(amount)}
                 </span>
-                <span className="mt-0.5 block text-xs text-[#1F2A24]/60">
+                <span className="mt-0.5 block text-xs text-ink/60">
                     {detail}
                 </span>
             </span>
@@ -240,7 +240,7 @@ function PaidProgress({ row }: { row: StudentRow }) {
 
     return (
         <div className="w-full">
-            <div className="flex items-baseline justify-between gap-2 text-xs text-[#1F2A24]/60">
+            <div className="flex items-baseline justify-between gap-2 text-xs text-ink/60">
                 <span className="tabular-nums">
                     {formatCurrency(paid)} of {formatCurrency(total)}
                 </span>
@@ -252,10 +252,10 @@ function PaidProgress({ row }: { row: StudentRow }) {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={percentage}
-                className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink/10"
             >
                 <div
-                    className="h-full rounded-full bg-[#2F6F4E]"
+                    className="h-full rounded-full bg-brand"
                     style={{ width: `${percentage}%` }}
                 />
             </div>
@@ -270,15 +270,15 @@ function RowFigure({ row, tab }: { row: StudentRow; tab: Tab }) {
 
         return (
             <>
-                <span className="block font-semibold text-[#2F6F4E] tabular-nums">
+                <span className="block font-semibold text-brand-ink tabular-nums">
                     {formatCurrency(row.payment?.paid ?? 0)}
                 </span>
                 <span
                     className={cn(
                         'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
                         isFullyPaid
-                            ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                            : 'bg-[#1F2A24]/5 text-[#1F2A24]/70',
+                            ? 'bg-brand/10 text-brand-ink'
+                            : 'bg-ink/5 text-ink/70',
                     )}
                 >
                     {isFullyPaid
@@ -297,7 +297,7 @@ function RowFigure({ row, tab }: { row: StudentRow; tab: Tab }) {
             <span
                 className={cn(
                     'block font-semibold tabular-nums',
-                    isOverdue ? 'text-[#A83A30]' : 'text-[#1F2A24]',
+                    isOverdue ? 'text-danger-alert' : 'text-ink',
                 )}
             >
                 {formatCurrency(row.owed)}
@@ -306,8 +306,8 @@ function RowFigure({ row, tab }: { row: StudentRow; tab: Tab }) {
                 className={cn(
                     'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
                     isOverdue
-                        ? 'bg-[#C6473B]/10 text-[#A83A30]'
-                        : 'bg-[#E8A33D]/15 text-[#a4670f]',
+                        ? 'bg-danger/10 text-danger-alert'
+                        : 'bg-warn/15 text-warn-ink',
                 )}
             >
                 <StatusIcon className="h-3 w-3" aria-hidden="true" />
@@ -467,22 +467,22 @@ export default function Index({
         <>
             <Head title="Billing & Collections" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     {/* Header */}
                     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                            <h1 className="font-serif text-2xl font-semibold text-ink">
                                 Billing &amp; Collections
                             </h1>
-                            <p className="mt-1 text-sm text-[#1F2A24]/65">
+                            <p className="mt-1 text-sm text-ink/65">
                                 What's been collected, and what each student
                                 still owes.
                             </p>
                         </div>
                         <Link
                             href={transactionHistoryIndex().url}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none"
+                            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
                         >
                             <History className="h-4 w-4" aria-hidden="true" />
                             Payment history
@@ -492,7 +492,7 @@ export default function Index({
                     {flashSuccess && !isRecording && (
                         <div
                             role="status"
-                            className="mb-6 flex items-center gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-6 flex items-center gap-2 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             <CheckCircle2
                                 className="h-4 w-4 shrink-0"
@@ -505,52 +505,52 @@ export default function Index({
                     {/* Collection rate */}
                     <section
                         aria-label="Collection rate"
-                        className="mb-3 rounded-2xl border border-[#1F2A24]/10 bg-white px-4 py-3"
+                        className="mb-3 rounded-2xl border border-ink/10 bg-surface px-4 py-3"
                     >
                         <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-                            <span className="font-medium text-[#1F2A24]">
+                            <span className="font-medium text-ink">
                                 {Math.round(share(summary.collected))}%
                                 collected
                             </span>
-                            <span className="text-[#1F2A24]/60 tabular-nums">
+                            <span className="text-ink/60 tabular-nums">
                                 {formatCurrency(summary.collected)} of{' '}
                                 {formatCurrency(totalBilled)} billed
                             </span>
                         </div>
                         <div
                             aria-hidden="true"
-                            className="mt-2 flex h-2 overflow-hidden rounded-full bg-[#1F2A24]/10"
+                            className="mt-2 flex h-2 overflow-hidden rounded-full bg-ink/10"
                         >
                             <span
-                                className="bg-[#2F6F4E]"
+                                className="bg-brand"
                                 style={{
                                     width: `${share(summary.collected)}%`,
                                 }}
                             />
                             <span
-                                className="bg-[#E8A33D]"
+                                className="bg-warn"
                                 style={{
                                     width: `${share(summary.receivable.total)}%`,
                                 }}
                             />
                             <span
-                                className="bg-[#C6473B]"
+                                className="bg-danger"
                                 style={{
                                     width: `${share(summary.overdue.total)}%`,
                                 }}
                             />
                         </div>
-                        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#1F2A24]/65">
+                        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/65">
                             <li className="inline-flex items-center gap-1.5">
-                                <span className="h-2 w-2 rounded-full bg-[#2F6F4E]" />
+                                <span className="h-2 w-2 rounded-full bg-brand" />
                                 Collected
                             </li>
                             <li className="inline-flex items-center gap-1.5">
-                                <span className="h-2 w-2 rounded-full bg-[#E8A33D]" />
+                                <span className="h-2 w-2 rounded-full bg-warn" />
                                 Receivable
                             </li>
                             <li className="inline-flex items-center gap-1.5">
-                                <span className="h-2 w-2 rounded-full bg-[#C6473B]" />
+                                <span className="h-2 w-2 rounded-full bg-danger" />
                                 Overdue
                             </li>
                         </ul>
@@ -583,11 +583,11 @@ export default function Index({
                         }}
                         className="mb-3 flex flex-wrap items-end gap-3"
                     >
-                        <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                        <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs font-medium text-ink/65">
                             Search students
                             <span className="relative">
                                 <Search
-                                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#1F2A24]/40"
+                                    className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40"
                                     aria-hidden="true"
                                 />
                                 <input
@@ -605,7 +605,7 @@ export default function Index({
                             </span>
                         </label>
 
-                        <label className="flex flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                        <label className="flex flex-col gap-1 text-xs font-medium text-ink/65">
                             School year
                             <select
                                 value={draft.school_year}
@@ -623,7 +623,7 @@ export default function Index({
                             </select>
                         </label>
 
-                        <label className="flex flex-col gap-1 text-xs font-medium text-[#1F2A24]/65">
+                        <label className="flex flex-col gap-1 text-xs font-medium text-ink/65">
                             Grade level
                             <select
                                 value={draft.grade_level_id}
@@ -646,7 +646,7 @@ export default function Index({
                     </form>
 
                     {/* Result count and active filters */}
-                    <div className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm text-[#1F2A24]/65">
+                    <div className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm text-ink/65">
                         <span aria-live="polite">
                             {isLoading
                                 ? 'Loading…'
@@ -658,7 +658,7 @@ export default function Index({
                                 type="button"
                                 onClick={() => removeFilter(chip.key)}
                                 aria-label={`Remove filter ${chip.label}`}
-                                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-3 text-xs font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/10"
+                                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-brand/25 bg-brand/5 px-3 text-xs font-medium text-brand-ink transition-colors hover:bg-brand/10"
                             >
                                 {chip.label}
                                 <X className="h-3 w-3" aria-hidden="true" />
@@ -668,7 +668,7 @@ export default function Index({
                             <button
                                 type="button"
                                 onClick={clearFilters}
-                                className="min-h-8 rounded-full px-2 text-xs font-medium text-[#1F2A24]/60 underline-offset-2 hover:text-[#1F2A24] hover:underline"
+                                className="min-h-8 rounded-full px-2 text-xs font-medium text-ink/60 underline-offset-2 hover:text-ink hover:underline"
                             >
                                 Clear all
                             </button>
@@ -678,7 +678,7 @@ export default function Index({
                     {/* Students */}
                     <div
                         className={cn(
-                            'overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white transition-opacity duration-200',
+                            'overflow-hidden rounded-2xl border border-ink/10 bg-surface transition-opacity duration-200',
                             isLoading && 'opacity-60',
                         )}
                         aria-busy={isLoading}
@@ -686,15 +686,15 @@ export default function Index({
                         {rows.data.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
                                 <EmptyIcon
-                                    className="h-9 w-9 text-[#1F2A24]/25"
+                                    className="h-9 w-9 text-ink/25"
                                     aria-hidden="true"
                                 />
-                                <p className="font-medium text-[#1F2A24]">
+                                <p className="font-medium text-ink">
                                     {activeFilters.length > 0
                                         ? 'No students match these filters'
                                         : empty.title}
                                 </p>
-                                <p className="max-w-sm text-sm text-[#1F2A24]/60">
+                                <p className="max-w-sm text-sm text-ink/60">
                                     {activeFilters.length > 0
                                         ? 'Try a different search, school year or grade level.'
                                         : empty.body}
@@ -703,18 +703,18 @@ export default function Index({
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="mt-2 min-h-11 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                        className="mt-2 min-h-11 rounded-full border border-brand/30 px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                                     >
                                         Clear filters
                                     </button>
                                 )}
                             </div>
                         ) : (
-                            <ul className="divide-y divide-[#1F2A24]/10">
+                            <ul className="divide-y divide-ink/10">
                                 {rows.data.map((row) => (
                                     <li
                                         key={row.id}
-                                        className="flex flex-col gap-3 p-4 transition-colors hover:bg-[#2F6F4E]/[0.03] sm:flex-row sm:items-center sm:gap-4"
+                                        className="flex flex-col gap-3 p-4 transition-colors hover:bg-brand/[0.03] sm:flex-row sm:items-center sm:gap-4"
                                     >
                                         <button
                                             type="button"
@@ -723,25 +723,25 @@ export default function Index({
                                                 setIsViewing(true);
                                             }}
                                             aria-label={`View ${studentName(row)}'s installments`}
-                                            className="group flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none sm:gap-4"
+                                            className="group flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none sm:gap-4"
                                         >
                                             <span
                                                 aria-hidden="true"
-                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-sm font-semibold text-[#2F6F4E]"
+                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand-ink"
                                             >
                                                 {initials(row)}
                                             </span>
                                             <span className="min-w-0 flex-1">
-                                                <span className="block truncate font-medium text-[#1F2A24] group-hover:underline">
+                                                <span className="block truncate font-medium text-ink group-hover:underline">
                                                     {row.student.last_name},{' '}
                                                     {row.student.first_name}
                                                 </span>
-                                                <span className="block truncate text-xs text-[#1F2A24]/60">
+                                                <span className="block truncate text-xs text-ink/60">
                                                     {row.grade_level ?? '—'} ·
                                                     SY {row.school_year} · #
                                                     {row.id}
                                                 </span>
-                                                <span className="mt-0.5 block text-xs text-[#1F2A24]/60">
+                                                <span className="mt-0.5 block text-xs text-ink/60">
                                                     {rowSummary(row, tab)}
                                                 </span>
                                             </span>
@@ -755,7 +755,7 @@ export default function Index({
                                                 />
                                             </span>
                                             <ChevronRight
-                                                className="hidden h-4 w-4 shrink-0 text-[#1F2A24]/35 transition-transform group-hover:translate-x-0.5 sm:block"
+                                                className="hidden h-4 w-4 shrink-0 text-ink/35 transition-transform group-hover:translate-x-0.5 sm:block"
                                                 aria-hidden="true"
                                             />
                                         </button>
@@ -769,7 +769,7 @@ export default function Index({
                                                 type="button"
                                                 onClick={() => recordFor(row)}
                                                 aria-label={`Record a counter payment for ${studentName(row)}`}
-                                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-sm font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:outline-none"
+                                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-brand/30 px-4 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
                                             >
                                                 <Plus
                                                     className="h-4 w-4"
@@ -795,7 +795,7 @@ export default function Index({
                             aria-label="Pages"
                             className="mt-4 flex flex-wrap items-center justify-between gap-3"
                         >
-                            <p className="text-sm text-[#1F2A24]/60">
+                            <p className="text-sm text-ink/60">
                                 Showing {rows.from}–{rows.to} of{' '}
                                 {plural(rows.total, 'student')}
                             </p>
@@ -813,8 +813,8 @@ export default function Index({
                                         }
                                         className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm ${
                                             link.active
-                                                ? 'border-[#2F6F4E] bg-[#2F6F4E] text-white'
-                                                : 'border-[#1F2A24]/10 bg-white text-[#1F2A24]/70 hover:bg-[#1F2A24]/5'
+                                                ? 'border-brand bg-brand text-white'
+                                                : 'border-ink/10 bg-surface text-ink/70 hover:bg-ink/5'
                                         } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                     />
                                 ))}

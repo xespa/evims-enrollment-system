@@ -28,9 +28,9 @@ type Decision = 'confirm' | 'decline';
 
 function Outcome({ result }: { result: Result }) {
     return result.confirmed ? (
-        <div className="flex items-start gap-3 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 p-4 text-sm text-[#1F2A24]/80">
+        <div className="flex items-start gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm text-ink/80">
             <CheckCircle2
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#2F6F4E]"
+                className="mt-0.5 h-5 w-5 shrink-0 text-brand-ink"
                 aria-hidden="true"
             />
             <p>
@@ -39,9 +39,9 @@ function Outcome({ result }: { result: Result }) {
             </p>
         </div>
     ) : (
-        <div className="flex items-start gap-3 rounded-xl border border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] p-4 text-sm text-[#1F2A24]/80">
+        <div className="flex items-start gap-3 rounded-xl border border-ink/10 bg-ink/[0.03] p-4 text-sm text-ink/80">
             <ShieldX
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#1F2A24]/60"
+                className="mt-0.5 h-5 w-5 shrink-0 text-ink/60"
                 aria-hidden="true"
             />
             <p>
@@ -71,23 +71,23 @@ function ConfirmationForm({
 
     return (
         <div className="space-y-5">
-            <dl className="space-y-3 rounded-xl border border-[#1F2A24]/10 bg-[#FBF8F2] p-4 text-sm">
+            <dl className="space-y-3 rounded-xl border border-ink/10 bg-cream p-4 text-sm">
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/60">Student</dt>
-                    <dd className="font-semibold text-[#1F2A24]">
+                    <dt className="text-xs text-ink/60">Student</dt>
+                    <dd className="font-semibold text-ink">
                         {request.student_name}
                     </dd>
                 </div>
                 <div>
-                    <dt className="text-xs text-[#1F2A24]/60">Their email</dt>
-                    <dd className="break-all text-[#1F2A24]">
+                    <dt className="text-xs text-ink/60">Their email</dt>
+                    <dd className="break-all text-ink">
                         {request.student_email}
                     </dd>
                 </div>
             </dl>
 
-            <div className="space-y-2 text-sm leading-relaxed text-[#1F2A24]/80">
-                <p className="font-medium text-[#1F2A24]">
+            <div className="space-y-2 text-sm leading-relaxed text-ink/80">
+                <p className="font-medium text-ink">
                     What the account is for
                 </p>
                 <ul className="list-disc space-y-1 pl-5">
@@ -108,7 +108,7 @@ function ConfirmationForm({
                     type="button"
                     onClick={() => respond('decline')}
                     disabled={processing}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5 disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5 disabled:opacity-50"
                 >
                     <ShieldX className="h-4 w-4" aria-hidden="true" />
                     Decline
@@ -117,7 +117,7 @@ function ConfirmationForm({
                     type="button"
                     onClick={() => respond('confirm')}
                     disabled={processing}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep disabled:opacity-50"
                 >
                     {processing ? (
                         <Spinner />
@@ -163,7 +163,7 @@ export default function Show({ token, request, result }: Props) {
                 )}
 
                 {!result && !request && (
-                    <div className="flex items-start gap-3 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 p-4 text-sm text-[#7a4d0b]">
+                    <div className="flex items-start gap-3 rounded-xl border border-warn/30 bg-warn/10 p-4 text-sm text-warn-deep">
                         <Clock
                             className="mt-0.5 h-5 w-5 shrink-0"
                             aria-hidden="true"

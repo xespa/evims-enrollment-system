@@ -148,7 +148,7 @@ export default function DocumentsStep({
                 />
             )}
 
-            <h2 className="mb-3 font-serif text-xl font-semibold text-[#1F2A24]">
+            <h2 className="mb-3 font-serif text-xl font-semibold text-ink">
                 Supporting Documents
             </h2>
             <StepGuide>
@@ -160,7 +160,7 @@ export default function DocumentsStep({
             {isReturning && (
                 <div
                     role="note"
-                    className="mb-3 flex gap-2 rounded-xl border border-[#E8A33D]/30 bg-[#E8A33D]/10 p-4 text-sm text-[#7a4d0b]"
+                    className="mb-3 flex gap-2 rounded-xl border border-warn/30 bg-warn/10 p-4 text-sm text-warn-deep"
                 >
                     <Info
                         className="mt-0.5 h-4 w-4 shrink-0"
@@ -198,16 +198,16 @@ export default function DocumentsStep({
                 return (
                     <div
                         key={doc.field}
-                        className={`mb-3 rounded-xl border border-[#1F2A24]/10 p-4 ${isDisabled || isMissingOnFile ? 'bg-[#1F2A24]/[0.03]' : ''}`}
+                        className={`mb-3 rounded-xl border border-ink/10 p-4 ${isDisabled || isMissingOnFile ? 'bg-ink/[0.03]' : ''}`}
                     >
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <label
                                 htmlFor={doc.field}
-                                className={`block text-sm font-medium ${isDisabled || isMissingOnFile ? 'text-[#1F2A24]/50' : 'text-[#1F2A24]/80'}`}
+                                className={`block text-sm font-medium ${isDisabled || isMissingOnFile ? 'text-ink/50' : 'text-ink/80'}`}
                             >
                                 {doc.label}
                                 {isOnFile(documentsOnFile, doc.field) && (
-                                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 text-xs font-semibold text-[#2F6F4E]">
+                                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand-ink">
                                         <FileCheck2
                                             className="h-3 w-3"
                                             aria-hidden="true"
@@ -216,7 +216,7 @@ export default function DocumentsStep({
                                     </span>
                                 )}
                                 {isMissingOnFile && (
-                                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#1F2A24]/10 px-2 py-0.5 text-xs font-semibold text-[#1F2A24]/55">
+                                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-ink/10 px-2 py-0.5 text-xs font-semibold text-ink/55">
                                         <FileX2
                                             className="h-3 w-3"
                                             aria-hidden="true"
@@ -240,7 +240,7 @@ export default function DocumentsStep({
                                         });
                                         setIsViewingDocument(true);
                                     }}
-                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline disabled:cursor-not-allowed disabled:text-[#1F2A24]/35 disabled:hover:bg-transparent disabled:hover:no-underline"
+                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline disabled:cursor-not-allowed disabled:text-ink/35 disabled:hover:bg-transparent disabled:hover:no-underline"
                                 >
                                     <Eye
                                         className="h-3.5 w-3.5"
@@ -256,7 +256,7 @@ export default function DocumentsStep({
                         </div>
                         <p
                             id={hintId}
-                            className="mb-2 text-xs text-[#1F2A24]/65"
+                            className="mb-2 text-xs text-ink/65"
                         >
                             {hintFor(doc.field)}
                         </p>
@@ -272,10 +272,10 @@ export default function DocumentsStep({
                                     ? `${hintId} ${errorId}`
                                     : hintId
                             }
-                            className="block w-full text-sm text-[#1F2A24]/75 file:mr-4 file:min-h-10 file:rounded-full file:border-0 file:bg-[#2F6F4E]/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#2F6F4E] hover:file:bg-[#2F6F4E]/15 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="block w-full text-sm text-ink/75 file:mr-4 file:min-h-10 file:rounded-full file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-ink hover:file:bg-brand/15 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         {selectedFile && (
-                            <p className="mt-2 flex items-center gap-1.5 text-xs text-[#2F6F4E]">
+                            <p className="mt-2 flex items-center gap-1.5 text-xs text-brand-ink">
                                 <FileCheck2
                                     className="h-3.5 w-3.5 shrink-0"
                                     aria-hidden="true"
@@ -290,7 +290,7 @@ export default function DocumentsStep({
                         {errors[doc.field] && (
                             <p
                                 id={errorId}
-                                className="mt-1 text-sm text-[#C6473B]"
+                                className="mt-1 text-sm text-danger-ink"
                             >
                                 {errors[doc.field]}
                             </p>

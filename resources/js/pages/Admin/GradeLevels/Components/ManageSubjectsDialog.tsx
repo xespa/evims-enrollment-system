@@ -63,7 +63,7 @@ function SubjectRow({
 
     if (isEditing) {
         return (
-            <li className="bg-[#FBF8F2] px-4 py-3">
+            <li className="bg-cream px-4 py-3">
                 <form
                     onSubmit={save}
                     className="flex flex-wrap items-start gap-2"
@@ -81,7 +81,7 @@ function SubjectRow({
                             className={INPUT_CLASS}
                         />
                         {form.errors.name && (
-                            <p className="mt-1 text-xs text-[#C6473B]">
+                            <p className="mt-1 text-xs text-danger-ink">
                                 {form.errors.name}
                             </p>
                         )}
@@ -99,7 +99,7 @@ function SubjectRow({
                             className={INPUT_CLASS}
                         />
                         {form.errors.code && (
-                            <p className="mt-1 text-xs text-[#C6473B]">
+                            <p className="mt-1 text-xs text-danger-ink">
                                 {form.errors.code}
                             </p>
                         )}
@@ -108,7 +108,7 @@ function SubjectRow({
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E] disabled:opacity-50"
+                            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-deep disabled:opacity-50"
                         >
                             {form.processing && (
                                 <Loader2
@@ -121,7 +121,7 @@ function SubjectRow({
                         <button
                             type="button"
                             onClick={() => setIsEditing(false)}
-                            className="min-h-10 rounded-full px-3 text-sm text-[#1F2A24]/65 hover:text-[#1F2A24]"
+                            className="min-h-10 rounded-full px-3 text-sm text-ink/65 hover:text-ink"
                         >
                             Cancel
                         </button>
@@ -134,15 +134,15 @@ function SubjectRow({
     return (
         <li className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-[#1F2A24]">
+                <p className="truncate text-sm font-medium text-ink">
                     {subject.name}
                     {subject.code && (
-                        <span className="ml-2 rounded bg-[#1F2A24]/5 px-1.5 py-0.5 font-mono text-xs text-[#1F2A24]/65">
+                        <span className="ml-2 rounded bg-ink/5 px-1.5 py-0.5 font-mono text-xs text-ink/65">
                             {subject.code}
                         </span>
                     )}
                 </p>
-                <p className="text-xs text-[#1F2A24]/55">
+                <p className="text-xs text-ink/55">
                     {subject.enrollments_count === 1
                         ? 'Used by 1 enrollment'
                         : `Used by ${subject.enrollments_count} enrollments`}
@@ -153,7 +153,7 @@ function SubjectRow({
                     type="button"
                     onClick={startEditing}
                     aria-label={`Edit ${subject.name}`}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#1F2A24]/60 hover:bg-[#2F6F4E]/10 hover:text-[#2F6F4E]"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink/60 hover:bg-brand/10 hover:text-brand-ink"
                 >
                     <Pencil className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -167,7 +167,7 @@ function SubjectRow({
                             ? "Can't remove: it's part of existing enrollments"
                             : undefined
                     }
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#1F2A24]/60 hover:bg-[#C6473B]/10 hover:text-[#A83A30] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1F2A24]/60"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink/60 hover:bg-danger/10 hover:text-danger-alert disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink/60"
                 >
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -240,9 +240,9 @@ export default function ManageSubjectsDialog({
                 <DialogContent
                     // No description under the title, on purpose.
                     aria-describedby={undefined}
-                    className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-lg"
+                    className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-lg"
                 >
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             {gradeLevel.name} subjects ·{' '}
                             {curriculum.school_year}
@@ -251,9 +251,9 @@ export default function ManageSubjectsDialog({
 
                     <form
                         onSubmit={add}
-                        className="border-b border-[#1F2A24]/10 px-6 py-4"
+                        className="border-b border-ink/10 px-6 py-4"
                     >
-                        <p className="mb-2 text-sm font-medium text-[#1F2A24]/80">
+                        <p className="mb-2 text-sm font-medium text-ink/80">
                             Add a subject
                         </p>
                         <div className="flex flex-wrap items-start gap-2">
@@ -270,7 +270,7 @@ export default function ManageSubjectsDialog({
                                     className={INPUT_CLASS}
                                 />
                                 {addForm.errors.name && (
-                                    <p className="mt-1 text-xs text-[#C6473B]">
+                                    <p className="mt-1 text-xs text-danger-ink">
                                         {addForm.errors.name}
                                     </p>
                                 )}
@@ -288,7 +288,7 @@ export default function ManageSubjectsDialog({
                                     className={INPUT_CLASS}
                                 />
                                 {addForm.errors.code && (
-                                    <p className="mt-1 text-xs text-[#C6473B]">
+                                    <p className="mt-1 text-xs text-danger-ink">
                                         {addForm.errors.code}
                                     </p>
                                 )}
@@ -299,7 +299,7 @@ export default function ManageSubjectsDialog({
                                     addForm.processing ||
                                     !addForm.data.name.trim()
                                 }
-                                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {addForm.processing ? (
                                     <Loader2
@@ -319,7 +319,7 @@ export default function ManageSubjectsDialog({
 
                     <div role="status" aria-live="polite">
                         {notice && !serverError && (
-                            <p className="flex items-center gap-2 border-b border-[#2F6F4E]/15 bg-[#2F6F4E]/5 px-6 py-2 text-sm text-[#2F6F4E]">
+                            <p className="flex items-center gap-2 border-b border-brand/15 bg-brand/5 px-6 py-2 text-sm text-brand-ink">
                                 <CheckCircle2
                                     className="h-4 w-4"
                                     aria-hidden="true"
@@ -328,7 +328,7 @@ export default function ManageSubjectsDialog({
                             </p>
                         )}
                         {serverError && (
-                            <p className="border-b border-[#C6473B]/20 bg-[#C6473B]/5 px-6 py-2 text-sm text-[#A83A30]">
+                            <p className="border-b border-danger/20 bg-danger/5 px-6 py-2 text-sm text-danger-alert">
                                 {serverError}
                             </p>
                         )}
@@ -338,15 +338,15 @@ export default function ManageSubjectsDialog({
                         {subjects.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
                                 <BookOpen
-                                    className="h-8 w-8 text-[#1F2A24]/25"
+                                    className="h-8 w-8 text-ink/25"
                                     aria-hidden="true"
                                 />
-                                <p className="text-sm text-[#1F2A24]/65">
+                                <p className="text-sm text-ink/65">
                                     No subjects yet. Add the first one above.
                                 </p>
                             </div>
                         ) : (
-                            <ul className="divide-y divide-[#1F2A24]/10">
+                            <ul className="divide-y divide-ink/10">
                                 {subjects.map((subject) => (
                                     <SubjectRow
                                         key={subject.id}
@@ -359,7 +359,7 @@ export default function ManageSubjectsDialog({
                         )}
                     </div>
 
-                    <p className="border-t border-[#1F2A24]/10 px-6 py-3 text-xs text-[#1F2A24]/55">
+                    <p className="border-t border-ink/10 px-6 py-3 text-xs text-ink/55">
                         {subjects.length}{' '}
                         {subjects.length === 1 ? 'subject' : 'subjects'} ·
                         Subjects already used by {curriculum.school_year}{' '}

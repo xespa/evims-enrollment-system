@@ -65,14 +65,14 @@ export default function PayTuitionDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md">
-                <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-md">
+                <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                     <DialogTitle className="font-serif text-xl font-semibold">
                         Pay Tuition
                     </DialogTitle>
-                    <DialogDescription className="text-sm text-[#1F2A24]/70">
+                    <DialogDescription className="text-sm text-ink/70">
                         {studentName(enrollment)} · Remaining{' '}
-                        <span className="font-semibold text-[#2F6F4E] tabular-nums">
+                        <span className="font-semibold text-brand-ink tabular-nums">
                             {formatCurrency(enrollment.remaining_balance ?? 0)}
                         </span>
                     </DialogDescription>
@@ -80,7 +80,7 @@ export default function PayTuitionDialog({
 
                 <form onSubmit={submit} className="space-y-4 px-6 py-5">
                     <fieldset disabled={processing}>
-                        <legend className="mb-2 text-sm font-medium text-[#1F2A24]">
+                        <legend className="mb-2 text-sm font-medium text-ink">
                             Method of payment
                         </legend>
                         <div className="space-y-2">
@@ -91,17 +91,17 @@ export default function PayTuitionDialog({
                                     <label
                                         key={method.value}
                                         className={cn(
-                                            'flex min-h-11 items-center gap-3 rounded-lg border p-3 transition-colors focus-within:ring-2 focus-within:ring-[#2F6F4E]/30',
+                                            'flex min-h-11 items-center gap-3 rounded-lg border p-3 transition-colors focus-within:ring-2 focus-within:ring-brand/30',
                                             !method.available
-                                                ? 'cursor-not-allowed border-[#1F2A24]/10 bg-[#1F2A24]/[0.02] opacity-60'
+                                                ? 'cursor-not-allowed border-ink/10 bg-ink/[0.02] opacity-60'
                                                 : isSelected
-                                                  ? 'cursor-pointer border-[#2F6F4E] bg-[#2F6F4E]/5'
-                                                  : 'cursor-pointer border-[#1F2A24]/15 hover:bg-[#1F2A24]/[0.03]',
+                                                  ? 'cursor-pointer border-brand bg-brand/5'
+                                                  : 'cursor-pointer border-ink/15 hover:bg-ink/[0.03]',
                                         )}
                                     >
                                         <input
                                             type="radio"
-                                            className="h-4 w-4 shrink-0 accent-[#2F6F4E]"
+                                            className="h-4 w-4 shrink-0 accent-brand"
                                             name="payment_channel"
                                             value={method.value}
                                             checked={isSelected}
@@ -123,17 +123,17 @@ export default function PayTuitionDialog({
                                                         )}
                                                     />
                                                 ) : (
-                                                    <span className="text-sm font-medium text-[#1F2A24]">
+                                                    <span className="text-sm font-medium text-ink">
                                                         {method.label}
                                                     </span>
                                                 )}
                                             </span>
-                                            <span className="mt-0.5 block text-xs text-[#1F2A24]/70">
+                                            <span className="mt-0.5 block text-xs text-ink/70">
                                                 {method.description}
                                             </span>
                                         </span>
                                         {!method.available && (
-                                            <span className="shrink-0 rounded-full bg-[#1F2A24]/5 px-2 py-0.5 text-xs font-medium text-[#1F2A24]/60">
+                                            <span className="shrink-0 rounded-full bg-ink/5 px-2 py-0.5 text-xs font-medium text-ink/60">
                                                 Coming soon
                                             </span>
                                         )}
@@ -142,7 +142,7 @@ export default function PayTuitionDialog({
                             })}
                         </div>
                         {error && (
-                            <p className="mt-2 text-sm text-[#C6473B]">
+                            <p className="mt-2 text-sm text-danger-ink">
                                 {error}
                             </p>
                         )}
@@ -152,14 +152,14 @@ export default function PayTuitionDialog({
                         <button
                             type="button"
                             onClick={() => onOpenChange(false)}
-                            className="min-h-11 rounded-full px-5 text-sm font-semibold text-[#1F2A24]/70 hover:bg-[#1F2A24]/5"
+                            className="min-h-11 rounded-full px-5 text-sm font-semibold text-ink/70 hover:bg-ink/5"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={!selected || processing}
-                            className="min-h-11 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E] disabled:opacity-50"
+                            className="min-h-11 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep disabled:opacity-50"
                         >
                             {processing ? 'Please wait…' : 'Continue'}
                         </button>

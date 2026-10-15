@@ -53,12 +53,12 @@ type Props = {
 };
 
 const INPUT_CLASS =
-    'h-10 border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30';
+    'h-10 border-ink/15 focus-visible:border-brand focus-visible:ring-brand/30';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
+const LABEL_CLASS = 'mb-1 block text-sm font-medium text-ink/80';
 
 const LINK_CLASS =
-    'font-semibold text-[#2F6F4E] underline-offset-2 hover:text-[#25573E] hover:underline';
+    'font-semibold text-brand-ink underline-offset-2 hover:text-brand-deep-ink hover:underline';
 
 /** The ID we ask for depends on who is registering. */
 const VALID_ID_HINTS: Partial<Record<AccountRoleValue, string>> = {
@@ -75,9 +75,9 @@ function PreviousAttemptNotice({
     return (
         <div
             role="status"
-            className="mb-4 rounded-xl border border-[#C6473B]/25 bg-[#C6473B]/5 px-3 py-2 text-[13px] leading-snug text-[#1F2A24]/85"
+            className="mb-4 rounded-xl border border-danger/25 bg-danger/5 px-3 py-2 text-[13px] leading-snug text-ink/85"
         >
-            <p className="font-semibold text-[#1F2A24]">
+            <p className="font-semibold text-ink">
                 Your previous attempt wasn't approved:
             </p>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
@@ -163,7 +163,7 @@ export default function Register({
                         !isStaff && (
                             <div
                                 role="status"
-                                className="mb-4 rounded-xl border border-[#2F6F4E]/20 bg-[#2F6F4E]/5 px-3 py-2 text-[13px] leading-snug text-[#1F2A24]/80"
+                                className="mb-4 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-[13px] leading-snug text-ink/80"
                             >
                                 You need a verified account to enroll. Create
                                 one, confirm your email, and once the school
@@ -260,7 +260,7 @@ export default function Register({
                                             value={reapplication.email}
                                             readOnly
                                             aria-readonly="true"
-                                            className={`${INPUT_CLASS} cursor-not-allowed bg-[#1F2A24]/5 text-[#1F2A24]/70`}
+                                            className={`${INPUT_CLASS} cursor-not-allowed bg-ink/5 text-ink/70`}
                                         />
                                     ) : (
                                         <Input
@@ -313,7 +313,7 @@ export default function Register({
                                         ) : (
                                             <p
                                                 id="parent_email-hint"
-                                                className="mt-1 text-xs text-[#1F2A24]/55"
+                                                className="mt-1 text-xs text-ink/55"
                                             >
                                                 We'll email them a link to
                                                 confirm your account. The school
@@ -334,32 +334,32 @@ export default function Register({
                                             Valid ID
                                         </Label>
                                         <label
-                                            className={`flex h-10 cursor-pointer items-center gap-2 rounded-md border border-dashed px-3 transition-colors focus-within:border-[#2F6F4E] focus-within:ring-[3px] focus-within:ring-[#2F6F4E]/30 hover:border-[#2F6F4E]/50 hover:bg-[#2F6F4E]/5 ${
+                                            className={`flex h-10 cursor-pointer items-center gap-2 rounded-md border border-dashed px-3 transition-colors focus-within:border-brand focus-within:ring-[3px] focus-within:ring-brand/30 hover:border-brand/50 hover:bg-brand/5 ${
                                                 errors.valid_id
-                                                    ? 'border-[#C6473B]/60'
+                                                    ? 'border-danger/60'
                                                     : validIdName
-                                                      ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
-                                                      : 'border-[#1F2A24]/25'
+                                                      ? 'border-brand/40 bg-brand/5'
+                                                      : 'border-ink/25'
                                             }`}
                                         >
                                             {validIdName ? (
                                                 <FileCheck2
-                                                    className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                                    className="h-4 w-4 shrink-0 text-brand-ink"
                                                     aria-hidden="true"
                                                 />
                                             ) : (
                                                 <Upload
-                                                    className="h-4 w-4 shrink-0 text-[#2F6F4E]"
+                                                    className="h-4 w-4 shrink-0 text-brand-ink"
                                                     aria-hidden="true"
                                                 />
                                             )}
                                             <span
-                                                className={`min-w-0 flex-1 truncate text-sm ${validIdName ? 'text-[#1F2A24]' : 'text-[#1F2A24]/50'}`}
+                                                className={`min-w-0 flex-1 truncate text-sm ${validIdName ? 'text-ink' : 'text-ink/50'}`}
                                             >
                                                 {validIdName ||
                                                     'Photo or scan of your ID'}
                                             </span>
-                                            <span className="shrink-0 text-xs font-semibold text-[#2F6F4E]">
+                                            <span className="shrink-0 text-xs font-semibold text-brand-ink">
                                                 {validIdName
                                                     ? 'Change'
                                                     : 'Browse'}
@@ -393,7 +393,7 @@ export default function Register({
                                             <div className="mt-1 flex items-center gap-2 text-xs">
                                                 <p
                                                     id="valid_id-hint"
-                                                    className="min-w-0 flex-1 truncate text-[#1F2A24]/55"
+                                                    className="min-w-0 flex-1 truncate text-ink/55"
                                                     title={`${validIdHint}. PDF, JPG or PNG up to 10MB. Only school staff can see it.`}
                                                 >
                                                     {validIdHint}
@@ -402,7 +402,7 @@ export default function Register({
                                                     trigger={
                                                         <button
                                                             type="button"
-                                                            className="shrink-0 font-semibold text-[#2F6F4E] underline-offset-2 hover:underline"
+                                                            className="shrink-0 font-semibold text-brand-ink underline-offset-2 hover:underline"
                                                         >
                                                             See accepted IDs
                                                         </button>
@@ -464,11 +464,11 @@ export default function Register({
                                         aria-invalid={
                                             errors.terms ? true : undefined
                                         }
-                                        className="mt-0.5 data-[state=checked]:border-[#2F6F4E] data-[state=checked]:bg-[#2F6F4E]"
+                                        className="mt-0.5 data-[state=checked]:border-brand data-[state=checked]:bg-brand"
                                     />
                                     <Label
                                         htmlFor="terms"
-                                        className="block text-sm leading-snug font-normal text-[#1F2A24]/75"
+                                        className="block text-sm leading-snug font-normal text-ink/75"
                                     >
                                         I agree to the{' '}
                                         <button
@@ -488,7 +488,7 @@ export default function Register({
                             <Button
                                 type="submit"
                                 disabled={processing}
-                                className="h-10 w-full rounded-full bg-[#2F6F4E] text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E]"
+                                className="h-10 w-full rounded-full bg-brand text-sm font-semibold text-on-brand shadow-sm transition-colors hover:bg-brand-deep"
                             >
                                 {processing && <Spinner />}
                                 {reapplication
@@ -503,23 +503,23 @@ export default function Register({
             </PortalAuthShell>
 
             <Dialog open={isTermsOpen} onOpenChange={setIsTermsOpen}>
-                <DialogContent className="flex max-h-[85vh] flex-col gap-0 rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-2xl">
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-4 pr-12 text-left">
+                <DialogContent className="flex max-h-[85vh] flex-col gap-0 rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-2xl">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-4 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             Terms and Conditions
                         </DialogTitle>
-                        <DialogDescription className="text-[#1F2A24]/65">
+                        <DialogDescription className="text-ink/65">
                             EVIMS Student Portal and online enrollment
                         </DialogDescription>
                     </DialogHeader>
                     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
                         <TermsContent />
                     </div>
-                    <div className="flex justify-end gap-2 border-t border-[#1F2A24]/10 px-6 py-3">
+                    <div className="flex justify-end gap-2 border-t border-ink/10 px-6 py-3">
                         <button
                             type="button"
                             onClick={() => setIsTermsOpen(false)}
-                            className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                            className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                         >
                             Close
                         </button>
@@ -529,7 +529,7 @@ export default function Register({
                                 setAgreedToTerms(true);
                                 setIsTermsOpen(false);
                             }}
-                            className="min-h-10 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                            className="min-h-10 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand hover:bg-brand-deep"
                         >
                             I agree
                         </button>

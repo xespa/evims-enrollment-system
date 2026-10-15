@@ -157,10 +157,10 @@ function nextStepFor(enrollments: PortalEnrollment[]): NextStep {
 }
 
 const TONE_STYLES: Record<NextStep['tone'], string> = {
-    action: 'border-[#2F6F4E]/25 bg-[#2F6F4E]/5 [&_[data-icon]]:bg-[#2F6F4E] [&_[data-icon]]:text-white',
+    action: 'border-brand/25 bg-brand/5 [&_[data-icon]]:bg-brand [&_[data-icon]]:text-white',
     warning:
-        'border-[#C6473B]/25 bg-[#C6473B]/5 [&_[data-icon]]:bg-[#C6473B] [&_[data-icon]]:text-white',
-    calm: 'border-[#1F2A24]/10 bg-white [&_[data-icon]]:bg-[#2F6F4E]/10 [&_[data-icon]]:text-[#2F6F4E]',
+        'border-danger/25 bg-danger/5 [&_[data-icon]]:bg-danger [&_[data-icon]]:text-white',
+    calm: 'border-ink/10 bg-surface [&_[data-icon]]:bg-brand/10 [&_[data-icon]]:text-brand-ink',
 };
 
 export default function NextStepCard({
@@ -174,7 +174,7 @@ export default function NextStepCard({
     const Icon = step.icon;
     const action = step.action;
     const buttonClass =
-        'inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold whitespace-nowrap text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E] focus-visible:ring-offset-2 focus-visible:outline-none';
+        'inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-brand px-5 text-sm font-semibold whitespace-nowrap text-on-brand shadow-sm transition-colors hover:bg-brand-deep focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none';
 
     return (
         <section
@@ -193,16 +193,16 @@ export default function NextStepCard({
                     <Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                    <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase">
+                    <p className="text-xs font-semibold tracking-wide text-ink/60 uppercase">
                         Next step
                     </p>
                     <h2
                         id="next-step-title"
-                        className="font-semibold text-[#1F2A24]"
+                        className="font-semibold text-ink"
                     >
                         {step.title}
                     </h2>
-                    <p className="text-sm text-[#1F2A24]/70">
+                    <p className="text-sm text-ink/70">
                         {step.description}
                     </p>
                 </div>

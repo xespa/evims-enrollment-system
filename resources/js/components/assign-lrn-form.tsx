@@ -44,7 +44,7 @@ export default function AssignLrnForm({ studentId }: AssignLrnFormProps) {
             <button
                 type="button"
                 onClick={toggleOpen}
-                className="min-h-9 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:underline"
+                className="min-h-9 rounded-full px-2 text-xs font-semibold text-brand-ink hover:bg-brand/5 hover:underline"
             >
                 Assign LRN
             </button>
@@ -68,33 +68,33 @@ export default function AssignLrnForm({ studentId }: AssignLrnFormProps) {
                         e.target.value.replace(/\D/g, '').slice(0, 14),
                     )
                 }
-                className="min-h-9 w-full rounded-lg border border-[#1F2A24]/15 bg-white px-2 py-1 text-xs text-[#1F2A24] tabular-nums focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                className="min-h-9 w-full rounded-lg border border-ink/15 bg-surface px-2 py-1 text-xs text-ink tabular-nums focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
             />
             <div className="flex items-center gap-2">
                 <button
                     type="button"
                     onClick={() => setData('lrn', generateLrn())}
-                    className="min-h-8 rounded-full px-1.5 text-xs font-medium text-[#2F6F4E] hover:underline"
+                    className="min-h-8 rounded-full px-1.5 text-xs font-medium text-brand-ink hover:underline"
                 >
                     Generate
                 </button>
                 <button
                     type="submit"
                     disabled={processing}
-                    className="min-h-8 rounded-full bg-[#2F6F4E] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-50"
+                    className="min-h-8 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-brand-deep disabled:cursor-wait disabled:opacity-50"
                 >
                     {processing ? 'Saving…' : 'Save'}
                 </button>
                 <button
                     type="button"
                     onClick={toggleOpen}
-                    className="min-h-8 rounded-full px-1.5 text-xs text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                    className="min-h-8 rounded-full px-1.5 text-xs text-ink/70 hover:text-ink"
                 >
                     Cancel
                 </button>
             </div>
             {errors.lrn && (
-                <p role="alert" className="text-xs text-[#C6473B]">
+                <p role="alert" className="text-xs text-danger-ink">
                     {errors.lrn}
                 </p>
             )}

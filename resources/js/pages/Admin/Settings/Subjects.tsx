@@ -41,7 +41,7 @@ function SelectAllCheckbox({
     const isSome = selectedCount > 0 && !isAll;
 
     return (
-        <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5">
+        <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full px-2 text-xs font-semibold text-brand-ink hover:bg-brand/5">
             <input
                 type="checkbox"
                 checked={isAll}
@@ -53,10 +53,10 @@ function SelectAllCheckbox({
                 }}
                 onChange={onToggle}
                 aria-label={`Select all ${gradeLevelName} subjects`}
-                className="h-4 w-4 accent-[#2F6F4E]"
+                className="h-4 w-4 accent-brand"
             />
             Select all
-            <span className="font-normal text-[#1F2A24]/55 tabular-nums">
+            <span className="font-normal text-ink/55 tabular-nums">
                 {selectedCount}/{total}
             </span>
         </label>
@@ -133,7 +133,7 @@ export default function Subjects({
                 {props.flash?.success && (
                     <div
                         role="status"
-                        className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                        className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                     >
                         {props.flash.success}{' '}
                         <Link
@@ -153,10 +153,10 @@ export default function Subjects({
                         {schoolYears.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
                                 <BookOpen
-                                    className="h-8 w-8 text-[#1F2A24]/30"
+                                    className="h-8 w-8 text-ink/30"
                                     aria-hidden="true"
                                 />
-                                <p className="text-sm text-[#1F2A24]/65">
+                                <p className="text-sm text-ink/65">
                                     No school year has been set up yet. Ask an
                                     administrator to publish one.
                                 </p>
@@ -166,7 +166,7 @@ export default function Subjects({
                                 <div className="flex flex-wrap items-center gap-3">
                                     <label
                                         htmlFor="subjects-school-year"
-                                        className="text-sm font-medium text-[#1F2A24]/80"
+                                        className="text-sm font-medium text-ink/80"
                                     >
                                         School year
                                     </label>
@@ -176,7 +176,7 @@ export default function Subjects({
                                         onChange={(e) =>
                                             setSchoolYear(e.target.value)
                                         }
-                                        className="min-h-10 rounded-lg border border-[#1F2A24]/15 bg-white px-3 text-sm text-[#1F2A24] focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none"
+                                        className="min-h-10 rounded-lg border border-ink/15 bg-surface px-3 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                                     >
                                         {schoolYears.map((year) => (
                                             <option
@@ -193,7 +193,7 @@ export default function Subjects({
                                 {visibleYear?.grade_levels.map((gradeLevel) => (
                                     <fieldset key={gradeLevel.name}>
                                         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                                            <legend className="text-xs font-semibold tracking-[0.08em] text-[#2F6F4E] uppercase">
+                                            <legend className="text-xs font-semibold tracking-[0.08em] text-brand-ink uppercase">
                                                 {gradeLevel.name}
                                             </legend>
                                             <SelectAllCheckbox
@@ -229,8 +229,8 @@ export default function Subjects({
                                                             key={subject.id}
                                                             className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${
                                                                 isChecked
-                                                                    ? 'border-[#2F6F4E]/50 bg-[#2F6F4E]/5'
-                                                                    : 'border-[#1F2A24]/10 hover:bg-[#1F2A24]/[0.03]'
+                                                                    ? 'border-brand/50 bg-brand/5'
+                                                                    : 'border-ink/10 hover:bg-ink/[0.03]'
                                                             }`}
                                                         >
                                                             <input
@@ -243,16 +243,16 @@ export default function Subjects({
                                                                         subject.id,
                                                                     )
                                                                 }
-                                                                className="h-4 w-4 accent-[#2F6F4E]"
+                                                                className="h-4 w-4 accent-brand"
                                                             />
                                                             <span className="min-w-0">
-                                                                <span className="block font-medium text-[#1F2A24]">
+                                                                <span className="block font-medium text-ink">
                                                                     {
                                                                         subject.name
                                                                     }
                                                                 </span>
                                                                 {subject.code && (
-                                                                    <span className="text-xs text-[#1F2A24]/55">
+                                                                    <span className="text-xs text-ink/55">
                                                                         {
                                                                             subject.code
                                                                         }
@@ -270,13 +270,13 @@ export default function Subjects({
                                 {subjectError && (
                                     <p
                                         role="alert"
-                                        className="text-sm text-[#C6473B]"
+                                        className="text-sm text-danger-ink"
                                     >
                                         {subjectError}
                                     </p>
                                 )}
 
-                                <p className="flex items-center gap-2 text-sm text-[#1F2A24]/65">
+                                <p className="flex items-center gap-2 text-sm text-ink/65">
                                     <ClipboardList
                                         className="h-4 w-4 shrink-0"
                                         aria-hidden="true"

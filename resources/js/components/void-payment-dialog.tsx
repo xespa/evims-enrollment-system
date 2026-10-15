@@ -52,10 +52,10 @@ export default function VoidPaymentDialog({
         <Dialog open={open} onOpenChange={close}>
             <DialogContent
                 aria-describedby="void-payment-summary"
-                className="rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md"
+                className="rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-md"
             >
                 <form onSubmit={submit}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             Void{' '}
                             {payment.receipt_number
@@ -68,7 +68,7 @@ export default function VoidPaymentDialog({
                     <div className="space-y-4 px-6 py-5">
                         <p
                             id="void-payment-summary"
-                            className="text-sm text-[#1F2A24]/75"
+                            className="text-sm text-ink/75"
                         >
                             <span className="font-semibold tabular-nums">
                                 {formatCurrency(receiptTotal)}
@@ -83,11 +83,11 @@ export default function VoidPaymentDialog({
                         <div>
                             <label
                                 htmlFor="void-reason"
-                                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                                className="mb-1 block text-sm font-medium text-ink/80"
                             >
                                 Reason{' '}
                                 <span
-                                    className="text-[#C6473B]"
+                                    className="text-danger-ink"
                                     aria-hidden="true"
                                 >
                                     *
@@ -105,14 +105,14 @@ export default function VoidPaymentDialog({
                                     setData('reason', e.target.value)
                                 }
                                 aria-invalid={errors.reason ? true : undefined}
-                                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                                className="w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger"
                             />
                             {errors.reason ? (
-                                <p className="mt-1 text-xs text-[#C6473B]">
+                                <p className="mt-1 text-xs text-danger-ink">
                                     {errors.reason}
                                 </p>
                             ) : (
-                                <p className="mt-1 text-xs text-[#1F2A24]/55">
+                                <p className="mt-1 text-xs text-ink/55">
                                     The parent is notified, and this reason is
                                     kept with the payment.
                                 </p>
@@ -120,11 +120,11 @@ export default function VoidPaymentDialog({
                         </div>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 px-6 py-4 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-2 border-t border-ink/10 px-6 py-4 sm:flex-row sm:justify-end">
                         <DialogClose asChild>
                             <button
                                 type="button"
-                                className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-medium hover:bg-[#1F2A24]/5"
+                                className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-medium hover:bg-ink/5"
                             >
                                 Keep payment
                             </button>
@@ -134,7 +134,7 @@ export default function VoidPaymentDialog({
                             disabled={
                                 processing || data.reason.trim().length < 5
                             }
-                            className="min-h-10 rounded-full bg-[#C6473B] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="min-h-10 rounded-full bg-danger px-5 text-sm font-semibold text-white transition-colors hover:bg-[#A83A30] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {processing ? 'Voiding…' : 'Void payment'}
                         </button>

@@ -10,10 +10,10 @@ export const STATUS_LABELS: Record<TransactionStatus, string> = {
 };
 
 export const STATUS_STYLES: Record<TransactionStatus, string> = {
-    COMPLETED: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
-    PENDING: 'bg-[#E8A33D]/15 text-[#a4670f]',
-    FAILED: 'bg-[#C6473B]/10 text-[#A83A30]',
-    VOIDED: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+    COMPLETED: 'bg-brand/10 text-brand-ink',
+    PENDING: 'bg-warn/15 text-warn-ink',
+    FAILED: 'bg-danger/10 text-danger-alert',
+    VOIDED: 'bg-ink/10 text-ink/70',
 };
 
 export function formatCurrency(value: number | string) {
@@ -155,8 +155,8 @@ export function MethodLabel({ method }: { method: string }) {
     const Icon = method === 'CASH' ? Banknote : Smartphone;
 
     return (
-        <span className="inline-flex items-center gap-1.5 text-[#1F2A24]/80">
-            <Icon className="h-4 w-4 text-[#1F2A24]/50" aria-hidden="true" />
+        <span className="inline-flex items-center gap-1.5 text-ink/80">
+            <Icon className="h-4 w-4 text-ink/50" aria-hidden="true" />
             {method === 'CASH' ? 'Cash' : 'GCash'}
         </span>
     );

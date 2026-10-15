@@ -33,12 +33,12 @@ export default function Processing({ paymentsUrl }: { paymentsUrl: string }) {
     return (
         <>
             <Head title="Processing Payment" />
-            <div className="flex min-h-screen items-center justify-center bg-[#FBF8F2] px-4 py-12">
+            <div className="flex min-h-screen items-center justify-center bg-cream px-4 py-12">
                 <div
-                    className="w-full max-w-md rounded-[2rem] border border-[#1F2A24]/10 bg-white p-8 text-center shadow-xl shadow-[#1F2A24]/5"
+                    className="w-full max-w-md rounded-[2rem] border border-ink/10 bg-surface p-8 text-center shadow-xl shadow-shade/5"
                     aria-live="polite"
                 >
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-brand-ink">
                         {timedOut ? (
                             <Clock className="h-7 w-7" aria-hidden="true" />
                         ) : (
@@ -49,13 +49,13 @@ export default function Processing({ paymentsUrl }: { paymentsUrl: string }) {
                         )}
                     </div>
 
-                    <h1 className="font-serif text-xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-xl font-semibold text-ink">
                         {timedOut
                             ? 'Still Confirming Your Payment'
                             : 'Confirming Your Payment'}
                     </h1>
 
-                    <p className="mt-2 text-sm text-[#1F2A24]/70">
+                    <p className="mt-2 text-sm text-ink/70">
                         {timedOut
                             ? "GCash is taking longer than usual to confirm. If you completed the payment, it will still be recorded — you don't need to pay again."
                             : "We're checking with GCash. This page updates on its own — please don't close it or pay again."}
@@ -66,7 +66,7 @@ export default function Processing({ paymentsUrl }: { paymentsUrl: string }) {
                             type="button"
                             onClick={checkNow}
                             disabled={checking}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-4 py-2.5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E] disabled:cursor-wait disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep disabled:cursor-wait disabled:opacity-60"
                         >
                             {checking && (
                                 <Loader2
@@ -78,7 +78,7 @@ export default function Processing({ paymentsUrl }: { paymentsUrl: string }) {
                         </button>
                         <Link
                             href={paymentsUrl}
-                            className="flex min-h-11 items-center justify-center text-sm font-medium text-[#2F6F4E] hover:underline"
+                            className="flex min-h-11 items-center justify-center text-sm font-medium text-brand-ink hover:underline"
                         >
                             Back to Payments
                         </Link>

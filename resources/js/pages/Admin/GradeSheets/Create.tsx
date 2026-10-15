@@ -65,17 +65,17 @@ function Field({
         <div>
             <label
                 htmlFor={id}
-                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                className="mb-1 block text-sm font-medium text-ink/80"
             >
                 {label}
             </label>
             {children}
             {error ? (
-                <p id={`${id}-error`} className="mt-1 text-xs text-[#C6473B]">
+                <p id={`${id}-error`} className="mt-1 text-xs text-danger-ink">
                     {error}
                 </p>
             ) : (
-                hint && <p className="mt-1 text-xs text-[#1F2A24]/55">{hint}</p>
+                hint && <p className="mt-1 text-xs text-ink/55">{hint}</p>
             )}
         </div>
     );
@@ -282,27 +282,27 @@ export default function Create({
         <>
             <Head title="New Grade Sheet" />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-2xl">
                     <Link
                         href={gradeSheetRoutes.index.url()}
-                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-ink/70 hover:text-ink"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheets
                     </Link>
 
-                    <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                    <h1 className="font-serif text-2xl font-semibold text-ink">
                         New Grade Sheet
                     </h1>
-                    <p className="mb-6 text-sm text-[#1F2A24]/70">
+                    <p className="mb-6 text-sm text-ink/70">
                         Choose the subject. Its enrolled students are added for
                         you, so you can go straight to entering grades.
                     </p>
 
                     <form
                         onSubmit={submit}
-                        className="space-y-5 rounded-2xl border border-[#1F2A24]/10 bg-white p-5 sm:p-6"
+                        className="space-y-5 rounded-2xl border border-ink/10 bg-surface p-5 sm:p-6"
                     >
                         <Field
                             id="grade-sheet-number"
@@ -431,7 +431,7 @@ export default function Create({
                                             (isShowingAll) => !isShowingAll,
                                         )
                                     }
-                                    className="mt-1 text-xs font-semibold text-[#2F6F4E] underline-offset-2 hover:underline"
+                                    className="mt-1 text-xs font-semibold text-brand-ink underline-offset-2 hover:underline"
                                 >
                                     {showAllSubjects
                                         ? `Only show ${currentTeacher ? 'my' : `${teacherName}'s`} subjects`
@@ -441,7 +441,7 @@ export default function Create({
                             {existingSheet && (
                                 <div
                                     role="alert"
-                                    className="mt-2 flex flex-col gap-2 rounded-lg border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2.5 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                                    className="mt-2 flex flex-col gap-2 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2.5 text-sm text-warn-deep sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <p className="flex items-start gap-2">
                                         <TriangleAlert
@@ -463,7 +463,7 @@ export default function Create({
                                         href={gradeSheetRoutes.show.url(
                                             existingSheet.id,
                                         )}
-                                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-deep"
                                     >
                                         Open {existingSheet.number}
                                     </Link>
@@ -474,7 +474,7 @@ export default function Create({
                                     0 && (
                                     <div
                                         role="alert"
-                                        className="mt-2 flex flex-col gap-2 rounded-lg border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2.5 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                                        className="mt-2 flex flex-col gap-2 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2.5 text-sm text-warn-deep sm:flex-row sm:items-center sm:justify-between"
                                     >
                                         <p className="flex items-start gap-2">
                                             <TriangleAlert
@@ -499,7 +499,7 @@ export default function Create({
                                                         sameSubjectWithStudents,
                                                     )
                                                 }
-                                                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-deep"
                                             >
                                                 Use SY{' '}
                                                 {
@@ -534,8 +534,8 @@ export default function Create({
                         <div
                             className={`rounded-xl border transition-colors ${
                                 data.add_students
-                                    ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
-                                    : 'border-[#1F2A24]/15 bg-white'
+                                    ? 'border-brand/40 bg-brand/5'
+                                    : 'border-ink/15 bg-surface'
                             }`}
                         >
                             <label className="flex cursor-pointer items-start gap-3 p-4">
@@ -548,19 +548,19 @@ export default function Create({
                                             e.target.checked,
                                         )
                                     }
-                                    className="mt-0.5 h-4 w-4 accent-[#2F6F4E]"
+                                    className="mt-0.5 h-4 w-4 accent-brand"
                                 />
                                 <span>
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2A24]">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
                                         <Users
-                                            className="h-4 w-4 text-[#2F6F4E]"
+                                            className="h-4 w-4 text-brand-ink"
                                             aria-hidden="true"
                                         />
                                         Add the enrolled students
                                     </span>
                                     <span
                                         aria-live="polite"
-                                        className="mt-0.5 block text-xs text-[#1F2A24]/65"
+                                        className="mt-0.5 block text-xs text-ink/65"
                                     >
                                         {chosenSubject === undefined
                                             ? 'Every approved student taking the subject is put on the sheet, ready for their grades.'
@@ -577,7 +577,7 @@ export default function Create({
                             {data.add_students &&
                                 chosenSubject !== undefined &&
                                 chosenSubject.enrolled_students_count > 0 && (
-                                    <div className="border-t border-[#2F6F4E]/15 px-4 pb-3">
+                                    <div className="border-t border-brand/15 px-4 pb-3">
                                         <button
                                             type="button"
                                             onClick={() =>
@@ -588,7 +588,7 @@ export default function Create({
                                             aria-expanded={isChecklistOpen}
                                             aria-controls="students-to-add"
                                             disabled={subjectStudents === null}
-                                            className="flex min-h-11 w-full items-center justify-between gap-2 text-sm font-semibold text-[#2F6F4E] disabled:opacity-60"
+                                            className="flex min-h-11 w-full items-center justify-between gap-2 text-sm font-semibold text-brand-ink disabled:opacity-60"
                                         >
                                             <span>
                                                 {subjectStudents === null
@@ -614,7 +614,7 @@ export default function Create({
                                             subjectStudents !== null && (
                                                 <div
                                                     id="students-to-add"
-                                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-3"
+                                                    className="rounded-lg border border-ink/10 bg-surface p-3"
                                                 >
                                                     <StudentChecklist
                                                         students={
@@ -633,7 +633,7 @@ export default function Create({
                                                     />
                                                     {data.enrollment_ids
                                                         .length === 0 && (
-                                                        <p className="mt-2 text-xs text-[#a4670f]">
+                                                        <p className="mt-2 text-xs text-warn-ink">
                                                             Nobody is ticked, so
                                                             the sheet will start
                                                             empty.
@@ -653,7 +653,7 @@ export default function Create({
                                                 <p
                                                     key={key}
                                                     role="alert"
-                                                    className="mt-2 text-xs text-[#C6473B]"
+                                                    className="mt-2 text-xs text-danger-ink"
                                                 >
                                                     {message}
                                                 </p>
@@ -662,17 +662,17 @@ export default function Create({
                                 )}
                         </div>
 
-                        <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 pt-5 sm:flex-row sm:justify-end">
+                        <div className="flex flex-col-reverse gap-2 border-t border-ink/10 pt-5 sm:flex-row sm:justify-end">
                             <Link
                                 href={gradeSheetRoutes.index.url()}
-                                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                                className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                             >
                                 Cancel
                             </Link>
                             <button
                                 type="submit"
                                 disabled={processing || !!existingSheet}
-                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] disabled:opacity-60"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep disabled:opacity-60"
                             >
                                 {processing && (
                                     <Loader2

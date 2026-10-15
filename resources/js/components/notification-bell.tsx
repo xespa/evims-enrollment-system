@@ -78,102 +78,102 @@ function appearance(notification: Notification): {
     switch (notification.data.type) {
         case 'enrollment_status_changed':
             return notification.data.status === 'APPROVED'
-                ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' }
-                : { icon: Info, tone: 'bg-[#E8A33D]/15 text-[#8A5A12]' };
+                ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-brand-forest' }
+                : { icon: Info, tone: 'bg-warn/15 text-warn-strong' };
         case 'document_reminder':
             return {
                 icon: FileWarning,
-                tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+                tone: 'bg-warn/15 text-warn-strong',
             };
         case 'document_appointment':
             return {
                 icon: CalendarCheck,
-                tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                tone: 'bg-[#2E8057]/12 text-brand-forest',
             };
         case 'document_appointment_cancelled':
             return {
                 icon: CalendarX,
-                tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+                tone: 'bg-ink/10 text-ink/70',
             };
         case 'payment_received':
         case 'online_payment_received':
-            return { icon: Wallet, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+            return { icon: Wallet, tone: 'bg-[#2E8057]/12 text-brand-forest' };
         case 'application_submitted':
             return {
                 icon: FilePlus2,
-                tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+                tone: 'bg-brand/10 text-brand-ink',
             };
         case 'application_cancelled':
             return {
                 icon: FileX2,
-                tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+                tone: 'bg-ink/10 text-ink/70',
             };
         case 'document_uploaded':
             return {
                 icon: FileUp,
-                tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+                tone: 'bg-warn/15 text-warn-strong',
             };
         case 'account_awaiting_review':
         case 'staff_account_awaiting_approval':
             return {
                 icon: UserRoundCheck,
-                tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+                tone: 'bg-warn/15 text-warn-strong',
             };
         case 'payment_voided':
-            return { icon: RotateCcw, tone: 'bg-[#C6473B]/10 text-[#9A3329]' };
+            return { icon: RotateCcw, tone: 'bg-danger/10 text-danger-deep' };
         case 'confirm_email':
-            return { icon: Mail, tone: 'bg-[#E8A33D]/15 text-[#8A5A12]' };
+            return { icon: Mail, tone: 'bg-warn/15 text-warn-strong' };
         case 'email_confirmed':
-            return { icon: MailCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' };
+            return { icon: MailCheck, tone: 'bg-[#2E8057]/12 text-brand-forest' };
         case 'parent_confirmation_answered':
             return notification.data.confirmed
                 ? {
                       icon: UserRoundCheck,
-                      tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                      tone: 'bg-[#2E8057]/12 text-brand-forest',
                   }
                 : {
                       icon: UserRoundCheck,
-                      tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                      tone: 'bg-danger/10 text-danger-deep',
                   };
         case 'enrollment_period':
             switch (notification.data.status) {
                 case 'OPENING_SOON':
                     return {
                         icon: CalendarClock,
-                        tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                        tone: 'bg-[#2E8057]/12 text-brand-forest',
                     };
                 case 'CLOSING_SOON':
                     return {
                         icon: CalendarClock,
-                        tone: 'bg-[#E8A33D]/15 text-[#8A5A12]',
+                        tone: 'bg-warn/15 text-warn-strong',
                     };
                 default:
                     return {
                         icon: CalendarX,
-                        tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                        tone: 'bg-danger/10 text-danger-deep',
                     };
             }
         case 'student_account_consent':
             return notification.data.status === 'ACTIVE'
                 ? {
                       icon: UserRoundCheck,
-                      tone: 'bg-[#2E8057]/12 text-[#22613F]',
+                      tone: 'bg-[#2E8057]/12 text-brand-forest',
                   }
                 : {
                       icon: CircleAlert,
-                      tone: 'bg-[#1F2A24]/10 text-[#1F2A24]/70',
+                      tone: 'bg-ink/10 text-ink/70',
                   };
         case 'account_reviewed':
             return notification.data.status === 'APPROVED'
-                ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-[#22613F]' }
+                ? { icon: CircleCheck, tone: 'bg-[#2E8057]/12 text-brand-forest' }
                 : {
                       icon: CircleAlert,
-                      tone: 'bg-[#C6473B]/10 text-[#9A3329]',
+                      tone: 'bg-danger/10 text-danger-deep',
                   };
         default:
             return {
                 icon: ReceiptText,
-                tone: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+                tone: 'bg-brand/10 text-brand-ink',
             };
     }
 }
@@ -244,8 +244,8 @@ function NotificationItem({
             <button
                 type="button"
                 onClick={() => onOpen(notification)}
-                className={`group flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-[#1F2A24]/[0.04] focus-visible:bg-[#1F2A24]/[0.04] focus-visible:outline-none ${
-                    isUnread ? 'bg-[#2F6F4E]/[0.05]' : ''
+                className={`group flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-ink/[0.04] focus-visible:bg-ink/[0.04] focus-visible:outline-none ${
+                    isUnread ? 'bg-brand/[0.05]' : ''
                 }`}
             >
                 <span
@@ -259,22 +259,22 @@ function NotificationItem({
                         <span
                             className={`text-sm ${
                                 isUnread
-                                    ? 'font-semibold text-[#1F2A24]'
-                                    : 'font-medium text-[#1F2A24]/80'
+                                    ? 'font-semibold text-ink'
+                                    : 'font-medium text-ink/80'
                             }`}
                         >
                             {notification.data.title}
                         </span>
-                        <span className="mt-0.5 shrink-0 text-[11px] text-[#1F2A24]/50 tabular-nums">
+                        <span className="mt-0.5 shrink-0 text-[11px] text-ink/50 tabular-nums">
                             {timeAgo(notification.created_at)}
                         </span>
                     </span>
-                    <span className="mt-0.5 line-clamp-3 block text-[13px] leading-snug text-[#1F2A24]/65">
+                    <span className="mt-0.5 line-clamp-3 block text-[13px] leading-snug text-ink/65">
                         {notification.data.message}
                     </span>
                 </span>
                 {isUnread && (
-                    <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#2F6F4E]">
+                    <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand">
                         <span className="sr-only">Unread</span>
                     </span>
                 )}
@@ -285,13 +285,13 @@ function NotificationItem({
 
 function LoadingRows() {
     return (
-        <ul className="divide-y divide-[#1F2A24]/5" aria-hidden="true">
+        <ul className="divide-y divide-ink/5" aria-hidden="true">
             {[0, 1, 2].map((row) => (
                 <li key={row} className="flex gap-3 px-4 py-3">
-                    <span className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-[#1F2A24]/10 motion-reduce:animate-none" />
+                    <span className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-ink/10 motion-reduce:animate-none" />
                     <span className="flex-1 space-y-2 py-1">
-                        <span className="block h-3 w-2/3 animate-pulse rounded bg-[#1F2A24]/10 motion-reduce:animate-none" />
-                        <span className="block h-3 w-full animate-pulse rounded bg-[#1F2A24]/10 motion-reduce:animate-none" />
+                        <span className="block h-3 w-2/3 animate-pulse rounded bg-ink/10 motion-reduce:animate-none" />
+                        <span className="block h-3 w-full animate-pulse rounded bg-ink/10 motion-reduce:animate-none" />
                     </span>
                 </li>
             ))}
@@ -520,14 +520,14 @@ export default function NotificationBell({
                 aria-haspopup="dialog"
                 className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                     open
-                        ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                        : 'text-[#1F2A24]/70 hover:bg-[#1F2A24]/5 hover:text-[#1F2A24]'
+                        ? 'bg-brand/10 text-brand-ink'
+                        : 'text-ink/70 hover:bg-ink/5 hover:text-ink'
                 }`}
             >
                 <Bell className="h-5 w-5" aria-hidden="true" />
                 {unreadCount > 0 && (
                     <span
-                        className="absolute top-1 right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#C6473B] px-1 text-[10px] font-bold text-white ring-2 ring-[#FBF8F2]"
+                        className="absolute top-1 right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-cream"
                         aria-hidden="true"
                     >
                         {unreadCount > 9 ? '9+' : unreadCount}
@@ -540,14 +540,14 @@ export default function NotificationBell({
                     id={panelId}
                     role="dialog"
                     aria-label="Notifications"
-                    className="fixed inset-x-3 top-24 z-50 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white shadow-2xl shadow-[#1F2A24]/15 sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:max-h-[32rem] sm:w-[26rem]"
+                    className="fixed inset-x-3 top-24 z-50 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-2xl shadow-shade/15 sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:max-h-[32rem] sm:w-[26rem]"
                 >
-                    <div className="border-b border-[#1F2A24]/10 px-4 pt-4 pb-3">
+                    <div className="border-b border-ink/10 px-4 pt-4 pb-3">
                         <div className="flex items-center justify-between gap-3">
-                            <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-[#1F2A24]">
+                            <h2 className="flex items-center gap-2 font-serif text-lg font-semibold text-ink">
                                 Notifications
                                 {unreadCount > 0 && (
-                                    <span className="rounded-full bg-[#C6473B]/10 px-2 py-0.5 font-sans text-xs font-semibold text-[#9A3329]">
+                                    <span className="rounded-full bg-danger/10 px-2 py-0.5 font-sans text-xs font-semibold text-danger-deep">
                                         {unreadCount} new
                                     </span>
                                 )}
@@ -556,7 +556,7 @@ export default function NotificationBell({
                                 <button
                                     type="button"
                                     onClick={markAllRead}
-                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/10"
+                                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand/10"
                                 >
                                     <CheckCheck
                                         className="h-4 w-4"
@@ -569,7 +569,7 @@ export default function NotificationBell({
                         <div
                             role="group"
                             aria-label="Show"
-                            className="mt-3 inline-flex rounded-full bg-[#1F2A24]/5 p-1"
+                            className="mt-3 inline-flex rounded-full bg-ink/5 p-1"
                         >
                             {(['all', 'unread'] as const).map((key) => (
                                 <button
@@ -579,8 +579,8 @@ export default function NotificationBell({
                                     aria-pressed={filter === key}
                                     className={`min-h-8 rounded-full px-3.5 text-xs font-semibold transition-colors ${
                                         filter === key
-                                            ? 'bg-white text-[#1F2A24] shadow-sm'
-                                            : 'text-[#1F2A24]/60 hover:text-[#1F2A24]'
+                                            ? 'bg-surface text-ink shadow-sm'
+                                            : 'text-ink/60 hover:text-ink'
                                     }`}
                                 >
                                     {key === 'all'
@@ -598,13 +598,13 @@ export default function NotificationBell({
 
                         {loadFailed && notifications === null && (
                             <div className="px-6 py-10 text-center">
-                                <p className="text-sm text-[#1F2A24]/70">
+                                <p className="text-sm text-ink/70">
                                     Couldn't load your notifications.
                                 </p>
                                 <button
                                     type="button"
                                     onClick={() => load()}
-                                    className="mt-3 inline-flex min-h-10 items-center rounded-full border border-[#1F2A24]/15 px-4 text-sm font-semibold text-[#1F2A24] hover:bg-[#1F2A24]/5"
+                                    className="mt-3 inline-flex min-h-10 items-center rounded-full border border-ink/15 px-4 text-sm font-semibold text-ink hover:bg-ink/5"
                                 >
                                     Try again
                                 </button>
@@ -613,7 +613,7 @@ export default function NotificationBell({
 
                         {notifications !== null && visible.length === 0 && (
                             <div className="flex flex-col items-center px-6 py-12 text-center">
-                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2F6F4E]/10 text-[#2F6F4E]">
+                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-brand-ink">
                                     {filter === 'unread' ? (
                                         <CheckCheck
                                             className="h-6 w-6"
@@ -626,12 +626,12 @@ export default function NotificationBell({
                                         />
                                     )}
                                 </span>
-                                <p className="mt-3 font-semibold text-[#1F2A24]">
+                                <p className="mt-3 font-semibold text-ink">
                                     {filter === 'unread'
                                         ? "You're all caught up"
                                         : 'No notifications yet'}
                                 </p>
-                                <p className="mt-1 max-w-xs text-sm text-[#1F2A24]/60">
+                                <p className="mt-1 max-w-xs text-sm text-ink/60">
                                     {filter === 'unread'
                                         ? routes.emptyUnread
                                         : routes.emptyAll}
@@ -649,10 +649,10 @@ export default function NotificationBell({
                                     key={group.label}
                                     aria-label={group.label}
                                 >
-                                    <h3 className="sticky top-0 z-10 bg-white/95 px-4 pt-3 pb-1 text-[11px] font-semibold tracking-[0.1em] text-[#1F2A24]/50 uppercase backdrop-blur">
+                                    <h3 className="sticky top-0 z-10 bg-white/95 px-4 pt-3 pb-1 text-[11px] font-semibold tracking-[0.1em] text-ink/50 uppercase backdrop-blur">
                                         {group.label}
                                     </h3>
-                                    <ul className="divide-y divide-[#1F2A24]/5">
+                                    <ul className="divide-y divide-ink/5">
                                         {group.items.map((notification) => (
                                             <NotificationItem
                                                 key={notification.id}

@@ -142,14 +142,14 @@ export default function Profile() {
             {confirmDialog}
 
             <AdminSettingsShell>
-                <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+                <div className="rounded-2xl border border-ink/10 bg-surface p-5">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                         <button
                             type="button"
                             onClick={choosePhoto}
                             disabled={isPhotoBusy}
                             aria-label="Change profile photo"
-                            className="group relative size-20 shrink-0 self-start rounded-full focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none sm:self-center"
+                            className="group relative size-20 shrink-0 self-start rounded-full focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:outline-none sm:self-center"
                         >
                             <AdminAvatar
                                 name={user.name}
@@ -158,7 +158,7 @@ export default function Profile() {
                             />
                             <span
                                 aria-hidden="true"
-                                className={`absolute inset-0 flex items-center justify-center rounded-full bg-[#1F2A24]/55 text-white transition-opacity ${
+                                className={`absolute inset-0 flex items-center justify-center rounded-full bg-ink/55 text-white transition-opacity ${
                                     isPhotoBusy
                                         ? 'opacity-100'
                                         : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
@@ -173,7 +173,7 @@ export default function Profile() {
                             {!isPhotoBusy && (
                                 <span
                                     aria-hidden="true"
-                                    className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full border-2 border-white bg-[#2F6F4E] text-white shadow-sm"
+                                    className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full border-2 border-white bg-brand text-white shadow-sm"
                                 >
                                     <Camera className="size-3.5" />
                                 </span>
@@ -181,19 +181,19 @@ export default function Profile() {
                         </button>
 
                         <div className="min-w-0 flex-1">
-                            <p className="truncate font-serif text-lg font-semibold text-[#1F2A24]">
+                            <p className="truncate font-serif text-lg font-semibold text-ink">
                                 {user.name}
                             </p>
-                            <p className="flex items-center gap-1.5 truncate text-sm text-[#1F2A24]/70">
+                            <p className="flex items-center gap-1.5 truncate text-sm text-ink/70">
                                 <Mail
                                     className="size-3.5 shrink-0"
                                     aria-hidden="true"
                                 />
                                 <span className="truncate">{user.email}</span>
                             </p>
-                            <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#1F2A24]/60">
+                            <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-ink/60">
                                 {auth.roleLabel && (
-                                    <span className="rounded-full bg-[#2F6F4E]/10 px-2 py-0.5 font-semibold text-[#2F6F4E]">
+                                    <span className="rounded-full bg-brand/10 px-2 py-0.5 font-semibold text-brand-ink">
                                         {auth.roleLabel}
                                     </span>
                                 )}
@@ -207,14 +207,14 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    <div className="mt-5 flex flex-col gap-3 border-t border-[#1F2A24]/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-5 flex flex-col gap-3 border-t border-ink/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
                         <div aria-live="polite" className="text-xs">
                             {photoError ? (
-                                <p role="alert" className="text-[#C6473B]">
+                                <p role="alert" className="text-danger-ink">
                                     {photoError}
                                 </p>
                             ) : (
-                                <p className="text-[#1F2A24]/60">
+                                <p className="text-ink/60">
                                     Click your photo to change it. JPG, PNG, or
                                     WebP, up to 2MB.
                                 </p>
@@ -235,7 +235,7 @@ export default function Profile() {
                                     type="button"
                                     onClick={removePhoto}
                                     disabled={isPhotoBusy}
-                                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-5 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-ink/15 bg-surface px-5 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                                 >
                                     <Trash2
                                         className="size-4"
@@ -327,9 +327,9 @@ export default function Profile() {
                         tone="danger"
                     >
                         <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="flex gap-2 text-sm text-[#1F2A24]/75">
+                            <p className="flex gap-2 text-sm text-ink/75">
                                 <TriangleAlert
-                                    className="mt-0.5 size-4 shrink-0 text-[#C6473B]"
+                                    className="mt-0.5 size-4 shrink-0 text-danger-ink"
                                     aria-hidden="true"
                                 />
                                 You'll be signed out immediately and won't be
@@ -338,7 +338,7 @@ export default function Profile() {
                             <button
                                 type="button"
                                 onClick={() => setIsDeleteOpen(true)}
-                                className="min-h-11 shrink-0 rounded-full border border-[#C6473B]/40 bg-white px-5 text-sm font-semibold text-[#A3372D] transition-colors hover:bg-[#C6473B] hover:text-white focus-visible:ring-2 focus-visible:ring-[#C6473B]/40 focus-visible:outline-none"
+                                className="min-h-11 shrink-0 rounded-full border border-danger/40 bg-surface px-5 text-sm font-semibold text-danger-strong transition-colors hover:bg-danger hover:text-white focus-visible:ring-2 focus-visible:ring-danger/40 focus-visible:outline-none"
                             >
                                 Delete account
                             </button>
@@ -348,13 +348,13 @@ export default function Profile() {
             </AdminSettingsShell>
 
             <Dialog open={isDeleteOpen} onOpenChange={changeDeleteOpen}>
-                <DialogContent className="rounded-2xl border-[#1F2A24]/10 bg-white sm:max-w-md">
+                <DialogContent className="rounded-2xl border-ink/10 bg-surface sm:max-w-md">
                     <form onSubmit={submitDelete} className="grid gap-5">
                         <DialogHeader>
-                            <DialogTitle className="font-serif text-lg text-[#1F2A24]">
+                            <DialogTitle className="font-serif text-lg text-ink">
                                 Delete your account?
                             </DialogTitle>
-                            <DialogDescription className="text-[#1F2A24]/70">
+                            <DialogDescription className="text-ink/70">
                                 Your account and everything tied to it will be
                                 permanently deleted. Enter your password to
                                 confirm.
@@ -391,7 +391,7 @@ export default function Profile() {
                             <DialogClose asChild>
                                 <button
                                     type="button"
-                                    className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
+                                    className="min-h-11 rounded-full border border-ink/15 bg-surface px-5 text-sm font-semibold text-ink/75 transition-colors hover:bg-ink/5"
                                 >
                                     Cancel
                                 </button>
@@ -402,7 +402,7 @@ export default function Profile() {
                                     deleteForm.processing ||
                                     deleteForm.data.password === ''
                                 }
-                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#C6473B] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#A3372D] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-danger px-5 text-sm font-semibold text-white transition-colors hover:bg-[#A3372D] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {deleteForm.processing && (
                                     <Loader2

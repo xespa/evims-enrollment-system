@@ -52,9 +52,9 @@ type Props = {
 };
 
 const PASSWORD_STATUS_STYLES: Record<PasswordStatus['value'], string> = {
-    RESET: 'bg-[#E8A33D]/15 text-[#7a4d0b]',
-    STARTING: 'bg-[#E8A33D]/15 text-[#7a4d0b]',
-    CHANGED: 'bg-[#2F6F4E]/10 text-[#2F6F4E]',
+    RESET: 'bg-warn/15 text-warn-deep',
+    STARTING: 'bg-warn/15 text-warn-deep',
+    CHANGED: 'bg-brand/10 text-brand-ink',
 };
 
 function formatDateTime(value: string | null): string | null {
@@ -68,8 +68,8 @@ function formatDateTime(value: string | null): string | null {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-            <h2 className="mb-3 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+        <section className="rounded-2xl border border-ink/10 bg-surface p-5">
+            <h2 className="mb-3 text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
                 {title}
             </h2>
             {children}
@@ -79,12 +79,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
     return (
-        <div className="flex flex-col gap-0.5 border-b border-[#1F2A24]/5 py-2 last:border-0 sm:flex-row sm:gap-4">
-            <dt className="text-sm text-[#1F2A24]/60 sm:w-44 sm:shrink-0">
+        <div className="flex flex-col gap-0.5 border-b border-ink/5 py-2 last:border-0 sm:flex-row sm:gap-4">
+            <dt className="text-sm text-ink/60 sm:w-44 sm:shrink-0">
                 {label}
             </dt>
-            <dd className="text-sm font-medium text-[#1F2A24]">
-                {value ?? <span className="text-[#1F2A24]/40">—</span>}
+            <dd className="text-sm font-medium text-ink">
+                {value ?? <span className="text-ink/40">—</span>}
             </dd>
         </div>
     );
@@ -98,23 +98,23 @@ function TemporaryPassword({ password }: { password: string }) {
     return (
         <div
             role="status"
-            className="rounded-2xl border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 p-5"
+            className="rounded-2xl border border-brand/30 bg-brand/5 p-5"
         >
-            <p className="text-sm font-semibold text-[#1F2A24]">
+            <p className="text-sm font-semibold text-ink">
                 Temporary password
             </p>
-            <p className="mt-1 text-sm text-[#1F2A24]/70">
+            <p className="mt-1 text-sm text-ink/70">
                 Give this to the student or their parent now. It won't be shown
                 again, and the student must change it when they sign in.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-                <code className="rounded-lg border border-[#1F2A24]/15 bg-white px-4 py-2 font-mono text-lg tracking-wider text-[#1F2A24] select-all">
+                <code className="rounded-lg border border-ink/15 bg-surface px-4 py-2 font-mono text-lg tracking-wider text-ink select-all">
                     {password}
                 </code>
                 <button
                     type="button"
                     onClick={() => copy(password)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-4 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-4 text-sm font-semibold text-brand-ink hover:bg-brand/5"
                 >
                     {isCopied ? (
                         <Check className="h-4 w-4" aria-hidden="true" />
@@ -178,21 +178,21 @@ export default function Show({
             <Head title={`${student.name} · Student Account`} />
             {confirmDialog}
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-3xl space-y-4">
                     <Link
                         href={studentAccountsIndex.url()}
-                        className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#1F2A24]/70 hover:text-[#1F2A24]"
+                        className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-ink/70 hover:text-ink"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Student Accounts
                     </Link>
 
                     <div>
-                        <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
+                        <h1 className="font-serif text-2xl font-semibold text-ink">
                             {student.name}
                         </h1>
-                        <p className="text-sm text-[#1F2A24]/70">
+                        <p className="text-sm text-ink/70">
                             Student account · {account.status_label}
                         </p>
                     </div>
@@ -200,7 +200,7 @@ export default function Show({
                     {props.flash?.success && (
                         <div
                             role="status"
-                            className="rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {props.flash.success}
                         </div>
@@ -208,7 +208,7 @@ export default function Show({
                     {errors?.password && (
                         <div
                             role="alert"
-                            className="rounded-xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-4 py-3 text-sm text-[#A3372D]"
+                            className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger-strong"
                         >
                             {errors.password}
                         </div>
@@ -246,7 +246,7 @@ export default function Show({
                                             href={showEnrollment.url(
                                                 student.enrollment_id,
                                             )}
-                                            className="text-[#2F6F4E] underline-offset-2 hover:underline"
+                                            className="text-brand-ink underline-offset-2 hover:underline"
                                         >
                                             Open application
                                         </Link>
@@ -299,7 +299,7 @@ export default function Show({
                                     />
                                     {account.password_status.label}
                                 </span>
-                                <p className="mt-3 text-sm text-[#1F2A24]/70">
+                                <p className="mt-3 text-sm text-ink/70">
                                     Passwords are stored hashed (scrambled one
                                     way), so nobody at the school can see them.
                                     If the student forgot theirs, reset it
@@ -307,7 +307,7 @@ export default function Show({
                                 </p>
                             </>
                         ) : (
-                            <p className="text-sm text-[#1F2A24]/70">
+                            <p className="text-sm text-ink/70">
                                 The student gets a password once the account is
                                 created.
                             </p>
@@ -319,7 +319,7 @@ export default function Show({
                                     type="button"
                                     disabled={processing}
                                     onClick={() => reset('LRN')}
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink hover:bg-brand/5 disabled:opacity-50"
                                 >
                                     <RotateCcw
                                         className="h-4 w-4"
@@ -331,7 +331,7 @@ export default function Show({
                                     type="button"
                                     disabled={processing}
                                     onClick={() => reset('TEMPORARY')}
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep disabled:opacity-50"
                                 >
                                     <KeyRound
                                         className="h-4 w-4"
@@ -343,11 +343,11 @@ export default function Show({
                         )}
 
                         {passwordResets.length > 0 && (
-                            <div className="mt-5 border-t border-[#1F2A24]/10 pt-4">
-                                <h3 className="mb-2 text-sm font-semibold text-[#1F2A24]/80">
+                            <div className="mt-5 border-t border-ink/10 pt-4">
+                                <h3 className="mb-2 text-sm font-semibold text-ink/80">
                                     Recent resets
                                 </h3>
-                                <ul className="space-y-1 text-sm text-[#1F2A24]/70">
+                                <ul className="space-y-1 text-sm text-ink/70">
                                     {passwordResets.map((entry) => (
                                         <li key={entry.id}>
                                             {formatDateTime(entry.at)}

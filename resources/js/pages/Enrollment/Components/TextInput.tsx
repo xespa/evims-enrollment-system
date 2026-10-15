@@ -13,8 +13,8 @@ export default function TextInput({ label, name, value, onChange, error, type = 
 
     return (
         <div className="mb-4">
-            <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-[#1F2A24]/80">
-                {label} {required && <span className="text-[#C6473B]" aria-hidden="true">*</span>}
+            <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-ink/80">
+                {label} {required && <span className="text-danger-ink" aria-hidden="true">*</span>}
             </label>
             <div className="relative">
                 <input
@@ -28,10 +28,10 @@ export default function TextInput({ label, name, value, onChange, error, type = 
                     aria-required={required || undefined}
                     aria-invalid={error ? true : undefined}
                     aria-describedby={error ? errorId : undefined}
-                    className={`min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#1F2A24] placeholder-[#1F2A24]/40 shadow-sm transition-colors focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none disabled:bg-[#1F2A24]/5 disabled:text-[#1F2A24]/70 ${
+                    className={`min-h-10 w-full rounded-lg border bg-surface px-3 py-2 text-sm text-ink placeholder-ink/40 shadow-sm transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none disabled:bg-ink/5 disabled:text-ink/70 ${
                         isDate ? 'pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0' : ''
                     } ${
-                        error ? 'border-[#C6473B] bg-[#C6473B]/[0.03]' : 'border-[#1F2A24]/15'
+                        error ? 'border-danger bg-danger/[0.03]' : 'border-ink/15'
                     }`}
                     {...rest}
                 />
@@ -40,7 +40,7 @@ export default function TextInput({ label, name, value, onChange, error, type = 
                         type="button"
                         onClick={openPicker}
                         tabIndex={-1}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#1F2A24]/65 hover:text-[#2F6F4E]"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink/65 hover:text-brand-ink"
                         aria-label="Open calendar"
                     >
                         <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -48,7 +48,7 @@ export default function TextInput({ label, name, value, onChange, error, type = 
                 )}
             </div>
             {error && (
-                <p id={errorId} className="mt-1 text-sm text-[#C6473B]">
+                <p id={errorId} className="mt-1 text-sm text-danger-ink">
                     {error}
                 </p>
             )}

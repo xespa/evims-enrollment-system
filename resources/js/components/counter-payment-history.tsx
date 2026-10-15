@@ -83,19 +83,19 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
             <div className="mb-2 flex items-baseline justify-between gap-3">
                 <h3
                     id="counter-history-heading"
-                    className="text-xs font-semibold tracking-wide text-[#1F2A24]/60 uppercase"
+                    className="text-xs font-semibold tracking-wide text-ink/60 uppercase"
                 >
                     Earlier counter payments
                 </h3>
                 {receipts.length > 0 && (
-                    <span className="text-xs text-[#1F2A24]/55 tabular-nums">
+                    <span className="text-xs text-ink/55 tabular-nums">
                         {formatCurrency(activeTotal)} paid at the counter
                     </span>
                 )}
             </div>
 
             {isLoading ? (
-                <p className="flex items-center gap-2 rounded-xl border border-[#1F2A24]/10 px-3 py-3 text-sm text-[#1F2A24]/55">
+                <p className="flex items-center gap-2 rounded-xl border border-ink/10 px-3 py-3 text-sm text-ink/55">
                     <Loader2
                         className="h-4 w-4 animate-spin"
                         aria-hidden="true"
@@ -103,21 +103,21 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
                     Loading earlier payments…
                 </p>
             ) : hasError ? (
-                <p className="rounded-xl border border-[#C6473B]/30 bg-[#C6473B]/5 px-3 py-3 text-sm text-[#A83A30]">
+                <p className="rounded-xl border border-danger/30 bg-danger/5 px-3 py-3 text-sm text-danger-alert">
                     Couldn't load the earlier payments. You can still record
                     this one.
                 </p>
             ) : receipts.length === 0 ? (
-                <p className="rounded-xl border border-[#1F2A24]/10 px-3 py-3 text-sm text-[#1F2A24]/55">
+                <p className="rounded-xl border border-ink/10 px-3 py-3 text-sm text-ink/55">
                     No counter payments yet. This is the first receipt for this
                     application.
                 </p>
             ) : (
-                <ul className="max-h-56 divide-y divide-[#1F2A24]/10 overflow-y-auto rounded-xl border border-[#1F2A24]/10">
+                <ul className="max-h-56 divide-y divide-ink/10 overflow-y-auto rounded-xl border border-ink/10">
                     {receipts.map((receipt) => (
                         <li
                             key={receipt.id}
-                            className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-2.5 text-sm ${receipt.status === 'VOIDED' ? 'text-[#1F2A24]/50' : ''}`}
+                            className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-2.5 text-sm ${receipt.status === 'VOIDED' ? 'text-ink/50' : ''}`}
                         >
                             <div className="min-w-0">
                                 <p className="flex flex-wrap items-center gap-2">
@@ -126,7 +126,7 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
                                             ? `OR ${receipt.receipt_number}`
                                             : 'No OR number'}
                                     </span>
-                                    <span className="text-xs text-[#1F2A24]/55">
+                                    <span className="text-xs text-ink/55">
                                         {receipt.payment_form === 'CHECK'
                                             ? `Check${receipt.check_bank ? ` · ${receipt.check_bank}` : ''}${receipt.check_number ? ` #${receipt.check_number}` : ''}`
                                             : 'Cash'}
@@ -139,7 +139,7 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
                                         </span>
                                     )}
                                 </p>
-                                <p className="text-xs text-[#1F2A24]/55">
+                                <p className="text-xs text-ink/55">
                                     {receipt.paid_at
                                         ? formatDateTime(receipt.paid_at)
                                         : '—'}
@@ -167,7 +167,7 @@ export default function CounterPaymentHistory({ enrollmentId }: Props) {
                                             target="_blank"
                                             rel="noopener"
                                             aria-label={`Print OR ${receipt.receipt_number}`}
-                                            className="inline-flex items-center gap-1 text-xs font-medium text-[#2F6F4E] underline-offset-4 hover:text-[#25573E] hover:underline"
+                                            className="inline-flex items-center gap-1 text-xs font-medium text-brand-ink underline-offset-4 hover:text-brand-deep-ink hover:underline"
                                         >
                                             <Printer
                                                 className="h-3.5 w-3.5"

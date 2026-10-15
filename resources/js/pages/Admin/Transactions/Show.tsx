@@ -75,11 +75,11 @@ type TimelineEvent = {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section className="rounded-2xl border border-[#1F2A24]/10 bg-white">
-            <h2 className="border-b border-[#1F2A24]/10 px-5 py-3 text-sm font-semibold text-[#1F2A24]">
+        <section className="rounded-2xl border border-ink/10 bg-surface">
+            <h2 className="border-b border-ink/10 px-5 py-3 text-sm font-semibold text-ink">
                 {title}
             </h2>
-            <dl className="divide-y divide-[#1F2A24]/5 px-5">{children}</dl>
+            <dl className="divide-y divide-ink/5 px-5">{children}</dl>
         </section>
     );
 }
@@ -87,8 +87,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Row({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm text-[#1F2A24]/60">{label}</dt>
-            <dd className="text-sm break-all text-[#1F2A24] sm:col-span-2">
+            <dt className="text-sm text-ink/60">{label}</dt>
+            <dd className="text-sm break-all text-ink sm:col-span-2">
                 {children}
             </dd>
         </div>
@@ -151,12 +151,12 @@ function timelineFor(payment: Props['payment']): TimelineEvent[] {
 
 const TIMELINE_ICONS = {
     done: (
-        <CheckCircle2 className="h-5 w-5 text-[#2F6F4E]" aria-hidden="true" />
+        <CheckCircle2 className="h-5 w-5 text-brand-ink" aria-hidden="true" />
     ),
     waiting: (
-        <CircleDashed className="h-5 w-5 text-[#a4670f]" aria-hidden="true" />
+        <CircleDashed className="h-5 w-5 text-warn-ink" aria-hidden="true" />
     ),
-    failed: <XCircle className="h-5 w-5 text-[#A83A30]" aria-hidden="true" />,
+    failed: <XCircle className="h-5 w-5 text-danger-alert" aria-hidden="true" />,
 };
 
 export default function Show({ payment, canVoid, receipt }: Props) {
@@ -171,11 +171,11 @@ export default function Show({ payment, canVoid, receipt }: Props) {
         <>
             <Head title={`Transaction ${referenceId(payment)}`} />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
+            <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-4xl">
                     <Link
                         href={route('admin.transaction-history.index')}
-                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-[#2F6F4E] hover:underline"
+                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-brand-ink hover:underline"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Back to payment history
@@ -184,16 +184,16 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                     {flashSuccess && !isVoiding && (
                         <div
                             role="status"
-                            className="mb-4 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                            className="mb-4 rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-brand-ink"
                         >
                             {flashSuccess}
                         </div>
                     )}
 
                     {/* Header */}
-                    <div className="mb-6 rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+                    <div className="mb-6 rounded-2xl border border-ink/10 bg-surface p-5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
-                            <p className="text-xs font-semibold tracking-wide text-[#1F2A24]/50 uppercase">
+                            <p className="text-xs font-semibold tracking-wide text-ink/50 uppercase">
                                 Payment
                             </p>
                             {canVoid && (
@@ -207,7 +207,7 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                             )}
                                             target="_blank"
                                             rel="noopener"
-                                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-4 text-xs font-semibold text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand/30 px-4 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand/5"
                                         >
                                             <Printer
                                                 className="h-4 w-4"
@@ -219,7 +219,7 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setIsVoiding(true)}
-                                        className="min-h-9 rounded-full border border-[#C6473B]/30 px-4 text-xs font-semibold text-[#A83A30] transition-colors hover:bg-[#C6473B]/10"
+                                        className="min-h-9 rounded-full border border-danger/30 px-4 text-xs font-semibold text-danger-alert transition-colors hover:bg-danger/10"
                                     >
                                         Void payment
                                     </button>
@@ -227,7 +227,7 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                             )}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3">
-                            <h1 className="font-serif text-3xl font-semibold text-[#1F2A24] tabular-nums">
+                            <h1 className="font-serif text-3xl font-semibold text-ink tabular-nums">
                                 {formatCurrency(payment.amount)}
                             </h1>
                             <span
@@ -236,12 +236,12 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                 {STATUS_LABELS[payment.status]}
                             </span>
                         </div>
-                        <p className="mt-2 text-sm text-[#1F2A24]/70">
+                        <p className="mt-2 text-sm text-ink/70">
                             {student.last_name}, {student.first_name} ·
                             Installment #{installment.installment_number} · S.Y.{' '}
                             {enrollment.school_year}
                         </p>
-                        <p className="mt-1 font-mono text-xs text-[#1F2A24]/55">
+                        <p className="mt-1 font-mono text-xs text-ink/55">
                             {referenceId(payment)}
                         </p>
                     </div>
@@ -371,15 +371,15 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                             'admin.enrollments.show',
                                             enrollment.id,
                                         )}
-                                        className="text-sm font-medium text-[#2F6F4E] hover:underline"
+                                        className="text-sm font-medium text-brand-ink hover:underline"
                                     >
                                         View application #{enrollment.id}
                                     </Link>
                                 </div>
                             </Section>
 
-                            <section className="rounded-2xl border border-[#1F2A24]/10 bg-white">
-                                <h2 className="border-b border-[#1F2A24]/10 px-5 py-3 text-sm font-semibold text-[#1F2A24]">
+                            <section className="rounded-2xl border border-ink/10 bg-surface">
+                                <h2 className="border-b border-ink/10 px-5 py-3 text-sm font-semibold text-ink">
                                     Timeline
                                 </h2>
                                 <ol className="space-y-4 px-5 py-4">
@@ -390,11 +390,11 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                                         >
                                             {TIMELINE_ICONS[event.tone]}
                                             <div>
-                                                <p className="text-sm text-[#1F2A24]">
+                                                <p className="text-sm text-ink">
                                                     {event.label}
                                                 </p>
                                                 {event.at && (
-                                                    <p className="text-xs text-[#1F2A24]/55">
+                                                    <p className="text-xs text-ink/55">
                                                         {formatDateTime(
                                                             event.at,
                                                         )}

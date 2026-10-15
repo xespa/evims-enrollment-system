@@ -75,10 +75,10 @@ export default function RejectApplicationDialog({
         <Dialog open={open} onOpenChange={close}>
             <DialogContent
                 aria-describedby="reject-application-summary"
-                className="rounded-2xl border-[#1F2A24]/10 bg-white p-0 text-[#1F2A24] sm:max-w-md"
+                className="rounded-2xl border-ink/10 bg-surface p-0 text-ink sm:max-w-md"
             >
                 <form onSubmit={submit}>
-                    <DialogHeader className="border-b border-[#1F2A24]/10 px-6 py-5 pr-12 text-left">
+                    <DialogHeader className="border-b border-ink/10 px-6 py-5 pr-12 text-left">
                         <DialogTitle className="font-serif text-xl font-semibold">
                             Reject {studentName}'s application?
                         </DialogTitle>
@@ -87,17 +87,17 @@ export default function RejectApplicationDialog({
                     <div className="space-y-4 px-6 py-5">
                         <p
                             id="reject-application-summary"
-                            className="text-sm text-[#1F2A24]/75"
+                            className="text-sm text-ink/75"
                         >
                             The parent will be emailed and notified in their
                             portal with the reasons below and what to do next.
                         </p>
 
                         <fieldset>
-                            <legend className="mb-2 text-sm font-medium text-[#1F2A24]/80">
+                            <legend className="mb-2 text-sm font-medium text-ink/80">
                                 Why is it being rejected?{' '}
                                 <span
-                                    className="text-[#C6473B]"
+                                    className="text-danger-ink"
                                     aria-hidden="true"
                                 >
                                     *
@@ -110,7 +110,7 @@ export default function RejectApplicationDialog({
                                     return (
                                         <div
                                             key={reason.value}
-                                            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-[#1F2A24]/5"
+                                            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-ink/5"
                                         >
                                             <Checkbox
                                                 id={checkboxId}
@@ -123,11 +123,11 @@ export default function RejectApplicationDialog({
                                                         checked === true,
                                                     )
                                                 }
-                                                className="data-[state=checked]:border-[#C6473B] data-[state=checked]:bg-[#C6473B]"
+                                                className="data-[state=checked]:border-danger data-[state=checked]:bg-danger"
                                             />
                                             <label
                                                 htmlFor={checkboxId}
-                                                className="flex-1 cursor-pointer text-sm text-[#1F2A24]"
+                                                className="flex-1 cursor-pointer text-sm text-ink"
                                             >
                                                 {reason.label}
                                             </label>
@@ -136,7 +136,7 @@ export default function RejectApplicationDialog({
                                 })}
                             </div>
                             {reasonsError && (
-                                <p className="mt-1 text-xs text-[#C6473B]">
+                                <p className="mt-1 text-xs text-danger-ink">
                                     {reasonsError}
                                 </p>
                             )}
@@ -145,18 +145,18 @@ export default function RejectApplicationDialog({
                         <div>
                             <label
                                 htmlFor="rejection-note"
-                                className="mb-1 block text-sm font-medium text-[#1F2A24]/80"
+                                className="mb-1 block text-sm font-medium text-ink/80"
                             >
                                 Note to the parent{' '}
                                 {needsNote ? (
                                     <span
-                                        className="text-[#C6473B]"
+                                        className="text-danger-ink"
                                         aria-hidden="true"
                                     >
                                         *
                                     </span>
                                 ) : (
-                                    <span className="font-normal text-[#1F2A24]/50">
+                                    <span className="font-normal text-ink/50">
                                         (optional)
                                     </span>
                                 )}
@@ -174,21 +174,21 @@ export default function RejectApplicationDialog({
                                 aria-invalid={
                                     errors.rejection_note ? true : undefined
                                 }
-                                className="w-full rounded-lg border border-[#1F2A24]/15 bg-white px-3 py-2 text-sm focus:border-[#2F6F4E] focus:ring-2 focus:ring-[#2F6F4E]/30 focus:outline-none aria-[invalid=true]:border-[#C6473B]"
+                                className="w-full rounded-lg border border-ink/15 bg-surface px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger"
                             />
                             {errors.rejection_note && (
-                                <p className="mt-1 text-xs text-[#C6473B]">
+                                <p className="mt-1 text-xs text-danger-ink">
                                     {errors.rejection_note}
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 border-t border-[#1F2A24]/10 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-ink/10 px-6 py-4">
                         <button
                             type="button"
                             onClick={() => close(false)}
-                            className="min-h-10 rounded-full border border-[#1F2A24]/15 px-5 text-sm font-semibold text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+                            className="min-h-10 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink/80 hover:bg-ink/5"
                         >
                             Cancel
                         </button>
@@ -198,7 +198,7 @@ export default function RejectApplicationDialog({
                                 processing ||
                                 data.rejection_reasons.length === 0
                             }
-                            className="min-h-10 rounded-full bg-[#C6473B] px-5 text-sm font-semibold text-white hover:bg-[#A93A30] disabled:opacity-60"
+                            className="min-h-10 rounded-full bg-danger px-5 text-sm font-semibold text-white hover:bg-[#A93A30] disabled:opacity-60"
                         >
                             Reject &amp; Notify
                         </button>
