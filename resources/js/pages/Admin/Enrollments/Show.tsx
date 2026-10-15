@@ -12,6 +12,7 @@ import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 import { formatAppointment } from '@/lib/document-appointment';
 import DocumentAppointment from '@/pages/Admin/Enrollments/Components/DocumentAppointment';
 import RejectApplicationDialog from '@/pages/Admin/Enrollments/Components/RejectApplicationDialog';
+import SectionCard from '@/pages/Admin/Enrollments/Components/SectionCard';
 import StudentAccountCard from '@/pages/Admin/Enrollments/Components/StudentAccountCard';
 import UploadDocumentForm from '@/pages/Admin/Enrollments/Components/UploadDocumentForm';
 import {
@@ -622,6 +623,7 @@ export default function Show({
     rejectionReasons,
     today,
     studentAccount,
+    sections,
 }) {
     const { props } = usePage();
     const can = useStaffAbilities();
@@ -1133,6 +1135,19 @@ export default function Show({
                             canManage={can.reviewApplications}
                         />
 
+                        <SectionCard
+                            // Starts from the saved section after each save.
+                            key={enrollment.section_id ?? 'none'}
+                            enrollmentId={enrollment.id}
+                            sectionId={enrollment.section_id}
+                            sections={sections}
+                            isApproved={
+                                enrollment.enrollment_status === 'APPROVED' &&
+                                !isCancelled
+                            }
+                            canManage={can.reviewApplications}
+                        />
+
                         {/* Student info */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
                             <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
@@ -1169,6 +1184,14 @@ export default function Show({
                             <InfoRow
                                 label="School Year"
                                 value={enrollment.school_year}
+                            />
+                            <InfoRow
+                                label="Section"
+                                value={
+                                    enrollment.section
+                                        ? `Section ${enrollment.section.name}`
+                                        : null
+                                }
                             />
                             <InfoRow
                                 label="Session"

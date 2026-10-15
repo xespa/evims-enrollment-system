@@ -195,8 +195,11 @@ class EnrollmentController extends Controller
     }
 
     /**
-     * The school year applications are for, with each grade level's fees
-     * and subjects. Empty when no school year is open.
+     * The school year applications are for, with each grade level's fees,
+     * subjects, and slots: `slots` is every section's together (null when
+     * there's no limit) and `slots_taken` how many applications hold one,
+     * so a full grade level can be flagged before the parent fills in the
+     * rest. Empty when no school year is open.
      *
      * @return array<string, array<int, Curriculum>>
      */
@@ -208,6 +211,13 @@ class EnrollmentController extends Controller
             return [];
         }
 
+        $slotsTaken = Enrollment::query()
+            ->where('school_year', $schoolYear)
+            ->holdingSlot()
+            ->selectRaw('grade_level_id, count(*) as aggregate')
+            ->groupBy('grade_level_id')
+            ->pluck('aggregate', 'grade_level_id');
+
         return [
             $schoolYear => Curriculum::query()
                 ->published()
@@ -215,7 +225,12 @@ class EnrollmentController extends Controller
                 ->with(['subjects' => fn ($query) => $query
                     ->select(['id', 'curriculum_id', 'name', 'code'])
                     ->orderBy('name')])
+                ->withSum('sections', 'slots')
                 ->get()
+                ->each(fn (Curriculum $curriculum) => $curriculum
+                    ->setAttribute('slots', $curriculum->getAttribute('sections_sum_slots') === null ? null : (int) $curriculum->getAttribute('sections_sum_slots'))
+                    ->setAttribute('slots_taken', (int) ($slotsTaken[$curriculum->grade_level_id] ?? 0))
+                    ->makeHidden('sections_sum_slots'))
                 ->keyBy('grade_level_id')
                 ->all(),
         ];

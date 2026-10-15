@@ -7,6 +7,7 @@ use App\Enums\PaymentMethod;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,6 +47,32 @@ class Enrollment extends Model
     public function gradeLevel(): BelongsTo
     {
         return $this->belongsTo(GradeLevel::class);
+    }
+
+    /**
+     * The section staff placed the student in, once approved.
+     *
+     * @return BelongsTo<Section, $this>
+     */
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    /**
+     * The sections the student can be placed in: their grade level's for
+     * that school year, A first.
+     *
+     * @return Collection<int, Section>
+     */
+    public function offeredSections(): Collection
+    {
+        return Section::query()
+            ->whereHas('curriculum', fn (Builder $curriculum) => $curriculum
+                ->where('grade_level_id', $this->grade_level_id)
+                ->where('school_year', $this->school_year))
+            ->orderBy('name')
+            ->get();
     }
 
     /**
@@ -352,6 +379,20 @@ class Enrollment extends Model
         } else {
             $query->whereNull('enrollments.archived_at');
         }
+    }
+
+    /**
+     * Applications taking one of their grade level's slots: pending or
+     * approved, and neither cancelled nor archived. A rejected, cancelled
+     * or archived one frees its slot.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeHoldingSlot(Builder $query): void
+    {
+        $query->whereIn('enrollments.enrollment_status', ['PENDING', 'APPROVED'])
+            ->whereNull('enrollments.cancelled_at')
+            ->whereNull('enrollments.archived_at');
     }
 
     /**

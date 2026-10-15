@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SubmitEnrollmentApplication
 {
@@ -97,6 +98,8 @@ class SubmitEnrollmentApplication
     public function handle(EnrolleeUser $enrollee, array $validated, array $documentPaths): Enrollment
     {
         return DB::transaction(function () use ($enrollee, $validated, $documentPaths) {
+            $this->ensureGradeLevelHasRoom($validated);
+
             $existingStudent = $this->findExistingStudent($enrollee, $validated);
 
             // Only allow overwriting identity fields if the logged-in account is
@@ -229,6 +232,29 @@ class SubmitEnrollmentApplication
 
             return $enrollment;
         });
+    }
+
+    /**
+     * Checks again, with the grade level's curriculum locked, that a slot
+     * is still free, so two parents applying at the same moment can't both
+     * take the last one.
+     *
+     * @param  array<string, mixed>  $validated
+     *
+     * @throws ValidationException
+     */
+    private function ensureGradeLevelHasRoom(array $validated): void
+    {
+        $curriculum = Curriculum::query()
+            ->published()
+            ->where('grade_level_id', $validated['grade_level_id'])
+            ->where('school_year', $validated['school_year'])
+            ->lockForUpdate()
+            ->first();
+
+        if ($curriculum?->isFull()) {
+            throw ValidationException::withMessages(['grade_level_id' => $curriculum->fullMessage()]);
+        }
     }
 
     /**

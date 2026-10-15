@@ -93,6 +93,66 @@ class Curriculum extends Model
     }
 
     /**
+     * The grade level's classes this school year, A first.
+     *
+     * @return HasMany<Section, $this>
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class)->orderBy('name');
+    }
+
+    /**
+     * Gives the grade level the usual sections, A to C, each with the
+     * default number of slots.
+     */
+    public function createDefaultSections(): void
+    {
+        $this->sections()->createMany(array_map(
+            fn (string $name): array => ['name' => $name, 'slots' => Section::DEFAULT_SLOTS],
+            Section::DEFAULT_NAMES,
+        ));
+    }
+
+    /**
+     * How many students the grade level takes this school year: every
+     * section's slots together. Null when it has no sections, which means
+     * there's no limit.
+     */
+    public function totalSlots(): ?int
+    {
+        $sections = $this->relationLoaded('sections') ? $this->sections : $this->sections()->get();
+
+        return $sections->isEmpty() ? null : (int) $sections->sum('slots');
+    }
+
+    /**
+     * Applications taking one of the grade level's slots this school year.
+     */
+    public function slotsTaken(): int
+    {
+        return $this->enrollmentsQuery()->holdingSlot()->count();
+    }
+
+    /**
+     * Whether every slot is taken, so nobody else can apply.
+     */
+    public function isFull(): bool
+    {
+        $totalSlots = $this->totalSlots();
+
+        return $totalSlots !== null && $this->slotsTaken() >= $totalSlots;
+    }
+
+    /**
+     * What applicants are told once every slot is taken.
+     */
+    public function fullMessage(): string
+    {
+        return "{$this->gradeLevel->name} is full for S.Y. {$this->school_year}: all {$this->totalSlots()} slots are taken. Please contact the school to ask about a waitlist.";
+    }
+
+    /**
      * Applications for this grade level and school year — the ones whose
      * price and subjects came from this curriculum.
      *

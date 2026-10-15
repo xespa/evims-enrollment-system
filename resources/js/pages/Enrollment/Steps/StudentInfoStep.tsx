@@ -1,6 +1,7 @@
 import TextInput from '../Components/TextInput';
 import LrnInput from '../Components/LrnInput';
 import SelectInput from '../Components/SelectInput';
+import { gradeLevelFullMessage, isGradeLevelFull } from '../Components/slots';
 
 // Pre-Elementary levels, with the age each one is for.
 const PRE_ELEMENTARY_AGES = {
@@ -38,13 +39,21 @@ export default function StudentInfoStep({
     // Only the school years that are open for enrollment.
     schoolYears,
 }) {
-    const gradeOptions = gradeLevels.map((g) => ({
-        value: g.id,
-        label:
+    const gradeOptions = gradeLevels.map((g) => {
+        const label =
             g.name in PRE_ELEMENTARY_AGES
                 ? `${g.name} (Age ${PRE_ELEMENTARY_AGES[g.name]})`
-                : g.name,
-    }));
+                : g.name;
+
+        // A full grade level stays listed, so parents see why it can't be picked.
+        return isGradeLevelFull(g)
+            ? { value: g.id, label: `${label} — Full`, disabled: true }
+            : { value: g.id, label };
+    });
+    const chosenGrade = gradeLevels.find(
+        (g) => String(g.id) === String(data.grade_level_id),
+    );
+    const isChosenGradeFull = chosenGrade ? isGradeLevelFull(chosenGrade) : false;
     const schoolYearOptions = schoolYears.map((year) => ({
         value: year,
         label: year,
@@ -112,9 +121,19 @@ export default function StudentInfoStep({
                     name="grade_level_id"
                     value={data.grade_level_id}
                     onChange={handleGradeLevelChange}
-                    error={errors.grade_level_id}
+                    error={
+                        errors.grade_level_id ??
+                        (isChosenGradeFull
+                            ? gradeLevelFullMessage(chosenGrade, data.school_year)
+                            : undefined)
+                    }
                     required
                     options={gradeOptions}
+                    hint={
+                        gradeLevels.some(isGradeLevelFull)
+                            ? 'Grade levels marked Full have no slots left this school year.'
+                            : null
+                    }
                 />
             </div>
 

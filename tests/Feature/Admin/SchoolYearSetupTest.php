@@ -23,7 +23,7 @@ test('setting up the next school year drafts a copy of every grade level\'s fees
     $this->actingAs($this->admin)
         ->post(route('admin.school-years.store'), ['school_year' => '2027-2028'])
         ->assertRedirect(route('admin.grade-levels.index', ['school_year' => '2027-2028']))
-        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees and subjects, then save it to open enrollment.');
+        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees, subjects and sections, then save it to open enrollment.');
 
     $gradeOneNext = $gradeOne->curriculumFor('2027-2028');
 
@@ -223,7 +223,7 @@ test('the next school year gets the latest year\'s enrollment dates, a year late
 
     $this->actingAs($this->admin)
         ->post(route('admin.school-years.store'), ['school_year' => '2027-2028'])
-        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees and subjects, then save it to open enrollment. Its enrollment dates were carried over a year later (Jun 1, 2027 to Aug 31, 2027); change them if needed.');
+        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees, subjects and sections, then save it to open enrollment. Its enrollment dates were carried over a year later (Jun 1, 2027 to Aug 31, 2027); change them if needed.');
 
     $period = EnrollmentPeriod::query()->where('school_year', '2027-2028')->sole();
 
@@ -254,7 +254,7 @@ test('no enrollment dates are carried over when the latest year has none', funct
 
     $this->actingAs($this->admin)
         ->post(route('admin.school-years.store'), ['school_year' => '2027-2028'])
-        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees and subjects, then save it to open enrollment.');
+        ->assertSessionHas('success', 'Draft of 2027-2028 created from 2026-2027. Review its fees, subjects and sections, then save it to open enrollment.');
 
     expect(EnrollmentPeriod::count())->toBe(0);
 });

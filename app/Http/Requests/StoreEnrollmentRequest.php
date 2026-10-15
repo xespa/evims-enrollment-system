@@ -220,7 +220,16 @@ class StoreEnrollmentRequest extends FormRequest
             'sex' => ['required', 'in:MALE,FEMALE'],
 
             // Enrollment
-            'grade_level_id' => ['required', 'exists:grade_levels,id'],
+            'grade_level_id' => [
+                'required',
+                'exists:grade_levels,id',
+                // Every section's slots are taken.
+                function (string $attribute, mixed $value, Closure $fail) use ($curriculum) {
+                    if ($curriculum?->isFull()) {
+                        $fail($curriculum->fullMessage());
+                    }
+                },
+            ],
             'school_year' => $schoolYearRules,
             'age' => ['required', 'integer', 'min:2'],
             'session_time_preference' => ['required', 'in:MORNING_SESSION,AFTERNOON_SESSION,SCHOOL_SERVICE'],

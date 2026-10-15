@@ -8,6 +8,7 @@ import {
     Pencil,
     RotateCcw,
     Save,
+    Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
@@ -18,8 +19,9 @@ import {
 import EditFeesDialog from './Components/EditFeesDialog';
 import EnrollmentPeriodDialog from './Components/EnrollmentPeriodDialog';
 import { formatDate, isPeriodClosed, periodStatus } from './Components/period';
+import ManageSectionsDialog from './Components/ManageSectionsDialog';
 import ManageSubjectsDialog from './Components/ManageSubjectsDialog';
-import { MONTHLY_FEES, ONE_TIME_FEES } from './Components/types';
+import { MONTHLY_FEES, ONE_TIME_FEES, totalSlots } from './Components/types';
 import type {
     Curriculum,
     EnrollmentPeriod,
@@ -194,11 +196,13 @@ function GradeLevelCard({
     schoolYear,
     onEditFees,
     onManageSubjects,
+    onManageSections,
 }: {
     gradeLevel: GradeLevel;
     schoolYear: string;
     onEditFees: () => void;
     onManageSubjects: () => void;
+    onManageSections: () => void;
 }) {
     const curriculum = gradeLevel.curriculum;
 
@@ -218,6 +222,8 @@ function GradeLevelCard({
     const oneTime = feeTotal(curriculum, ONE_TIME_FEES);
     const monthly = feeTotal(curriculum, MONTHLY_FEES);
     const subjectCount = curriculum.subjects.length;
+    const slots = totalSlots(curriculum);
+    const isFull = slots !== null && curriculum.slots_taken >= slots;
 
     return (
         <article className="flex flex-col rounded-2xl border border-[#1F2A24]/10 bg-white p-5 transition-shadow hover:shadow-md hover:shadow-[#1F2A24]/5">
@@ -264,9 +270,23 @@ function GradeLevelCard({
                         </span>
                     </dd>
                 </div>
+                <div className="flex justify-between gap-3">
+                    <dt className="text-[#1F2A24]/65">
+                        {curriculum.sections.length === 0
+                            ? 'Sections'
+                            : `Sections ${curriculum.sections.map((s) => s.name).join(', ')}`}
+                    </dt>
+                    <dd
+                        className={`tabular-nums ${isFull ? 'font-semibold text-[#A3372D]' : 'text-[#1F2A24]'}`}
+                    >
+                        {slots === null
+                            ? 'No limit'
+                            : `${curriculum.slots_taken} / ${slots}${isFull ? ' · Full' : ''}`}
+                    </dd>
+                </div>
             </dl>
 
-            <div className="mt-auto grid grid-cols-2 gap-2 pt-5">
+            <div className="mt-auto grid grid-cols-3 gap-2 pt-5">
                 <button
                     type="button"
                     onClick={onEditFees}
@@ -282,6 +302,14 @@ function GradeLevelCard({
                 >
                     <BookOpen className="h-4 w-4" aria-hidden="true" />
                     Subjects
+                </button>
+                <button
+                    type="button"
+                    onClick={onManageSections}
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#2F6F4E]/30 px-3 text-sm font-medium text-[#2F6F4E] transition-colors hover:bg-[#2F6F4E]/5"
+                >
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    Sections
                 </button>
             </div>
         </article>
@@ -321,6 +349,11 @@ export default function Index({
         manageGradeLevelId !== null,
     );
 
+    const [sectionsId, setSectionsId] = useState<number | null>(null);
+    const [isSectionsOpen, setIsSectionsOpen] = useState(false);
+    // Bumped on every open so the form starts from the saved sections.
+    const [sectionsSession, setSectionsSession] = useState(0);
+
     const [isPeriodOpen, setIsPeriodOpen] = useState(false);
     // Bumped on every open so the date form starts from the saved dates.
     const [periodSession, setPeriodSession] = useState(0);
@@ -349,6 +382,13 @@ export default function Index({
     // Looked up from the latest props, so the modals reflect each save.
     const feesGradeLevel = gradeLevels.find((g) => g.id === feesId);
     const subjectsGradeLevel = gradeLevels.find((g) => g.id === subjectsId);
+    const sectionsGradeLevel = gradeLevels.find((g) => g.id === sectionsId);
+
+    const openSections = (gradeLevel: GradeLevel) => {
+        setSectionsId(gradeLevel.id);
+        setSectionsSession((n) => n + 1);
+        setIsSectionsOpen(true);
+    };
 
     const openFees = (gradeLevel: GradeLevel) => {
         setFeesId(gradeLevel.id);
@@ -375,8 +415,8 @@ export default function Index({
         const confirmed = await confirm({
             title: `Set up ${nextSchoolYear}?`,
             description: latestSchoolYear
-                ? `This creates a draft of ${nextSchoolYear} with every grade level's fees and subjects copied from ${latestSchoolYear}, and its enrollment dates (if set) moved a year later. Review and edit it, then Save to open enrollment — or Cancel to discard it. ${latestSchoolYear} isn't affected either way.`
-                : `This creates a draft of ${nextSchoolYear} with no subjects and ₱0 fees. Fill it in, then Save to open enrollment — or Cancel to discard it.`,
+                ? `This creates a draft of ${nextSchoolYear} with every grade level's fees, subjects and sections copied from ${latestSchoolYear} (sections A, B and C where it had none), and its enrollment dates (if set) moved a year later. Review and edit it, then Save to open enrollment — or Cancel to discard it. ${latestSchoolYear} isn't affected either way.`
+                : `This creates a draft of ${nextSchoolYear} with no subjects, ₱0 fees, and sections A, B and C. Fill it in, then Save to open enrollment — or Cancel to discard it.`,
             confirmLabel: `Set up ${nextSchoolYear}`,
         });
 
@@ -438,7 +478,8 @@ export default function Index({
     const flashSuccess = props.flash?.success;
     const setUpError = (props.errors as Record<string, string> | undefined)
         ?.school_year;
-    const anyModalOpen = isFeesOpen || isSubjectsOpen || isPeriodOpen;
+    const anyModalOpen =
+        isFeesOpen || isSubjectsOpen || isSectionsOpen || isPeriodOpen;
     const hasSchoolYears = schoolYears.length > 0;
 
     return (
@@ -670,6 +711,9 @@ export default function Index({
                                                     onManageSubjects={() =>
                                                         openSubjects(gradeLevel)
                                                     }
+                                                    onManageSections={() =>
+                                                        openSections(gradeLevel)
+                                                    }
                                                 />
                                             ))}
                                         </div>
@@ -707,6 +751,16 @@ export default function Index({
                     curriculum={subjectsGradeLevel.curriculum}
                     open={isSubjectsOpen}
                     onOpenChange={setIsSubjectsOpen}
+                />
+            )}
+
+            {sectionsGradeLevel?.curriculum && (
+                <ManageSectionsDialog
+                    key={sectionsSession}
+                    gradeLevel={sectionsGradeLevel}
+                    curriculum={sectionsGradeLevel.curriculum}
+                    open={isSectionsOpen}
+                    onOpenChange={setIsSectionsOpen}
                 />
             )}
         </>

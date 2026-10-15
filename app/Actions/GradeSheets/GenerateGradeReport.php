@@ -29,13 +29,13 @@ class GenerateGradeReport
     /**
      * Everything the printed grade report shows.
      *
-     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
+     * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
      */
     public function viewData(Student $student): array
     {
         $enrollments = $student->enrollments()
             ->withStatus('APPROVED')
-            ->with('gradeLevel:id,name')
+            ->with(['gradeLevel:id,name', 'section:id,name'])
             ->orderByDesc('school_year')
             ->get();
 
@@ -53,6 +53,7 @@ class GenerateGradeReport
                 return [
                     'school_year' => $enrollment->school_year,
                     'grade_level' => $enrollment->gradeLevel?->name,
+                    'section' => $enrollment->section?->name,
                     // Their age that school year, from the application.
                     'age' => $enrollment->age,
                     'grades' => $grades,

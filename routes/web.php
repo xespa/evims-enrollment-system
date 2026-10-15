@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AwardController;
 use App\Http\Controllers\Admin\AwardListPrintController;
 use App\Http\Controllers\Admin\CounterPaymentHistoryController;
 use App\Http\Controllers\Admin\CurriculumController;
+use App\Http\Controllers\Admin\CurriculumSectionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DocumentAppointmentController;
 use App\Http\Controllers\Admin\EnrolleeAccountController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\EnrollmentArchiveController;
 use App\Http\Controllers\Admin\EnrollmentDocumentController;
 use App\Http\Controllers\Admin\EnrollmentManagementController;
 use App\Http\Controllers\Admin\EnrollmentPeriodController;
+use App\Http\Controllers\Admin\EnrollmentSectionController;
 use App\Http\Controllers\Admin\EnrollmentSummaryController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
@@ -163,6 +165,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         Route::delete('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'destroy'])->name('enrollments.archive.destroy');
         Route::patch('enrollments/{enrollment}/status', [EnrollmentManagementController::class, 'updateStatus'])->name('enrollments.status.update');
         Route::patch('enrollments/{enrollment}/verification', [EnrollmentManagementController::class, 'updateVerification'])->name('enrollments.verification.update');
+        // Placing an approved student in one of their grade level's sections.
+        Route::put('enrollments/{enrollment}/section', [EnrollmentSectionController::class, 'update'])->name('enrollments.section.update');
         Route::post('enrollments/{enrollment}/documents/{type}/remind', [EnrollmentManagementController::class, 'remindDocument'])
             ->whereIn('type', ['form_138', 'birth_certificate', 'good_moral'])
             ->name('enrollments.documents.remind');
@@ -239,6 +243,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         // A curriculum is one grade level's fees + subjects for one school year.
         Route::resource('curricula', CurriculumController::class)->only(['update']);
         Route::resource('curricula.subjects', SubjectController::class)->shallow()->only(['store', 'update', 'destroy']);
+        // Its sections (A, B, C…) and how many students each takes.
+        Route::put('curricula/{curriculum}/sections', [CurriculumSectionController::class, 'update'])->name('curricula.sections.update');
 
         // Creating and editing happen in a modal on the index page.
         Route::resource('events', EventController::class)->only(['index', 'store', 'update', 'destroy']);

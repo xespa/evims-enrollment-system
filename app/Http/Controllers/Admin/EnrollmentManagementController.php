@@ -12,6 +12,7 @@ use App\Mail\RegistrationFormIssued;
 use App\Models\Enrollment;
 use App\Models\EnrollmentPeriod;
 use App\Models\OfficeVerification;
+use App\Models\Section;
 use App\Models\User;
 use App\Notifications\DocumentReminder;
 use App\Notifications\EnrollmentStatusChanged;
@@ -39,6 +40,7 @@ class EnrollmentManagementController extends Controller
             'student.address',
             'student.parentProfile',
             'gradeLevel',
+            'section:id,name',
             'subjects',
             'academicHistory',
             'vitalInformation',
@@ -68,6 +70,17 @@ class EnrollmentManagementController extends Controller
             // The earliest date an in-person document appointment can be set.
             'today' => EnrollmentPeriod::today()->toDateString(),
             'studentAccount' => $enrollment->student->accountSummary($enrollment->student->latestApprovedEnrollment()),
+            // The grade level's sections that school year, to place the
+            // student in once approved, with how full each is.
+            'sections' => $enrollment->offeredSections()
+                ->loadCount('students')
+                ->map(fn (Section $section) => [
+                    'id' => $section->id,
+                    'name' => $section->name,
+                    'slots' => $section->slots,
+                    'students_count' => (int) $section->getAttribute('students_count'),
+                ])
+                ->values(),
             'rejectionReasons' => array_map(
                 fn (EnrollmentRejectionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()],
                 EnrollmentRejectionReason::cases(),

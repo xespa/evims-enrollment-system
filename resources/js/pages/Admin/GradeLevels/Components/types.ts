@@ -5,6 +5,15 @@ export type Subject = {
     enrollments_count: number;
 };
 
+/** One of a grade level's classes for one school year; mirrors Section. */
+export type Section = {
+    id: number;
+    name: string;
+    slots: number;
+    /** Students placed in it and holding a slot; it can't shrink below this. */
+    students_count: number;
+};
+
 /** One grade level's fees and subjects for one school year. */
 export type Curriculum = {
     id: number;
@@ -18,7 +27,18 @@ export type Curriculum = {
     /** Applications already made for this grade level and year. */
     enrollments_count: number;
     subjects: Subject[];
+    /** A first; none means there's no limit on applications. */
+    sections: Section[];
+    /** Pending or approved applications, each holding one slot. */
+    slots_taken: number;
 };
+
+/** Every section's slots together, or null when there's no limit. */
+export function totalSlots(curriculum: Curriculum): number | null {
+    return curriculum.sections.length === 0
+        ? null
+        : curriculum.sections.reduce((total, s) => total + s.slots, 0);
+}
 
 export type GradeLevel = {
     id: number;

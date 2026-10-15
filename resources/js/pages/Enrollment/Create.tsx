@@ -17,6 +17,7 @@ import {
 } from './Components/mobile-number';
 import AccountNotApprovedNotice from './Components/AccountNotApprovedNotice';
 import { isValidLrn } from './Components/LrnInput';
+import { gradeLevelFullMessage, isGradeLevelFull } from './Components/slots';
 import StepperNav, { STEP_LABELS } from './Components/StepperNav';
 import VerifyLrnGate from './Steps/VerifyLrnGate';
 import StudentInfoStep from './Steps/StudentInfoStep';
@@ -627,6 +628,19 @@ export default function Create({
         return `Your last application was for ${previousSchoolYear}, and enrollment for the next school year isn't open yet. Please check back once the school opens it.`;
     };
 
+    // A grade level whose sections' slots are all taken can't be applied
+    // for, so the parent is stopped on the step where it's chosen.
+    const gradeLevelStep = fastTrack ? 6 : 1;
+    const getGradeLevelIssue = () => {
+        const grade = gradeLevels.find(
+            (g) => String(g.id) === String(data.grade_level_id),
+        );
+
+        return grade && step === gradeLevelStep && isGradeLevelFull(grade)
+            ? gradeLevelFullMessage(grade, data.school_year)
+            : null;
+    };
+
     // Mobile numbers are optional, but one that's been started must be
     // complete before leaving its step.
     const getUnfinishedMobileNumbers = () =>
@@ -656,7 +670,8 @@ export default function Create({
             getMissingFields().length === 0 &&
             !getSchoolYearIssue() &&
             getUnfinishedMobileNumbers().length === 0 &&
-            !getLrnIssue()
+            !getLrnIssue() &&
+            !getGradeLevelIssue()
         ) {
             setNextBlockedReason('');
         }
@@ -695,11 +710,13 @@ export default function Create({
         const schoolYearIssue = getSchoolYearIssue();
         const unfinishedMobileNumbers = getUnfinishedMobileNumbers();
         const lrnIssue = getLrnIssue();
+        const gradeLevelIssue = getGradeLevelIssue();
         if (
             missing.length > 0 ||
             schoolYearIssue ||
             unfinishedMobileNumbers.length > 0 ||
-            lrnIssue
+            lrnIssue ||
+            gradeLevelIssue
         ) {
             const messages = [];
             if (missing.length > 0) {
@@ -722,11 +739,18 @@ export default function Create({
             if (schoolYearIssue) {
                 messages.push(schoolYearIssue);
             }
+            if (gradeLevelIssue) {
+                messages.push(gradeLevelIssue);
+            }
             setNextBlockedReason(messages.join(' '));
             focusField(
                 missing[0] ??
                     unfinishedMobileNumbers[0] ??
-                    (lrnIssue ? 'lrn' : 'school_year'),
+                    (lrnIssue
+                        ? 'lrn'
+                        : gradeLevelIssue
+                          ? 'grade_level_id'
+                          : 'school_year'),
             );
             return;
         }
@@ -804,6 +828,19 @@ export default function Create({
             setNextBlockedReason(schoolYearIssue);
             setStep(6);
             setMaxStepReached((m) => Math.max(m, 6));
+            return;
+        }
+
+        // The grade level may have filled up while the form was open; the
+        // server refuses it too, but this saves sending the documents.
+        const chosenGrade = gradeLevels.find(
+            (g) => String(g.id) === String(data.grade_level_id),
+        );
+        if (chosenGrade && isGradeLevelFull(chosenGrade)) {
+            setNextBlockedReason(
+                gradeLevelFullMessage(chosenGrade, data.school_year),
+            );
+            setStep(gradeLevelStep);
             return;
         }
 
@@ -893,9 +930,10 @@ export default function Create({
     const applicantName = [data.first_name, data.last_name]
         .filter(Boolean)
         .join(' ');
-    const selectedGradeName = gradeLevels.find(
+    const chosenGradeLevel = gradeLevels.find(
         (g: { id: number }) => String(g.id) === String(data.grade_level_id),
-    )?.name;
+    );
+    const selectedGradeName = chosenGradeLevel?.name;
 
     // Server-side problems, grouped by the step they're on, so each one
     // can be jumped to directly.
@@ -1065,15 +1103,35 @@ export default function Create({
                                                     <option
                                                         key={g.id}
                                                         value={g.id}
+                                                        disabled={isGradeLevelFull(
+                                                            g,
+                                                        )}
                                                     >
-                                                        {g.name}
+                                                        {isGradeLevelFull(g)
+                                                            ? `${g.name} — Full`
+                                                            : g.name}
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="mt-1 text-xs text-[#1F2A24]/65">
-                                                Defaulted to the next grade up
-                                                from last year.
-                                            </p>
+                                            {chosenGradeLevel &&
+                                            isGradeLevelFull(
+                                                chosenGradeLevel,
+                                            ) ? (
+                                                <p
+                                                    role="alert"
+                                                    className="mt-1 text-xs font-medium text-[#A3372D]"
+                                                >
+                                                    {gradeLevelFullMessage(
+                                                        chosenGradeLevel,
+                                                        data.school_year,
+                                                    )}
+                                                </p>
+                                            ) : (
+                                                <p className="mt-1 text-xs text-[#1F2A24]/65">
+                                                    Defaulted to the next grade
+                                                    up from last year.
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>

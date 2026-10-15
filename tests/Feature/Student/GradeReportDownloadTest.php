@@ -17,10 +17,10 @@ function studentDownloadingGrades(string $schoolYear = '2026-2027'): array
 {
     $account = StudentAccount::factory()->active('Secret-Pass-123')->create();
 
-    return [$account, approvedEnrollmentFor($account, $schoolYear)];
+    return [$account, studentsApprovedEnrollment($account, $schoolYear)];
 }
 
-function approvedEnrollmentFor(StudentAccount $account, string $schoolYear, string $status = 'APPROVED'): Enrollment
+function studentsApprovedEnrollment(StudentAccount $account, string $schoolYear, string $status = 'APPROVED'): Enrollment
 {
     return Enrollment::factory()->create([
         'student_id' => $account->student_id,
@@ -63,8 +63,8 @@ test('students can download their grades as a pdf', function () {
 
 test('the pdf has every approved school year\'s grades in each subject, newest first', function () {
     [$account, $thisYear] = studentDownloadingGrades();
-    $lastYear = approvedEnrollmentFor($account, '2025-2026');
-    approvedEnrollmentFor($account, '2024-2025', 'REJECTED');
+    $lastYear = studentsApprovedEnrollment($account, '2025-2026');
+    studentsApprovedEnrollment($account, '2024-2025', 'REJECTED');
     reportGradeInSubject($thisYear, 'Mathematics', ['term_1' => 80, 'term_2' => 85, 'term_3' => 90]);
     reportGradeInSubject($thisYear, 'English', ['term_1' => 70, 'term_2' => 72, 'term_3' => 74]);
     reportGradeInSubject($lastYear, 'Science', ['term_1' => 88, 'term_2' => null, 'term_3' => null]);

@@ -22,7 +22,7 @@ export default function SelectInput({ label, name, value, onChange, error, optio
             >
                 <option value="" className="text-[#1F2A24] bg-white">-- Select --</option>
                 {options.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="text-[#1F2A24] bg-white">
+                    <option key={opt.value} value={opt.value} disabled={opt.disabled} className="text-[#1F2A24] bg-white">
                         {opt.label}
                     </option>
                 ))}

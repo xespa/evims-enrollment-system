@@ -29,23 +29,36 @@ class GradeLevelController extends Controller
             ->groupBy('grade_level_id')
             ->pluck('count', 'grade_level_id');
 
+        // Applications holding a slot, against every section's slots.
+        $slotsTaken = Enrollment::query()
+            ->where('school_year', $schoolYear)
+            ->holdingSlot()
+            ->selectRaw('grade_level_id, count(*) as count')
+            ->groupBy('grade_level_id')
+            ->pluck('count', 'grade_level_id');
+
         $gradeLevels = GradeLevel::query()
             ->with(['curricula' => fn ($query) => $query
                 ->forSchoolYear($schoolYear)
-                ->with(['subjects' => fn ($query) => $query
-                    ->select(['id', 'curriculum_id', 'name', 'code'])
-                    ->withCount('enrollments')
-                    ->orderBy('name')])])
+                ->with([
+                    'subjects' => fn ($query) => $query
+                        ->select(['id', 'curriculum_id', 'name', 'code'])
+                        ->withCount('enrollments')
+                        ->orderBy('name'),
+                    // Students placed in each, which it can't shrink below.
+                    'sections' => fn ($query) => $query
+                        ->select(['id', 'curriculum_id', 'name', 'slots'])
+                        ->withCount('students'),
+                ])])
             ->orderBy('level_order')
             ->get()
             ->map(fn (GradeLevel $gradeLevel) => [
                 'id' => $gradeLevel->id,
                 'name' => $gradeLevel->name,
                 'level_order' => $gradeLevel->level_order,
-                'curriculum' => $gradeLevel->curricula->first()?->setAttribute(
-                    'enrollments_count',
-                    (int) ($enrollmentCounts[$gradeLevel->id] ?? 0),
-                ),
+                'curriculum' => $gradeLevel->curricula->first()
+                    ?->setAttribute('enrollments_count', (int) ($enrollmentCounts[$gradeLevel->id] ?? 0))
+                    ->setAttribute('slots_taken', (int) ($slotsTaken[$gradeLevel->id] ?? 0)),
             ]);
 
         $latestSchoolYear = end($schoolYears) ?: null;

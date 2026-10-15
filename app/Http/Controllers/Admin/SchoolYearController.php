@@ -23,8 +23,8 @@ class SchoolYearController extends Controller
 {
     /**
      * Starts a draft of the next school year by copying every grade level's
-     * fees and subjects from the latest year, so only what changed needs
-     * editing. Years are set up one at a time, in order.
+     * fees, subjects and sections from the latest year, so only what changed
+     * needs editing. Years are set up one at a time, in order.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -49,7 +49,7 @@ class SchoolYearController extends Controller
         $period = DB::transaction(function () use ($validated, $latestSchoolYear) {
             foreach (GradeLevel::orderBy('level_order')->get() as $gradeLevel) {
                 $source = $latestSchoolYear
-                    ? $gradeLevel->curricula()->with('subjects')->orderByDesc('school_year')->first()
+                    ? $gradeLevel->curricula()->with(['subjects', 'sections'])->orderByDesc('school_year')->first()
                     : null;
 
                 $curriculum = $gradeLevel->curricula()->create([
@@ -61,14 +61,22 @@ class SchoolYearController extends Controller
                 foreach ($source ? $source->subjects : [] as $subject) {
                     $curriculum->subjects()->create($subject->only(['name', 'code']));
                 }
+
+                // The same sections and slots as last year, or A to C when
+                // there's nothing to copy.
+                if ($source && $source->sections->isNotEmpty()) {
+                    $curriculum->sections()->createMany($source->sections->map->only(['name', 'slots'])->all());
+                } else {
+                    $curriculum->createDefaultSections();
+                }
             }
 
             return $latestSchoolYear ? $this->copyEnrollmentPeriod($latestSchoolYear, $validated['school_year']) : null;
         });
 
         $message = $latestSchoolYear
-            ? "Draft of {$validated['school_year']} created from {$latestSchoolYear}. Review its fees and subjects, then save it to open enrollment."
-            : "Draft of {$validated['school_year']} created. Add its fees and subjects, then save it to open enrollment.";
+            ? "Draft of {$validated['school_year']} created from {$latestSchoolYear}. Review its fees, subjects and sections, then save it to open enrollment."
+            : "Draft of {$validated['school_year']} created. Add its fees and subjects, check its sections, then save it to open enrollment.";
 
         if ($period) {
             $message .= " Its enrollment dates were carried over a year later ({$period->opens_on->format('M j, Y')} to {$period->closes_on->format('M j, Y')}); change them if needed.";
