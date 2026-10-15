@@ -6,12 +6,14 @@ import {
     Pencil,
     Plus,
     Printer,
+    Send,
     UserPlus,
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
+import reportCardRoutes from '@/routes/admin/report-cards';
 import studentGradeRoutes from '@/routes/admin/student-grades';
 import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
 import AddStudentsDialog from './Components/AddStudentsDialog';
@@ -155,6 +157,22 @@ export default function Show({
                                 />
                                 Print
                             </a>
+                            {!isArchived && (
+                                // Each student's report card, as the Form 138 of
+                                // their next school year's application.
+                                <Link
+                                    href={reportCardRoutes.index.url({
+                                        query: { grade_sheet: gradeSheet.id },
+                                    })}
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <Send
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Send grades
+                                </Link>
+                            )}
                             {canAddStudent && (
                                 <button
                                     type="button"

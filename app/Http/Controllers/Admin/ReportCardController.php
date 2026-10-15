@@ -8,7 +8,9 @@ use App\Http\Requests\Admin\IndexReportCardRequest;
 use App\Http\Requests\Admin\StoreReportCardRequest;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
+use App\Models\GradeSheet;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,8 +28,9 @@ class ReportCardController extends Controller
         $staff = $request->user();
         $schoolYear = $request->schoolYear();
         $nextSchoolYear = Curriculum::nextSchoolYear($schoolYear);
+        $gradeSheet = $request->gradeSheet();
 
-        $enrollments = SendGradesToNextApplication::candidatesQuery($staff, $schoolYear)
+        $enrollments = $this->onGradeSheet(SendGradesToNextApplication::candidatesQuery($staff, $schoolYear), $gradeSheet)
             ->with(['student', 'gradeLevel:id,name,level_order', 'section:id,name', 'subjects:id,name', ...Enrollment::GRADE_REPORT_RELATIONS])
             ->get()
             ->sortBy([
@@ -67,16 +70,31 @@ class ReportCardController extends Controller
                 ];
             })->values(),
             // Students they grade who haven't applied for the next year yet.
-            'notYetAppliedCount' => Enrollment::query()
+            'notYetAppliedCount' => $this->onGradeSheet(Enrollment::query()
                 ->where('enrollments.school_year', $schoolYear)
                 ->withStatus('APPROVED')
                 ->archived(false)
-                ->gradedBy($staff)
+                ->gradedBy($staff), $gradeSheet)
                 ->count() - $enrollments->count(),
+            // The sheet the list is narrowed to, if any.
+            'gradeSheet' => $gradeSheet?->summary(),
             'schoolYear' => $schoolYear,
             'nextSchoolYear' => $nextSchoolYear,
             'schoolYears' => Curriculum::schoolYears(),
         ]);
+    }
+
+    /**
+     * Only the sheet's students, when sending from a grade sheet.
+     *
+     * @param  Builder<Enrollment>  $query
+     * @return Builder<Enrollment>
+     */
+    private function onGradeSheet(Builder $query, ?GradeSheet $gradeSheet): Builder
+    {
+        return $gradeSheet === null
+            ? $query
+            : $query->whereHas('studentGrades', fn (Builder $studentGrades) => $studentGrades->where('grade_sheet_id', $gradeSheet->id));
     }
 
     public function store(StoreReportCardRequest $request, SendGradesToNextApplication $sendGrades): RedirectResponse

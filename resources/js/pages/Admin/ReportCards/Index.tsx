@@ -1,6 +1,7 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     CheckCircle2,
+    ClipboardList,
     Loader2,
     Send,
     TriangleAlert,
@@ -8,8 +9,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
+import gradeSheetRoutes from '@/routes/admin/grade-sheets';
 import reportCardRoutes from '@/routes/admin/report-cards';
 import { SELECT_CLASS } from '../GradeSheets/Components/types';
+import type { GradeSheetSummary } from '../GradeSheets/Components/types';
 
 type StudentRow = {
     /** The student's application for the school year being sent. */
@@ -37,6 +40,8 @@ type Props = {
     schoolYear: string;
     nextSchoolYear: string;
     schoolYears: string[];
+    /** The grade sheet the list is narrowed to, when sent from its page. */
+    gradeSheet: GradeSheetSummary | null;
 };
 
 /**
@@ -49,6 +54,7 @@ export default function Index({
     schoolYear,
     nextSchoolYear,
     schoolYears,
+    gradeSheet,
 }: Props) {
     const { props } = usePage<{
         flash?: { success?: string };
@@ -169,21 +175,60 @@ export default function Index({
                     )}
 
                     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
-                        <label htmlFor="school-year" className="sr-only">
-                            Send grades from school year
-                        </label>
-                        <select
-                            id="school-year"
-                            value={schoolYear}
-                            onChange={(e) => changeSchoolYear(e.target.value)}
-                            className={`${SELECT_CLASS} sm:w-72`}
-                        >
-                            {schoolYears.map((year) => (
-                                <option key={year} value={year}>
-                                    From S.Y. {year}
-                                </option>
-                            ))}
-                        </select>
+                        {gradeSheet ? (
+                            // Narrowed to one sheet's students, from its page.
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                                <Link
+                                    href={gradeSheetRoutes.show.url(
+                                        gradeSheet.id,
+                                    )}
+                                    className="inline-flex items-center gap-1 font-semibold text-[#2F6F4E] hover:underline"
+                                >
+                                    <ClipboardList
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="font-mono">
+                                        {gradeSheet.number}
+                                    </span>
+                                </Link>
+                                <span className="text-[#1F2A24]/80">
+                                    {gradeSheet.subject} ·{' '}
+                                    {gradeSheet.grade_level} · S.Y. {schoolYear}
+                                </span>
+                                <Link
+                                    href={reportCardRoutes.index.url({
+                                        query: { school_year: schoolYear },
+                                    })}
+                                    className="text-xs font-semibold text-[#2F6F4E] hover:underline"
+                                >
+                                    Show all my students
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
+                                <label
+                                    htmlFor="school-year"
+                                    className="sr-only"
+                                >
+                                    Send grades from school year
+                                </label>
+                                <select
+                                    id="school-year"
+                                    value={schoolYear}
+                                    onChange={(e) =>
+                                        changeSchoolYear(e.target.value)
+                                    }
+                                    className={`${SELECT_CLASS} sm:w-72`}
+                                >
+                                    {schoolYears.map((year) => (
+                                        <option key={year} value={year}>
+                                            From S.Y. {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </>
+                        )}
                         <p
                             aria-live="polite"
                             className="text-sm text-[#1F2A24]/65 sm:ml-auto"
