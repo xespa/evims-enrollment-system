@@ -149,3 +149,21 @@ test('the LRN cannot be chosen as a new password', function () {
 
     expect(Hash::check('Secret-Pass-123', $account->refresh()->password))->toBeTrue();
 });
+
+test('a signed-in student is shown in the site navbar', function () {
+    $account = studentWithAccount();
+
+    $this->actingAs($account, 'student')
+        ->get(route('home'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('auth.student', [
+                'name' => "Juan {$account->student->last_name}",
+                'lrn' => '123456789012',
+            ])
+            ->where('auth.enrollee', null));
+});
+
+test('guests have no student in the navbar', function () {
+    $this->get(route('home'))
+        ->assertInertia(fn (Assert $page) => $page->where('auth.student', null));
+});

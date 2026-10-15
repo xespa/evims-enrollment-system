@@ -62,6 +62,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'enrollee' => $enrollee,
+                // Just enough of a signed-in student for the site's navbar.
+                'student' => fn () => $this->studentAccount(),
                 'unreadNotificationsCount' => $enrollee ? fn () => $enrollee->unreadNotifications()->count() : 0,
                 // Kept apart from the enrollee's, since both can be signed in at once.
                 'userUnreadNotificationsCount' => fn () => $user?->unreadNotifications()->count() ?? 0,
@@ -72,6 +74,26 @@ class HandleInertiaRequests extends Middleware
                 // what they can't use. The routes enforce it regardless.
                 'can' => fn () => $this->staffAbilities($this->staffUser($request)),
             ],
+        ];
+    }
+
+    /**
+     * The signed-in student's name and LRN, never the account itself (it
+     * holds the password hash).
+     *
+     * @return array{name: string, lrn: string|null}|null
+     */
+    private function studentAccount(): ?array
+    {
+        $account = Auth::guard('student')->user();
+
+        if (! $account instanceof StudentAccount) {
+            return null;
+        }
+
+        return [
+            'name' => trim("{$account->student->first_name} {$account->student->last_name}"),
+            'lrn' => $account->student->lrn,
         ];
     }
 

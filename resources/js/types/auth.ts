@@ -35,6 +35,8 @@ export type StaffAbilities = {
 export type Auth = {
     user: User;
     enrollee: Enrollee | null;
+    /** A signed-in student (the `student` guard): only what the navbar shows. */
+    student: { name: string; lrn: string | null } | null;
     unreadNotificationsCount: number;
     roleLabel: string | null;
     can: StaffAbilities | null;

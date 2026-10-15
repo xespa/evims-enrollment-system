@@ -1,18 +1,27 @@
-import { Form, Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeftRight,
     BookOpenCheck,
+    CalendarDays,
     CheckCircle2,
+    GraduationCap,
+    IdCard,
     KeyRound,
-    LogOut,
+    Settings,
     ShieldAlert,
+    ShieldCheck,
 } from 'lucide-react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
+import { useState } from 'react';
+import Metric from '@/components/portal/metric';
+import ChangePasswordDialog from '@/components/student/change-password-dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { logout } from '@/routes/student';
-import { update as updatePassword } from '@/routes/student/password';
 
 type Props = {
     student: {
@@ -28,117 +37,128 @@ type Props = {
     mustChangePassword: boolean;
 };
 
-const INPUT_CLASS =
-    'h-11 border-[#1F2A24]/15 focus-visible:border-[#2F6F4E] focus-visible:ring-[#2F6F4E]/30';
+const MENU_ITEM_CLASS =
+    'min-h-10 cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]';
 
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
-
-/** The signed-in student's home. Grades appear here once teachers post them. */
+/** The signed-in student's home, laid out like the parent portal's profile. */
 export default function Dashboard({
     student,
     usesDefaultPassword,
     mustChangePassword,
 }: Props) {
     const flashSuccess = usePage().props.flash?.success;
+    // Opens straight away after a reset, since nothing else is shown until then.
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] =
+        useState(mustChangePassword);
+
+    const initials =
+        `${student.first_name[0] ?? ''}${student.last_name[0] ?? ''}`.toUpperCase();
+    const needsNewPassword = mustChangePassword || usesDefaultPassword;
 
     return (
-        <>
-            <Head title="My account" />
+        <div className="mx-auto max-w-5xl px-4 pb-16">
+            <Head title="My Profile" />
+            <ChangePasswordDialog
+                open={isPasswordDialogOpen}
+                onOpenChange={setIsPasswordDialogOpen}
+                mustChangePassword={mustChangePassword}
+            />
 
-            <div className="bg-[#FBF8F2] px-4 py-8">
-                <div className="mx-auto max-w-3xl space-y-4">
-                    <header className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <p className="text-sm text-[#1F2A24]/65">
-                                Welcome back,
-                            </p>
-                            <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
-                                {student.first_name} {student.last_name}
-                            </h1>
-                            <p className="mt-1 text-sm text-[#1F2A24]/65">
-                                LRN{' '}
-                                <span className="font-medium text-[#1F2A24] tabular-nums">
-                                    {student.lrn}
-                                </span>
-                                {student.grade_level &&
-                                    ` · ${student.grade_level}`}
-                                {student.school_year &&
-                                    ` · SY ${student.school_year}`}
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                onClick={() =>
+            <div className="-mx-4 mb-6 h-28 bg-gradient-to-r from-[#2F6F4E] to-[#25573E] sm:h-36" />
+
+            <div className="-mt-16 flex flex-col gap-4 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
+                    <div
+                        aria-hidden="true"
+                        className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#FBF8F2] bg-[#2F6F4E] text-2xl font-semibold text-white shadow-sm sm:h-32 sm:w-32 sm:text-3xl"
+                    >
+                        {initials}
+                    </div>
+                    <div className="pb-1 text-center sm:text-left">
+                        <h1 className="font-serif text-xl font-semibold text-[#1F2A24] sm:text-2xl">
+                            {student.first_name} {student.last_name}
+                        </h1>
+                        <p className="text-sm text-[#1F2A24]/70">
+                            Student · LRN{' '}
+                            <span className="tabular-nums">{student.lrn}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2F6F4E] px-5 py-2 text-sm font-semibold text-[#FBF8F2] shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none">
+                            <Settings className="h-4 w-4" aria-hidden="true" />
+                            Settings
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="end"
+                            sideOffset={8}
+                            className="w-56 rounded-xl border-[#1F2A24]/10 bg-white p-1.5 text-[#1F2A24] shadow-lg"
+                        >
+                            <DropdownMenuItem
+                                className={MENU_ITEM_CLASS}
+                                onSelect={() => setIsPasswordDialogOpen(true)}
+                            >
+                                <KeyRound aria-hidden="true" />
+                                Change password
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-[#1F2A24]/10" />
+                            <DropdownMenuItem
+                                className={MENU_ITEM_CLASS}
+                                onSelect={() =>
                                     router.post(logout().url, {
                                         switch_account: 1,
                                     })
                                 }
-                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
                             >
-                                <ArrowLeftRight
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
+                                <ArrowLeftRight aria-hidden="true" />
                                 Switch account
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => router.post(logout().url)}
-                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold text-[#1F2A24]/75 transition-colors hover:bg-[#1F2A24]/5"
-                            >
-                                <LogOut
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                                Sign out
-                            </button>
-                        </div>
-                    </header>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <button
+                        type="button"
+                        onClick={() => router.post(logout().url)}
+                        className="min-h-11 rounded-full border border-[#1F2A24]/15 bg-white px-5 py-2 text-sm font-semibold text-[#1F2A24]/70 shadow-sm transition-colors hover:bg-[#1F2A24]/5"
+                    >
+                        Log Out
+                    </button>
+                </div>
+            </div>
 
-                    {flashSuccess && (
-                        <div
-                            role="status"
-                            className="flex items-center gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
-                        >
-                            <CheckCircle2
-                                className="h-4 w-4 shrink-0"
-                                aria-hidden="true"
-                            />
-                            {flashSuccess}
-                        </div>
-                    )}
+            <div className="mt-6 space-y-3">
+                {flashSuccess && (
+                    <div
+                        role="status"
+                        className="flex items-start gap-2 rounded-xl border border-[#2F6F4E]/25 bg-[#2F6F4E]/5 px-4 py-3 text-sm text-[#2F6F4E]"
+                    >
+                        <CheckCircle2
+                            className="mt-0.5 h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                        />
+                        {flashSuccess}
+                    </div>
+                )}
 
-                    {mustChangePassword && (
-                        <div
-                            role="alert"
-                            className="flex items-start gap-2 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
-                        >
+                {needsNewPassword && (
+                    <div
+                        role="alert"
+                        className="flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                    >
+                        <p className="flex items-start gap-2">
                             <ShieldAlert
                                 className="mt-0.5 h-4 w-4 shrink-0"
                                 aria-hidden="true"
                             />
-                            <span>
-                                <span className="font-semibold">
-                                    The school reset your password.
-                                </span>{' '}
-                                Choose a new one below to keep using your
-                                account. Use the password the school gave you as
-                                your current password.
-                            </span>
-                        </div>
-                    )}
-
-                    {usesDefaultPassword && !mustChangePassword && (
-                        <div
-                            role="alert"
-                            className="flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
-                        >
-                            <p className="flex items-start gap-2">
-                                <ShieldAlert
-                                    className="mt-0.5 h-4 w-4 shrink-0"
-                                    aria-hidden="true"
-                                />
+                            {mustChangePassword ? (
+                                <span>
+                                    <span className="font-semibold">
+                                        The school reset your password.
+                                    </span>{' '}
+                                    Choose a new one to keep using your account.
+                                </span>
+                            ) : (
                                 <span>
                                     <span className="font-semibold">
                                         Your password is still your LRN.
@@ -146,131 +166,64 @@ export default function Dashboard({
                                     Others can know your LRN, so change it to
                                     one only you know.
                                 </span>
-                            </p>
-                            <a
-                                href="#password-heading"
-                                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
-                            >
-                                Change password
-                            </a>
-                        </div>
-                    )}
-
-                    {!mustChangePassword && (
-                        <section
-                            aria-labelledby="grades-heading"
-                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
-                        >
-                            <h2
-                                id="grades-heading"
-                                className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase"
-                            >
-                                My grades
-                            </h2>
-                            <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-                                <BookOpenCheck
-                                    className="h-9 w-9 text-[#1F2A24]/25"
-                                    aria-hidden="true"
-                                />
-                                <p className="font-medium text-[#1F2A24]">
-                                    No grades posted yet
-                                </p>
-                                <p className="max-w-sm text-sm text-[#1F2A24]/60">
-                                    Your grades will show here once your
-                                    teachers post them.
-                                </p>
-                            </div>
-                        </section>
-                    )}
-
-                    <section
-                        aria-labelledby="password-heading"
-                        className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
-                    >
-                        <h2
-                            id="password-heading"
-                            className="mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase"
-                        >
-                            <KeyRound className="h-4 w-4" aria-hidden="true" />
-                            Change password
-                        </h2>
-                        <p className="mb-4 text-sm text-[#1F2A24]/65">
-                            Your first password is your LRN. Change it to one
-                            only you know.
-                        </p>
-                        <Form
-                            {...updatePassword.form()}
-                            resetOnSuccess
-                            options={{ preserveScroll: true }}
-                            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
-                        >
-                            {({ processing, errors }) => (
-                                <>
-                                    <div className="sm:col-span-2">
-                                        <Label
-                                            htmlFor="current_password"
-                                            className={LABEL_CLASS}
-                                        >
-                                            Current password
-                                        </Label>
-                                        <PasswordInput
-                                            id="current_password"
-                                            name="current_password"
-                                            required
-                                            autoComplete="current-password"
-                                            className={INPUT_CLASS}
-                                        />
-                                        <InputError
-                                            message={errors.current_password}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label
-                                            htmlFor="password"
-                                            className={LABEL_CLASS}
-                                        >
-                                            New password
-                                        </Label>
-                                        <PasswordInput
-                                            id="password"
-                                            name="password"
-                                            required
-                                            autoComplete="new-password"
-                                            className={INPUT_CLASS}
-                                        />
-                                        <InputError message={errors.password} />
-                                    </div>
-                                    <div>
-                                        <Label
-                                            htmlFor="password_confirmation"
-                                            className={LABEL_CLASS}
-                                        >
-                                            Confirm new password
-                                        </Label>
-                                        <PasswordInput
-                                            id="password_confirmation"
-                                            name="password_confirmation"
-                                            required
-                                            autoComplete="new-password"
-                                            className={INPUT_CLASS}
-                                        />
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <button
-                                            type="submit"
-                                            disabled={processing}
-                                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-[#FBF8F2] transition-colors hover:bg-[#25573E] disabled:opacity-60"
-                                        >
-                                            {processing && <Spinner />}
-                                            Change password
-                                        </button>
-                                    </div>
-                                </>
                             )}
-                        </Form>
-                    </section>
-                </div>
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setIsPasswordDialogOpen(true)}
+                            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-[#FBF8F2] hover:bg-[#25573E]"
+                        >
+                            Change password
+                        </button>
+                    </div>
+                )}
             </div>
-        </>
+
+            <section aria-label="Account summary" className="mt-4">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <Metric
+                        icon={GraduationCap}
+                        label="Grade level"
+                        value={student.grade_level ?? '—'}
+                    />
+                    <Metric
+                        icon={CalendarDays}
+                        label="School year"
+                        value={student.school_year ?? '—'}
+                    />
+                    <Metric icon={IdCard} label="LRN" value={student.lrn} />
+                    <Metric
+                        icon={needsNewPassword ? ShieldAlert : ShieldCheck}
+                        label="Password"
+                        value={needsNewPassword ? 'Change needed' : 'Secure'}
+                        emphasis={needsNewPassword}
+                    />
+                </div>
+            </section>
+
+            {!mustChangePassword && (
+                <section aria-labelledby="grades-heading" className="mt-8">
+                    <h2
+                        id="grades-heading"
+                        className="border-b border-[#1F2A24]/10 pb-3 text-sm font-medium text-[#2F6F4E]"
+                    >
+                        My grades
+                    </h2>
+                    <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-dashed border-[#1F2A24]/20 bg-white px-6 py-10 text-center">
+                        <BookOpenCheck
+                            className="h-8 w-8 text-[#1F2A24]/30"
+                            aria-hidden="true"
+                        />
+                        <p className="font-medium text-[#1F2A24]">
+                            No grades posted yet
+                        </p>
+                        <p className="max-w-sm text-sm text-[#1F2A24]/65">
+                            Your grades will show here once your teachers post
+                            them.
+                        </p>
+                    </div>
+                </section>
+            )}
+        </div>
     );
 }

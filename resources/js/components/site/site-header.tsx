@@ -16,15 +16,58 @@ import {
     dashboard as portalDashboard,
     logout as portalLogout,
 } from '@/routes/portal';
+import {
+    dashboard as studentDashboard,
+    logout as studentLogout,
+} from '@/routes/student';
 import EnrollButton from './enroll-button';
 import { NAV_ITEMS, isActiveItem, isNavGroup } from './site-navigation';
 import type { NavGroup } from './site-navigation';
 
-type Enrollee = {
-    name: string;
-    email: string;
-    profile_photo_url: string | null;
+type SharedAuth = {
+    enrollee?: {
+        name: string;
+        email: string;
+        profile_photo_url: string | null;
+    } | null;
+    student?: { name: string; lrn: string | null } | null;
 };
+
+/** Whoever is signed in on the site: a parent/guardian or a student. */
+type SiteAccount = {
+    name: string;
+    /** Under the name: the parent's email, or the student's LRN. */
+    detail: string;
+    photoUrl: string | null;
+    dashboardUrl: string;
+    logoutUrl: string;
+};
+
+function siteAccount(auth: SharedAuth | undefined): SiteAccount | null {
+    if (auth?.enrollee) {
+        return {
+            name: auth.enrollee.name,
+            detail: auth.enrollee.email,
+            photoUrl: auth.enrollee.profile_photo_url,
+            dashboardUrl: portalDashboard().url,
+            logoutUrl: portalLogout().url,
+        };
+    }
+
+    if (auth?.student) {
+        return {
+            name: auth.student.name,
+            detail: auth.student.lrn
+                ? `Student · LRN ${auth.student.lrn}`
+                : 'Student',
+            photoUrl: null,
+            dashboardUrl: studentDashboard().url,
+            logoutUrl: studentLogout().url,
+        };
+    }
+
+    return null;
+}
 
 const initials = (name: string) =>
     name
@@ -34,10 +77,10 @@ const initials = (name: string) =>
         .map((part) => part[0]?.toUpperCase())
         .join('');
 
-function Avatar({ enrollee, size }: { enrollee: Enrollee; size: string }) {
-    return enrollee.profile_photo_url ? (
+function Avatar({ account, size }: { account: SiteAccount; size: string }) {
+    return account.photoUrl ? (
         <img
-            src={enrollee.profile_photo_url}
+            src={account.photoUrl}
             alt=""
             className={`${size} rounded-full object-cover`}
         />
@@ -45,7 +88,7 @@ function Avatar({ enrollee, size }: { enrollee: Enrollee; size: string }) {
         <span
             className={`${size} flex items-center justify-center rounded-full bg-[#2F6F4E] text-xs font-semibold text-white`}
         >
-            {initials(enrollee.name)}
+            {initials(account.name)}
         </span>
     );
 }
@@ -166,8 +209,8 @@ function ActiveBar() {
     );
 }
 
-/** The signed-in parent's avatar, opening a small account menu. */
-function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
+/** The signed-in parent's or student's avatar, opening a small account menu. */
+function AccountMenu({ account }: { account: SiteAccount }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -199,10 +242,10 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
                 onClick={() => setOpen((isOpen) => !isOpen)}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                aria-label={`Account menu for ${enrollee.name}`}
+                aria-label={`Account menu for ${account.name}`}
                 className="flex items-center gap-1 rounded-full p-0.5 pr-1.5 transition-colors hover:bg-[#1F2A24]/5"
             >
-                <Avatar enrollee={enrollee} size="h-9 w-9" />
+                <Avatar account={account} size="h-9 w-9" />
                 <ChevronDown
                     className={`h-4 w-4 text-[#1F2A24]/60 transition-transform ${open ? 'rotate-180' : ''}`}
                     aria-hidden="true"
@@ -215,19 +258,19 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
                     className="absolute top-full right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-white shadow-xl shadow-[#1F2A24]/10"
                 >
                     <div className="flex items-center gap-3 border-b border-[#1F2A24]/10 p-3">
-                        <Avatar enrollee={enrollee} size="h-10 w-10" />
+                        <Avatar account={account} size="h-10 w-10" />
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-[#1F2A24]">
-                                {enrollee.name}
+                                {account.name}
                             </p>
                             <p className="truncate text-xs text-[#1F2A24]/60">
-                                {enrollee.email}
+                                {account.detail}
                             </p>
                         </div>
                     </div>
                     <div className="p-1.5">
                         <Link
-                            href={portalDashboard()}
+                            href={account.dashboardUrl}
                             role="menuitem"
                             onClick={() => setOpen(false)}
                             className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
@@ -239,7 +282,8 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
                             My account
                         </Link>
                         <Link
-                            href={portalLogout()}
+                            href={account.logoutUrl}
+                            method="post"
                             data={{ switch_account: 1 }}
                             as="button"
                             role="menuitem"
@@ -252,7 +296,8 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
                             Switch account
                         </Link>
                         <Link
-                            href={portalLogout()}
+                            href={account.logoutUrl}
+                            method="post"
                             as="button"
                             role="menuitem"
                             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#1F2A24] hover:bg-[#1F2A24]/5"
@@ -274,12 +319,12 @@ function AccountMenu({ enrollee }: { enrollee: Enrollee }) {
 function MobileMenu({
     open,
     onClose,
-    enrollee,
+    account,
     currentUrl,
 }: {
     open: boolean;
     onClose: () => void;
-    enrollee: Enrollee | null;
+    account: SiteAccount | null;
     currentUrl: string;
 }) {
     const [openSection, setOpenSection] = useState<string | null>(null);
@@ -349,16 +394,16 @@ function MobileMenu({
                 </div>
 
                 <div className="border-b border-[#1F2A24]/10 p-4">
-                    {enrollee ? (
+                    {account ? (
                         <Link
-                            href={portalDashboard()}
+                            href={account.dashboardUrl}
                             onClick={onClose}
                             className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#1F2A24]/10"
                         >
-                            <Avatar enrollee={enrollee} size="h-10 w-10" />
+                            <Avatar account={account} size="h-10 w-10" />
                             <span className="min-w-0 flex-1">
                                 <span className="block truncate text-sm font-semibold text-[#1F2A24]">
-                                    {enrollee.name}
+                                    {account.name}
                                 </span>
                                 <span className="block text-xs font-medium text-[#2F6F4E]">
                                     Go to my account
@@ -479,10 +524,11 @@ function MobileMenu({
 
                 <div className="space-y-2 border-t border-[#1F2A24]/10 p-4">
                     <EnrollButton onNavigate={onClose} fullWidth />
-                    {enrollee && (
+                    {account && (
                         <div className="grid grid-cols-2 gap-2">
                             <Link
-                                href={portalLogout()}
+                                href={account.logoutUrl}
+                                method="post"
                                 data={{ switch_account: 1 }}
                                 as="button"
                                 className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
@@ -494,7 +540,8 @@ function MobileMenu({
                                 Switch account
                             </Link>
                             <Link
-                                href={portalLogout()}
+                                href={account.logoutUrl}
+                                method="post"
                                 as="button"
                                 className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-[#1F2A24]/60 hover:text-[#1F2A24]"
                             >
@@ -513,8 +560,8 @@ function MobileMenu({
 }
 
 export default function SiteHeader() {
-    const { url, props } = usePage<{ auth?: { enrollee?: Enrollee | null } }>();
-    const enrollee = props.auth?.enrollee ?? null;
+    const { url, props } = usePage<{ auth?: SharedAuth }>();
+    const account = siteAccount(props.auth);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const closeMenu = useCallback(() => setIsMenuOpen(false), []);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -592,8 +639,8 @@ export default function SiteHeader() {
                         <NotificationBell />
 
                         <div className="hidden items-center gap-2 xl:flex">
-                            {enrollee ? (
-                                <AccountMenu enrollee={enrollee} />
+                            {account ? (
+                                <AccountMenu account={account} />
                             ) : (
                                 <Link
                                     href={login()}
@@ -629,7 +676,7 @@ export default function SiteHeader() {
             <MobileMenu
                 open={isMenuOpen}
                 onClose={closeMenu}
-                enrollee={enrollee}
+                account={account}
                 currentUrl={url}
             />
         </>
