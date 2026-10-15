@@ -177,12 +177,6 @@ export default function SiteFooter() {
                         >
                             Cookies
                         </Link>
-                        <Link
-                            href={login()}
-                            className="hover:text-[#FBF8F2] hover:underline"
-                        >
-                            Staff Login
-                        </Link>
                         <button
                             type="button"
                             onClick={() =>
