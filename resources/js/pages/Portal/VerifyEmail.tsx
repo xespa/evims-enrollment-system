@@ -1,5 +1,11 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { ExternalLink, MailCheck, MailOpen, MousePointerClick, Search } from 'lucide-react';
+import {
+    ExternalLink,
+    MailCheck,
+    MailOpen,
+    MousePointerClick,
+    Search,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PortalAuthShell from '@/components/portal-auth-shell';
 import { Button } from '@/components/ui/button';
@@ -120,7 +126,7 @@ export default function VerifyEmail({ email }: Props) {
                             type="submit"
                             variant="outline"
                             disabled={processing || secondsLeft > 0}
-                            className="h-10 w-full rounded-full border-[#1F2A24]/15 text-sm font-semibold text-[#1F2A24]/80"
+                            className="h-10 w-full rounded-full border-[#2F6F4E]/30 bg-white text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 hover:text-[#25573E] disabled:text-[#1F2A24]/60 dark:bg-white dark:hover:bg-[#2F6F4E]/5"
                         >
                             {processing && <Spinner />}
                             {secondsLeft > 0

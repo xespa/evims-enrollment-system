@@ -27,7 +27,11 @@ class VerificationController extends Controller
         ]);
     }
 
-    public function verify(Request $request, int $id, string $hash): RedirectResponse
+    /**
+     * Confirms the email from the signed link. Whoever owns the inbox can
+     * open it in any browser, so it doesn't need a portal login.
+     */
+    public function verify(Request $request, int $id, string $hash): Response|RedirectResponse
     {
         $enrollee = EnrolleeUser::findOrFail($id);
 
@@ -44,8 +48,33 @@ class VerificationController extends Controller
                 ->update(['enrollee_user_id' => $enrollee->id]);
         }
 
+        // Opened somewhere this account isn't signed in, so there's no
+        // portal page to send them to; they log in from here.
+        if (Auth::guard('enrollee')->id() !== $enrollee->id) {
+            return Inertia::render('Portal/EmailVerified', [
+                'email' => $enrollee->email,
+            ]);
+        }
+
         // Back to where they were headed — usually the admission form.
-        return redirect()->intended(route('portal.dashboard'))->with('success', 'Email verified! Your applications have been linked to your account.');
+        return redirect($this->portalIntendedUrl($request))
+            ->with('success', 'Email verified! Your applications have been linked to your account.');
+    }
+
+    /**
+     * The page the enrollee was headed to before confirming their email.
+     * The intended URL is shared by every guard in the session, so one left
+     * behind by a staff login (an admin page) is ignored.
+     */
+    private function portalIntendedUrl(Request $request): string
+    {
+        $intended = $request->session()->pull('url.intended');
+        $path = is_string($intended) ? '/'.ltrim((string) parse_url($intended, PHP_URL_PATH), '/') : null;
+
+        $isPortalPage = $path !== null && collect(['/portal', '/admission'])
+            ->contains(fn (string $prefix): bool => $path === $prefix || str_starts_with($path, "{$prefix}/"));
+
+        return $isPortalPage ? $intended : route('portal.dashboard');
     }
 
     public function resend(): RedirectResponse

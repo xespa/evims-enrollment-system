@@ -113,6 +113,16 @@ class Enrollment extends Model
     }
 
     /**
+     * The student's rows on grade sheets for this school year.
+     *
+     * @return HasMany<StudentGrade, $this>
+     */
+    public function studentGrades(): HasMany
+    {
+        return $this->hasMany(StudentGrade::class);
+    }
+
+    /**
      * @return BelongsTo<EnrolleeUser, $this>
      */
     public function enrolleeUser(): BelongsTo

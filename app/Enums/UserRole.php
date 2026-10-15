@@ -37,7 +37,7 @@ enum UserRole: string
         return match ($this) {
             self::Admin => 'Everything, including school year setup and staff accounts.',
             self::Registrar => 'Reviews applications and portal accounts, uploads documents, and records payments.',
-            self::Teacher => 'Views students and uploads their Form 138 (report card).',
+            self::Teacher => 'Views students, uploads their Form 138 (report card), and keeps grade sheets.',
             self::Cashier => 'Records and voids counter payments and manages billing and collections.',
         };
     }
@@ -74,6 +74,15 @@ enum UserRole: string
     public function canManageSchool(): bool
     {
         return $this === self::Admin;
+    }
+
+    /**
+     * Record students' term grades on grade sheets. Teachers keep their own;
+     * admins can see and keep every teacher's.
+     */
+    public function canManageGradeSheets(): bool
+    {
+        return in_array($this, [self::Admin, self::Teacher], true);
     }
 
     /**

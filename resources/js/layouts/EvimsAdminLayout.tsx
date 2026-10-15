@@ -3,6 +3,7 @@ import {
     ArrowLeftRight,
     Calendar,
     ChevronsUpDown,
+    ClipboardList,
     GraduationCap,
     KeyRound,
     LayoutDashboard,
@@ -93,6 +94,19 @@ const NAV_SECTIONS: NavSection[] = [
                 href: admin.studentAccounts.index.url(),
                 icon: KeyRound,
                 ability: 'reviewApplications',
+            },
+        ],
+    },
+    {
+        label: 'Academics',
+        items: [
+            {
+                label: 'Grade Sheets',
+                href: admin.gradeSheets.index.url(),
+                icon: ClipboardList,
+                ability: 'manageGradeSheets',
+                // Students' grades are entered from their grade sheet.
+                matchPrefix: '/admin/student-grades',
             },
         ],
     },

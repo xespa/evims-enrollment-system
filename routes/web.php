@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\EnrollmentPeriodController;
 use App\Http\Controllers\Admin\EnrollmentSummaryController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\GradeSheetController;
+use App\Http\Controllers\Admin\GradeSheetPrintController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
 use App\Http\Controllers\Admin\ProfilePhotoController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Admin\StaffInvitationController;
 use App\Http\Controllers\Admin\StudentAccountConsentController;
 use App\Http\Controllers\Admin\StudentAccountController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentGradeController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\TransactionHistoryController;
@@ -174,6 +177,19 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
             ->parameters(['transactions' => 'payment']);
         // Every payment, one row each, opened from Transactions.
         Route::get('transaction-history', TransactionHistoryController::class)->name('transaction-history.index');
+    });
+
+    // Teachers keep their own grade sheets; admins can open everyone's.
+    Route::middleware('can:manage-grade-sheets')->group(function () {
+        Route::resource('grade-sheets', GradeSheetController::class)
+            ->only(['index', 'create', 'store', 'show', 'destroy'])
+            ->parameters(['grade-sheets' => 'gradeSheet']);
+        Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
+        // Each student's Term 1–3 grades on a sheet.
+        Route::resource('grade-sheets.student-grades', StudentGradeController::class)
+            ->shallow()
+            ->only(['create', 'store', 'edit', 'update', 'destroy'])
+            ->parameters(['grade-sheets' => 'gradeSheet', 'student-grades' => 'studentGrade']);
     });
 
     Route::middleware('can:manage-school')->group(function () {

@@ -7,6 +7,7 @@ const NO_ABILITIES: StaffAbilities = {
     handlePayments: false,
     manageSchool: false,
     manageStaff: false,
+    manageGradeSheets: false,
     uploadDocumentTypes: [],
 };
 

@@ -26,15 +26,18 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware('signed')->group(function () {
         Route::get('accounts/{enrolleeUser}/reapply', [ReapplicationController::class, 'create'])->name('reapplication.create');
         Route::post('accounts/{enrolleeUser}/reapply', [ReapplicationController::class, 'store'])->name('reapplication.store');
+
+        // The signed link is proof enough, so it works even when the
+        // browser isn't signed in to the portal (or is signed in as staff).
+        Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+            ->middleware('throttle:6,1')
+            ->name('verification.verify');
     });
 
     Route::middleware('auth:enrollee')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
         Route::get('email/verify', [VerificationController::class, 'notice'])->name('verification.notice');
-        Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
-            ->middleware('signed')
-            ->name('verification.verify');
         Route::post('email/verification-notification', [VerificationController::class, 'resend'])
             ->middleware('throttle:6,1')
             ->name('verification.send');
