@@ -1,7 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeftRight,
-    BookOpenCheck,
     CalendarDays,
     CheckCircle2,
     GraduationCap,
@@ -14,6 +13,8 @@ import {
 import { useState } from 'react';
 import Metric from '@/components/portal/metric';
 import ChangePasswordDialog from '@/components/student/change-password-dialog';
+import GradeReport from '@/components/student/grade-report';
+import type { SubjectGrade } from '@/components/student/grade-report';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,6 +36,9 @@ type Props = {
     usesDefaultPassword: boolean;
     /** The school reset the password; a new one is needed before anything else. */
     mustChangePassword: boolean;
+    /** This school year's grades from the teachers' grade sheets. */
+    grades: SubjectGrade[];
+    generalAverage: number | null;
 };
 
 const MENU_ITEM_CLASS =
@@ -45,6 +49,8 @@ export default function Dashboard({
     student,
     usesDefaultPassword,
     mustChangePassword,
+    grades,
+    generalAverage,
 }: Props) {
     const flashSuccess = usePage().props.flash?.success;
     // Opens straight away after a reset, since nothing else is shown until then.
@@ -209,18 +215,11 @@ export default function Dashboard({
                     >
                         My grades
                     </h2>
-                    <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-dashed border-[#1F2A24]/20 bg-white px-6 py-10 text-center">
-                        <BookOpenCheck
-                            className="h-8 w-8 text-[#1F2A24]/30"
-                            aria-hidden="true"
+                    <div className="mt-6">
+                        <GradeReport
+                            grades={grades}
+                            generalAverage={generalAverage}
                         />
-                        <p className="font-medium text-[#1F2A24]">
-                            No grades posted yet
-                        </p>
-                        <p className="max-w-sm text-sm text-[#1F2A24]/65">
-                            Your grades will show here once your teachers post
-                            them.
-                        </p>
                     </div>
                 </section>
             )}

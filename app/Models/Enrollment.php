@@ -123,6 +123,31 @@ class Enrollment extends Model
     }
 
     /**
+     * The student's grades for this school year, one row per subject, from
+     * the teachers' grade sheets: what the student sees on their dashboard.
+     *
+     * @return list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>
+     */
+    public function gradeReport(): array
+    {
+        return array_values($this->studentGrades()
+            ->with(['gradeSheet.subject:id,name', 'gradeSheet.teacher:id,name'])
+            ->get()
+            ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->gradeSheet->subject->name)
+            ->map(fn (StudentGrade $studentGrade) => [
+                'id' => $studentGrade->id,
+                'subject' => $studentGrade->gradeSheet->subject->name,
+                'teacher' => $studentGrade->gradeSheet->teacher->name,
+                'term_1' => $studentGrade->term_1,
+                'term_2' => $studentGrade->term_2,
+                'term_3' => $studentGrade->term_3,
+                'final_grade' => $studentGrade->finalGrade(),
+                'remarks' => $studentGrade->remarks(),
+            ])
+            ->all());
+    }
+
+    /**
      * @return BelongsTo<EnrolleeUser, $this>
      */
     public function enrolleeUser(): BelongsTo

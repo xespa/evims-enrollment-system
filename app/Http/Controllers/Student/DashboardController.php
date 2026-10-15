@@ -11,8 +11,8 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     /**
-     * The signed-in student's home: who they are and their current class.
-     * Grades will be listed here once teachers encode gradesheets.
+     * The signed-in student's home: who they are, their current class, and
+     * the grades their teachers have entered on grade sheets this year.
      */
     public function __invoke(Request $request): Response
     {
@@ -20,6 +20,8 @@ class DashboardController extends Controller
         $account = $request->user('student');
         $student = $account->student;
         $enrollment = $student->latestApprovedEnrollment()?->load('gradeLevel:id,name');
+        $grades = $enrollment?->gradeReport() ?? [];
+        $finalGrades = array_column($grades, 'final_grade');
 
         return Inertia::render('Student/Dashboard', [
             'student' => [
@@ -34,6 +36,11 @@ class DashboardController extends Controller
             // Staff reset the password, so a new one is needed before the
             // rest of the page is shown.
             'mustChangePassword' => $account->must_change_password,
+            'grades' => $grades,
+            // The average of every subject's final grade, once they're all in.
+            'generalAverage' => $finalGrades !== [] && ! in_array(null, $finalGrades, true)
+                ? round(array_sum($finalGrades) / count($finalGrades), 2)
+                : null,
         ]);
     }
 }
