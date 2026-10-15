@@ -1,9 +1,17 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Loader2, Users } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    ChevronDown,
+    Loader2,
+    TriangleAlert,
+    Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
+import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
 import ScheduleFields from './Components/ScheduleFields';
+import StudentChecklist from './Components/StudentChecklist';
 import { SELECT_CLASS } from './Components/types';
 import type { ScheduleData } from './Components/types';
 
@@ -29,6 +37,8 @@ type Props = {
     teachers: { id: number; name: string }[];
     /** The signed-in teacher, whose sheet this always is. Null for admins. */
     currentTeacher: { id: number; name: string } | null;
+    /** Who the chosen subject's sheet would start with; null until one is chosen. */
+    enrolledStudents: StudentOption[] | null;
 };
 
 function Field({
@@ -64,6 +74,19 @@ function Field({
     );
 }
 
+/** e.g. "Mathematics (MATH4) · 10 students", so empty classes stand out. */
+function subjectOptionLabel(subject: SubjectOption): string {
+    const name = subject.code
+        ? `${subject.name} (${subject.code})`
+        : subject.name;
+    const students =
+        subject.enrolled_students_count === 1
+            ? '1 student'
+            : `${subject.enrolled_students_count} students`;
+
+    return `${name} · ${students}`;
+}
+
 /** Groups a school year's subjects under their grade level, in order. */
 function byGradeLevel(subjects: SubjectOption[]): [string, SubjectOption[]][] {
     const groups = new Map<string, SubjectOption[]>();
@@ -85,6 +108,7 @@ export default function Create({
     defaultSchoolYear,
     teachers,
     currentTeacher,
+    enrolledStudents,
 }: Props) {
     const { auth } = usePage().props;
     const selectedSubject =
@@ -98,11 +122,12 @@ export default function Create({
     );
     const [showAllSubjects, setShowAllSubjects] = useState(false);
 
-    const { data, setData, post, processing, errors } = useForm<
+    const { data, setData, post, transform, processing, errors } = useForm<
         {
             subject_id: string;
             teacher_id: string;
             add_students: boolean;
+            enrollment_ids: number[];
         } & ScheduleData
     >({
         subject_id: selectedSubject ? String(selectedSubject.id) : '',
@@ -112,11 +137,50 @@ export default function Create({
         end_time: '',
         // Saves adding the class one by one afterwards.
         add_students: true,
+        enrollment_ids: (enrolledStudents ?? []).map(
+            (student) => student.enrollment_id,
+        ),
     });
 
     const chosenSubject = subjects.find(
         (subject) => String(subject.id) === data.subject_id,
     );
+
+    // The chosen subject's students load on their own when it changes, all
+    // ticked; `studentsFor` is the subject the loaded list belongs to.
+    const [studentsFor, setStudentsFor] = useState(
+        selectedSubject ? String(selectedSubject.id) : '',
+    );
+    const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+    const subjectStudents =
+        data.subject_id !== '' && studentsFor === data.subject_id
+            ? (enrolledStudents ?? [])
+            : null;
+
+    useEffect(() => {
+        if (data.subject_id === '' || data.subject_id === studentsFor) {
+            return;
+        }
+
+        const subjectId = data.subject_id;
+
+        router.reload({
+            only: ['enrolledStudents'],
+            data: { subject_id: subjectId },
+            onSuccess: (page) => {
+                const students =
+                    (page.props.enrolledStudents as StudentOption[] | null) ??
+                    [];
+
+                setStudentsFor(subjectId);
+                setData(
+                    'enrollment_ids',
+                    students.map((student) => student.enrollment_id),
+                );
+            },
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.subject_id]);
 
     // The chosen teacher's own subjects (from their Settings), if they've
     // listed any; otherwise every subject.
@@ -157,6 +221,24 @@ export default function Create({
         }));
     };
 
+    // A subject with nobody taking it this year, when the same grade level's
+    // subject has students in another year: usually the wrong year was picked.
+    const sameSubjectWithStudents =
+        chosenSubject && chosenSubject.enrolled_students_count === 0
+            ? subjects.find(
+                  (subject) =>
+                      subject.name === chosenSubject.name &&
+                      subject.grade_level === chosenSubject.grade_level &&
+                      subject.school_year !== chosenSubject.school_year &&
+                      subject.enrolled_students_count > 0,
+              )
+            : undefined;
+
+    const switchToSubject = (subject: SubjectOption) => {
+        setSchoolYear(subject.school_year);
+        setData('subject_id', String(subject.id));
+    };
+
     const subjectHint = isNarrowed
         ? `Showing the subjects ${currentTeacher ? 'you teach' : `${teacherName} teaches`}.`
         : currentTeacher && teachersSubjects.length === 0
@@ -165,6 +247,13 @@ export default function Create({
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
+        // Only the ticked students are sent once the list has loaded; until
+        // then (or when adding none) the server decides.
+        transform(({ enrollment_ids, ...rest }) =>
+            rest.add_students && subjectStudents !== null
+                ? { ...rest, enrollment_ids }
+                : rest,
+        );
         post(gradeSheetRoutes.store.url());
     };
 
@@ -303,9 +392,9 @@ export default function Create({
                                                     key={subject.id}
                                                     value={subject.id}
                                                 >
-                                                    {subject.code
-                                                        ? `${subject.name} (${subject.code})`
-                                                        : subject.name}
+                                                    {subjectOptionLabel(
+                                                        subject,
+                                                    )}
                                                 </option>
                                             ))}
                                         </optgroup>
@@ -326,6 +415,44 @@ export default function Create({
                                         ? `Only show ${currentTeacher ? 'my' : `${teacherName}'s`} subjects`
                                         : 'Show all subjects'}
                                 </button>
+                            )}
+                            {chosenSubject?.enrolled_students_count === 0 && (
+                                <div
+                                    role="alert"
+                                    className="mt-2 flex flex-col gap-2 rounded-lg border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2.5 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                                >
+                                    <p className="flex items-start gap-2">
+                                        <TriangleAlert
+                                            className="mt-0.5 h-4 w-4 shrink-0"
+                                            aria-hidden="true"
+                                        />
+                                        <span>
+                                            No approved students are taking{' '}
+                                            {chosenSubject.grade_level}{' '}
+                                            {chosenSubject.name} in SY{' '}
+                                            {chosenSubject.school_year}, so the
+                                            sheet would start empty.
+                                            {sameSubjectWithStudents &&
+                                                ` SY ${sameSubjectWithStudents.school_year} has ${sameSubjectWithStudents.enrolled_students_count === 1 ? '1 student' : `${sameSubjectWithStudents.enrolled_students_count} students`}.`}
+                                        </span>
+                                    </p>
+                                    {sameSubjectWithStudents && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                switchToSubject(
+                                                    sameSubjectWithStudents,
+                                                )
+                                            }
+                                            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                        >
+                                            Use SY{' '}
+                                            {
+                                                sameSubjectWithStudents.school_year
+                                            }
+                                        </button>
+                                    )}
+                                </div>
                             )}
                         </Field>
 
@@ -349,42 +476,136 @@ export default function Create({
                             errors={errors}
                         />
 
-                        <label
-                            className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
+                        <div
+                            className={`rounded-xl border transition-colors ${
                                 data.add_students
                                     ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
                                     : 'border-[#1F2A24]/15 bg-white'
                             }`}
                         >
-                            <input
-                                type="checkbox"
-                                checked={data.add_students}
-                                onChange={(e) =>
-                                    setData('add_students', e.target.checked)
-                                }
-                                className="mt-0.5 h-4 w-4 accent-[#2F6F4E]"
-                            />
-                            <span>
-                                <span className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2A24]">
-                                    <Users
-                                        className="h-4 w-4 text-[#2F6F4E]"
-                                        aria-hidden="true"
-                                    />
-                                    Add all enrolled students
+                            <label className="flex cursor-pointer items-start gap-3 p-4">
+                                <input
+                                    type="checkbox"
+                                    checked={data.add_students}
+                                    onChange={(e) =>
+                                        setData(
+                                            'add_students',
+                                            e.target.checked,
+                                        )
+                                    }
+                                    className="mt-0.5 h-4 w-4 accent-[#2F6F4E]"
+                                />
+                                <span>
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2A24]">
+                                        <Users
+                                            className="h-4 w-4 text-[#2F6F4E]"
+                                            aria-hidden="true"
+                                        />
+                                        Add the enrolled students
+                                    </span>
+                                    <span
+                                        aria-live="polite"
+                                        className="mt-0.5 block text-xs text-[#1F2A24]/65"
+                                    >
+                                        {chosenSubject === undefined
+                                            ? 'Every approved student taking the subject is put on the sheet, ready for their grades.'
+                                            : chosenSubject.enrolled_students_count ===
+                                                0
+                                              ? `No approved students are taking ${chosenSubject.name} yet.`
+                                              : subjectStudents === null
+                                                ? `${chosenSubject.enrolled_students_count === 1 ? '1 student' : `${chosenSubject.enrolled_students_count} students`} taking ${chosenSubject.name} will be added, ready for their grades.`
+                                                : `${data.enrollment_ids.length} of ${subjectStudents.length} students taking ${chosenSubject.name} will be added, ready for their grades.`}
+                                    </span>
                                 </span>
-                                <span
-                                    aria-live="polite"
-                                    className="mt-0.5 block text-xs text-[#1F2A24]/65"
-                                >
-                                    {chosenSubject === undefined
-                                        ? 'Every approved student taking the subject is put on the sheet, ready for their grades.'
-                                        : chosenSubject.enrolled_students_count ===
-                                            0
-                                          ? `No approved students are taking ${chosenSubject.name} yet.`
-                                          : `${chosenSubject.enrolled_students_count === 1 ? '1 student' : `${chosenSubject.enrolled_students_count} students`} taking ${chosenSubject.name} will be added, ready for their grades.`}
-                                </span>
-                            </span>
-                        </label>
+                            </label>
+
+                            {data.add_students &&
+                                chosenSubject !== undefined &&
+                                chosenSubject.enrolled_students_count > 0 && (
+                                    <div className="border-t border-[#2F6F4E]/15 px-4 pb-3">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setIsChecklistOpen(
+                                                    (isOpen) => !isOpen,
+                                                )
+                                            }
+                                            aria-expanded={isChecklistOpen}
+                                            aria-controls="students-to-add"
+                                            disabled={subjectStudents === null}
+                                            className="flex min-h-11 w-full items-center justify-between gap-2 text-sm font-semibold text-[#2F6F4E] disabled:opacity-60"
+                                        >
+                                            <span>
+                                                {subjectStudents === null
+                                                    ? 'Loading the students…'
+                                                    : isChecklistOpen
+                                                      ? 'Hide the students'
+                                                      : 'Check the students to include'}
+                                            </span>
+                                            {subjectStudents === null ? (
+                                                <Loader2
+                                                    className="h-4 w-4 animate-spin"
+                                                    aria-hidden="true"
+                                                />
+                                            ) : (
+                                                <ChevronDown
+                                                    className={`h-4 w-4 transition-transform ${isChecklistOpen ? 'rotate-180' : ''}`}
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                        </button>
+
+                                        {isChecklistOpen &&
+                                            subjectStudents !== null && (
+                                                <div
+                                                    id="students-to-add"
+                                                    className="rounded-lg border border-[#1F2A24]/10 bg-white p-3"
+                                                >
+                                                    <StudentChecklist
+                                                        students={
+                                                            subjectStudents
+                                                        }
+                                                        selectedIds={
+                                                            data.enrollment_ids
+                                                        }
+                                                        onChange={(ids) =>
+                                                            setData(
+                                                                'enrollment_ids',
+                                                                ids,
+                                                            )
+                                                        }
+                                                        listClassName="max-h-72"
+                                                    />
+                                                    {data.enrollment_ids
+                                                        .length === 0 && (
+                                                        <p className="mt-2 text-xs text-[#a4670f]">
+                                                            Nobody is ticked, so
+                                                            the sheet will start
+                                                            empty.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {Object.entries(errors)
+                                            .filter(([key]) =>
+                                                key.startsWith(
+                                                    'enrollment_ids',
+                                                ),
+                                            )
+                                            .slice(0, 1)
+                                            .map(([key, message]) => (
+                                                <p
+                                                    key={key}
+                                                    role="alert"
+                                                    className="mt-2 text-xs text-[#C6473B]"
+                                                >
+                                                    {message}
+                                                </p>
+                                            ))}
+                                    </div>
+                                )}
+                        </div>
 
                         <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 pt-5 sm:flex-row sm:justify-end">
                             <Link

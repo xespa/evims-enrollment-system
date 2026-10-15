@@ -11,7 +11,6 @@ use App\Models\Enrollment;
 use App\Models\GradeSheet;
 use App\Models\Subject;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -65,10 +64,10 @@ class GradeSheetController extends Controller
     }
 
     /**
-     * The teacher's subjects in published school years, each with their
-     * grade sheet for it if they've made one.
+     * The teacher's subjects in published school years, each with how many
+     * students take it and their grade sheet for it if they've made one.
      *
-     * @return list<array{id: int, name: string, code: string|null, grade_level: string, school_year: string, grade_sheet_id: int|null}>
+     * @return list<array{id: int, name: string, code: string|null, grade_level: string, school_year: string, enrolled_students_count: int, grade_sheet_id: int|null}>
      */
     private function taughtSubjects(User $teacher, ?string $schoolYear): array
     {
@@ -78,6 +77,7 @@ class GradeSheetController extends Controller
                 ->when($schoolYear, fn ($query, string $schoolYear) => $query->forSchoolYear($schoolYear))
                 ->select('id'))
             ->with('curriculum.gradeLevel')
+            ->withEnrolledStudentsCount()
             ->get();
 
         $gradeSheetIds = GradeSheet::query()
@@ -97,6 +97,7 @@ class GradeSheetController extends Controller
                 'code' => $subject->code,
                 'grade_level' => $subject->curriculum->gradeLevel->name,
                 'school_year' => $subject->curriculum->school_year,
+                'enrolled_students_count' => (int) $subject->getAttribute('enrolled_students_count'),
                 'grade_sheet_id' => $gradeSheetIds->get($subject->id),
             ])
             ->all());
@@ -112,12 +113,8 @@ class GradeSheetController extends Controller
         $subjects = Subject::query()
             ->whereIn('curriculum_id', Curriculum::query()->published()->select('id'))
             ->with(['curriculum.gradeLevel', 'teachers:id'])
-            // The students a new sheet for it would start with: approved,
-            // not cancelled or archived (as GradeSheet::gradableEnrollmentsQuery()).
-            ->withCount(['enrollments as enrolled_students_count' => fn (Builder $enrollments) => $enrollments
-                ->where('enrollments.enrollment_status', 'APPROVED')
-                ->whereNull('enrollments.cancelled_at')
-                ->whereNull('enrollments.archived_at')])
+            // The students a new sheet for it would start with.
+            ->withEnrolledStudentsCount()
             ->get()
             ->sortBy([
                 fn (Subject $a, Subject $b) => $a->curriculum->gradeLevel->level_order <=> $b->curriculum->gradeLevel->level_order,
@@ -140,6 +137,13 @@ class GradeSheetController extends Controller
             'subjects' => $subjects,
             // From "Create grade sheet" next to one of the teacher's subjects.
             'selectedSubjectId' => $request->integer('subject_id') ?: null,
+            // Who the chosen subject's new sheet would start with, to tick
+            // or untick; reloaded on its own as the subject changes.
+            'enrolledStudents' => fn () => Subject::query()
+                ->whereIn('curriculum_id', Curriculum::query()->published()->select('id'))
+                ->with('curriculum')
+                ->find($request->integer('subject_id'))
+                ?->enrolledStudents(),
             'schoolYears' => $subjects->pluck('school_year')->unique()->sortDesc()->values(),
             'defaultSchoolYear' => Enrollment::currentSchoolYear(),
             // A teacher's sheet is always their own, so only admins choose.
@@ -151,27 +155,34 @@ class GradeSheetController extends Controller
     }
 
     /**
-     * Starts the sheet with every student enrolled in the subject already
-     * on it (unless the teacher would rather add them themselves), so the
-     * grades can be typed straight into its table.
+     * Starts the sheet with the students enrolled in the subject already on
+     * it (all of them, or the ones the teacher kept ticked), so the grades
+     * can be typed straight into its table.
      */
     public function store(StoreGradeSheetRequest $request): RedirectResponse
     {
-        [$gradeSheet, $addedCount] = DB::transaction(function () use ($request) {
+        $addsStudents = $request->boolean('add_students', true);
+        $choseStudents = $request->has('enrollment_ids');
+
+        [$gradeSheet, $addedCount] = DB::transaction(function () use ($request, $addsStudents, $choseStudents) {
             $gradeSheet = GradeSheet::create([
-                ...$request->safe()->except('add_students'),
+                ...$request->safe()->except(['add_students', 'enrollment_ids']),
                 'created_by' => $request->user()?->id,
             ]);
 
-            return [$gradeSheet, $request->boolean('add_students', true) ? $gradeSheet->addEveryUngradedStudent() : 0];
+            return [$gradeSheet, match (true) {
+                ! $addsStudents => 0,
+                $choseStudents => $gradeSheet->addStudents($request->validated('enrollment_ids', [])),
+                default => $gradeSheet->addEveryUngradedStudent(),
+            }];
         });
 
         return redirect()
             ->route('admin.grade-sheets.show', $gradeSheet)
             ->with('success', match (true) {
-                ! $request->boolean('add_students', true) => "Grade sheet {$gradeSheet->number} created. Add its students when you're ready.",
-                $addedCount === 0 => "Grade sheet {$gradeSheet->number} created. No approved students are taking this subject yet; add them once they are.",
-                default => "Grade sheet {$gradeSheet->number} created with ".($addedCount === 1 ? '1 student' : "{$addedCount} students").'. Click a term in the table to enter their grades.',
+                $addedCount > 0 => "Grade sheet {$gradeSheet->number} created with ".($addedCount === 1 ? '1 student' : "{$addedCount} students").'. Click a term in the table to enter their grades.',
+                ! $addsStudents || $choseStudents => "Grade sheet {$gradeSheet->number} created. Add its students when you're ready.",
+                default => "Grade sheet {$gradeSheet->number} created. No approved students are taking this subject yet; add them once they are.",
             });
     }
 

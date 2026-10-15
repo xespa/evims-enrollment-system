@@ -36,6 +36,23 @@ export default function Show({
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
 
     const canAddStudent = ungradedStudents.length > 0;
+    const [isAddingAll, setIsAddingAll] = useState(false);
+
+    // The whole class in one click, without opening the picker.
+    const addAllStudents = () =>
+        router.post(
+            gradeSheetRoutes.students.store.url(gradeSheet.id),
+            {
+                enrollment_ids: ungradedStudents.map(
+                    (student) => student.enrollment_id,
+                ),
+            },
+            {
+                preserveScroll: true,
+                onStart: () => setIsAddingAll(true),
+                onFinish: () => setIsAddingAll(false),
+            },
+        );
 
     const removeStudent = async (studentGrade: StudentGradeRow) => {
         const confirmed = await confirm({
@@ -236,9 +253,26 @@ export default function Show({
                             </p>
                             <p className="mt-1 max-w-md text-sm text-[#1F2A24]/65">
                                 {canAddStudent
-                                    ? 'Use Add students to add the whole class at once, or Create to add one student with their grades.'
-                                    : 'No approved students are enrolled in this subject for this school year yet.'}
+                                    ? `${ungradedStudents.length === 1 ? '1 student is' : `${ungradedStudents.length} students are`} taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}.`
+                                    : `No approved students are taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}. If the class is in another school year, delete this sheet and create one for that year.`}
                             </p>
+                            {canAddStudent && (
+                                <button
+                                    type="button"
+                                    disabled={isAddingAll}
+                                    onClick={addAllStudents}
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#25573E] disabled:opacity-60"
+                                >
+                                    <UserPlus
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Add all{' '}
+                                    {ungradedStudents.length === 1
+                                        ? '1 student'
+                                        : `${ungradedStudents.length} students`}
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <GradesTable

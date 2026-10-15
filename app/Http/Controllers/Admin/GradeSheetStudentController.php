@@ -19,9 +19,7 @@ class GradeSheetStudentController extends Controller
         /** @var list<int|string> $enrollmentIds */
         $enrollmentIds = $request->validated('enrollment_ids');
 
-        DB::transaction(fn () => $gradeSheet->studentGrades()->createMany(
-            array_map(fn (int|string $enrollmentId): array => ['enrollment_id' => (int) $enrollmentId], $enrollmentIds),
-        ));
+        DB::transaction(fn () => $gradeSheet->addStudents($enrollmentIds));
 
         $count = count($enrollmentIds);
 

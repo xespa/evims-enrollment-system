@@ -9,6 +9,8 @@ export type TaughtSubject = {
     code: string | null;
     grade_level: string;
     school_year: string;
+    /** Approved students taking it that school year. */
+    enrolled_students_count: number;
     /** The teacher's grade sheet for this subject, if they've made one. */
     grade_sheet_id: number | null;
 };
@@ -71,7 +73,17 @@ export default function MySubjects({
                                 </p>
                                 <p className="text-xs text-[#1F2A24]/60">
                                     {subject.grade_level} · SY{' '}
-                                    {subject.school_year}
+                                    {subject.school_year} ·{' '}
+                                    {subject.enrolled_students_count === 0 ? (
+                                        <span className="font-semibold text-[#a4670f]">
+                                            No students this year
+                                        </span>
+                                    ) : subject.enrolled_students_count ===
+                                      1 ? (
+                                        '1 student'
+                                    ) : (
+                                        `${subject.enrolled_students_count} students`
+                                    )}
                                 </p>
                             </div>
                             {subject.grade_sheet_id !== null ? (

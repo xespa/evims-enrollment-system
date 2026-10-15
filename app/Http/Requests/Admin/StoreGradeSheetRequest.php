@@ -6,6 +6,7 @@ use App\Concerns\GradeSheetScheduleValidationRules;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\GradeSheet;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -59,10 +60,31 @@ class StoreGradeSheetRequest extends FormRequest
                     ->whereNull('deactivated_at'),
             ],
             ...$this->scheduleRules(),
-            // Starts the sheet with every enrolled student on it; on unless
+            // Starts the sheet with the enrolled students on it; on unless
             // the teacher unticks it.
             'add_students' => ['sometimes', 'boolean'],
+            // Which of them, when the teacher unticked some; every one if
+            // left out.
+            'enrollment_ids' => ['sometimes', 'array'],
+            'enrollment_ids.*' => ['integer', 'distinct', Rule::in($this->enrollableIds())],
         ];
+    }
+
+    /**
+     * The applications of the students taking the chosen subject, who are
+     * the only ones that can be put on its new sheet.
+     *
+     * @return list<int>
+     */
+    private function enrollableIds(): array
+    {
+        if (! $this->has('enrollment_ids')) {
+            return [];
+        }
+
+        $subject = Subject::query()->with('curriculum')->find($this->integer('subject_id'));
+
+        return $subject === null ? [] : array_column($subject->enrolledStudents(), 'enrollment_id');
     }
 
     /**
@@ -73,6 +95,7 @@ class StoreGradeSheetRequest extends FormRequest
         return [
             'subject_id.unique' => 'This teacher already has a grade sheet for this subject.',
             'teacher_id.exists' => 'Choose an active teacher.',
+            'enrollment_ids.*.in' => 'One of the chosen students isn’t taking this subject.',
             ...$this->scheduleMessages(),
         ];
     }

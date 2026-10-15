@@ -230,3 +230,80 @@ test('the create page shows how many students each subject would start with', fu
             ->where('subjects.0.id', $gradeSheet->subject_id)
             ->where('subjects.0.enrolled_students_count', 2));
 });
+
+test('the teacher\'s subjects show how many students take each one', function () {
+    $teacher = User::factory()->teacher()->create();
+    $withStudents = studentGradeSheet();
+    gradableEnrollment($withStudents);
+    gradableEnrollment($withStudents);
+    gradableEnrollment($withStudents, ['enrollment_status' => 'PENDING']);
+    $teacher->taughtSubjects()->attach($withStudents->subject_id);
+
+    $this->actingAs($teacher)
+        ->get(route('admin.grade-sheets.index', ['school_year' => '']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('mySubjects.0.id', $withStudents->subject_id)
+            ->where('mySubjects.0.enrolled_students_count', 2));
+});
+
+test('the create page lists the chosen subject\'s students to check', function () {
+    $gradeSheet = studentGradeSheet();
+    $first = gradableEnrollment($gradeSheet);
+    $second = gradableEnrollment($gradeSheet);
+    gradableEnrollment($gradeSheet, ['enrollment_status' => 'PENDING']);
+
+    $this->actingAs(User::factory()->teacher()->create())
+        ->get(route('admin.grade-sheets.create', ['subject_id' => $gradeSheet->subject_id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('enrolledStudents', 2)
+            ->where('enrolledStudents', fn ($students) => collect($students)->pluck('enrollment_id')->sort()->values()->all()
+                === collect([$first->id, $second->id])->sort()->values()->all()));
+
+    $this->get(route('admin.grade-sheets.create'))
+        ->assertInertia(fn (Assert $page) => $page->where('enrolledStudents', null));
+});
+
+test('only the students the teacher kept ticked are added', function () {
+    $teacher = User::factory()->teacher()->create();
+    $existing = studentGradeSheet();
+    $kept = gradableEnrollment($existing);
+    gradableEnrollment($existing);
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), [
+            'subject_id' => $existing->subject_id,
+            'enrollment_ids' => [$kept->id],
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', fn (string $message) => str_contains($message, 'created with 1 student'));
+
+    expect(GradeSheet::where('teacher_id', $teacher->id)->sole()->studentGrades()->pluck('enrollment_id')->all())
+        ->toBe([$kept->id]);
+});
+
+test('unticking everyone starts the sheet empty', function () {
+    $teacher = User::factory()->teacher()->create();
+    $existing = studentGradeSheet();
+    gradableEnrollment($existing);
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), ['subject_id' => $existing->subject_id, 'enrollment_ids' => []])
+        ->assertSessionHasNoErrors();
+
+    expect(GradeSheet::where('teacher_id', $teacher->id)->sole()->studentGrades()->count())->toBe(0);
+});
+
+test('students not taking the subject cannot be put on a new sheet', function () {
+    $teacher = User::factory()->teacher()->create();
+    $existing = studentGradeSheet();
+    $otherClass = Enrollment::factory()->create(['enrollment_status' => 'APPROVED']);
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), [
+            'subject_id' => $existing->subject_id,
+            'enrollment_ids' => [$otherClass->id],
+        ])
+        ->assertSessionHasErrors(['enrollment_ids.0' => 'One of the chosen students isn’t taking this subject.']);
+
+    expect(GradeSheet::where('teacher_id', $teacher->id)->exists())->toBeFalse();
+});

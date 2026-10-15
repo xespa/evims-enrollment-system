@@ -498,6 +498,30 @@ class Enrollment extends Model
     }
 
     /**
+     * The students behind the applications, by name, as the student pickers
+     * list them.
+     *
+     * @param  Builder<self>  $query
+     * @return list<array{enrollment_id: int, name: string, lrn: string|null}>
+     */
+    public static function studentOptions(Builder $query): array
+    {
+        return array_values($query
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('enrollments.*')
+            ->with('student')
+            ->get()
+            ->map(fn (self $enrollment) => [
+                'enrollment_id' => $enrollment->id,
+                'name' => $enrollment->student->full_name,
+                'lrn' => $enrollment->student->lrn,
+            ])
+            ->all());
+    }
+
+    /**
      * The school years to filter applications by, newest first: every year
      * with an application, plus the current one, which the filters start on.
      *

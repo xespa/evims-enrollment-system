@@ -128,22 +128,14 @@ class GradeSheet extends Model
     }
 
     /**
-     * Applications whose students can be graded on this sheet: approved for
-     * the subject's grade level and school year, taking the subject, and
-     * not cancelled or archived.
+     * Applications whose students can be graded on this sheet: those taking
+     * its subject (see Subject::gradableEnrollmentsQuery()).
      *
      * @return Builder<Enrollment>
      */
     public function gradableEnrollmentsQuery(): Builder
     {
-        $curriculum = $this->subject->curriculum;
-
-        return Enrollment::query()
-            ->where('enrollments.school_year', $curriculum->school_year)
-            ->where('enrollments.grade_level_id', $curriculum->grade_level_id)
-            ->withStatus('APPROVED')
-            ->archived(false)
-            ->whereHas('subjects', fn (Builder $subjects) => $subjects->whereKey($this->subject_id));
+        return $this->subject->gradableEnrollmentsQuery();
     }
 
     /**
@@ -153,20 +145,23 @@ class GradeSheet extends Model
      */
     public function ungradedStudents(): array
     {
-        return array_values($this->gradableEnrollmentsQuery()
-            ->whereDoesntHave('studentGrades', fn (Builder $studentGrades) => $studentGrades->where('grade_sheet_id', $this->id))
-            ->join('students', 'students.id', '=', 'enrollments.student_id')
-            ->orderBy('students.last_name')
-            ->orderBy('students.first_name')
-            ->select('enrollments.*')
-            ->with('student')
-            ->get()
-            ->map(fn (Enrollment $enrollment) => [
-                'enrollment_id' => $enrollment->id,
-                'name' => $enrollment->student->full_name,
-                'lrn' => $enrollment->student->lrn,
-            ])
-            ->all());
+        return Enrollment::studentOptions($this->gradableEnrollmentsQuery()
+            ->whereDoesntHave('studentGrades', fn (Builder $studentGrades) => $studentGrades->where('grade_sheet_id', $this->id)));
+    }
+
+    /**
+     * Puts the given students on the sheet, with no grades. Returns how many
+     * were added.
+     *
+     * @param  list<int|string>  $enrollmentIds
+     */
+    public function addStudents(array $enrollmentIds): int
+    {
+        $this->studentGrades()->createMany(
+            array_map(fn (int|string $enrollmentId): array => ['enrollment_id' => (int) $enrollmentId], $enrollmentIds),
+        );
+
+        return count($enrollmentIds);
     }
 
     /**
@@ -175,13 +170,7 @@ class GradeSheet extends Model
      */
     public function addEveryUngradedStudent(): int
     {
-        $enrollmentIds = array_column($this->ungradedStudents(), 'enrollment_id');
-
-        $this->studentGrades()->createMany(
-            array_map(fn (int $enrollmentId): array => ['enrollment_id' => $enrollmentId], $enrollmentIds),
-        );
-
-        return count($enrollmentIds);
+        return $this->addStudents(array_column($this->ungradedStudents(), 'enrollment_id'));
     }
 
     /**
