@@ -108,6 +108,9 @@ const FIELD_LABELS = {
     city_municipality: 'City/Municipality',
     province: 'Province',
     country: 'Country',
+    guardian_last_name: "Guardian's Last Name",
+    guardian_first_name: "Guardian's First Name",
+    guardian_relationship: 'Relationship to the Child',
     subject_ids: 'at least one Subject',
     payment_option: 'Payment Option',
     tuition_terms_accepted: 'Agreement to the Tuition Fee Contract',
@@ -132,7 +135,24 @@ function stepForField(field: string): number {
 const MOBILE_NUMBER_FIELDS = {
     father_mobile_no: "father's mobile number",
     mother_mobile_no: "mother's mobile number",
+    guardian_mobile_no: "guardian's mobile number",
 };
+
+// Step 3 shows either the parents' fields or the guardian's, never both.
+const GUARDIAN_REQUIRED_FIELDS = [
+    'guardian_last_name',
+    'guardian_first_name',
+    'guardian_relationship',
+];
+
+function isHiddenParentField(
+    field: string,
+    parentInfoType: 'PARENTS' | 'GUARDIAN',
+): boolean {
+    return parentInfoType === 'GUARDIAN'
+        ? field.startsWith('father_') || field.startsWith('mother_')
+        : field.startsWith('guardian_');
+}
 
 const FIELD_TO_STEP = {
     student_type: 1,
@@ -170,6 +190,14 @@ const FIELD_TO_STEP = {
     mother_occupation: 3,
     mother_name_of_office: 3,
     mother_mobile_no: 3,
+    parent_info_type: 3,
+    guardian_last_name: 3,
+    guardian_first_name: 3,
+    guardian_middle_name: 3,
+    guardian_relationship: 3,
+    guardian_occupation: 3,
+    guardian_name_of_office: 3,
+    guardian_mobile_no: 3,
 
     last_grade_level_completed: 4,
     last_school_year_completed: 4,
@@ -305,7 +333,8 @@ export default function Create({
         country: 'Philippines',
         zip_code: '',
 
-        // Parents
+        // Parents or guardian
+        parent_info_type: 'PARENTS' as 'PARENTS' | 'GUARDIAN',
         father_last_name: '',
         father_first_name: '',
         father_middle_name: '',
@@ -318,6 +347,13 @@ export default function Create({
         mother_occupation: '',
         mother_name_of_office: '',
         mother_mobile_no: '',
+        guardian_last_name: '',
+        guardian_first_name: '',
+        guardian_middle_name: '',
+        guardian_relationship: '',
+        guardian_occupation: '',
+        guardian_name_of_office: '',
+        guardian_mobile_no: '',
 
         // Academic history
         last_grade_level_completed: '',
@@ -566,6 +602,9 @@ export default function Create({
         if (step === 1 && data.student_type === 'WITH_LRN') {
             required.push('lrn');
         }
+        if (step === 3 && data.parent_info_type === 'GUARDIAN') {
+            required.push(...GUARDIAN_REQUIRED_FIELDS);
+        }
         return required.filter((field) => {
             const value = data[field];
             if (Array.isArray(value)) return value.length === 0;
@@ -594,6 +633,7 @@ export default function Create({
         Object.keys(MOBILE_NUMBER_FIELDS).filter(
             (field) =>
                 FIELD_TO_STEP[field] === step &&
+                !isHiddenParentField(field, data.parent_info_type) &&
                 data[field] &&
                 !isValidMobileNumber(data[field]),
         );

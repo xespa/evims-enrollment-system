@@ -87,6 +87,8 @@ function validEnrollmentPayload(GradeLevel $gradeLevel, array $overrides = []): 
         'country' => 'Philippines',
         'zip_code' => '6800',
 
+        'parent_info_type' => 'PARENTS',
+
         'subject_ids' => Subject::whereIn('curriculum_id', $gradeLevel->curricula()->pluck('id'))->pluck('id')->toArray(),
 
         'payment_option' => 'MONTHLY',

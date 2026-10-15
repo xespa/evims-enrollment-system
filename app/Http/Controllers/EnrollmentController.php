@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Enrollment\SubmitEnrollmentApplication;
+use App\Enums\ParentInfoType;
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
+use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\ApplicationSubmitted;
@@ -162,19 +164,11 @@ class EnrollmentController extends Controller
                 'country' => $student->address?->country ?? 'Philippines',
                 'zip_code' => $student->address?->zip_code,
 
-                // Parents
-                'father_last_name' => $student->parentProfile?->father_last_name,
-                'father_first_name' => $student->parentProfile?->father_first_name,
-                'father_middle_name' => $student->parentProfile?->father_middle_name,
-                'father_occupation' => $student->parentProfile?->father_occupation,
-                'father_name_of_office' => $student->parentProfile?->father_name_of_office,
-                'father_mobile_no' => $student->parentProfile?->father_mobile_no,
-                'mother_maiden_last_name' => $student->parentProfile?->mother_maiden_last_name,
-                'mother_first_name' => $student->parentProfile?->mother_first_name,
-                'mother_middle_name' => $student->parentProfile?->mother_middle_name,
-                'mother_occupation' => $student->parentProfile?->mother_occupation,
-                'mother_name_of_office' => $student->parentProfile?->mother_name_of_office,
-                'mother_mobile_no' => $student->parentProfile?->mother_mobile_no,
+                // Parents or guardian
+                'parent_info_type' => ($student->parentProfile->info_type ?? ParentInfoType::Parents)->value,
+                ...collect([...ParentProfile::FATHER_FIELDS, ...ParentProfile::MOTHER_FIELDS, ...ParentProfile::GUARDIAN_FIELDS])
+                    ->mapWithKeys(fn (string $field) => [$field => $student->parentProfile?->{$field}])
+                    ->all(),
 
                 // Academic history — a returning student's "previous school"
                 // is EVIMS itself, not whatever they attended before EVIMS

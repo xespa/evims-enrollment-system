@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Actions\Enrollment\SubmitEnrollmentApplication;
+use App\Enums\ParentInfoType;
 use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\GradeLevel;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
-    private const MOBILE_NUMBER_FIELDS = ['father_mobile_no', 'mother_mobile_no'];
+    private const MOBILE_NUMBER_FIELDS = ['father_mobile_no', 'mother_mobile_no', 'guardian_mobile_no'];
 
     /**
      * International form: a Philippine mobile (+63 9XX XXX XXXX), or any
@@ -235,19 +236,27 @@ class StoreEnrollmentRequest extends FormRequest
             'country' => ['required', 'string', 'max:255'],
             'zip_code' => ['nullable', 'string', 'max:10'],
 
-            // Parents
-            'father_last_name' => ['nullable', 'string', 'max:255'],
-            'father_first_name' => ['nullable', 'string', 'max:255'],
-            'father_middle_name' => ['nullable', 'string', 'max:255'],
-            'father_occupation' => ['nullable', 'string', 'max:255'],
-            'father_name_of_office' => ['nullable', 'string', 'max:255'],
-            'father_mobile_no' => ['nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
-            'mother_maiden_last_name' => ['nullable', 'string', 'max:255'],
-            'mother_first_name' => ['nullable', 'string', 'max:255'],
-            'mother_middle_name' => ['nullable', 'string', 'max:255'],
-            'mother_occupation' => ['nullable', 'string', 'max:255'],
-            'mother_name_of_office' => ['nullable', 'string', 'max:255'],
-            'mother_mobile_no' => ['nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
+            // Parents or guardian: only the chosen side's details are kept.
+            'parent_info_type' => ['required', Rule::enum(ParentInfoType::class)],
+            'father_last_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'father_first_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'father_middle_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'father_occupation' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'father_name_of_office' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'father_mobile_no' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
+            'mother_maiden_last_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'mother_first_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'mother_middle_name' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'mother_occupation' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'mother_name_of_office' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'mother_mobile_no' => ['exclude_if:parent_info_type,GUARDIAN', 'nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
+            'guardian_last_name' => ['exclude_unless:parent_info_type,GUARDIAN', 'required', 'string', 'max:255'],
+            'guardian_first_name' => ['exclude_unless:parent_info_type,GUARDIAN', 'required', 'string', 'max:255'],
+            'guardian_middle_name' => ['exclude_unless:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'guardian_relationship' => ['exclude_unless:parent_info_type,GUARDIAN', 'required', 'string', 'max:100'],
+            'guardian_occupation' => ['exclude_unless:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'guardian_name_of_office' => ['exclude_unless:parent_info_type,GUARDIAN', 'nullable', 'string', 'max:255'],
+            'guardian_mobile_no' => ['exclude_unless:parent_info_type,GUARDIAN', 'nullable', 'regex:'.self::MOBILE_NUMBER_PATTERN],
 
             // Academic history
             'last_grade_level_completed' => ['nullable', 'string', 'max:255'],
@@ -304,6 +313,8 @@ class StoreEnrollmentRequest extends FormRequest
             'tuition_terms_accepted.accepted' => 'Please read and agree to the tuition fee contract and withdrawal procedure.',
             'father_mobile_no.regex' => $mobileNumberMessage,
             'mother_mobile_no.regex' => $mobileNumberMessage,
+            'guardian_mobile_no.regex' => $mobileNumberMessage,
+            'guardian_relationship.required' => 'Enter how the guardian is related to the child, e.g. Grandmother or Aunt.',
             'lrn.regex' => self::LRN_MESSAGE,
             'form_138.prohibited' => 'Returning students don’t need to upload a Form 138 — the registrar will attach their latest report card from EVIMS.',
             'lrn.required_if' => 'Transferees need their LRN — enter the 12-digit LRN from their previous school (on their Form 138 / report card).',

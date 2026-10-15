@@ -110,7 +110,7 @@ class PaymentController extends Controller
             billing: array_filter([
                 'name' => "{$student->first_name} {$student->last_name}",
                 'email' => $enrollment->email ?? $enrollment->enrolleeUser?->email,
-                'phone' => $parentProfile?->father_mobile_no ?? $parentProfile?->mother_mobile_no,
+                'phone' => $parentProfile?->contactMobileNo(),
             ]),
         );
 

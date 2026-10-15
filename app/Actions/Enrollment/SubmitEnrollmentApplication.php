@@ -7,6 +7,7 @@ use App\Models\Curriculum;
 use App\Models\EnrolleeUser;
 use App\Models\Enrollment;
 use App\Models\OfficeVerification;
+use App\Models\ParentProfile;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -153,19 +154,13 @@ class SubmitEnrollmentApplication
                 'zip_code' => $validated['zip_code'] ?? null,
             ]);
 
+            // Only the chosen side is kept; the other side's fields are
+            // excluded by validation and so cleared here.
             $student->parentProfile()->updateOrCreate([], [
-                'father_last_name' => $validated['father_last_name'] ?? null,
-                'father_first_name' => $validated['father_first_name'] ?? null,
-                'father_middle_name' => $validated['father_middle_name'] ?? null,
-                'father_occupation' => $validated['father_occupation'] ?? null,
-                'father_name_of_office' => $validated['father_name_of_office'] ?? null,
-                'father_mobile_no' => $validated['father_mobile_no'] ?? null,
-                'mother_maiden_last_name' => $validated['mother_maiden_last_name'] ?? null,
-                'mother_first_name' => $validated['mother_first_name'] ?? null,
-                'mother_middle_name' => $validated['mother_middle_name'] ?? null,
-                'mother_occupation' => $validated['mother_occupation'] ?? null,
-                'mother_name_of_office' => $validated['mother_name_of_office'] ?? null,
-                'mother_mobile_no' => $validated['mother_mobile_no'] ?? null,
+                'info_type' => $validated['parent_info_type'],
+                ...collect([...ParentProfile::FATHER_FIELDS, ...ParentProfile::MOTHER_FIELDS, ...ParentProfile::GUARDIAN_FIELDS])
+                    ->mapWithKeys(fn (string $field) => [$field => $validated[$field] ?? null])
+                    ->all(),
             ]);
 
             $enrollment = $student->enrollments()->create([

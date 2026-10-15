@@ -1211,73 +1211,131 @@ export default function Show({
                             />
                         </div>
 
-                        {/* Parents */}
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                                Father
-                            </h2>
-                            <InfoRow
-                                label="Name"
-                                value={fullName(
-                                    student.parent_profile?.father_last_name,
-                                    student.parent_profile?.father_first_name,
-                                    student.parent_profile?.father_middle_name,
-                                )}
-                            />
-                            <InfoRow
-                                label="Occupation"
-                                value={
-                                    student.parent_profile?.father_occupation
-                                }
-                            />
-                            <InfoRow
-                                label="Office"
-                                value={
-                                    student.parent_profile
-                                        ?.father_name_of_office
-                                }
-                            />
-                            <InfoRow
-                                label="Mobile No."
-                                value={displayMobileNumber(
-                                    student.parent_profile?.father_mobile_no,
-                                )}
-                            />
-                        </div>
+                        {/* Parents, or the guardian in their place */}
+                        {student.parent_profile?.info_type === 'GUARDIAN' ? (
+                            <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">
+                                <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                    Guardian
+                                </h2>
+                                <InfoRow
+                                    label="Name"
+                                    value={fullName(
+                                        student.parent_profile
+                                            .guardian_last_name,
+                                        student.parent_profile
+                                            .guardian_first_name,
+                                        student.parent_profile
+                                            .guardian_middle_name,
+                                    )}
+                                />
+                                <InfoRow
+                                    label="Relationship"
+                                    value={
+                                        student.parent_profile
+                                            .guardian_relationship
+                                    }
+                                />
+                                <InfoRow
+                                    label="Occupation"
+                                    value={
+                                        student.parent_profile
+                                            .guardian_occupation
+                                    }
+                                />
+                                <InfoRow
+                                    label="Office"
+                                    value={
+                                        student.parent_profile
+                                            .guardian_name_of_office
+                                    }
+                                />
+                                <InfoRow
+                                    label="Mobile No."
+                                    value={displayMobileNumber(
+                                        student.parent_profile
+                                            .guardian_mobile_no,
+                                    )}
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                        Father
+                                    </h2>
+                                    <InfoRow
+                                        label="Name"
+                                        value={fullName(
+                                            student.parent_profile
+                                                ?.father_last_name,
+                                            student.parent_profile
+                                                ?.father_first_name,
+                                            student.parent_profile
+                                                ?.father_middle_name,
+                                        )}
+                                    />
+                                    <InfoRow
+                                        label="Occupation"
+                                        value={
+                                            student.parent_profile
+                                                ?.father_occupation
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Office"
+                                        value={
+                                            student.parent_profile
+                                                ?.father_name_of_office
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Mobile No."
+                                        value={displayMobileNumber(
+                                            student.parent_profile
+                                                ?.father_mobile_no,
+                                        )}
+                                    />
+                                </div>
 
-                        <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
-                            <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
-                                Mother
-                            </h2>
-                            <InfoRow
-                                label="Maiden Name"
-                                value={fullName(
-                                    student.parent_profile
-                                        ?.mother_maiden_last_name,
-                                    student.parent_profile?.mother_first_name,
-                                    student.parent_profile?.mother_middle_name,
-                                )}
-                            />
-                            <InfoRow
-                                label="Occupation"
-                                value={
-                                    student.parent_profile?.mother_occupation
-                                }
-                            />
-                            <InfoRow
-                                label="Office"
-                                value={
-                                    student.parent_profile
-                                        ?.mother_name_of_office
-                                }
-                            />
-                            <InfoRow
-                                label="Mobile No."
-                                value={displayMobileNumber(
-                                    student.parent_profile?.mother_mobile_no,
-                                )}
-                            />
-                        </div>
+                                <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5">
+                                    <h2 className="mb-2 text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase">
+                                        Mother
+                                    </h2>
+                                    <InfoRow
+                                        label="Maiden Name"
+                                        value={fullName(
+                                            student.parent_profile
+                                                ?.mother_maiden_last_name,
+                                            student.parent_profile
+                                                ?.mother_first_name,
+                                            student.parent_profile
+                                                ?.mother_middle_name,
+                                        )}
+                                    />
+                                    <InfoRow
+                                        label="Occupation"
+                                        value={
+                                            student.parent_profile
+                                                ?.mother_occupation
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Office"
+                                        value={
+                                            student.parent_profile
+                                                ?.mother_name_of_office
+                                        }
+                                    />
+                                    <InfoRow
+                                        label="Mobile No."
+                                        value={displayMobileNumber(
+                                            student.parent_profile
+                                                ?.mother_mobile_no,
+                                        )}
+                                    />
+                                </div>
+                            </>
+                        )}
 
                         {/* Subjects */}
                         <div className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5 md:col-span-2">

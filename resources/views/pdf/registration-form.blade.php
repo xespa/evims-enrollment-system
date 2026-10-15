@@ -226,6 +226,22 @@
         <tr><td class="caption">Country</td><td colspan="3"></td></tr>
     </table>
 
+    @if ($parents?->isGuardian())
+    <div class="bar">GUARDIAN'S INFORMATION</div>
+
+    <table class="full fields">
+        <tr><td colspan="6"><strong>Guardian's Name <span class="italic">(Last Name, First Name, Middle Name)</span></strong></td></tr>
+        <tr><td colspan="6" class="value">{{ $upper(collect([$parents->guardian_last_name, trim("{$parents->guardian_first_name} {$parents->guardian_middle_name}")])->filter()->implode(', ')) }}</td></tr>
+        <tr>
+            <td class="label">Relationship:</td><td colspan="5" class="value">{{ $upper($parents->guardian_relationship) }}</td>
+        </tr>
+        <tr>
+            <td class="label">Occupation:</td><td class="value" style="width: 24%;">{{ $upper($parents->guardian_occupation) }}</td>
+            <td class="label" style="padding-left: 8px;">Name of Office:</td><td class="value" style="width: 24%;">{{ $upper($parents->guardian_name_of_office) }}</td>
+            <td class="label" style="padding-left: 8px;">Mobile No.</td><td class="value">{{ $parents->guardian_mobile_no }}</td>
+        </tr>
+    </table>
+    @else
     <div class="bar">PARENT'S INFORMATION</div>
 
     <table class="full fields">
@@ -244,6 +260,7 @@
             <td class="label" style="padding-left: 8px;">Mobile No.</td><td class="value">{{ $parents?->mother_mobile_no }}</td>
         </tr>
     </table>
+    @endif
 
     <div class="bar">For Returnee and Those Who will Transfer/Move In</div>
 
