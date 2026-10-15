@@ -26,7 +26,7 @@ test('each role only reaches the admin pages it is allowed to', function (string
     'events' => ['admin.events.index', ['ADMIN']],
     'staff accounts' => ['admin.staff-accounts.index', ['ADMIN']],
     'grade sheets' => ['admin.grade-sheets.index', ['ADMIN', 'TEACHER']],
-    'awards' => ['admin.awards.index', ['ADMIN', 'REGISTRAR', 'TEACHER']],
+    'awardee list' => ['admin.awards.print.show', ['ADMIN', 'REGISTRAR', 'TEACHER']],
 ]);
 
 test('every role can open an application', function (string $role) {

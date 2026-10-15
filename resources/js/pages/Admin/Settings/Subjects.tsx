@@ -23,6 +23,47 @@ type Props = {
 };
 
 /**
+ * Ticks or clears every subject of one grade level; shown as partly ticked
+ * when only some of them are chosen.
+ */
+function SelectAllCheckbox({
+    gradeLevelName,
+    selectedCount,
+    total,
+    onToggle,
+}: {
+    gradeLevelName: string;
+    selectedCount: number;
+    total: number;
+    onToggle: () => void;
+}) {
+    const isAll = total > 0 && selectedCount === total;
+    const isSome = selectedCount > 0 && !isAll;
+
+    return (
+        <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full px-2 text-xs font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5">
+            <input
+                type="checkbox"
+                checked={isAll}
+                // Indeterminate can only be set on the element itself.
+                ref={(input) => {
+                    if (input) {
+                        input.indeterminate = isSome;
+                    }
+                }}
+                onChange={onToggle}
+                aria-label={`Select all ${gradeLevelName} subjects`}
+                className="h-4 w-4 accent-[#2F6F4E]"
+            />
+            Select all
+            <span className="font-normal text-[#1F2A24]/55 tabular-nums">
+                {selectedCount}/{total}
+            </span>
+        </label>
+    );
+}
+
+/**
  * Where a teacher ticks the subjects they teach. Their grade sheets page
  * then lists these, ready to open or start a grade sheet for.
  */
@@ -52,6 +93,20 @@ export default function Subjects({
                 ? form.data.subject_ids.filter((id) => id !== subjectId)
                 : [...form.data.subject_ids, subjectId],
         );
+
+    // Ticks every subject of the grade level, or clears them all when they
+    // already are.
+    const toggleAll = (subjects: SubjectOption[]) => {
+        const ids = subjects.map((subject) => subject.id);
+        const allSelected = ids.every((id) => selected.has(id));
+
+        form.setData(
+            'subject_ids',
+            allSelected
+                ? form.data.subject_ids.filter((id) => !ids.includes(id))
+                : [...new Set([...form.data.subject_ids, ...ids])],
+        );
+    };
 
     const countIn = (year: Props['schoolYears'][number]) =>
         year.grade_levels
@@ -137,9 +192,30 @@ export default function Subjects({
 
                                 {visibleYear?.grade_levels.map((gradeLevel) => (
                                     <fieldset key={gradeLevel.name}>
-                                        <legend className="mb-2 text-xs font-semibold tracking-[0.08em] text-[#2F6F4E] uppercase">
-                                            {gradeLevel.name}
-                                        </legend>
+                                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                            <legend className="text-xs font-semibold tracking-[0.08em] text-[#2F6F4E] uppercase">
+                                                {gradeLevel.name}
+                                            </legend>
+                                            <SelectAllCheckbox
+                                                gradeLevelName={gradeLevel.name}
+                                                selectedCount={
+                                                    gradeLevel.subjects.filter(
+                                                        (subject) =>
+                                                            selected.has(
+                                                                subject.id,
+                                                            ),
+                                                    ).length
+                                                }
+                                                total={
+                                                    gradeLevel.subjects.length
+                                                }
+                                                onToggle={() =>
+                                                    toggleAll(
+                                                        gradeLevel.subjects,
+                                                    )
+                                                }
+                                            />
+                                        </div>
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             {gradeLevel.subjects.map(
                                                 (subject) => {
