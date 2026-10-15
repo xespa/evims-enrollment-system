@@ -1,16 +1,28 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Plus, Printer, Trash2, Users } from 'lucide-react';
+import {
+    ArrowLeft,
+    ClipboardPen,
+    Pencil,
+    Plus,
+    Printer,
+    Trash2,
+    UserPlus,
+    Users,
+} from 'lucide-react';
+import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
 import studentGradeRoutes from '@/routes/admin/student-grades';
+import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
+import AddStudentsDialog from './Components/AddStudentsDialog';
 import { TERMS, formatGrade } from './Components/types';
 import type { GradeSheetSummary, StudentGradeRow } from './Components/types';
 
 type Props = {
     gradeSheet: GradeSheetSummary;
     studentGrades: StudentGradeRow[];
-    /** Enrolled students not on the sheet yet; Create is off at zero. */
-    ungradedStudentsCount: number;
+    /** Enrolled students not on the sheet yet; adding is off when empty. */
+    ungradedStudents: StudentOption[];
 };
 
 function RemarksBadge({ remarks }: { remarks: StudentGradeRow['remarks'] }) {
@@ -34,12 +46,13 @@ function RemarksBadge({ remarks }: { remarks: StudentGradeRow['remarks'] }) {
 export default function Show({
     gradeSheet,
     studentGrades,
-    ungradedStudentsCount,
+    ungradedStudents,
 }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const [confirm, confirmDialog] = useConfirm();
+    const [isAddingStudents, setIsAddingStudents] = useState(false);
 
-    const canAddStudent = ungradedStudentsCount > 0;
+    const canAddStudent = ungradedStudents.length > 0;
 
     const removeStudent = async (studentGrade: StudentGradeRow) => {
         const confirmed = await confirm({
@@ -85,6 +98,14 @@ export default function Show({
         <>
             <Head title={`Grade Sheet ${gradeSheet.number}`} />
             {confirmDialog}
+            {isAddingStudents && (
+                <AddStudentsDialog
+                    gradeSheetId={gradeSheet.id}
+                    students={ungradedStudents}
+                    open={isAddingStudents}
+                    onOpenChange={setIsAddingStudents}
+                />
+            )}
 
             <div className="bg-[#FBF8F2] px-4 py-8">
                 <div className="mx-auto max-w-6xl">
@@ -118,6 +139,36 @@ export default function Show({
                                 />
                                 Print
                             </a>
+                            {studentGrades.length > 0 && (
+                                <Link
+                                    href={gradeSheetRoutes.grades.edit.url(
+                                        gradeSheet.id,
+                                    )}
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <ClipboardPen
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Enter grades
+                                </Link>
+                            )}
+                            {canAddStudent && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingStudents(true)}
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <UserPlus
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Add students
+                                    <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                        {ungradedStudents.length}
+                                    </span>
+                                </button>
+                            )}
                             {canAddStudent ? (
                                 <Link
                                     href={gradeSheetRoutes.studentGrades.create.url(
@@ -182,7 +233,7 @@ export default function Show({
                             </p>
                             <p className="mt-1 max-w-md text-sm text-[#1F2A24]/65">
                                 {canAddStudent
-                                    ? 'Press Create to choose a student and enter their grades.'
+                                    ? 'Use Add students to add the whole class at once, or Create to add one student with their grades.'
                                     : 'No approved students are enrolled in this subject for this school year yet.'}
                             </p>
                         </div>

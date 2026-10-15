@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStudentGradeRequest;
 use App\Http\Requests\Admin\UpdateStudentGradeRequest;
-use App\Models\Enrollment;
 use App\Models\GradeSheet;
 use App\Models\StudentGrade;
 use Illuminate\Http\RedirectResponse;
@@ -25,23 +24,9 @@ class StudentGradeController extends Controller
 
         $gradeSheet->load(GradeSheet::summaryRelations());
 
-        $students = $gradeSheet->gradableEnrollmentsQuery()
-            ->whereDoesntHave('studentGrades', fn ($studentGrades) => $studentGrades->whereBelongsTo($gradeSheet))
-            ->join('students', 'students.id', '=', 'enrollments.student_id')
-            ->orderBy('students.last_name')
-            ->orderBy('students.first_name')
-            ->select('enrollments.*')
-            ->with('student')
-            ->get()
-            ->map(fn (Enrollment $enrollment) => [
-                'enrollment_id' => $enrollment->id,
-                'name' => $enrollment->student->full_name,
-                'lrn' => $enrollment->student->lrn,
-            ]);
-
         return Inertia::render('Admin/StudentGrades/Create', [
             'gradeSheet' => $gradeSheet->summary(),
-            'students' => $students,
+            'students' => $gradeSheet->ungradedStudents(),
         ]);
     }
 

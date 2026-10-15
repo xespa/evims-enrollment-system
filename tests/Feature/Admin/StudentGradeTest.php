@@ -1,45 +1,10 @@
 <?php
 
-use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeSheet;
 use App\Models\StudentGrade;
-use App\Models\Subject;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
-
-/**
- * A grade sheet for a 2026-2027 subject.
- */
-function studentGradeSheet(): GradeSheet
-{
-    return GradeSheet::factory()->create([
-        'subject_id' => Subject::factory()->state([
-            'curriculum_id' => Curriculum::factory()->state(['school_year' => '2026-2027']),
-        ]),
-    ]);
-}
-
-/**
- * An application for the grade sheet's grade level and school year that
- * takes its subject, approved unless overridden.
- *
- * @param  array<string, mixed>  $attributes
- */
-function gradableEnrollment(GradeSheet $gradeSheet, array $attributes = []): Enrollment
-{
-    $curriculum = $gradeSheet->subject->curriculum;
-
-    $enrollment = Enrollment::factory()->create([
-        'grade_level_id' => $curriculum->grade_level_id,
-        'school_year' => $curriculum->school_year,
-        'enrollment_status' => 'APPROVED',
-        ...$attributes,
-    ]);
-    $enrollment->subjects()->attach($gradeSheet->subject_id);
-
-    return $enrollment;
-}
 
 test('the create page lists only the students who can be graded on the sheet', function () {
     $gradeSheet = studentGradeSheet();

@@ -4,7 +4,6 @@ namespace App\Actions\GradeSheets;
 
 use App\Concerns\EmbedsSchoolLogo;
 use App\Models\GradeSheet;
-use App\Models\StudentGrade;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as GradeSheetPdf;
 use Carbon\CarbonInterface;
@@ -31,17 +30,11 @@ class GenerateGradeSheet
      */
     public function viewData(GradeSheet $gradeSheet): array
     {
-        $gradeSheet->load([
-            ...GradeSheet::summaryRelations(),
-            'studentGrades.enrollment.student',
-        ]);
+        $gradeSheet->load(GradeSheet::summaryRelations());
 
         return [
             'gradeSheet' => $gradeSheet->summary(),
-            'rows' => array_values($gradeSheet->studentGrades
-                ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->enrollment->student->full_name)
-                ->map(fn (StudentGrade $studentGrade) => $studentGrade->row())
-                ->all()),
+            'rows' => $gradeSheet->studentGradeRows(),
             'logo' => $this->logoDataUri(),
             'printedAt' => now('Asia/Manila'),
         ];

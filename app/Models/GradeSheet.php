@@ -97,6 +97,44 @@ class GradeSheet extends Model
     }
 
     /**
+     * Students who can be graded on this sheet but aren't on it yet, by name.
+     *
+     * @return list<array{enrollment_id: int, name: string, lrn: string|null}>
+     */
+    public function ungradedStudents(): array
+    {
+        return array_values($this->gradableEnrollmentsQuery()
+            ->whereDoesntHave('studentGrades', fn (Builder $studentGrades) => $studentGrades->where('grade_sheet_id', $this->id))
+            ->join('students', 'students.id', '=', 'enrollments.student_id')
+            ->orderBy('students.last_name')
+            ->orderBy('students.first_name')
+            ->select('enrollments.*')
+            ->with('student')
+            ->get()
+            ->map(fn (Enrollment $enrollment) => [
+                'enrollment_id' => $enrollment->id,
+                'name' => $enrollment->student->full_name,
+                'lrn' => $enrollment->student->lrn,
+            ])
+            ->all());
+    }
+
+    /**
+     * Every student's row, by name, as the pages and print-out show them.
+     *
+     * @return list<array{id: int, enrollment_id: int, student_name: string, lrn: string|null, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>
+     */
+    public function studentGradeRows(): array
+    {
+        $this->loadMissing('studentGrades.enrollment.student');
+
+        return array_values($this->studentGrades
+            ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->enrollment->student->full_name)
+            ->map(fn (StudentGrade $studentGrade) => $studentGrade->row())
+            ->all());
+    }
+
+    /**
      * What the grade sheet pages show about the sheet itself. Load
      * summaryRelations() first so this doesn't query per sheet.
      *

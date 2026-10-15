@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\StoreGradeSheetRequest;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeSheet;
-use App\Models\StudentGrade;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -106,22 +105,13 @@ class GradeSheetController extends Controller
     {
         Gate::authorize('view', $gradeSheet);
 
-        $gradeSheet->load([
-            ...GradeSheet::summaryRelations(),
-            'studentGrades.enrollment.student',
-        ]);
-
-        $studentGrades = $gradeSheet->studentGrades
-            ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->enrollment->student->full_name)
-            ->map(fn (StudentGrade $studentGrade) => $studentGrade->row())
-            ->values();
+        $gradeSheet->load(GradeSheet::summaryRelations());
 
         return Inertia::render('Admin/GradeSheets/Show', [
             'gradeSheet' => $gradeSheet->summary(),
-            'studentGrades' => $studentGrades,
-            'ungradedStudentsCount' => $gradeSheet->gradableEnrollmentsQuery()
-                ->whereNotIn('enrollments.id', $gradeSheet->studentGrades->pluck('enrollment_id'))
-                ->count(),
+            'studentGrades' => $gradeSheet->studentGradeRows(),
+            // Offered in "Add students", to add several (or all) at once.
+            'ungradedStudents' => $gradeSheet->ungradedStudents(),
         ]);
     }
 

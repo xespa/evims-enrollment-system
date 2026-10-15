@@ -16,7 +16,9 @@ use App\Http\Controllers\Admin\EnrollmentSummaryController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
 use App\Http\Controllers\Admin\GradeSheetController;
+use App\Http\Controllers\Admin\GradeSheetGradeController;
 use App\Http\Controllers\Admin\GradeSheetPrintController;
+use App\Http\Controllers\Admin\GradeSheetStudentController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PayableEnrollmentController;
 use App\Http\Controllers\Admin\ProfilePhotoController;
@@ -191,6 +193,12 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
             ->only(['index', 'create', 'store', 'show', 'destroy'])
             ->parameters(['grade-sheets' => 'gradeSheet']);
         Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
+        // Adding several students (or the whole class) at once, then
+        // entering everyone's grades in one table.
+        Route::post('grade-sheets/{gradeSheet}/students', [GradeSheetStudentController::class, 'store'])->name('grade-sheets.students.store');
+        Route::singleton('grade-sheets.grades', GradeSheetGradeController::class)
+            ->only(['edit', 'update'])
+            ->parameters(['grade-sheets' => 'gradeSheet']);
         // Each student's Term 1–3 grades on a sheet.
         Route::resource('grade-sheets.student-grades', StudentGradeController::class)
             ->shallow()
