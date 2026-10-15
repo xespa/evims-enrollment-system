@@ -50,6 +50,71 @@ class DetermineAcademicAwards
     public const STANDING_INCOMPLETE = 'INCOMPLETE';
 
     /**
+     * One grade level's awards for a school year, as a grade sheet's Awards
+     * dialog shows them: every student (filtered on the page), with counts
+     * for each recognition.
+     *
+     * @return array{school_year: string, grade_level_id: int, grade_level: string, students: list<StudentStanding>, summary: array{students: int, academic_excellence: int, learning_area_excellence: int, not_qualified: int, incomplete: int}}
+     */
+    public function forGradeLevel(string $schoolYear, GradeLevel $gradeLevel): array
+    {
+        $students = $this->handle($schoolYear, $gradeLevel->id)[0]['students'] ?? [];
+
+        return [
+            'school_year' => $schoolYear,
+            'grade_level_id' => $gradeLevel->id,
+            'grade_level' => $gradeLevel->name,
+            'students' => $students,
+            'summary' => self::summarize($students),
+        ];
+    }
+
+    /**
+     * How many students hold each standing or recognition.
+     *
+     * @param  list<StudentStanding>  $students
+     * @return array{students: int, academic_excellence: int, learning_area_excellence: int, not_qualified: int, incomplete: int}
+     */
+    public static function summarize(array $students): array
+    {
+        $students = collect($students);
+
+        return [
+            'students' => $students->count(),
+            'academic_excellence' => $students->where('standing', self::STANDING_ACADEMIC_EXCELLENCE)->count(),
+            'learning_area_excellence' => $students
+                ->filter(fn (array $student) => in_array(AcademicAward::LearningAreaExcellence->value, array_column($student['awards'], 'type'), true))
+                ->count(),
+            'not_qualified' => $students->where('standing', self::STANDING_NOT_QUALIFIED)->count(),
+            'incomplete' => $students->where('standing', self::STANDING_INCOMPLETE)->count(),
+        ];
+    }
+
+    /**
+     * The grade levels with only the students the filter matches (see
+     * IndexAwardRequest::matches()), leaving out grade levels with none.
+     *
+     * @param  list<GradeLevelStandings>  $gradeLevels
+     * @param  callable(StudentStanding): bool  $matches
+     * @return list<GradeLevelStandings>
+     */
+    public static function onlyMatching(array $gradeLevels, callable $matches): array
+    {
+        return array_values(array_filter(array_map(fn (array $gradeLevel) => [
+            ...$gradeLevel,
+            'students' => array_values(array_filter($gradeLevel['students'], $matches)),
+        ], $gradeLevels), fn (array $gradeLevel): bool => $gradeLevel['students'] !== []));
+    }
+
+    /**
+     * Whether the grade level receives academic awards (Grade 4 and up).
+     */
+    public static function isEligible(GradeLevel $gradeLevel): bool
+    {
+        return ($gradeLevel->gradeNumber() ?? 0) >= self::FIRST_ELIGIBLE_GRADE;
+    }
+
+    /**
      * Every approved student's standing, by grade level.
      *
      * @return list<GradeLevelStandings>
@@ -94,7 +159,7 @@ class DetermineAcademicAwards
         return GradeLevel::query()
             ->orderBy('level_order')
             ->get(['id', 'name', 'level_order'])
-            ->filter(fn (GradeLevel $gradeLevel): bool => ($gradeLevel->gradeNumber() ?? 0) >= self::FIRST_ELIGIBLE_GRADE)
+            ->filter(fn (GradeLevel $gradeLevel): bool => self::isEligible($gradeLevel))
             ->values();
     }
 

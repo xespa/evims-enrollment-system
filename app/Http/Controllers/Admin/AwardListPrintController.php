@@ -9,8 +9,9 @@ use App\Http\Requests\Admin\IndexAwardRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * The printable list of awardees, with the page's grade level and award
- * filters. Only students receiving a recognition are printed.
+ * The printable list of awardees, for the grade level and recognition
+ * chosen in a grade sheet's Awards dialog. Only students receiving a
+ * recognition are printed.
  */
 class AwardListPrintController extends Controller
 {
@@ -21,9 +22,9 @@ class AwardListPrintController extends Controller
             ? IndexAwardRequest::RECOGNIZED
             : $request->recognition();
 
-        $gradeLevels = AwardController::onlyMatching(
+        $gradeLevels = DetermineAcademicAwards::onlyMatching(
             $determineAcademicAwards->handle($schoolYear, $request->gradeLevelId()),
-            $recognition,
+            fn (array $student): bool => IndexAwardRequest::matches($student, $recognition),
         );
 
         return $generateAwardList->handle($schoolYear, $gradeLevels)->stream($generateAwardList->filename($schoolYear));

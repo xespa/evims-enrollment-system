@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Awards\DetermineAcademicAwards;
 use App\Actions\GradeSheets\SendGradesToNextApplication;
+use App\Enums\AcademicAward;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\IndexAwardRequest;
 use App\Http\Requests\Admin\StoreGradeSheetRequest;
 use App\Http\Requests\Admin\UpdateGradeSheetRequest;
 use App\Models\Curriculum;
@@ -206,7 +209,7 @@ class GradeSheetController extends Controller
             });
     }
 
-    public function show(Request $request, GradeSheet $gradeSheet): Response
+    public function show(Request $request, GradeSheet $gradeSheet, DetermineAcademicAwards $determineAcademicAwards): Response
     {
         Gate::authorize('view', $gradeSheet);
 
@@ -214,6 +217,9 @@ class GradeSheetController extends Controller
         $user = $request->user();
 
         $gradeSheet->load(GradeSheet::summaryRelations());
+        $curriculum = $gradeSheet->subject->curriculum;
+        // Grade 4 and up receive academic awards.
+        $showsAwards = $user->can('view-awards') && DetermineAcademicAwards::isEligible($curriculum->gradeLevel);
 
         return Inertia::render('Admin/GradeSheets/Show', [
             'gradeSheet' => $gradeSheet->summary(),
@@ -226,6 +232,24 @@ class GradeSheetController extends Controller
             'sendGrades' => fn () => $gradeSheet->isArchived() || ! $user->can('upload-document', 'form_138')
                 ? null
                 : SendGradesToNextApplication::forGradeSheet($gradeSheet, $user),
+            'showsAwards' => $showsAwards,
+            // The grade level's academic awards for the sheet's school year;
+            // worked out only when the Awards dialog asks for them.
+            'awards' => Inertia::optional(fn () => $showsAwards
+                ? $determineAcademicAwards->forGradeLevel($curriculum->school_year, $curriculum->gradeLevel)
+                : null),
+            'awardCriteria' => $showsAwards
+                ? array_map(fn (AcademicAward $award) => [
+                    'type' => $award->value,
+                    'label' => $award->label(),
+                    'criteria' => $award->criteria(),
+                ], AcademicAward::cases())
+                : [],
+            'recognitionOptions' => $showsAwards
+                ? collect(IndexAwardRequest::recognitionOptions())
+                    ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label])
+                    ->values()
+                : [],
         ]);
     }
 

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin\AcknowledgementReceiptController;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\AwardController;
 use App\Http\Controllers\Admin\AwardListPrintController;
 use App\Http\Controllers\Admin\CounterPaymentHistoryController;
 use App\Http\Controllers\Admin\CurriculumController;
@@ -198,9 +197,9 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         Route::get('transaction-history', TransactionHistoryController::class)->name('transaction-history.index');
     });
 
-    // The year's academic awards, worked out from the grade sheets.
+    // A grade level's academic awards, worked out from the grade sheets and
+    // printed from a grade sheet's Awards dialog.
     Route::middleware('can:view-awards')->group(function () {
-        Route::get('awards', [AwardController::class, 'index'])->name('awards.index');
         Route::get('awards/print', AwardListPrintController::class)->name('awards.print.show');
     });
 

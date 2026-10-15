@@ -8,6 +8,7 @@ import {
     Plus,
     Printer,
     Send,
+    Trophy,
     UserPlus,
     Users,
 } from 'lucide-react';
@@ -19,6 +20,12 @@ import type { StudentOption } from '../StudentGrades/Components/StudentCombobox'
 import AddStudentsDialog from './Components/AddStudentsDialog';
 import SendGradesDialog from './Components/SendGradesDialog';
 import type { SendGrades } from './Components/SendGradesDialog';
+import AwardsDialog from './Components/AwardsDialog';
+import type {
+    AwardCriterion,
+    GradeLevelAwards,
+    RecognitionOption,
+} from './Components/AwardsDialog';
 import GradesTable from './Components/GradesTable';
 import EditScheduleDialog from './Components/EditScheduleDialog';
 import type { GradeSheetSummary, StudentGradeRow } from './Components/types';
@@ -30,6 +37,12 @@ type Props = {
     ungradedStudents: StudentOption[];
     /** Students who applied for the next school year; null while archived. */
     sendGrades: SendGrades | null;
+    /** Grade 4 and up, for staff who can see awards. */
+    showsAwards: boolean;
+    /** Loaded when the Awards dialog opens; undefined until then. */
+    awards?: GradeLevelAwards | null;
+    awardCriteria: AwardCriterion[];
+    recognitionOptions: RecognitionOption[];
 };
 
 export default function Show({
@@ -37,12 +50,17 @@ export default function Show({
     studentGrades,
     ungradedStudents,
     sendGrades,
+    showsAwards,
+    awards,
+    awardCriteria,
+    recognitionOptions,
 }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const [confirm, confirmDialog] = useConfirm();
     const [isAddingStudents, setIsAddingStudents] = useState(false);
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
     const [isSendingGrades, setIsSendingGrades] = useState(false);
+    const [isViewingAwards, setIsViewingAwards] = useState(false);
 
     const canAddStudent = ungradedStudents.length > 0;
     const [isAddingAll, setIsAddingAll] = useState(false);
@@ -120,6 +138,15 @@ export default function Show({
                     gradeSheet={gradeSheet}
                     open={isEditingSchedule}
                     onOpenChange={setIsEditingSchedule}
+                />
+            )}
+            {showsAwards && (
+                <AwardsDialog
+                    awards={awards}
+                    criteria={awardCriteria}
+                    recognitionOptions={recognitionOptions}
+                    open={isViewingAwards}
+                    onOpenChange={setIsViewingAwards}
                 />
             )}
             {sendGrades && (
@@ -204,6 +231,21 @@ export default function Show({
                                             {sendGrades.students.length}
                                         </span>
                                     )}
+                                </button>
+                            )}
+                            {showsAwards && (
+                                // The grade level's academic awards (Grade 4
+                                // and up), from every subject's grade sheet.
+                                <button
+                                    type="button"
+                                    onClick={() => setIsViewingAwards(true)}
+                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <Trophy
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    Awards
                                 </button>
                             )}
                             {canAddStudent && (

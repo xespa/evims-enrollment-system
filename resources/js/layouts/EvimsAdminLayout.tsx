@@ -15,7 +15,6 @@ import {
     ScrollText,
     Settings,
     ShieldCheck,
-    Trophy,
     UserCheck,
     UserCog,
     UserRound,
@@ -106,14 +105,9 @@ const NAV_SECTIONS: NavSection[] = [
                 href: admin.gradeSheets.index.url(),
                 icon: ClipboardList,
                 ability: 'manageGradeSheets',
-                // Students' grades are entered from their grade sheet.
+                // Students' grades are entered from their grade sheet, which
+                // also shows its grade level's awards.
                 matchPrefix: '/admin/student-grades',
-            },
-            {
-                label: 'Awards',
-                href: admin.awards.index.url(),
-                icon: Trophy,
-                ability: 'viewAwards',
             },
         ],
     },

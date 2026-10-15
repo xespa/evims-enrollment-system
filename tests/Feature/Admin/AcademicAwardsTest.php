@@ -2,7 +2,7 @@
 
 use App\Actions\Awards\DetermineAcademicAwards;
 use App\Actions\Awards\GenerateAwardList;
-use App\Http\Controllers\Admin\AwardController;
+use App\Http\Requests\Admin\IndexAwardRequest;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
@@ -191,26 +191,31 @@ test('students are listed alphabetically, not ranked', function () {
     expect($names)->toBe(['Abad, Ana', 'Mendoza, Ana', 'Zamora, Ana']);
 });
 
-test('the awards page shows only recognized students by default', function () {
+test('a grade sheet shows its grade level\'s awards once the dialog asks for them', function () {
     $class = awardClass();
     $awardee = awardStudent($class, ['English' => 95, 'Mathematics' => 95, 'Science' => 95], 'Abad');
     awardStudent($class, ['English' => 85, 'Mathematics' => 85, 'Science' => 85], 'Cruz');
     awardStudent($class, ['English' => 85], 'Diaz');
+    // Another grade level's student stays out.
+    awardStudent(awardClass('Grade 6'), ['English' => 99, 'Mathematics' => 99, 'Science' => 99], 'Zamora');
 
-    $this->actingAs(User::factory()->registrar()->create())
-        ->get(route('admin.awards.index'))
-        ->assertOk()
+    $this->actingAs($class['English']->teacher)
+        ->get(route('admin.grade-sheets.show', $class['English']))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Awards/Index')
-            ->where('filters.school_year', '2026-2027')
-            ->where('filters.recognition', 'RECOGNIZED')
-            ->has('gradeLevels', 1)
-            ->has('gradeLevels.0.students', 1)
-            ->where('gradeLevels.0.students.0.enrollment_id', $awardee->id)
-            ->where('summary.students', 3)
-            ->where('summary.academic_excellence', 1)
-            ->where('summary.not_qualified', 1)
-            ->where('summary.incomplete', 1));
+            ->where('showsAwards', true)
+            ->missing('awards')
+            ->has('awardCriteria', 2)
+            ->where('recognitionOptions.0.value', 'RECOGNIZED')
+            ->reloadOnly('awards', fn (Assert $reload) => $reload
+                ->where('awards.school_year', '2026-2027')
+                ->where('awards.grade_level', 'Grade 5')
+                ->has('awards.students', 3)
+                ->where('awards.students.0.enrollment_id', $awardee->id)
+                ->where('awards.students.0.standing', 'ACADEMIC_EXCELLENCE')
+                ->where('awards.summary.students', 3)
+                ->where('awards.summary.academic_excellence', 1)
+                ->where('awards.summary.not_qualified', 1)
+                ->where('awards.summary.incomplete', 1)));
 });
 
 test('the recognition filter narrows the list', function (string $recognition, array $expectedNames) {
@@ -219,12 +224,13 @@ test('the recognition filter narrows the list', function (string $recognition, a
     awardStudent($class, ['English' => 85, 'Mathematics' => 86, 'Science' => 85], 'Cruz');
     awardStudent($class, ['English' => 85], 'Diaz');
 
-    $this->actingAs(User::factory()->admin()->create())
-        ->get(route('admin.awards.index', ['recognition' => $recognition]))
-        ->assertInertia(fn (Assert $page) => $page->where(
-            'gradeLevels',
-            fn ($gradeLevels) => collect($gradeLevels)->flatMap(fn ($gradeLevel) => collect($gradeLevel['students'])->pluck('name'))->all() === $expectedNames,
-        ));
+    $gradeLevels = DetermineAcademicAwards::onlyMatching(
+        app(DetermineAcademicAwards::class)->handle('2026-2027'),
+        fn (array $student): bool => IndexAwardRequest::matches($student, $recognition),
+    );
+
+    expect(collect($gradeLevels)->flatMap(fn ($gradeLevel) => collect($gradeLevel['students'])->pluck('name'))->all())
+        ->toBe($expectedNames);
 })->with([
     'academic excellence' => ['ACADEMIC_EXCELLENCE', ['Abad, Ana']],
     'learning area' => ['LEARNING_AREA_EXCELLENCE', ['Abad, Ana']],
@@ -233,22 +239,31 @@ test('the recognition filter narrows the list', function (string $recognition, a
     'everyone' => ['EVERYONE', ['Abad, Ana', 'Cruz, Ana', 'Diaz, Ana']],
 ]);
 
-test('the awards page can be narrowed to one grade level, from Grade 4 up', function () {
-    $grade5 = awardClass('Grade 5');
-    $grade6 = awardClass('Grade 6');
-    awardStudent($grade5, ['English' => 95, 'Mathematics' => 95, 'Science' => 95]);
-    awardStudent($grade6, ['English' => 95, 'Mathematics' => 95, 'Science' => 95]);
+test('grade sheets below Grade 4 offer no awards', function () {
     $grade3 = awardClass('Grade 3');
-    $admin = User::factory()->admin()->create();
+    $teacher = $grade3['English']->teacher;
 
-    $this->actingAs($admin)
-        ->get(route('admin.awards.index', ['grade_level_id' => $grade6->first()->subject->curriculum->grade_level_id]))
+    $this->actingAs($teacher)
+        ->get(route('admin.grade-sheets.show', $grade3['English']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('gradeLevels', 1)
-            ->where('gradeLevels.0.name', 'Grade 6'));
+            ->where('showsAwards', false)
+            ->reloadOnly('awards', fn (Assert $reload) => $reload->where('awards', null)));
 
-    $this->get(route('admin.awards.index', ['grade_level_id' => $grade3->first()->subject->curriculum->grade_level_id]))
+    $this->get(route('admin.awards.print.show', ['grade_level_id' => $grade3->first()->subject->curriculum->grade_level_id]))
         ->assertSessionHasErrors(['grade_level_id' => 'Academic awards start at Grade 4.']);
+});
+
+test('the printed list can be narrowed to one grade level', function () {
+    awardStudent(awardClass('Grade 5'), ['English' => 95, 'Mathematics' => 95, 'Science' => 95], 'Abad');
+    $grade6 = awardClass('Grade 6');
+    awardStudent($grade6, ['English' => 95, 'Mathematics' => 95, 'Science' => 95], 'Zamora');
+
+    $html = view('pdf.award-list', app(GenerateAwardList::class)->viewData('2026-2027', DetermineAcademicAwards::onlyMatching(
+        app(DetermineAcademicAwards::class)->handle('2026-2027', $grade6->first()->subject->curriculum->grade_level_id),
+        fn (array $student): bool => IndexAwardRequest::matches($student, IndexAwardRequest::RECOGNIZED),
+    )))->render();
+
+    expect($html)->toContain('Zamora, Ana')->not->toContain('Abad, Ana');
 });
 
 test('the list of awardees prints as a pdf', function () {
@@ -266,9 +281,9 @@ test('the printed list names each awardee and their recognitions', function () {
     awardStudent($class, ['English' => 95, 'Mathematics' => 95, 'Science' => 95], 'Abad');
     awardStudent($class, ['English' => 85, 'Mathematics' => 85, 'Science' => 85], 'Cruz');
 
-    $gradeLevels = AwardController::onlyMatching(
+    $gradeLevels = DetermineAcademicAwards::onlyMatching(
         app(DetermineAcademicAwards::class)->handle('2026-2027'),
-        'RECOGNIZED',
+        fn (array $student): bool => IndexAwardRequest::matches($student, IndexAwardRequest::RECOGNIZED),
     );
     $html = view('pdf.award-list', app(GenerateAwardList::class)->viewData('2026-2027', $gradeLevels))->render();
 
@@ -278,9 +293,16 @@ test('the printed list names each awardee and their recognitions', function () {
         ->not->toContain('Cruz, Ana');
 });
 
-test('cashiers cannot see the awards', function () {
+test('cashiers cannot print the awards', function () {
     $this->actingAs(User::factory()->cashier()->create());
 
-    $this->get(route('admin.awards.index'))->assertForbidden();
     $this->get(route('admin.awards.print.show'))->assertForbidden();
+});
+
+test('an admin viewing a teacher\'s Grade 4+ sheet sees its awards', function () {
+    $class = awardClass();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.grade-sheets.show', $class['English']))
+        ->assertInertia(fn (Assert $page) => $page->where('showsAwards', true));
 });
