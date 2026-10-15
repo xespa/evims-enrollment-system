@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * A teacher's term grades for one subject. The subject belongs to one grade
@@ -16,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $subject_id
  * @property int $teacher_id
+ * @property list<string>|null $schedule_days
+ * @property string|null $start_time
+ * @property string|null $end_time
  * @property-read string $number
  */
 class GradeSheet extends Model
@@ -23,7 +27,23 @@ class GradeSheet extends Model
     /** @use HasFactory<GradeSheetFactory> */
     use HasFactory;
 
-    protected $fillable = ['subject_id', 'teacher_id'];
+    /**
+     * The school days a class can meet on, in order, with how they print.
+     */
+    public const SCHEDULE_DAYS = [
+        'MON' => 'Mon',
+        'TUE' => 'Tue',
+        'WED' => 'Wed',
+        'THU' => 'Thu',
+        'FRI' => 'Fri',
+        'SAT' => 'Sat',
+    ];
+
+    protected $fillable = ['subject_id', 'teacher_id', 'schedule_days', 'start_time', 'end_time'];
+
+    protected $casts = [
+        'schedule_days' => 'array',
+    ];
 
     /**
      * @return BelongsTo<Subject, $this>
@@ -56,6 +76,25 @@ class GradeSheet extends Model
     public function getNumberAttribute(): string
     {
         return 'GS-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * When the class meets, e.g. "Mon, Wed, Fri · 8:00 AM – 9:00 AM", or
+     * null until a schedule is set.
+     */
+    public function scheduleLabel(): ?string
+    {
+        $days = collect(self::SCHEDULE_DAYS)
+            ->only($this->schedule_days ?? [])
+            ->implode(', ');
+
+        $time = $this->start_time !== null && $this->end_time !== null
+            ? Carbon::parse($this->start_time)->format('g:i A').' – '.Carbon::parse($this->end_time)->format('g:i A')
+            : '';
+
+        $label = collect([$days, $time])->filter()->implode(' · ');
+
+        return $label === '' ? null : $label;
     }
 
     /**
@@ -138,7 +177,7 @@ class GradeSheet extends Model
      * What the grade sheet pages show about the sheet itself. Load
      * summaryRelations() first so this doesn't query per sheet.
      *
-     * @return array{id: int, number: string, subject: string, grade_level: string, school_year: string, teacher: string}
+     * @return array{id: int, number: string, subject: string, subject_code: string|null, grade_level: string, school_year: string, teacher: string, schedule: string|null, schedule_days: list<string>, start_time: string|null, end_time: string|null}
      */
     public function summary(): array
     {
@@ -146,9 +185,15 @@ class GradeSheet extends Model
             'id' => $this->id,
             'number' => $this->number,
             'subject' => $this->subject->name,
+            'subject_code' => $this->subject->code,
             'grade_level' => $this->subject->curriculum->gradeLevel->name,
             'school_year' => $this->subject->curriculum->school_year,
             'teacher' => $this->teacher->name,
+            'schedule' => $this->scheduleLabel(),
+            // The parts, for editing the schedule ("08:00", not "08:00:00").
+            'schedule_days' => $this->schedule_days ?? [],
+            'start_time' => $this->start_time !== null ? substr($this->start_time, 0, 5) : null,
+            'end_time' => $this->end_time !== null ? substr($this->end_time, 0, 5) : null,
         ];
     }
 

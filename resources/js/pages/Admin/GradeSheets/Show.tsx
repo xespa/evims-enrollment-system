@@ -15,6 +15,7 @@ import gradeSheetRoutes from '@/routes/admin/grade-sheets';
 import studentGradeRoutes from '@/routes/admin/student-grades';
 import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
 import AddStudentsDialog from './Components/AddStudentsDialog';
+import EditScheduleDialog from './Components/EditScheduleDialog';
 import { TERMS, formatGrade } from './Components/types';
 import type { GradeSheetSummary, StudentGradeRow } from './Components/types';
 
@@ -51,6 +52,7 @@ export default function Show({
     const { props } = usePage<{ flash?: { success?: string } }>();
     const [confirm, confirmDialog] = useConfirm();
     const [isAddingStudents, setIsAddingStudents] = useState(false);
+    const [isEditingSchedule, setIsEditingSchedule] = useState(false);
 
     const canAddStudent = ungradedStudents.length > 0;
 
@@ -86,18 +88,26 @@ export default function Show({
 
     const details = [
         { label: 'Grade Sheet No.', value: gradeSheet.number, mono: true },
+        { label: 'Teacher', value: gradeSheet.teacher },
         {
             label: 'Subject',
             value: `${gradeSheet.subject} · ${gradeSheet.grade_level}`,
         },
+        { label: 'Subject Code', value: gradeSheet.subject_code ?? '—' },
         { label: 'School Year', value: gradeSheet.school_year },
-        { label: 'Teacher', value: gradeSheet.teacher },
     ];
 
     return (
         <>
             <Head title={`Grade Sheet ${gradeSheet.number}`} />
             {confirmDialog}
+            {isEditingSchedule && (
+                <EditScheduleDialog
+                    gradeSheet={gradeSheet}
+                    open={isEditingSchedule}
+                    onOpenChange={setIsEditingSchedule}
+                />
+            )}
             {isAddingStudents && (
                 <AddStudentsDialog
                     gradeSheetId={gradeSheet.id}
@@ -207,7 +217,7 @@ export default function Show({
                         </div>
                     )}
 
-                    <dl className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-[#1F2A24]/10 sm:grid-cols-2 lg:grid-cols-4">
+                    <dl className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-[#1F2A24]/10 sm:grid-cols-2 lg:grid-cols-3">
                         {details.map((detail) => (
                             <div key={detail.label} className="bg-white p-4">
                                 <dt className="text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
@@ -220,6 +230,31 @@ export default function Show({
                                 </dd>
                             </div>
                         ))}
+                        <div className="flex items-start justify-between gap-2 bg-white p-4">
+                            <div className="min-w-0">
+                                <dt className="text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
+                                    Schedule
+                                </dt>
+                                <dd className="mt-1 font-semibold text-[#1F2A24]">
+                                    {gradeSheet.schedule ?? (
+                                        <span className="font-normal text-[#1F2A24]/50">
+                                            Not set
+                                        </span>
+                                    )}
+                                </dd>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditingSchedule(true)}
+                                className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[#2F6F4E] hover:bg-[#2F6F4E]/10"
+                            >
+                                <Pencil
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                <span className="sr-only">Edit schedule</span>
+                            </button>
+                        </div>
                     </dl>
 
                     {studentGrades.length === 0 ? (

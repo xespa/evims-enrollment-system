@@ -3,9 +3,34 @@ export type GradeSheetSummary = {
     id: number;
     number: string;
     subject: string;
+    subject_code: string | null;
     grade_level: string;
     school_year: string;
     teacher: string;
+    /** e.g. "Mon, Wed, Fri · 8:00 AM – 9:00 AM"; null until set. */
+    schedule: string | null;
+    schedule_days: ScheduleDay[];
+    /** "08:00" */
+    start_time: string | null;
+    end_time: string | null;
+};
+
+/** Mirrors GradeSheet::SCHEDULE_DAYS. */
+export const SCHEDULE_DAYS = [
+    { value: 'MON', label: 'Mon' },
+    { value: 'TUE', label: 'Tue' },
+    { value: 'WED', label: 'Wed' },
+    { value: 'THU', label: 'Thu' },
+    { value: 'FRI', label: 'Fri' },
+    { value: 'SAT', label: 'Sat' },
+] as const;
+
+export type ScheduleDay = (typeof SCHEDULE_DAYS)[number]['value'];
+
+export type ScheduleData = {
+    schedule_days: ScheduleDay[];
+    start_time: string;
+    end_time: string;
 };
 
 /** One student's row on a grade sheet; mirrors StudentGrade::row(). */

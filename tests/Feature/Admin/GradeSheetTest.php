@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GradeSheets\GenerateGradeSheet;
 use App\Models\Curriculum;
 use App\Models\GradeSheet;
 use App\Models\StudentGrade;
@@ -213,4 +214,99 @@ test('deleting a grade sheet deletes its student grades', function () {
 
     expect(GradeSheet::count())->toBe(0)
         ->and(StudentGrade::count())->toBe(0);
+});
+
+test('a grade sheet can be created with its class schedule', function () {
+    $teacher = User::factory()->teacher()->create();
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), [
+            'subject_id' => gradeSheetSubject()->id,
+            'schedule_days' => ['MON', 'WED', 'FRI'],
+            'start_time' => '08:00',
+            'end_time' => '09:30',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $gradeSheet = GradeSheet::sole();
+
+    expect($gradeSheet->schedule_days)->toBe(['MON', 'WED', 'FRI'])
+        ->and($gradeSheet->scheduleLabel())->toBe('Mon, Wed, Fri · 8:00 AM – 9:30 AM');
+});
+
+test('the class schedule is validated', function (array $schedule, string $error) {
+    $this->actingAs(User::factory()->teacher()->create())
+        ->post(route('admin.grade-sheets.store'), ['subject_id' => gradeSheetSubject()->id, ...$schedule])
+        ->assertSessionHasErrors($error);
+
+    expect(GradeSheet::count())->toBe(0);
+})->with([
+    'ends before it starts' => [['start_time' => '10:00', 'end_time' => '09:00'], 'end_time'],
+    'start without an end' => [['start_time' => '10:00'], 'end_time'],
+    'end without a start' => [['end_time' => '10:00'], 'start_time'],
+    'not a time' => [['start_time' => 'morning', 'end_time' => '10:00'], 'start_time'],
+    'not a school day' => [['schedule_days' => ['SUN']], 'schedule_days.0'],
+]);
+
+test('the teacher can set or change the schedule of their grade sheet', function () {
+    $gradeSheet = GradeSheet::factory()->create(['subject_id' => gradeSheetSubject()]);
+
+    $this->actingAs($gradeSheet->teacher)
+        ->patch(route('admin.grade-sheets.update', $gradeSheet), [
+            'schedule_days' => ['TUE', 'THU'],
+            'start_time' => '13:00',
+            'end_time' => '14:00',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('admin.grade-sheets.show', $gradeSheet));
+
+    $this->get(route('admin.grade-sheets.show', $gradeSheet))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('gradeSheet.schedule', 'Tue, Thu · 1:00 PM – 2:00 PM')
+            ->where('gradeSheet.schedule_days', ['TUE', 'THU'])
+            ->where('gradeSheet.start_time', '13:00')
+            ->where('gradeSheet.end_time', '14:00'));
+});
+
+test('the subject and teacher cannot be changed with the schedule', function () {
+    $gradeSheet = GradeSheet::factory()->create();
+    $originalSubject = $gradeSheet->subject_id;
+
+    $this->actingAs($gradeSheet->teacher)
+        ->patch(route('admin.grade-sheets.update', $gradeSheet), [
+            'subject_id' => Subject::factory()->create()->id,
+            'teacher_id' => User::factory()->teacher()->create()->id,
+        ]);
+
+    $gradeSheet->refresh();
+    expect($gradeSheet->subject_id)->toBe($originalSubject);
+});
+
+test('other teachers cannot change a grade sheet\'s schedule', function () {
+    $gradeSheet = GradeSheet::factory()->create();
+
+    $this->actingAs(User::factory()->teacher()->create())
+        ->patch(route('admin.grade-sheets.update', $gradeSheet), ['schedule_days' => ['MON']])
+        ->assertForbidden();
+
+    expect($gradeSheet->fresh()->schedule_days)->toBeNull();
+});
+
+test('the printed grade sheet shows the teacher, subject, code, school year and schedule', function () {
+    $subject = gradeSheetSubject();
+    $subject->update(['name' => 'Mathematics', 'code' => 'MATH1']);
+    $gradeSheet = GradeSheet::factory()->create([
+        'subject_id' => $subject->id,
+        'schedule_days' => ['MON', 'FRI'],
+        'start_time' => '07:30',
+        'end_time' => '08:30',
+    ]);
+
+    $html = view('pdf.grade-sheet', app(GenerateGradeSheet::class)->viewData($gradeSheet))->render();
+
+    expect($html)->toContain($gradeSheet->teacher->name)
+        ->toContain('Mathematics')
+        ->toContain('MATH1')
+        ->toContain('2026-2027')
+        ->toContain('Mon, Fri · 7:30 AM – 8:30 AM');
 });

@@ -3,11 +3,14 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
+import ScheduleFields from './Components/ScheduleFields';
 import { SELECT_CLASS } from './Components/types';
+import type { ScheduleData } from './Components/types';
 
 type SubjectOption = {
     id: number;
     name: string;
+    code: string | null;
     grade_level: string;
     school_year: string;
 };
@@ -82,9 +85,14 @@ export default function Create({
             : (schoolYears[0] ?? ''),
     );
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<
+        { subject_id: string; teacher_id: string } & ScheduleData
+    >({
         subject_id: '',
         teacher_id: currentTeacher ? String(currentTeacher.id) : '',
+        schedule_days: [],
+        start_time: '',
+        end_time: '',
     });
 
     const subjectGroups = byGradeLevel(
@@ -195,7 +203,9 @@ export default function Create({
                                                     key={subject.id}
                                                     value={subject.id}
                                                 >
-                                                    {subject.name}
+                                                    {subject.code
+                                                        ? `${subject.name} (${subject.code})`
+                                                        : subject.name}
                                                 </option>
                                             ))}
                                         </optgroup>
@@ -244,6 +254,12 @@ export default function Create({
                                 </select>
                             )}
                         </Field>
+
+                        <ScheduleFields
+                            data={data}
+                            onChange={setData}
+                            errors={errors}
+                        />
 
                         <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 pt-5 sm:flex-row sm:justify-end">
                             <Link

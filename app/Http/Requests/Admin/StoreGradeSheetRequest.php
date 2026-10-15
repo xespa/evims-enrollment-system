@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\GradeSheetScheduleValidationRules;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\GradeSheet;
@@ -16,6 +17,8 @@ use Illuminate\Validation\Rule;
  */
 class StoreGradeSheetRequest extends FormRequest
 {
+    use GradeSheetScheduleValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -55,6 +58,7 @@ class StoreGradeSheetRequest extends FormRequest
                     ->where('account_status', AccountStatus::Approved->value)
                     ->whereNull('deactivated_at'),
             ],
+            ...$this->scheduleRules(),
         ];
     }
 
@@ -66,6 +70,7 @@ class StoreGradeSheetRequest extends FormRequest
         return [
             'subject_id.unique' => 'This teacher already has a grade sheet for this subject.',
             'teacher_id.exists' => 'Choose an active teacher.',
+            ...$this->scheduleMessages(),
         ];
     }
 }

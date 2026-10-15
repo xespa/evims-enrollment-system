@@ -15,8 +15,9 @@
         .letterhead .spacer { width: 110px; }
         .rule { margin: 6px 20px 14px; border-top: 3px solid #000000; }
         .title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 12px; }
-        .details td { padding: 3px 0; font-size: 12px; }
-        .details .label { width: 110px; font-weight: bold; }
+        .details td { padding: 4px 0; font-size: 12px; }
+        .details .label { width: 105px; font-weight: bold; }
+        .details .value { border-bottom: 1px solid #000000; padding-right: 12px; }
         .grades { margin-top: 14px; }
         .grades th, .grades td { border: 1px solid #000000; padding: 5px 6px; }
         .grades th { font-size: 11px; text-align: center; }
@@ -60,20 +61,26 @@
 
     <table class="details">
         <tr>
-            <td class="label">Grade Sheet No.:</td>
-            <td>{{ $gradeSheet['number'] }}</td>
-            <td class="label">School Year:</td>
-            <td>{{ $gradeSheet['school_year'] }}</td>
+            <td class="label">Teacher:</td>
+            <td class="value">{{ $gradeSheet['teacher'] }}</td>
+            <td class="label" style="padding-left: 14px;">Grade Sheet No.:</td>
+            <td class="value">{{ $gradeSheet['number'] }}</td>
         </tr>
         <tr>
             <td class="label">Subject:</td>
-            <td>{{ $gradeSheet['subject'] }}</td>
-            <td class="label">Grade Level:</td>
-            <td>{{ $gradeSheet['grade_level'] }}</td>
+            <td class="value">{{ $gradeSheet['subject'] }}</td>
+            <td class="label" style="padding-left: 14px;">Subject Code:</td>
+            <td class="value">{{ $gradeSheet['subject_code'] ?? '—' }}</td>
         </tr>
         <tr>
-            <td class="label">Teacher:</td>
-            <td colspan="3">{{ $gradeSheet['teacher'] }}</td>
+            <td class="label">Grade Level:</td>
+            <td class="value">{{ $gradeSheet['grade_level'] }}</td>
+            <td class="label" style="padding-left: 14px;">School Year:</td>
+            <td class="value">{{ $gradeSheet['school_year'] }}</td>
+        </tr>
+        <tr>
+            <td class="label">Schedule:</td>
+            <td class="value" colspan="3">{{ $gradeSheet['schedule'] ?? '—' }}</td>
         </tr>
     </table>
 

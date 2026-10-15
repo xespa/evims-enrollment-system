@@ -12,6 +12,11 @@ class Student extends Model
 {
     use HasFactory;
 
+    /**
+     * What the admission form saves when the student has no extension name.
+     */
+    public const NO_EXTENSION_NAME = 'N/A';
+
     protected $fillable = [
         'lrn', 'psa_birth_cert_no', 'last_name', 'first_name',
         'middle_name', 'extension_name', 'date_of_birth', 'sex',
@@ -140,8 +145,18 @@ class Student extends Model
             ->first();
     }
 
+    /**
+     * "Last, First Middle Ext." The admission form's "N/A" extension means
+     * the student has none, so it's left out rather than shown.
+     */
     public function getFullNameAttribute(): string
     {
-        return trim("{$this->last_name}, {$this->first_name} {$this->middle_name} {$this->extension_name}");
+        $extensionName = strcasecmp((string) $this->extension_name, self::NO_EXTENSION_NAME) === 0
+            ? null
+            : $this->extension_name;
+
+        $givenNames = collect([$this->first_name, $this->middle_name, $extensionName])->filter()->implode(' ');
+
+        return trim("{$this->last_name}, {$givenNames}");
     }
 }

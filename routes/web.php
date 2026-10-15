@@ -190,7 +190,7 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     // Teachers keep their own grade sheets; admins can open everyone's.
     Route::middleware('can:manage-grade-sheets')->group(function () {
         Route::resource('grade-sheets', GradeSheetController::class)
-            ->only(['index', 'create', 'store', 'show', 'destroy'])
+            ->only(['index', 'create', 'store', 'show', 'update', 'destroy'])
             ->parameters(['grade-sheets' => 'gradeSheet']);
         Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
         // Adding several students (or the whole class) at once, then

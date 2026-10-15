@@ -178,3 +178,22 @@ test('the student accounts list links each account', function () {
         ->get(route('admin.student-accounts.index'))
         ->assertInertia(fn (Assert $page) => $page->where('students.data.0.account.id', $account->id));
 });
+
+test('an N/A extension name is left out of the student\'s name', function (?string $extensionName, string $name) {
+    $account = activeStudentAccount();
+    $account->student->update([
+        'last_name' => 'Español',
+        'first_name' => 'Mark Christian',
+        'middle_name' => 'Santos',
+        'extension_name' => $extensionName,
+    ]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.student-accounts.show', $account))
+        ->assertInertia(fn (Assert $page) => $page->where('student.name', $name));
+})->with([
+    'N/A' => ['N/A', 'Español, Mark Christian Santos'],
+    'lowercase n/a' => ['n/a', 'Español, Mark Christian Santos'],
+    'none given' => [null, 'Español, Mark Christian Santos'],
+    'a real extension' => ['Jr.', 'Español, Mark Christian Santos Jr.'],
+]);

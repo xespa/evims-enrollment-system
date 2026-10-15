@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreGradeSheetRequest;
+use App\Http\Requests\Admin\UpdateGradeSheetRequest;
 use App\Models\Curriculum;
 use App\Models\Enrollment;
 use App\Models\GradeSheet;
@@ -72,6 +73,7 @@ class GradeSheetController extends Controller
             ->map(fn (Subject $subject) => [
                 'id' => $subject->id,
                 'name' => $subject->name,
+                'code' => $subject->code,
                 'grade_level' => $subject->curriculum->gradeLevel->name,
                 'school_year' => $subject->curriculum->school_year,
             ])
@@ -113,6 +115,18 @@ class GradeSheetController extends Controller
             // Offered in "Add students", to add several (or all) at once.
             'ungradedStudents' => $gradeSheet->ungradedStudents(),
         ]);
+    }
+
+    /**
+     * Sets when the class meets; the subject and teacher can't change.
+     */
+    public function update(UpdateGradeSheetRequest $request, GradeSheet $gradeSheet): RedirectResponse
+    {
+        $gradeSheet->update($request->validated());
+
+        return redirect()
+            ->route('admin.grade-sheets.show', $gradeSheet)
+            ->with('success', 'Schedule saved.');
     }
 
     public function destroy(GradeSheet $gradeSheet): RedirectResponse
