@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\StudentAccount;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,7 +30,10 @@ class DashboardController extends Controller
                 'school_year' => $enrollment?->school_year,
             ],
             // Still signing in with the starting password (their LRN).
-            'usesDefaultPassword' => $student->lrn !== null && Hash::check($student->lrn, (string) $account->password),
+            'usesDefaultPassword' => $account->usesLrnAsPassword(),
+            // Staff reset the password, so a new one is needed before the
+            // rest of the page is shown.
+            'mustChangePassword' => $account->must_change_password,
         ]);
     }
 }

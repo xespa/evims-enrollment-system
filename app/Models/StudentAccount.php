@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -21,9 +22,10 @@ use Illuminate\Support\Str;
  * @property int $student_id
  * @property StudentAccountStatus $status
  * @property string|null $password
+ * @property bool $must_change_password
  * @property string $consent_email
  * @property string|null $consent_token
- * @property Carbon $consent_requested_at
+ * @property Carbon|null $consent_requested_at
  * @property Carbon|null $consent_expires_at
  * @property int|null $consent_requested_by
  * @property string|null $consent_given_by
@@ -59,6 +61,7 @@ class StudentAccount extends Authenticatable
         return [
             'status' => StudentAccountStatus::class,
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
             'consent_requested_at' => 'datetime',
             'consent_expires_at' => 'datetime',
             'consent_responded_at' => 'datetime',
@@ -84,6 +87,33 @@ class StudentAccount extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === StudentAccountStatus::Active;
+    }
+
+    /**
+     * Still signing in with the starting password, their LRN. The password
+     * is hashed, so this checks the LRN against it rather than reading it.
+     */
+    public function usesLrnAsPassword(): bool
+    {
+        $lrn = $this->student->lrn;
+
+        return $lrn !== null && $this->password !== null && Hash::check($lrn, $this->password);
+    }
+
+    /**
+     * Where the password stands, for staff: never the password itself.
+     * Null until the account is active.
+     *
+     * @return array{value: 'RESET'|'STARTING'|'CHANGED', label: string}|null
+     */
+    public function passwordStatus(): ?array
+    {
+        return match (true) {
+            ! $this->isActive() => null,
+            $this->must_change_password => ['value' => 'RESET', 'label' => 'Reset by the school; must be changed at next sign-in'],
+            $this->usesLrnAsPassword() => ['value' => 'STARTING', 'label' => 'Still the starting password (their LRN)'],
+            default => ['value' => 'CHANGED', 'label' => 'Changed by the student'],
+        };
     }
 
     /**

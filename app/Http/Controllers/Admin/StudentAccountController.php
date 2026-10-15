@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\StudentAccounts\CreateStudentAccount;
+use App\Enums\AuditAction;
 use App\Enums\StudentAccountStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\IndexStudentAccountRequest;
 use App\Http\Requests\Admin\StoreStudentAccountRequest;
+use App\Models\AuditLog;
 use App\Models\Student;
 use App\Models\StudentAccount;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -67,6 +70,55 @@ class StudentAccountController extends Controller
                 'status' => $status,
                 'search' => $search,
             ],
+        ]);
+    }
+
+    /**
+     * One student's account: who they are, how the account came about, and
+     * where their password stands. Passwords are hashed, so this never shows
+     * one; a temporary password appears only right after a reset.
+     */
+    public function show(Request $request, StudentAccount $studentAccount): Response
+    {
+        $studentAccount->load(['student', 'consentRequestedBy:id,name']);
+        $student = $studentAccount->student;
+        $enrollment = $student->latestApprovedEnrollment()?->load('gradeLevel:id,name');
+
+        return Inertia::render('Admin/StudentAccounts/Show', [
+            'account' => [
+                'id' => $studentAccount->id,
+                'status' => $studentAccount->status->value,
+                'status_label' => $studentAccount->status->label(),
+                'password_status' => $studentAccount->passwordStatus(),
+                'consent_email' => $studentAccount->consent_email,
+                'consent_requested_at' => $studentAccount->consent_requested_at?->toIso8601String(),
+                'consent_requested_by' => $studentAccount->consentRequestedBy?->name,
+                'consent_given_by' => $studentAccount->consent_given_by,
+                'consent_responded_at' => $studentAccount->consent_responded_at?->toIso8601String(),
+            ],
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->full_name,
+                'lrn' => $student->lrn,
+                'grade_level' => $enrollment?->gradeLevel?->name,
+                'school_year' => $enrollment?->school_year,
+                'enrollment_id' => $enrollment?->id,
+            ],
+            'passwordResets' => AuditLog::query()
+                ->where('action', AuditAction::StudentPasswordReset)
+                ->whereMorphedTo('subject', $studentAccount)
+                ->with('user:id,name')
+                ->latestFirst()
+                ->limit(5)
+                ->get()
+                ->map(fn (AuditLog $entry): array => [
+                    'id' => $entry->id,
+                    'at' => $entry->created_at?->toIso8601String(),
+                    'by' => $entry->user?->name,
+                    'details' => $entry->details(),
+                ]),
+            // Flashed by the reset, so it shows once and is gone on reload.
+            'temporaryPassword' => $request->session()->get('temporaryPassword'),
         ]);
     }
 

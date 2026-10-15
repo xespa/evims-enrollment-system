@@ -8,6 +8,8 @@ import { store as requestConsent } from '@/routes/admin/students/account-consent
 
 /** From Student::accountSummary(). */
 export type StudentAccountSummary = {
+    /** Null until consent is first requested. */
+    id: number | null;
     status: 'AWAITING_CONSENT' | 'CONSENT_GIVEN' | 'ACTIVE' | 'DECLINED' | null;
     status_label: string | null;
     consent_email: string | null;

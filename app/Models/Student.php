@@ -98,17 +98,18 @@ class Student extends Model
      * what stops one being requested yet (no LRN, or no approved
      * application). Expects the account to be loaded or loadable.
      *
-     * @return array{status: string|null, status_label: string|null, consent_email: string|null, requested_at: string|null, expires_at: string|null, responded_at: string|null, consent_given_by: string|null, blocker: string|null}
+     * @return array{id: int|null, status: string|null, status_label: string|null, consent_email: string|null, requested_at: string|null, expires_at: string|null, responded_at: string|null, consent_given_by: string|null, blocker: string|null}
      */
     public function accountSummary(?Enrollment $approvedEnrollment): array
     {
         $account = $this->account;
 
         return [
+            'id' => $account?->id,
             'status' => $account?->status->value,
             'status_label' => $account?->status->label(),
             'consent_email' => $account?->consent_email,
-            'requested_at' => $account?->consent_requested_at->toIso8601String(),
+            'requested_at' => $account?->consent_requested_at?->toIso8601String(),
             'expires_at' => $account?->consent_expires_at?->toIso8601String(),
             'responded_at' => $account?->consent_responded_at?->toIso8601String(),
             'consent_given_by' => $account?->consent_given_by,

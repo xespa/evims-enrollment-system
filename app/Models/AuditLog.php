@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AuditAction;
+use App\Enums\StudentPasswordResetMethod;
 use App\Enums\UserRole;
 use Database\Factories\AuditLogFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -95,6 +96,7 @@ class AuditLog extends Model
             AuditAction::SignedIn => ($properties['remembered'] ?? false) ? 'stayed signed in' : null,
             AuditAction::StudentConsentRequested => ($properties['resent'] ?? false) ? 'resent the email' : null,
             AuditAction::StudentConsentAnswered => ($properties['agreed'] ?? false) ? 'agreed' : 'declined',
+            AuditAction::StudentPasswordReset => StudentPasswordResetMethod::tryFrom($properties['method'] ?? '')?->label(),
             default => null,
         };
     }

@@ -24,6 +24,8 @@ type Props = {
     };
     /** Still signing in with the starting password, their LRN. */
     usesDefaultPassword: boolean;
+    /** The school reset the password; a new one is needed before anything else. */
+    mustChangePassword: boolean;
 };
 
 const INPUT_CLASS =
@@ -32,7 +34,11 @@ const INPUT_CLASS =
 const LABEL_CLASS = 'mb-1 block text-sm font-medium text-[#1F2A24]/80';
 
 /** The signed-in student's home. Grades appear here once teachers post them. */
-export default function Dashboard({ student, usesDefaultPassword }: Props) {
+export default function Dashboard({
+    student,
+    usesDefaultPassword,
+    mustChangePassword,
+}: Props) {
     const flashSuccess = usePage().props.flash?.success;
 
     return (
@@ -103,7 +109,27 @@ export default function Dashboard({ student, usesDefaultPassword }: Props) {
                         </div>
                     )}
 
-                    {usesDefaultPassword && (
+                    {mustChangePassword && (
+                        <div
+                            role="alert"
+                            className="flex items-start gap-2 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b]"
+                        >
+                            <ShieldAlert
+                                className="mt-0.5 h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                <span className="font-semibold">
+                                    The school reset your password.
+                                </span>{' '}
+                                Choose a new one below to keep using your
+                                account. Use the password the school gave you as
+                                your current password.
+                            </span>
+                        </div>
+                    )}
+
+                    {usesDefaultPassword && !mustChangePassword && (
                         <div
                             role="alert"
                             className="flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
@@ -130,30 +156,32 @@ export default function Dashboard({ student, usesDefaultPassword }: Props) {
                         </div>
                     )}
 
-                    <section
-                        aria-labelledby="grades-heading"
-                        className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
-                    >
-                        <h2
-                            id="grades-heading"
-                            className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase"
+                    {!mustChangePassword && (
+                        <section
+                            aria-labelledby="grades-heading"
+                            className="rounded-2xl border border-[#1F2A24]/10 bg-white p-5"
                         >
-                            My grades
-                        </h2>
-                        <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-                            <BookOpenCheck
-                                className="h-9 w-9 text-[#1F2A24]/25"
-                                aria-hidden="true"
-                            />
-                            <p className="font-medium text-[#1F2A24]">
-                                No grades posted yet
-                            </p>
-                            <p className="max-w-sm text-sm text-[#1F2A24]/60">
-                                Your grades will show here once your teachers
-                                post them.
-                            </p>
-                        </div>
-                    </section>
+                            <h2
+                                id="grades-heading"
+                                className="text-xs font-semibold tracking-[0.1em] text-[#2F6F4E] uppercase"
+                            >
+                                My grades
+                            </h2>
+                            <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+                                <BookOpenCheck
+                                    className="h-9 w-9 text-[#1F2A24]/25"
+                                    aria-hidden="true"
+                                />
+                                <p className="font-medium text-[#1F2A24]">
+                                    No grades posted yet
+                                </p>
+                                <p className="max-w-sm text-sm text-[#1F2A24]/60">
+                                    Your grades will show here once your
+                                    teachers post them.
+                                </p>
+                            </div>
+                        </section>
+                    )}
 
                     <section
                         aria-labelledby="password-heading"

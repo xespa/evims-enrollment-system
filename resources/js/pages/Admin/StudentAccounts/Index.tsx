@@ -4,7 +4,10 @@ import StudentAccountActions from '@/components/student-account-actions';
 import type { StudentAccountSummary } from '@/components/student-account-actions';
 import { cn } from '@/lib/utils';
 import { show as showEnrollment } from '@/routes/admin/enrollments';
-import { index as studentAccountsIndex } from '@/routes/admin/student-accounts';
+import {
+    index as studentAccountsIndex,
+    show as showStudentAccount,
+} from '@/routes/admin/student-accounts';
 
 type StudentRow = {
     id: number;
@@ -49,6 +52,23 @@ function StatusBadge({ account }: { account: StudentAccountSummary }) {
         >
             {account.status_label ?? 'No account yet'}
         </span>
+    );
+}
+
+/** Opens the account's details and password reset, once there's an account. */
+function ViewAccountLink({ student }: { student: StudentRow }) {
+    if (student.account.id === null) {
+        return null;
+    }
+
+    return (
+        <Link
+            href={showStudentAccount.url(student.account.id)}
+            className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[#1F2A24]/15 bg-white px-4 text-sm font-semibold whitespace-nowrap text-[#1F2A24]/80 hover:bg-[#1F2A24]/5"
+        >
+            View
+            <span className="sr-only"> {student.name}'s account</span>
+        </Link>
     );
 }
 
@@ -238,11 +258,14 @@ export default function Index({ students, statuses, filters }: Props) {
                                             />
                                         </div>
                                         <StatusNote account={student.account} />
-                                        <div className="mt-3 flex [&>button]:flex-1">
+                                        <div className="mt-3 flex gap-2 [&>button]:flex-1">
                                             <StudentAccountActions
                                                 studentId={student.id}
                                                 studentName={student.name}
                                                 account={student.account}
+                                            />
+                                            <ViewAccountLink
+                                                student={student}
                                             />
                                         </div>
                                     </li>
@@ -299,16 +322,23 @@ export default function Index({ students, statuses, filters }: Props) {
                                                     />
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <StudentAccountActions
-                                                        studentId={student.id}
-                                                        studentName={
-                                                            student.name
-                                                        }
-                                                        account={
-                                                            student.account
-                                                        }
-                                                        size="compact"
-                                                    />
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <StudentAccountActions
+                                                            studentId={
+                                                                student.id
+                                                            }
+                                                            studentName={
+                                                                student.name
+                                                            }
+                                                            account={
+                                                                student.account
+                                                            }
+                                                            size="compact"
+                                                        />
+                                                        <ViewAccountLink
+                                                            student={student}
+                                                        />
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

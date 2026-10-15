@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\StaffAccountDeactivationController;
 use App\Http\Controllers\Admin\StaffInvitationController;
 use App\Http\Controllers\Admin\StudentAccountConsentController;
 use App\Http\Controllers\Admin\StudentAccountController;
+use App\Http\Controllers\Admin\StudentAccountPasswordController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentGradeController;
 use App\Http\Controllers\Admin\SubjectController;
@@ -145,6 +146,11 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
         // Students' sign-in accounts (bound to their LRN): ask the parent to
         // consent, then create the account once they agree.
         Route::get('student-accounts', [StudentAccountController::class, 'index'])->name('student-accounts.index');
+        Route::get('student-accounts/{studentAccount}', [StudentAccountController::class, 'show'])->name('student-accounts.show');
+        // Passwords are hashed, so a forgotten one is reset, never looked up.
+        Route::put('student-accounts/{studentAccount}/password', [StudentAccountPasswordController::class, 'update'])
+            ->middleware('throttle:10,1')
+            ->name('student-accounts.password.update');
         Route::post('students/{student}/account-consent', [StudentAccountConsentController::class, 'store'])->name('students.account-consent.store');
         Route::post('students/{student}/account', [StudentAccountController::class, 'store'])->name('students.account.store');
         Route::post('enrollments/{enrollment}/archive', [EnrollmentArchiveController::class, 'store'])->name('enrollments.archive.store');

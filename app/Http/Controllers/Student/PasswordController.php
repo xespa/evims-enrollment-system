@@ -17,7 +17,10 @@ class PasswordController extends Controller
         /** @var StudentAccount $account */
         $account = $request->user('student');
 
-        $account->update(['password' => $request->validated('password')]);
+        $account->forceFill([
+            'password' => $request->validated('password'),
+            'must_change_password' => false,
+        ])->save();
 
         return back()->with('success', 'Your password was changed.');
     }
