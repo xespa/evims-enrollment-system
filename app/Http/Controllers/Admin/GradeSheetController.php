@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GradeSheets\SendGradesToNextApplication;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreGradeSheetRequest;
@@ -205,9 +206,12 @@ class GradeSheetController extends Controller
             });
     }
 
-    public function show(GradeSheet $gradeSheet): Response
+    public function show(Request $request, GradeSheet $gradeSheet): Response
     {
         Gate::authorize('view', $gradeSheet);
+
+        /** @var User $user */
+        $user = $request->user();
 
         $gradeSheet->load(GradeSheet::summaryRelations());
 
@@ -217,6 +221,11 @@ class GradeSheetController extends Controller
             // Offered in "Add students", to add several (or all) at once.
             // None while archived, since the sheet can't be changed.
             'ungradedStudents' => $gradeSheet->isArchived() ? [] : $gradeSheet->ungradedStudents(),
+            // The sheet's students who applied for the next school year, to
+            // send their report card on as its Form 138. Null while archived.
+            'sendGrades' => fn () => $gradeSheet->isArchived() || ! $user->can('upload-document', 'form_138')
+                ? null
+                : SendGradesToNextApplication::forGradeSheet($gradeSheet, $user),
         ]);
     }
 

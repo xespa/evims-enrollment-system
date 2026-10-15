@@ -13,10 +13,11 @@ import {
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/use-confirm';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
-import reportCardRoutes from '@/routes/admin/report-cards';
 import studentGradeRoutes from '@/routes/admin/student-grades';
 import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
 import AddStudentsDialog from './Components/AddStudentsDialog';
+import SendGradesDialog from './Components/SendGradesDialog';
+import type { SendGrades } from './Components/SendGradesDialog';
 import GradesTable from './Components/GradesTable';
 import EditScheduleDialog from './Components/EditScheduleDialog';
 import type { GradeSheetSummary, StudentGradeRow } from './Components/types';
@@ -26,17 +27,21 @@ type Props = {
     studentGrades: StudentGradeRow[];
     /** Enrolled students not on the sheet yet; adding is off when empty. */
     ungradedStudents: StudentOption[];
+    /** Students who applied for the next school year; null while archived. */
+    sendGrades: SendGrades | null;
 };
 
 export default function Show({
     gradeSheet,
     studentGrades,
     ungradedStudents,
+    sendGrades,
 }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const [confirm, confirmDialog] = useConfirm();
     const [isAddingStudents, setIsAddingStudents] = useState(false);
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
+    const [isSendingGrades, setIsSendingGrades] = useState(false);
 
     const canAddStudent = ungradedStudents.length > 0;
     const [isAddingAll, setIsAddingAll] = useState(false);
@@ -116,6 +121,13 @@ export default function Show({
                     onOpenChange={setIsEditingSchedule}
                 />
             )}
+            {sendGrades && (
+                <SendGradesDialog
+                    sendGrades={sendGrades}
+                    open={isSendingGrades}
+                    onOpenChange={setIsSendingGrades}
+                />
+            )}
             {isAddingStudents && (
                 <AddStudentsDialog
                     gradeSheetId={gradeSheet.id}
@@ -157,13 +169,12 @@ export default function Show({
                                 />
                                 Print
                             </a>
-                            {!isArchived && (
+                            {sendGrades && (
                                 // Each student's report card, as the Form 138 of
                                 // their next school year's application.
-                                <Link
-                                    href={reportCardRoutes.index.url({
-                                        query: { grade_sheet: gradeSheet.id },
-                                    })}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSendingGrades(true)}
                                     className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
                                 >
                                     <Send
@@ -171,7 +182,12 @@ export default function Show({
                                         aria-hidden="true"
                                     />
                                     Send grades
-                                </Link>
+                                    {sendGrades.students.length > 0 && (
+                                        <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                            {sendGrades.students.length}
+                                        </span>
+                                    )}
+                                </button>
                             )}
                             {canAddStudent && (
                                 <button

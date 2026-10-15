@@ -55,61 +55,41 @@ function studentApplyingAgain(User $teacher, bool $complete = true, string $next
     return [$enrollment, $nextApplication];
 }
 
-test('teachers see their students who applied for the next school year', function () {
-    [$enrollment, $nextApplication] = studentApplyingAgain($this->teacher);
-    [$incomplete] = studentApplyingAgain($this->teacher, complete: false);
-    // Graded by someone else.
-    studentApplyingAgain(User::factory()->teacher()->create());
-    // Graded by this teacher but hasn't applied again.
-    $notApplied = Enrollment::factory()->create(['school_year' => '2025-2026', 'grade_level_id' => $enrollment->grade_level_id, 'enrollment_status' => 'APPROVED']);
-    StudentGrade::factory()->for(GradeSheet::query()->where('teacher_id', $this->teacher->id)->first())->create(['enrollment_id' => $notApplied->id]);
-
-    $this->actingAs($this->teacher)
-        ->get(route('admin.report-cards.index', ['school_year' => '2025-2026']))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ReportCards/Index')
-            ->where('nextSchoolYear', '2026-2027')
-            ->has('students', 2)
-            ->where('notYetAppliedCount', 1)
-            ->where('students', fn ($students) => collect($students)->firstWhere('id', $enrollment->id)['general_average'] === 87.5
-                && collect($students)->firstWhere('id', $enrollment->id)['missing_final_grades'] === []
-                && collect($students)->firstWhere('id', $enrollment->id)['next_application']['id'] === $nextApplication->id
-                && collect($students)->firstWhere('id', $enrollment->id)['next_application']['has_form_138'] === false
-                && collect($students)->firstWhere('id', $incomplete->id)['missing_final_grades'] === ['Mathematics']));
-});
-
-test('sending from a grade sheet lists only that sheet\'s students, in its school year', function () {
+test('a grade sheet lists its students who applied for the next school year', function () {
     [$enrollment] = studentApplyingAgain($this->teacher);
-    $englishSheet = GradeSheet::where('subject_id', $this->subjects['English']->id)->where('teacher_id', $this->teacher->id)->sole();
-    // Graded by the teacher on another sheet only.
+    [$incomplete] = studentApplyingAgain($this->teacher, complete: false);
+    $mathematicsSheet = GradeSheet::where('subject_id', $this->subjects['Mathematics']->id)->where('teacher_id', $this->teacher->id)->sole();
+    // On the sheet but hasn't applied again.
+    $notApplied = Enrollment::factory()->create(['school_year' => '2025-2026', 'grade_level_id' => $enrollment->grade_level_id, 'enrollment_status' => 'APPROVED']);
+    StudentGrade::factory()->for($mathematicsSheet)->create(['enrollment_id' => $notApplied->id]);
+    // Applied again, but only on another of the teacher's sheets.
     $otherSubject = Subject::factory()->for($this->subjects['English']->curriculum)->create(['name' => 'Science']);
     $otherStudent = Enrollment::factory()->create(['school_year' => '2025-2026', 'grade_level_id' => $enrollment->grade_level_id, 'enrollment_status' => 'APPROVED']);
     StudentGrade::factory()->for(GradeSheet::factory()->create(['subject_id' => $otherSubject->id, 'teacher_id' => $this->teacher->id]))->create(['enrollment_id' => $otherStudent->id]);
     Enrollment::factory()->create(['student_id' => $otherStudent->student_id, 'grade_level_id' => $enrollment->grade_level_id, 'school_year' => '2026-2027', 'enrollment_status' => 'PENDING']);
 
     $this->actingAs($this->teacher)
-        ->get(route('admin.report-cards.index', ['grade_sheet' => $englishSheet->id, 'school_year' => '2024-2025']))
+        ->get(route('admin.grade-sheets.show', $mathematicsSheet))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('gradeSheet.id', $englishSheet->id)
-            ->where('schoolYear', '2025-2026')
-            ->has('students', 1)
-            ->where('students.0.id', $enrollment->id));
+            ->where('sendGrades.school_year', '2025-2026')
+            ->where('sendGrades.next_school_year', '2026-2027')
+            ->where('sendGrades.not_yet_applied_count', 1)
+            ->has('sendGrades.students', 2)
+            ->where('sendGrades.students', fn ($students) => collect($students)->firstWhere('id', $enrollment->id)['general_average'] === 87.5
+                && collect($students)->firstWhere('id', $enrollment->id)['missing_final_grades'] === []
+                && collect($students)->firstWhere('id', $enrollment->id)['next_application']['status'] === 'PENDING'
+                && collect($students)->firstWhere('id', $enrollment->id)['next_application']['has_form_138'] === false
+                && collect($students)->firstWhere('id', $incomplete->id)['missing_final_grades'] === ['Mathematics']));
 });
 
-test('teachers can\'t open another teacher\'s grade sheet to send grades', function () {
-    studentApplyingAgain(User::factory()->teacher()->create());
+test('an archived grade sheet doesn\'t offer sending grades', function () {
+    studentApplyingAgain($this->teacher);
+    $gradeSheet = GradeSheet::where('teacher_id', $this->teacher->id)->first();
+    $gradeSheet->archive($this->teacher);
 
     $this->actingAs($this->teacher)
-        ->get(route('admin.report-cards.index', ['grade_sheet' => GradeSheet::first()->id]))
-        ->assertForbidden();
-});
-
-test('the list starts on last school year', function () {
-    $this->travelTo('2026-10-15');
-
-    $this->actingAs($this->teacher)
-        ->get(route('admin.report-cards.index'))
-        ->assertInertia(fn (Assert $page) => $page->where('schoolYear', '2025-2026')->where('nextSchoolYear', '2026-2027'));
+        ->get(route('admin.grade-sheets.show', $gradeSheet))
+        ->assertInertia(fn (Assert $page) => $page->where('sendGrades', null));
 });
 
 test('sending puts the report card on the next application as its verified Form 138', function () {
@@ -175,10 +155,9 @@ test('admins can send any student\'s grades', function () {
     expect($nextApplication->officeVerification()->value('has_form_138'))->toBeTruthy();
 });
 
-test('registrars and cashiers can\'t use the page', function (string $role) {
+test('registrars and cashiers can\'t send grades', function (string $role) {
     [$enrollment] = studentApplyingAgain($this->teacher);
     $this->actingAs(User::factory()->create(['role' => $role]));
 
-    $this->get(route('admin.report-cards.index'))->assertForbidden();
     $this->post(route('admin.report-cards.store'), ['school_year' => '2025-2026', 'enrollment_ids' => [$enrollment->id]])->assertForbidden();
 })->with(['REGISTRAR', 'CASHIER']);

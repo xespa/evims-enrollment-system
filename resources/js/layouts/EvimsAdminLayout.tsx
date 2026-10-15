@@ -13,7 +13,6 @@ import {
     PanelLeftOpen,
     ReceiptText,
     ScrollText,
-    Send,
     Settings,
     ShieldCheck,
     Trophy,
@@ -109,13 +108,6 @@ const NAV_SECTIONS: NavSection[] = [
                 ability: 'manageGradeSheets',
                 // Students' grades are entered from their grade sheet.
                 matchPrefix: '/admin/student-grades',
-            },
-            {
-                // A year's grades go on to next year's applications.
-                label: 'Send Grades',
-                href: admin.reportCards.index.url(),
-                icon: Send,
-                ability: 'manageGradeSheets',
             },
             {
                 label: 'Awards',

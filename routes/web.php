@@ -209,8 +209,8 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
             ->parameters(['grade-sheets' => 'gradeSheet']);
         Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
         // Sending a year's grades on to students' next-year applications,
-        // as their Form 138.
-        Route::resource('report-cards', ReportCardController::class)->only(['index', 'store']);
+        // as their Form 138 (from "Send grades" on a grade sheet).
+        Route::resource('report-cards', ReportCardController::class)->only(['store']);
         // Sheets are archived rather than deleted, and can be restored.
         Route::post('grade-sheets/{gradeSheet}/archive', [GradeSheetArchiveController::class, 'store'])->name('grade-sheets.archive.store');
         Route::delete('grade-sheets/{gradeSheet}/archive', [GradeSheetArchiveController::class, 'destroy'])->name('grade-sheets.archive.destroy');
