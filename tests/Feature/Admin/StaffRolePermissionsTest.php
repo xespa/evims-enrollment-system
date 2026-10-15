@@ -26,6 +26,7 @@ test('each role only reaches the admin pages it is allowed to', function (string
     'events' => ['admin.events.index', ['ADMIN']],
     'staff accounts' => ['admin.staff-accounts.index', ['ADMIN']],
     'grade sheets' => ['admin.grade-sheets.index', ['ADMIN', 'TEACHER']],
+    'awards' => ['admin.awards.index', ['ADMIN', 'REGISTRAR', 'TEACHER']],
 ]);
 
 test('every role can open an application', function (string $role) {
@@ -120,6 +121,7 @@ test('the abilities of the signed-in staff member are shared with the pages', fu
                 'manageStaff' => false,
                 'manageGradeSheets' => true,
                 'teachSubjects' => true,
+                'viewAwards' => true,
                 'uploadDocumentTypes' => ['form_138'],
             ])
         );

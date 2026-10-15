@@ -1,5 +1,5 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Users } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
@@ -15,6 +15,8 @@ type SubjectOption = {
     school_year: string;
     /** The teachers who said they teach it. */
     teacher_ids: number[];
+    /** Approved students taking it, who a new sheet starts with. */
+    enrolled_students_count: number;
 };
 
 type Props = {
@@ -97,14 +99,24 @@ export default function Create({
     const [showAllSubjects, setShowAllSubjects] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm<
-        { subject_id: string; teacher_id: string } & ScheduleData
+        {
+            subject_id: string;
+            teacher_id: string;
+            add_students: boolean;
+        } & ScheduleData
     >({
         subject_id: selectedSubject ? String(selectedSubject.id) : '',
         teacher_id: currentTeacher ? String(currentTeacher.id) : '',
         schedule_days: [],
         start_time: '',
         end_time: '',
+        // Saves adding the class one by one afterwards.
+        add_students: true,
     });
+
+    const chosenSubject = subjects.find(
+        (subject) => String(subject.id) === data.subject_id,
+    );
 
     // The chosen teacher's own subjects (from their Settings), if they've
     // listed any; otherwise every subject.
@@ -174,8 +186,8 @@ export default function Create({
                         New Grade Sheet
                     </h1>
                     <p className="mb-6 text-sm text-[#1F2A24]/70">
-                        Choose the subject. Once it's created you can add
-                        students and enter their grades.
+                        Choose the subject. Its enrolled students are added for
+                        you, so you can go straight to entering grades.
                     </p>
 
                     <form
@@ -336,6 +348,43 @@ export default function Create({
                             onChange={setData}
                             errors={errors}
                         />
+
+                        <label
+                            className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
+                                data.add_students
+                                    ? 'border-[#2F6F4E]/40 bg-[#2F6F4E]/5'
+                                    : 'border-[#1F2A24]/15 bg-white'
+                            }`}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={data.add_students}
+                                onChange={(e) =>
+                                    setData('add_students', e.target.checked)
+                                }
+                                className="mt-0.5 h-4 w-4 accent-[#2F6F4E]"
+                            />
+                            <span>
+                                <span className="flex items-center gap-1.5 text-sm font-semibold text-[#1F2A24]">
+                                    <Users
+                                        className="h-4 w-4 text-[#2F6F4E]"
+                                        aria-hidden="true"
+                                    />
+                                    Add all enrolled students
+                                </span>
+                                <span
+                                    aria-live="polite"
+                                    className="mt-0.5 block text-xs text-[#1F2A24]/65"
+                                >
+                                    {chosenSubject === undefined
+                                        ? 'Every approved student taking the subject is put on the sheet, ready for their grades.'
+                                        : chosenSubject.enrolled_students_count ===
+                                            0
+                                          ? `No approved students are taking ${chosenSubject.name} yet.`
+                                          : `${chosenSubject.enrolled_students_count === 1 ? '1 student' : `${chosenSubject.enrolled_students_count} students`} taking ${chosenSubject.name} will be added, ready for their grades.`}
+                                </span>
+                            </span>
+                        </label>
 
                         <div className="flex flex-col-reverse gap-2 border-t border-[#1F2A24]/10 pt-5 sm:flex-row sm:justify-end">
                             <Link

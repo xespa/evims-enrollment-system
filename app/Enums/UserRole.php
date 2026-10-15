@@ -86,6 +86,15 @@ enum UserRole: string
     }
 
     /**
+     * See who receives the year's academic awards, worked out from the
+     * grade sheets, and print the list.
+     */
+    public function canViewAwards(): bool
+    {
+        return in_array($this, [self::Admin, self::Registrar, self::Teacher], true);
+    }
+
+    /**
      * Keep a list of the subjects they teach, which their grade sheets are
      * made from.
      */

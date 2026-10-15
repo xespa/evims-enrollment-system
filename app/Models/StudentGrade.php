@@ -58,13 +58,31 @@ class StudentGrade extends Model
      */
     public function finalGrade(): ?float
     {
+        $average = $this->termAverage();
+
+        return $average === null ? null : round($average, 2);
+    }
+
+    /**
+     * The final grade as DepEd records it for awards: the average of the
+     * terms rounded to the nearest whole number (DO 015, s. 2026).
+     */
+    public function wholeFinalGrade(): ?int
+    {
+        $average = $this->termAverage();
+
+        return $average === null ? null : (int) round($average);
+    }
+
+    private function termAverage(): ?float
+    {
         $grades = [$this->term_1, $this->term_2, $this->term_3];
 
         if (in_array(null, $grades, true)) {
             return null;
         }
 
-        return round(array_sum(array_map('floatval', $grades)) / count($grades), 2);
+        return array_sum(array_map('floatval', $grades)) / count($grades);
     }
 
     /**

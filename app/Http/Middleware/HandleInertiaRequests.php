@@ -105,7 +105,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{viewDashboard: bool, reviewApplications: bool, handlePayments: bool, manageSchool: bool, manageStaff: bool, manageGradeSheets: bool, teachSubjects: bool, uploadDocumentTypes: list<string>}|null
+     * @return array{viewDashboard: bool, reviewApplications: bool, handlePayments: bool, manageSchool: bool, manageStaff: bool, manageGradeSheets: bool, teachSubjects: bool, viewAwards: bool, uploadDocumentTypes: list<string>}|null
      */
     private function staffAbilities(?User $user): ?array
     {
@@ -121,6 +121,7 @@ class HandleInertiaRequests extends Middleware
             'manageStaff' => $user->can('manage-staff'),
             'manageGradeSheets' => $user->can('manage-grade-sheets'),
             'teachSubjects' => $user->can('teach-subjects'),
+            'viewAwards' => $user->can('view-awards'),
             'uploadDocumentTypes' => array_values(array_filter(
                 array_keys(OfficeVerification::DOCUMENT_COLUMNS),
                 fn (string $type): bool => $user->can('upload-document', $type),

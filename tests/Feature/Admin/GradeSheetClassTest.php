@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Enrollment;
+use App\Models\GradeSheet;
 use App\Models\StudentGrade;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -183,4 +184,49 @@ test('saving only the changed rows from the grade sheet table leaves the rest al
 
     expect($changed->fresh()->term_2)->toBe('95.00')
         ->and([$untouched->fresh()->term_1, $untouched->fresh()->term_2, $untouched->fresh()->term_3])->toBe(['80.00', '81.00', '82.00']);
+});
+
+test('a new grade sheet starts with every student taking the subject', function () {
+    $teacher = User::factory()->teacher()->create();
+    $gradeSheetForEnrollments = studentGradeSheet();
+    $subject = $gradeSheetForEnrollments->subject;
+    $enrolled = collect(range(1, 3))->map(fn () => gradableEnrollment($gradeSheetForEnrollments));
+    gradableEnrollment($gradeSheetForEnrollments, ['enrollment_status' => 'PENDING']);
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), ['subject_id' => $subject->id])
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', fn (string $message) => str_contains($message, 'created with 3 students'));
+
+    $gradeSheet = GradeSheet::where('teacher_id', $teacher->id)->sole();
+
+    expect($gradeSheet->studentGrades()->pluck('enrollment_id')->sort()->values()->all())
+        ->toBe($enrolled->pluck('id')->sort()->values()->all())
+        ->and($gradeSheet->studentGrades()->whereNotNull('term_1')->exists())->toBeFalse();
+});
+
+test('the teacher can choose to add the students later', function () {
+    $teacher = User::factory()->teacher()->create();
+    $existing = studentGradeSheet();
+    gradableEnrollment($existing);
+
+    $this->actingAs($teacher)
+        ->post(route('admin.grade-sheets.store'), ['subject_id' => $existing->subject_id, 'add_students' => false])
+        ->assertSessionHasNoErrors();
+
+    expect(GradeSheet::where('teacher_id', $teacher->id)->sole()->studentGrades()->count())->toBe(0);
+});
+
+test('the create page shows how many students each subject would start with', function () {
+    $gradeSheet = studentGradeSheet();
+    gradableEnrollment($gradeSheet);
+    gradableEnrollment($gradeSheet);
+    gradableEnrollment($gradeSheet, ['enrollment_status' => 'PENDING']);
+    gradableEnrollment($gradeSheet)->forceFill(['archived_at' => now()])->save();
+
+    $this->actingAs(User::factory()->teacher()->create())
+        ->get(route('admin.grade-sheets.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('subjects.0.id', $gradeSheet->subject_id)
+            ->where('subjects.0.enrolled_students_count', 2));
 });

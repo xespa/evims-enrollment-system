@@ -59,6 +59,9 @@ class StoreGradeSheetRequest extends FormRequest
                     ->whereNull('deactivated_at'),
             ],
             ...$this->scheduleRules(),
+            // Starts the sheet with every enrolled student on it; on unless
+            // the teacher unticks it.
+            'add_students' => ['sometimes', 'boolean'],
         ];
     }
 

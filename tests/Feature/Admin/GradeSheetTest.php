@@ -90,7 +90,7 @@ test('admins choose from the active teachers', function () {
         );
 });
 
-test('a teacher creates a grade sheet for themselves and goes on to add students', function () {
+test('a teacher creates a grade sheet for themselves and goes on to its grades', function () {
     $teacher = User::factory()->teacher()->create();
     $otherTeacher = User::factory()->teacher()->create();
     $subject = gradeSheetSubject();
@@ -105,7 +105,7 @@ test('a teacher creates a grade sheet for themselves and goes on to add students
     $gradeSheet = GradeSheet::sole();
 
     $response->assertSessionHasNoErrors()
-        ->assertRedirect(route('admin.grade-sheets.student-grades.create', $gradeSheet));
+        ->assertRedirect(route('admin.grade-sheets.show', $gradeSheet));
 
     expect($gradeSheet->teacher_id)->toBe($teacher->id)
         ->and($gradeSheet->subject_id)->toBe($subject->id)

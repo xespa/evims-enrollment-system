@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\AcknowledgementReceiptController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\AwardController;
+use App\Http\Controllers\Admin\AwardListPrintController;
 use App\Http\Controllers\Admin\CounterPaymentHistoryController;
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -186,6 +188,12 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
             ->parameters(['transactions' => 'payment']);
         // Every payment, one row each, opened from Transactions.
         Route::get('transaction-history', TransactionHistoryController::class)->name('transaction-history.index');
+    });
+
+    // The year's academic awards, worked out from the grade sheets.
+    Route::middleware('can:view-awards')->group(function () {
+        Route::get('awards', [AwardController::class, 'index'])->name('awards.index');
+        Route::get('awards/print', AwardListPrintController::class)->name('awards.print.show');
     });
 
     // Teachers keep their own grade sheets; admins can open everyone's.

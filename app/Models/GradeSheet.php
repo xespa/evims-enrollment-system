@@ -170,6 +170,21 @@ class GradeSheet extends Model
     }
 
     /**
+     * Puts every student who can be graded on the sheet but isn't on it yet
+     * onto it, with no grades. Returns how many were added.
+     */
+    public function addEveryUngradedStudent(): int
+    {
+        $enrollmentIds = array_column($this->ungradedStudents(), 'enrollment_id');
+
+        $this->studentGrades()->createMany(
+            array_map(fn (int $enrollmentId): array => ['enrollment_id' => $enrollmentId], $enrollmentIds),
+        );
+
+        return count($enrollmentIds);
+    }
+
+    /**
      * Every student's row, by name, as the pages and print-out show them.
      *
      * @return list<array{id: int, enrollment_id: int, student_name: string, lrn: string|null, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>
