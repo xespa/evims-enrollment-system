@@ -29,7 +29,7 @@ test('a teacher adds the whole class at once and goes on to enter their grades',
             'enrollment_ids' => $enrollments->pluck('id')->all(),
         ])
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('admin.grade-sheets.grades.edit', $gradeSheet));
+        ->assertRedirect(route('admin.grade-sheets.show', $gradeSheet));
 
     expect($gradeSheet->studentGrades()->pluck('enrollment_id')->sort()->values()->all())
         ->toBe($enrollments->pluck('id')->sort()->values()->all())
@@ -169,3 +169,18 @@ test('registrars and cashiers cannot use class grade entry', function (string $r
         ->get(route('admin.grade-sheets.grades.edit', $gradeSheet))
         ->assertForbidden();
 })->with(['REGISTRAR', 'CASHIER']);
+
+test('saving only the changed rows from the grade sheet table leaves the rest alone', function () {
+    $gradeSheet = studentGradeSheet();
+    [$changed, $untouched] = StudentGrade::factory()->for($gradeSheet)->count(2)->create(['term_1' => 80, 'term_2' => 81, 'term_3' => 82]);
+
+    $this->actingAs($gradeSheet->teacher)
+        ->put(route('admin.grade-sheets.grades.update', $gradeSheet), [
+            'grades' => [['id' => $changed->id, 'term_1' => '80', 'term_2' => '95', 'term_3' => '82']],
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('admin.grade-sheets.show', $gradeSheet));
+
+    expect($changed->fresh()->term_2)->toBe('95.00')
+        ->and([$untouched->fresh()->term_1, $untouched->fresh()->term_2, $untouched->fresh()->term_3])->toBe(['80.00', '81.00', '82.00']);
+});

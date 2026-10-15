@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Adding several students to a grade sheet at once, up to the whole class.
- * They start with no grades; the teacher enters them on the next page.
+ * They start with no grades; the teacher enters them in the sheet's table.
  */
 class GradeSheetStudentController extends Controller
 {
@@ -26,7 +26,7 @@ class GradeSheetStudentController extends Controller
         $count = count($enrollmentIds);
 
         return redirect()
-            ->route('admin.grade-sheets.grades.edit', $gradeSheet)
-            ->with('success', ($count === 1 ? '1 student' : "{$count} students").' added. Enter their grades below.');
+            ->route('admin.grade-sheets.show', $gradeSheet)
+            ->with('success', ($count === 1 ? '1 student' : "{$count} students").' added. Click a term in the table to enter their grades.');
     }
 }

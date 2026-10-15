@@ -1,7 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
-    ClipboardPen,
     Pencil,
     Plus,
     Printer,
@@ -15,8 +14,8 @@ import gradeSheetRoutes from '@/routes/admin/grade-sheets';
 import studentGradeRoutes from '@/routes/admin/student-grades';
 import type { StudentOption } from '../StudentGrades/Components/StudentCombobox';
 import AddStudentsDialog from './Components/AddStudentsDialog';
+import GradesTable from './Components/GradesTable';
 import EditScheduleDialog from './Components/EditScheduleDialog';
-import { TERMS, formatGrade } from './Components/types';
 import type { GradeSheetSummary, StudentGradeRow } from './Components/types';
 
 type Props = {
@@ -25,24 +24,6 @@ type Props = {
     /** Enrolled students not on the sheet yet; adding is off when empty. */
     ungradedStudents: StudentOption[];
 };
-
-function RemarksBadge({ remarks }: { remarks: StudentGradeRow['remarks'] }) {
-    if (remarks === null) {
-        return <span className="text-[#1F2A24]/40">—</span>;
-    }
-
-    return (
-        <span
-            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                remarks === 'Passed'
-                    ? 'bg-[#2F6F4E]/10 text-[#2F6F4E]'
-                    : 'bg-[#C6473B]/10 text-[#A3372D]'
-            }`}
-        >
-            {remarks}
-        </span>
-    );
-}
 
 export default function Show({
     gradeSheet,
@@ -150,20 +131,6 @@ export default function Show({
                                 />
                                 Print
                             </a>
-                            {studentGrades.length > 0 && (
-                                <Link
-                                    href={gradeSheetRoutes.grades.edit.url(
-                                        gradeSheet.id,
-                                    )}
-                                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
-                                >
-                                    <ClipboardPen
-                                        className="h-4 w-4"
-                                        aria-hidden="true"
-                                    />
-                                    Enter grades
-                                </Link>
-                            )}
                             {canAddStudent && (
                                 <button
                                     type="button"
@@ -274,123 +241,13 @@ export default function Show({
                             </p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
-                            <table className="w-full min-w-[820px] text-left text-sm">
-                                <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
-                                    <tr>
-                                        <th className="w-10 px-4 py-3 font-semibold">
-                                            #
-                                        </th>
-                                        <th className="px-4 py-3 font-semibold">
-                                            Student
-                                        </th>
-                                        {TERMS.map((term) => (
-                                            <th
-                                                key={term.key}
-                                                className="px-4 py-3 text-right font-semibold"
-                                            >
-                                                {term.label}
-                                            </th>
-                                        ))}
-                                        <th className="px-4 py-3 text-right font-semibold">
-                                            Final
-                                        </th>
-                                        <th className="px-4 py-3 font-semibold">
-                                            Remarks
-                                        </th>
-                                        <th className="px-4 py-3">
-                                            <span className="sr-only">
-                                                Actions
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#1F2A24]/10">
-                                    {studentGrades.map(
-                                        (studentGrade, index) => (
-                                            <tr key={studentGrade.id}>
-                                                <td className="px-4 py-3 text-[#1F2A24]/50 tabular-nums">
-                                                    {index + 1}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="block font-medium text-[#1F2A24]">
-                                                        {
-                                                            studentGrade.student_name
-                                                        }
-                                                    </span>
-                                                    <span className="text-xs text-[#1F2A24]/60">
-                                                        {studentGrade.lrn
-                                                            ? `LRN ${studentGrade.lrn}`
-                                                            : 'No LRN yet'}
-                                                    </span>
-                                                </td>
-                                                {TERMS.map((term) => (
-                                                    <td
-                                                        key={term.key}
-                                                        className="px-4 py-3 text-right text-[#1F2A24]/80 tabular-nums"
-                                                    >
-                                                        {formatGrade(
-                                                            studentGrade[
-                                                                term.key
-                                                            ],
-                                                        )}
-                                                    </td>
-                                                ))}
-                                                <td className="px-4 py-3 text-right font-semibold text-[#1F2A24] tabular-nums">
-                                                    {formatGrade(
-                                                        studentGrade.final_grade,
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <RemarksBadge
-                                                        remarks={
-                                                            studentGrade.remarks
-                                                        }
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Link
-                                                            href={studentGradeRoutes.edit.url(
-                                                                studentGrade.id,
-                                                            )}
-                                                            className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
-                                                        >
-                                                            <Pencil
-                                                                className="h-4 w-4"
-                                                                aria-hidden="true"
-                                                            />
-                                                            Edit
-                                                            <span className="sr-only">
-                                                                {' '}
-                                                                {
-                                                                    studentGrade.student_name
-                                                                }
-                                                            </span>
-                                                        </Link>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeStudent(
-                                                                    studentGrade,
-                                                                )
-                                                            }
-                                                            aria-label={`Remove ${studentGrade.student_name}`}
-                                                            className="inline-flex size-10 items-center justify-center rounded-full text-[#1F2A24]/50 hover:bg-[#C6473B]/10 hover:text-[#A3372D]"
-                                                        >
-                                                            <Trash2
-                                                                className="h-4 w-4"
-                                                                aria-hidden="true"
-                                                            />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ),
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <GradesTable
+                            // Starts over from the saved grades after each save.
+                            key={JSON.stringify(studentGrades)}
+                            gradeSheetId={gradeSheet.id}
+                            studentGrades={studentGrades}
+                            onRemove={removeStudent}
+                        />
                     )}
 
                     <div className="mt-8 border-t border-[#1F2A24]/10 pt-4">
