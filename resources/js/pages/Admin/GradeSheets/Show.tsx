@@ -1,10 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    Archive,
+    ArchiveRestore,
     ArrowLeft,
     Pencil,
     Plus,
     Printer,
-    Trash2,
     UserPlus,
     Users,
 } from 'lucide-react';
@@ -70,19 +71,25 @@ export default function Show({
         }
     };
 
-    const deleteGradeSheet = async () => {
+    const isArchived = gradeSheet.archived_at !== null;
+
+    const archiveGradeSheet = async () => {
         const confirmed = await confirm({
-            title: `Delete grade sheet ${gradeSheet.number}?`,
+            title: `Archive grade sheet ${gradeSheet.number}?`,
             description:
-                'Every student grade on it will be deleted. This cannot be undone.',
-            confirmLabel: 'Delete Grade Sheet',
-            destructive: true,
+                'It leaves the list and can’t be edited, and its grades stop showing to students. Nothing is deleted: restore it from the archive any time.',
+            confirmLabel: 'Archive Grade Sheet',
         });
 
         if (confirmed) {
-            router.delete(gradeSheetRoutes.destroy.url(gradeSheet.id));
+            router.post(gradeSheetRoutes.archive.store.url(gradeSheet.id));
         }
     };
+
+    const restoreGradeSheet = () =>
+        router.delete(gradeSheetRoutes.archive.destroy.url(gradeSheet.id), {
+            preserveScroll: true,
+        });
 
     const details = [
         { label: 'Grade Sheet No.', value: gradeSheet.number, mono: true },
@@ -164,7 +171,7 @@ export default function Show({
                                     </span>
                                 </button>
                             )}
-                            {canAddStudent ? (
+                            {isArchived ? null : canAddStudent ? (
                                 <Link
                                     href={gradeSheetRoutes.studentGrades.create.url(
                                         gradeSheet.id,
@@ -202,6 +209,44 @@ export default function Show({
                         </div>
                     )}
 
+                    {isArchived && gradeSheet.archived_at && (
+                        <div
+                            role="status"
+                            className="mb-4 flex flex-col gap-3 rounded-xl border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-4 py-3 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <p className="flex items-start gap-2">
+                                <Archive
+                                    className="mt-0.5 h-4 w-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <span>
+                                    <span className="font-semibold">
+                                        Archived on{' '}
+                                        {new Date(
+                                            gradeSheet.archived_at,
+                                        ).toLocaleDateString(undefined, {
+                                            dateStyle: 'medium',
+                                        })}
+                                        .
+                                    </span>{' '}
+                                    It can’t be edited and its grades don’t show
+                                    to students until it’s restored.
+                                </span>
+                            </p>
+                            <button
+                                type="button"
+                                onClick={restoreGradeSheet}
+                                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                            >
+                                <ArchiveRestore
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Restore
+                            </button>
+                        </div>
+                    )}
+
                     <dl className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#1F2A24]/10 bg-[#1F2A24]/10 sm:grid-cols-2 lg:grid-cols-3">
                         {details.map((detail) => (
                             <div key={detail.label} className="bg-white p-4">
@@ -228,17 +273,21 @@ export default function Show({
                                     )}
                                 </dd>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsEditingSchedule(true)}
-                                className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[#2F6F4E] hover:bg-[#2F6F4E]/10"
-                            >
-                                <Pencil
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                                <span className="sr-only">Edit schedule</span>
-                            </button>
+                            {!isArchived && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditingSchedule(true)}
+                                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[#2F6F4E] hover:bg-[#2F6F4E]/10"
+                                >
+                                    <Pencil
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="sr-only">
+                                        Edit schedule
+                                    </span>
+                                </button>
+                            )}
                         </div>
                     </dl>
 
@@ -252,9 +301,11 @@ export default function Show({
                                 No students on this grade sheet yet
                             </p>
                             <p className="mt-1 max-w-md text-sm text-[#1F2A24]/65">
-                                {canAddStudent
-                                    ? `${ungradedStudents.length === 1 ? '1 student is' : `${ungradedStudents.length} students are`} taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}.`
-                                    : `No approved students are taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}. If the class is in another school year, delete this sheet and create one for that year.`}
+                                {isArchived
+                                    ? 'Restore it to add students.'
+                                    : canAddStudent
+                                      ? `${ungradedStudents.length === 1 ? '1 student is' : `${ungradedStudents.length} students are`} taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}.`
+                                      : `No approved students are taking ${gradeSheet.grade_level} ${gradeSheet.subject} in SY ${gradeSheet.school_year}. If the class is in another school year, archive this sheet and create one for that year.`}
                             </p>
                             {canAddStudent && (
                                 <button
@@ -281,19 +332,25 @@ export default function Show({
                             gradeSheetId={gradeSheet.id}
                             studentGrades={studentGrades}
                             onRemove={removeStudent}
+                            readOnly={isArchived}
                         />
                     )}
 
-                    <div className="mt-8 border-t border-[#1F2A24]/10 pt-4">
-                        <button
-                            type="button"
-                            onClick={deleteGradeSheet}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold text-[#A3372D] hover:bg-[#C6473B]/10"
-                        >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            Delete grade sheet
-                        </button>
-                    </div>
+                    {!isArchived && (
+                        <div className="mt-8 border-t border-[#1F2A24]/10 pt-4">
+                            <button
+                                type="button"
+                                onClick={archiveGradeSheet}
+                                className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold text-[#1F2A24]/70 hover:bg-[#1F2A24]/5"
+                            >
+                                <Archive
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Archive grade sheet
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

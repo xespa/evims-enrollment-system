@@ -88,12 +88,30 @@ class StoreGradeSheetRequest extends FormRequest
     }
 
     /**
+     * Names the sheet the teacher already has, so it can be found on the
+     * Grade Sheets list.
+     */
+    private function duplicateSheetMessage(): string
+    {
+        $existingSheet = GradeSheet::query()
+            ->where('subject_id', $this->integer('subject_id'))
+            ->where('teacher_id', $this->integer('teacher_id'))
+            ->first(['id', 'archived_at']);
+
+        return match (true) {
+            $existingSheet === null => 'This teacher already has a grade sheet for this subject.',
+            $existingSheet->isArchived() => "This teacher already has a grade sheet for this subject ({$existingSheet->number}, archived). Restore it from the archive instead.",
+            default => "This teacher already has a grade sheet for this subject ({$existingSheet->number}).",
+        };
+    }
+
+    /**
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'subject_id.unique' => 'This teacher already has a grade sheet for this subject.',
+            'subject_id.unique' => $this->duplicateSheetMessage(),
             'teacher_id.exists' => 'Choose an active teacher.',
             'enrollment_ids.*.in' => 'One of the chosen students isn’t taking this subject.',
             ...$this->scheduleMessages(),

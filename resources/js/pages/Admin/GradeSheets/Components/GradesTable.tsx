@@ -69,16 +69,19 @@ function RemarksBadge({ final }: { final: number | null }) {
  * The grade sheet's students with every term grade editable in place: click
  * a box, type, and save all the changes at once from the bar that appears.
  * Enter moves down a column, like a spreadsheet. Remount it (by key) when
- * the saved grades change, so it starts from them.
+ * the saved grades change, so it starts from them. `readOnly` shows the
+ * grades without letting them change, as on an archived sheet.
  */
 export default function GradesTable({
     gradeSheetId,
     studentGrades,
     onRemove,
+    readOnly = false,
 }: {
     gradeSheetId: number;
     studentGrades: StudentGradeRow[];
     onRemove: (studentGrade: StudentGradeRow) => void;
+    readOnly?: boolean;
 }) {
     const savedRows = toFormRows(studentGrades);
     const {
@@ -174,10 +177,12 @@ export default function GradesTable({
 
     return (
         <form onSubmit={save}>
-            <p className="mb-2 text-xs text-[#1F2A24]/60">
-                Click a term to change it. Enter moves down, Esc undoes the box.
-                Grades are 0–100, up to two decimals.
-            </p>
+            {!readOnly && (
+                <p className="mb-2 text-xs text-[#1F2A24]/60">
+                    Click a term to change it. Enter moves down, Esc undoes the
+                    box. Grades are 0–100, up to two decimals.
+                </p>
+            )}
 
             <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
                 <table className="w-full min-w-[760px] text-left text-sm">
@@ -247,6 +252,12 @@ export default function GradesTable({
                                                     max={100}
                                                     step="0.01"
                                                     placeholder="—"
+                                                    readOnly={readOnly}
+                                                    tabIndex={
+                                                        readOnly
+                                                            ? -1
+                                                            : undefined
+                                                    }
                                                     value={row[term.key]}
                                                     onChange={(e) =>
                                                         setGrade(
@@ -282,19 +293,21 @@ export default function GradesTable({
                                         <RemarksBadge final={final} />
                                     </td>
                                     <td className="px-2 py-2 text-right">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onRemove(studentGrade)
-                                            }
-                                            aria-label={`Remove ${studentGrade.student_name}`}
-                                            className="inline-flex size-10 items-center justify-center rounded-full text-[#1F2A24]/40 hover:bg-[#C6473B]/10 hover:text-[#A3372D]"
-                                        >
-                                            <Trash2
-                                                className="h-4 w-4"
-                                                aria-hidden="true"
-                                            />
-                                        </button>
+                                        {!readOnly && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    onRemove(studentGrade)
+                                                }
+                                                aria-label={`Remove ${studentGrade.student_name}`}
+                                                className="inline-flex size-10 items-center justify-center rounded-full text-[#1F2A24]/40 hover:bg-[#C6473B]/10 hover:text-[#A3372D]"
+                                            >
+                                                <Trash2
+                                                    className="h-4 w-4"
+                                                    aria-hidden="true"
+                                                />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             );

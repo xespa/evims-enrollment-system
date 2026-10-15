@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property list<string>|null $schedule_days
  * @property string|null $start_time
  * @property string|null $end_time
+ * @property Carbon|null $archived_at
+ * @property int|null $archived_by
  * @property-read string $number
  */
 class GradeSheet extends Model
@@ -44,6 +46,7 @@ class GradeSheet extends Model
 
     protected $casts = [
         'schedule_days' => 'array',
+        'archived_at' => 'datetime',
     ];
 
     /**
@@ -106,6 +109,43 @@ class GradeSheet extends Model
         $label = collect([$days, $time])->filter()->implode(' · ');
 
         return $label === '' ? null : $label;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    /**
+     * Takes the sheet out of use without deleting it: it leaves the list,
+     * can't be edited, and its grades stop counting until it's restored.
+     */
+    public function archive(User $user): void
+    {
+        $this->forceFill([
+            'archived_at' => now(),
+            'archived_by' => $user->id,
+        ])->save();
+    }
+
+    public function restoreFromArchive(): void
+    {
+        $this->forceFill([
+            'archived_at' => null,
+            'archived_by' => null,
+        ])->save();
+    }
+
+    /**
+     * Only archived sheets, or with `false`, only those still in use.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeArchived(Builder $query, bool $archived = true): void
+    {
+        $archived
+            ? $query->whereNotNull('grade_sheets.archived_at')
+            : $query->whereNull('grade_sheets.archived_at');
     }
 
     /**
@@ -192,7 +232,7 @@ class GradeSheet extends Model
      * What the grade sheet pages show about the sheet itself. Load
      * summaryRelations() first so this doesn't query per sheet.
      *
-     * @return array{id: int, number: string, subject: string, subject_code: string|null, grade_level: string, school_year: string, teacher: string, prepared_by: string|null, schedule: string|null, schedule_days: list<string>, start_time: string|null, end_time: string|null}
+     * @return array{id: int, number: string, subject: string, subject_code: string|null, grade_level: string, school_year: string, teacher: string, prepared_by: string|null, schedule: string|null, schedule_days: list<string>, start_time: string|null, end_time: string|null, archived_at: string|null}
      */
     public function summary(): array
     {
@@ -210,6 +250,7 @@ class GradeSheet extends Model
             'schedule_days' => $this->schedule_days ?? [],
             'start_time' => $this->start_time !== null ? substr($this->start_time, 0, 5) : null,
             'end_time' => $this->end_time !== null ? substr($this->end_time, 0, 5) : null,
+            'archived_at' => $this->archived_at?->toIso8601String(),
         ];
     }
 

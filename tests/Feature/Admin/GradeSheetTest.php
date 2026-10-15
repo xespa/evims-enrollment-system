@@ -76,6 +76,28 @@ test('the create page offers published subjects and fixes a teacher\'s own name'
         );
 });
 
+test('the create page shows which subjects already have a grade sheet', function () {
+    $gradeSheet = GradeSheet::factory()->create(['subject_id' => gradeSheetSubject()->id]);
+    // Another teacher's sheet for the same subject stays out of sight.
+    GradeSheet::factory()->create(['subject_id' => $gradeSheet->subject_id]);
+
+    $this->actingAs($gradeSheet->teacher)
+        ->get(route('admin.grade-sheets.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('subjects.0.grade_sheets', 1)
+            ->where('subjects.0.grade_sheets.0', [
+                'id' => $gradeSheet->id,
+                'number' => $gradeSheet->number,
+                'teacher_id' => $gradeSheet->teacher_id,
+                'archived' => false,
+            ])
+        );
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.grade-sheets.create'))
+        ->assertInertia(fn (Assert $page) => $page->has('subjects.0.grade_sheets', 2));
+});
+
 test('admins choose from the active teachers', function () {
     $teacher = User::factory()->teacher()->create();
     User::factory()->teacher()->deactivated()->create();
@@ -145,7 +167,7 @@ test('a teacher can only have one grade sheet per subject', function () {
 
     $this->actingAs($gradeSheet->teacher)
         ->post(route('admin.grade-sheets.store'), ['subject_id' => $gradeSheet->subject_id])
-        ->assertSessionHasErrors(['subject_id' => 'This teacher already has a grade sheet for this subject.']);
+        ->assertSessionHasErrors(['subject_id' => "This teacher already has a grade sheet for this subject ({$gradeSheet->number})."]);
 });
 
 test('registrars and cashiers cannot create grade sheets', function (string $role) {
@@ -174,15 +196,15 @@ test('the grade sheet shows its details and each student\'s grades', function ()
         ->toEqualCanonicalizing([[85.0, 'Passed'], [72.0, 'Failed'], [null, null]]);
 });
 
-test('teachers cannot open, print or delete another teacher\'s grade sheet', function () {
+test('teachers cannot open, print or archive another teacher\'s grade sheet', function () {
     $gradeSheet = GradeSheet::factory()->create();
     $this->actingAs(User::factory()->teacher()->create());
 
     $this->get(route('admin.grade-sheets.show', $gradeSheet))->assertForbidden();
     $this->get(route('admin.grade-sheets.print.show', $gradeSheet))->assertForbidden();
-    $this->delete(route('admin.grade-sheets.destroy', $gradeSheet))->assertForbidden();
+    $this->post(route('admin.grade-sheets.archive.store', $gradeSheet))->assertForbidden();
 
-    expect($gradeSheet->fresh())->not->toBeNull();
+    expect($gradeSheet->fresh()->isArchived())->toBeFalse();
 });
 
 test('the grade sheet prints as a pdf', function () {
@@ -202,18 +224,6 @@ test('admins can open and print any grade sheet', function () {
 
     $this->get(route('admin.grade-sheets.show', $gradeSheet))->assertOk();
     $this->get(route('admin.grade-sheets.print.show', $gradeSheet))->assertOk();
-});
-
-test('deleting a grade sheet deletes its student grades', function () {
-    $gradeSheet = GradeSheet::factory()->create();
-    StudentGrade::factory()->for($gradeSheet)->create();
-
-    $this->actingAs($gradeSheet->teacher)
-        ->delete(route('admin.grade-sheets.destroy', $gradeSheet))
-        ->assertRedirect(route('admin.grade-sheets.index'));
-
-    expect(GradeSheet::count())->toBe(0)
-        ->and(StudentGrade::count())->toBe(0);
 });
 
 test('a grade sheet can be created with its class schedule', function () {

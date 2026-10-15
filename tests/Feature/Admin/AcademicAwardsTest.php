@@ -137,6 +137,20 @@ test('students with a learning area not fully graded are incomplete', function (
         ->reasons->toBe(['No final grade yet in Mathematics, Science.']);
 });
 
+test('grades on an archived grade sheet don\'t count until it is restored', function () {
+    $class = awardClass();
+    $student = awardStudent($class, ['English' => 95, 'Mathematics' => 95, 'Science' => 95]);
+    $class['Science']->archive($class['Science']->teacher);
+
+    expect(standingOf($student))
+        ->standing->toBe('INCOMPLETE')
+        ->final_grades->toBe(['English' => 95, 'Mathematics' => 95, 'Science' => null]);
+
+    $class['Science']->restoreFromArchive();
+
+    expect(standingOf($student))->standing->toBe('ACADEMIC_EXCELLENCE');
+});
+
 test('the top final grade of 90 or higher in a learning area is recognized, ties included', function () {
     $class = awardClass();
     $topInMath = awardStudent($class, ['English' => 80, 'Mathematics' => 96, 'Science' => 85], 'Bautista');

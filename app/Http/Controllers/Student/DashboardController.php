@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Enrollment;
 use App\Models\StudentAccount;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,6 @@ class DashboardController extends Controller
         $student = $account->student;
         $enrollment = $student->latestApprovedEnrollment()?->load('gradeLevel:id,name');
         $grades = $enrollment?->gradeReport() ?? [];
-        $finalGrades = array_column($grades, 'final_grade');
 
         return Inertia::render('Student/Dashboard', [
             'student' => [
@@ -38,9 +38,7 @@ class DashboardController extends Controller
             'mustChangePassword' => $account->must_change_password,
             'grades' => $grades,
             // The average of every subject's final grade, once they're all in.
-            'generalAverage' => $finalGrades !== [] && ! in_array(null, $finalGrades, true)
-                ? round(array_sum($finalGrades) / count($finalGrades), 2)
-                : null,
+            'generalAverage' => Enrollment::generalAverage($grades),
         ]);
     }
 }

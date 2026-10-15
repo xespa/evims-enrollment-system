@@ -26,4 +26,15 @@ class GradeSheetFactory extends Factory
             'teacher_id' => User::factory()->teacher(),
         ];
     }
+
+    /**
+     * Taken out of use by its teacher; restorable from the archive.
+     */
+    public function archived(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'archived_at' => now(),
+            'archived_by' => $attributes['teacher_id'],
+        ]);
+    }
 }

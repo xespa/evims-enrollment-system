@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ParentConfirmationController;
 use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\GradeReportController;
+use App\Http\Controllers\Student\GradeReportDownloadController;
 use App\Http\Controllers\Student\PasswordController;
 use App\Http\Controllers\Student\SessionController;
 use App\Http\Controllers\StudentAccountConsentController;
@@ -28,6 +30,8 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::middleware('auth:student')->group(function () {
         Route::post('logout', [SessionController::class, 'destroy'])->name('logout');
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::get('grade-report', GradeReportController::class)->name('grade-report.show');
+        Route::get('grade-report/download', GradeReportDownloadController::class)->name('grade-report.download');
         Route::put('password', [PasswordController::class, 'update'])->name('password.update');
     });
 });

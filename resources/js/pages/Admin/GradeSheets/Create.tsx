@@ -23,6 +23,13 @@ type SubjectOption = {
     school_year: string;
     /** The teachers who said they teach it. */
     teacher_ids: number[];
+    /** Sheets already made for it, at most one per teacher. */
+    grade_sheets: {
+        id: number;
+        number: string;
+        teacher_id: number;
+        archived: boolean;
+    }[];
     /** Approved students taking it, who a new sheet starts with. */
     enrolled_students_count: number;
 };
@@ -74,8 +81,16 @@ function Field({
     );
 }
 
-/** e.g. "Mathematics (MATH4) · 10 students", so empty classes stand out. */
-function subjectOptionLabel(subject: SubjectOption): string {
+/** The teacher's sheet for the subject, if they've already made one. */
+function existingSheetFor(subject: SubjectOption, teacherId: number) {
+    return subject.grade_sheets.find((sheet) => sheet.teacher_id === teacherId);
+}
+
+/**
+ * e.g. "Mathematics (MATH4) · 10 students", so empty classes stand out, or
+ * "… · has GS-00012" when the teacher already has its sheet.
+ */
+function subjectOptionLabel(subject: SubjectOption, teacherId: number): string {
     const name = subject.code
         ? `${subject.name} (${subject.code})`
         : subject.name;
@@ -83,8 +98,11 @@ function subjectOptionLabel(subject: SubjectOption): string {
         subject.enrolled_students_count === 1
             ? '1 student'
             : `${subject.enrolled_students_count} students`;
+    const existingSheet = existingSheetFor(subject, teacherId);
 
-    return `${name} · ${students}`;
+    return existingSheet
+        ? `${name} · ${students} · has ${existingSheet.number}${existingSheet.archived ? ' (archived)' : ''}`
+        : `${name} · ${students}`;
 }
 
 /** Groups a school year's subjects under their grade level, in order. */
@@ -192,6 +210,9 @@ export default function Create({
         subject.teacher_ids.includes(teacherId),
     );
     const isNarrowed = teachersSubjects.length > 0 && !showAllSubjects;
+    const existingSheet = chosenSubject
+        ? existingSheetFor(chosenSubject, teacherId)
+        : undefined;
 
     const subjectGroups = byGradeLevel(
         (isNarrowed ? teachersSubjects : subjects).filter(
@@ -394,6 +415,7 @@ export default function Create({
                                                 >
                                                     {subjectOptionLabel(
                                                         subject,
+                                                        teacherId,
                                                     )}
                                                 </option>
                                             ))}
@@ -416,7 +438,7 @@ export default function Create({
                                         : 'Show all subjects'}
                                 </button>
                             )}
-                            {chosenSubject?.enrolled_students_count === 0 && (
+                            {existingSheet && (
                                 <div
                                     role="alert"
                                     className="mt-2 flex flex-col gap-2 rounded-lg border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2.5 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
@@ -427,33 +449,66 @@ export default function Create({
                                             aria-hidden="true"
                                         />
                                         <span>
-                                            No approved students are taking{' '}
-                                            {chosenSubject.grade_level}{' '}
-                                            {chosenSubject.name} in SY{' '}
-                                            {chosenSubject.school_year}, so the
-                                            sheet would start empty.
-                                            {sameSubjectWithStudents &&
-                                                ` SY ${sameSubjectWithStudents.school_year} has ${sameSubjectWithStudents.enrolled_students_count === 1 ? '1 student' : `${sameSubjectWithStudents.enrolled_students_count} students`}.`}
+                                            {currentTeacher
+                                                ? 'You already have'
+                                                : `${teacherName} already has`}{' '}
+                                            grade sheet {existingSheet.number}{' '}
+                                            for this subject
+                                            {existingSheet.archived
+                                                ? '. It’s archived: open it to restore it.'
+                                                : '.'}
                                         </span>
                                     </p>
-                                    {sameSubjectWithStudents && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                switchToSubject(
-                                                    sameSubjectWithStudents,
-                                                )
-                                            }
-                                            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
-                                        >
-                                            Use SY{' '}
-                                            {
-                                                sameSubjectWithStudents.school_year
-                                            }
-                                        </button>
-                                    )}
+                                    <Link
+                                        href={gradeSheetRoutes.show.url(
+                                            existingSheet.id,
+                                        )}
+                                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                    >
+                                        Open {existingSheet.number}
+                                    </Link>
                                 </div>
                             )}
+                            {!existingSheet &&
+                                chosenSubject?.enrolled_students_count ===
+                                    0 && (
+                                    <div
+                                        role="alert"
+                                        className="mt-2 flex flex-col gap-2 rounded-lg border border-[#E8A33D]/40 bg-[#E8A33D]/10 px-3 py-2.5 text-sm text-[#7a4d0b] sm:flex-row sm:items-center sm:justify-between"
+                                    >
+                                        <p className="flex items-start gap-2">
+                                            <TriangleAlert
+                                                className="mt-0.5 h-4 w-4 shrink-0"
+                                                aria-hidden="true"
+                                            />
+                                            <span>
+                                                No approved students are taking{' '}
+                                                {chosenSubject.grade_level}{' '}
+                                                {chosenSubject.name} in SY{' '}
+                                                {chosenSubject.school_year}, so
+                                                the sheet would start empty.
+                                                {sameSubjectWithStudents &&
+                                                    ` SY ${sameSubjectWithStudents.school_year} has ${sameSubjectWithStudents.enrolled_students_count === 1 ? '1 student' : `${sameSubjectWithStudents.enrolled_students_count} students`}.`}
+                                            </span>
+                                        </p>
+                                        {sameSubjectWithStudents && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    switchToSubject(
+                                                        sameSubjectWithStudents,
+                                                    )
+                                                }
+                                                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#2F6F4E] px-4 text-sm font-semibold text-white hover:bg-[#25573E]"
+                                            >
+                                                Use SY{' '}
+                                                {
+                                                    sameSubjectWithStudents.school_year
+                                                }
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                         </Field>
 
                         <Field
@@ -616,7 +671,7 @@ export default function Create({
                             </Link>
                             <button
                                 type="submit"
-                                disabled={processing}
+                                disabled={processing || !!existingSheet}
                                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#2F6F4E] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] disabled:opacity-60"
                             >
                                 {processing && (

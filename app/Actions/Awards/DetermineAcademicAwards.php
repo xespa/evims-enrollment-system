@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\StudentGrade;
 use App\Models\Subject;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -63,7 +64,13 @@ class DetermineAcademicAwards
             ->whereIn('enrollments.grade_level_id', $gradeLevels->modelKeys())
             ->withStatus('APPROVED')
             ->archived(false)
-            ->with(['student', 'subjects:id,name', 'studentGrades.gradeSheet:id,subject_id'])
+            ->with([
+                'student',
+                'subjects:id,name',
+                // Archived sheets' grades don't count until they're restored.
+                'studentGrades' => fn ($studentGrades) => $studentGrades->whereHas('gradeSheet', fn (Builder $gradeSheet) => $gradeSheet->whereNull('grade_sheets.archived_at')),
+                'studentGrades.gradeSheet:id,subject_id',
+            ])
             ->get()
             ->groupBy('grade_level_id');
 

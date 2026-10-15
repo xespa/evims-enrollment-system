@@ -30,18 +30,22 @@ class GradeSheetController extends Controller
 
         $validated = $request->validate([
             'school_year' => ['nullable', 'string', 'regex:/^\d{4}-\d{4}$/'],
+            'archived' => ['sometimes', 'boolean'],
         ]);
 
         /** @var User $user */
         $user = $request->user();
         // Starts on the current school year; an empty value means every year.
         $schoolYear = Enrollment::filteredSchoolYear($request->has('school_year'), $validated['school_year'] ?? null);
+        $showsArchive = $request->boolean('archived');
 
         $gradeSheets = GradeSheet::query()
             ->visibleTo($user)
+            ->archived($showsArchive)
             ->when($schoolYear, fn ($query, string $schoolYear) => $query->forSchoolYear($schoolYear))
             ->with(GradeSheet::summaryRelations())
             ->withCount('studentGrades')
+            ->when($showsArchive, fn ($query) => $query->latest('archived_at'))
             ->latest('id')
             ->paginate(15)
             ->withQueryString()
@@ -57,7 +61,8 @@ class GradeSheetController extends Controller
                 ->unique()
                 ->sortDesc()
                 ->values(),
-            'filters' => ['school_year' => $schoolYear ?? ''],
+            'filters' => ['school_year' => $schoolYear ?? '', 'archived' => $showsArchive],
+            'archivedCount' => GradeSheet::query()->visibleTo($user)->archived()->count(),
             // Only teachers keep a list of subjects; null hides the panel.
             'mySubjects' => $user->role->canTeachSubjects() ? $this->taughtSubjects($user, $schoolYear) : null,
         ]);
@@ -112,7 +117,11 @@ class GradeSheetController extends Controller
 
         $subjects = Subject::query()
             ->whereIn('curriculum_id', Curriculum::query()->published()->select('id'))
-            ->with(['curriculum.gradeLevel', 'teachers:id'])
+            ->with([
+                'curriculum.gradeLevel',
+                'teachers:id',
+                'gradeSheets' => fn ($query) => $query->visibleTo($user)->select(['id', 'subject_id', 'teacher_id', 'archived_at']),
+            ])
             // The students a new sheet for it would start with.
             ->withEnrolledStudentsCount()
             ->get()
@@ -129,6 +138,16 @@ class GradeSheetController extends Controller
                 // Who teaches it, so the list can narrow to the chosen
                 // teacher's own subjects.
                 'teacher_ids' => $subject->teachers->modelKeys(),
+                // Sheets already made for it, so the form can point to the
+                // chosen teacher's instead of letting them make another.
+                'grade_sheets' => $subject->gradeSheets
+                    ->map(fn (GradeSheet $gradeSheet) => [
+                        'id' => $gradeSheet->id,
+                        'number' => $gradeSheet->number,
+                        'teacher_id' => $gradeSheet->teacher_id,
+                        'archived' => $gradeSheet->isArchived(),
+                    ])
+                    ->values(),
                 'enrolled_students_count' => (int) $subject->getAttribute('enrolled_students_count'),
             ])
             ->values();
@@ -196,7 +215,8 @@ class GradeSheetController extends Controller
             'gradeSheet' => $gradeSheet->summary(),
             'studentGrades' => $gradeSheet->studentGradeRows(),
             // Offered in "Add students", to add several (or all) at once.
-            'ungradedStudents' => $gradeSheet->ungradedStudents(),
+            // None while archived, since the sheet can't be changed.
+            'ungradedStudents' => $gradeSheet->isArchived() ? [] : $gradeSheet->ungradedStudents(),
         ]);
     }
 
@@ -210,16 +230,5 @@ class GradeSheetController extends Controller
         return redirect()
             ->route('admin.grade-sheets.show', $gradeSheet)
             ->with('success', 'Schedule saved.');
-    }
-
-    public function destroy(GradeSheet $gradeSheet): RedirectResponse
-    {
-        Gate::authorize('delete', $gradeSheet);
-
-        $gradeSheet->delete();
-
-        return redirect()
-            ->route('admin.grade-sheets.index')
-            ->with('success', "Grade sheet {$gradeSheet->number} deleted.");
     }
 }

@@ -3,6 +3,8 @@ import {
     ArrowLeftRight,
     CalendarDays,
     CheckCircle2,
+    Download,
+    Eye,
     GraduationCap,
     IdCard,
     KeyRound,
@@ -23,6 +25,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { logout } from '@/routes/student';
+import gradeReport from '@/routes/student/grade-report';
 
 type Props = {
     student: {
@@ -40,6 +43,9 @@ type Props = {
     grades: SubjectGrade[];
     generalAverage: number | null;
 };
+
+const PDF_LINK_CLASS =
+    'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#2F6F4E]/30 bg-white px-4 py-2 text-sm font-semibold text-[#2F6F4E] shadow-sm transition-colors hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:ring-offset-2 focus-visible:outline-none';
 
 const MENU_ITEM_CLASS =
     'min-h-10 cursor-pointer rounded-lg focus:bg-[#2F6F4E]/10 focus:text-[#2F6F4E]';
@@ -209,12 +215,39 @@ export default function Dashboard({
 
             {!mustChangePassword && (
                 <section aria-labelledby="grades-heading" className="mt-8">
-                    <h2
-                        id="grades-heading"
-                        className="border-b border-[#1F2A24]/10 pb-3 text-sm font-medium text-[#2F6F4E]"
-                    >
-                        My grades
-                    </h2>
+                    <div className="flex items-center justify-between gap-3 border-b border-[#1F2A24]/10 pb-3">
+                        <h2
+                            id="grades-heading"
+                            className="text-sm font-medium text-[#2F6F4E]"
+                        >
+                            My grades
+                        </h2>
+                        {/* PDFs, so plain links rather than Inertia visits. */}
+                        <div className="flex flex-wrap justify-end gap-2">
+                            <a
+                                href={gradeReport.show.url()}
+                                target="_blank"
+                                rel="noopener"
+                                className={PDF_LINK_CLASS}
+                            >
+                                <Eye className="h-4 w-4" aria-hidden="true" />
+                                View PDF
+                                <span className="sr-only">
+                                    (opens in a new tab)
+                                </span>
+                            </a>
+                            <a
+                                href={gradeReport.download.url()}
+                                className={PDF_LINK_CLASS}
+                            >
+                                <Download
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Download PDF
+                            </a>
+                        </div>
+                    </div>
                     <div className="mt-6">
                         <GradeReport
                             grades={grades}

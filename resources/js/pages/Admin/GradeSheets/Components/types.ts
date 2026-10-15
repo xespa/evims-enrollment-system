@@ -15,6 +15,8 @@ export type GradeSheetSummary = {
     /** "08:00" */
     start_time: string | null;
     end_time: string | null;
+    /** ISO date it was archived; null while in use. */
+    archived_at: string | null;
 };
 
 /** Mirrors GradeSheet::SCHEDULE_DAYS. */

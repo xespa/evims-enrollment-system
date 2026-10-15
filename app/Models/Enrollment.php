@@ -125,12 +125,14 @@ class Enrollment extends Model
     /**
      * The student's grades for this school year, one row per subject, from
      * the teachers' grade sheets: what the student sees on their dashboard.
+     * Archived sheets don't count until they're restored.
      *
      * @return list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>
      */
     public function gradeReport(): array
     {
         return array_values($this->studentGrades()
+            ->whereHas('gradeSheet', fn (Builder $gradeSheet) => $gradeSheet->whereNull('grade_sheets.archived_at'))
             ->with(['gradeSheet.subject:id,name', 'gradeSheet.teacher:id,name'])
             ->get()
             ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->gradeSheet->subject->name)
@@ -145,6 +147,21 @@ class Enrollment extends Model
                 'remarks' => $studentGrade->remarks(),
             ])
             ->all());
+    }
+
+    /**
+     * The average of every subject's final grade in a grade report, or null
+     * until they're all in.
+     *
+     * @param  list<array{final_grade: float|null}>  $gradeReport
+     */
+    public static function generalAverage(array $gradeReport): ?float
+    {
+        $finalGrades = array_column($gradeReport, 'final_grade');
+
+        return $finalGrades !== [] && ! in_array(null, $finalGrades, true)
+            ? round(array_sum($finalGrades) / count($finalGrades), 2)
+            : null;
     }
 
     /**

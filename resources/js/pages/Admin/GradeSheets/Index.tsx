@@ -1,5 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronRight, ClipboardList, Plus } from 'lucide-react';
+import {
+    Archive,
+    ArrowLeft,
+    ChevronRight,
+    ClipboardList,
+    Plus,
+} from 'lucide-react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
 import MySubjects from './Components/MySubjects';
 import type { TaughtSubject } from './Components/MySubjects';
@@ -15,7 +21,10 @@ type Props = {
         total: number;
     };
     schoolYears: string[];
-    filters: { school_year: string };
+    /** `archived` shows the archived sheets instead of those in use. */
+    filters: { school_year: string; archived: boolean };
+    /** Archived sheets, in any school year, for the Archive button. */
+    archivedCount: number;
     /** A teacher's own subjects; null for admins, who teach none. */
     mySubjects: TaughtSubject[] | null;
 };
@@ -24,19 +33,27 @@ export default function Index({
     gradeSheets,
     schoolYears,
     filters,
+    archivedCount,
     mySubjects,
 }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
+    const showsArchive = filters.archived;
 
-    const changeSchoolYear = (schoolYear: string) => {
+    const visit = (query: { school_year: string; archived: boolean }) => {
         router.get(
             gradeSheetRoutes.index.url(),
             // Empty means "All school years"; leaving it out would start on
             // the current one again.
-            { school_year: schoolYear },
+            {
+                school_year: query.school_year,
+                ...(query.archived ? { archived: 1 } : {}),
+            },
             { preserveState: true, preserveScroll: true, replace: true },
         );
     };
+
+    const changeSchoolYear = (schoolYear: string) =>
+        visit({ school_year: schoolYear, archived: showsArchive });
 
     return (
         <>
@@ -47,20 +64,59 @@ export default function Index({
                     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
                         <div>
                             <h1 className="font-serif text-2xl font-semibold text-[#1F2A24]">
-                                Grade Sheets
+                                {showsArchive
+                                    ? 'Archived Grade Sheets'
+                                    : 'Grade Sheets'}
                             </h1>
                             <p className="text-sm text-[#1F2A24]/70">
-                                Record each student's Term 1, 2 and 3 grades,
-                                one sheet per subject.
+                                {showsArchive
+                                    ? 'Sheets taken out of use. Open one to restore it.'
+                                    : "Record each student's Term 1, 2 and 3 grades, one sheet per subject."}
                             </p>
                         </div>
-                        <Link
-                            href={gradeSheetRoutes.create.url()}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
-                        >
-                            <Plus className="h-4 w-4" aria-hidden="true" />
-                            New Grade Sheet
-                        </Link>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    visit({
+                                        school_year: filters.school_year,
+                                        archived: !showsArchive,
+                                    })
+                                }
+                                aria-pressed={showsArchive}
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5 focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                            >
+                                {showsArchive ? (
+                                    <>
+                                        <ArrowLeft
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                        Back to grade sheets
+                                    </>
+                                ) : (
+                                    <>
+                                        <Archive
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                        Archive
+                                        {archivedCount > 0 && (
+                                            <span className="rounded-full bg-[#2F6F4E]/10 px-1.5 text-xs tabular-nums">
+                                                {archivedCount}
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                            </button>
+                            <Link
+                                href={gradeSheetRoutes.create.url()}
+                                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2F6F4E] px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#25573E] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
+                            >
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                                New Grade Sheet
+                            </Link>
+                        </div>
                     </div>
 
                     {props.flash?.success && (
@@ -72,7 +128,7 @@ export default function Index({
                         </div>
                     )}
 
-                    {mySubjects !== null && (
+                    {mySubjects !== null && !showsArchive && (
                         <MySubjects subjects={mySubjects} />
                     )}
 
@@ -97,6 +153,7 @@ export default function Index({
                             {gradeSheets.total === 1
                                 ? '1 grade sheet'
                                 : `${gradeSheets.total} grade sheets`}
+                            {showsArchive && ' archived'}
                         </p>
                     </div>
 
@@ -107,19 +164,27 @@ export default function Index({
                                 aria-hidden="true"
                             />
                             <p className="mt-3 font-medium text-[#1F2A24]">
-                                No grade sheets yet
+                                {showsArchive
+                                    ? 'No archived grade sheets'
+                                    : 'No grade sheets yet'}
                             </p>
                             <p className="mt-1 text-sm text-[#1F2A24]/65">
-                                Create one for a subject you teach to start
-                                recording grades.
+                                {showsArchive
+                                    ? 'Sheets you archive show here, ready to restore.'
+                                    : 'Create one for a subject you teach to start recording grades.'}
                             </p>
-                            <Link
-                                href={gradeSheetRoutes.create.url()}
-                                className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
-                            >
-                                <Plus className="h-4 w-4" aria-hidden="true" />
-                                New Grade Sheet
-                            </Link>
+                            {!showsArchive && (
+                                <Link
+                                    href={gradeSheetRoutes.create.url()}
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#2F6F4E]/30 px-5 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                >
+                                    <Plus
+                                        className="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                    New Grade Sheet
+                                </Link>
+                            )}
                         </div>
                     ) : (
                         <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">

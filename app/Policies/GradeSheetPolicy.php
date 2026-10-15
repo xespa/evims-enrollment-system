@@ -37,16 +37,18 @@ class GradeSheetPolicy
 
     /**
      * Determine whether the user can add, edit and remove students' grades.
+     * An archived sheet is read-only until it's restored.
      */
     public function update(User $user, GradeSheet $gradeSheet): bool
     {
-        return $this->keeps($user, $gradeSheet);
+        return $this->keeps($user, $gradeSheet) && ! $gradeSheet->isArchived();
     }
 
     /**
-     * Determine whether the user can delete the grade sheet.
+     * Determine whether the user can archive the grade sheet, or restore it
+     * from the archive. Sheets are never deleted, so grades can't be lost.
      */
-    public function delete(User $user, GradeSheet $gradeSheet): bool
+    public function archive(User $user, GradeSheet $gradeSheet): bool
     {
         return $this->keeps($user, $gradeSheet);
     }

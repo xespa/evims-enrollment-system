@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\EnrollmentPeriodController;
 use App\Http\Controllers\Admin\EnrollmentSummaryController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GradeLevelController;
+use App\Http\Controllers\Admin\GradeSheetArchiveController;
 use App\Http\Controllers\Admin\GradeSheetController;
 use App\Http\Controllers\Admin\GradeSheetGradeController;
 use App\Http\Controllers\Admin\GradeSheetPrintController;
@@ -199,9 +200,12 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     // Teachers keep their own grade sheets; admins can open everyone's.
     Route::middleware('can:manage-grade-sheets')->group(function () {
         Route::resource('grade-sheets', GradeSheetController::class)
-            ->only(['index', 'create', 'store', 'show', 'update', 'destroy'])
+            ->only(['index', 'create', 'store', 'show', 'update'])
             ->parameters(['grade-sheets' => 'gradeSheet']);
         Route::get('grade-sheets/{gradeSheet}/print', GradeSheetPrintController::class)->name('grade-sheets.print.show');
+        // Sheets are archived rather than deleted, and can be restored.
+        Route::post('grade-sheets/{gradeSheet}/archive', [GradeSheetArchiveController::class, 'store'])->name('grade-sheets.archive.store');
+        Route::delete('grade-sheets/{gradeSheet}/archive', [GradeSheetArchiveController::class, 'destroy'])->name('grade-sheets.archive.destroy');
         // Adding several students (or the whole class) at once, then
         // entering everyone's grades in one table.
         Route::post('grade-sheets/{gradeSheet}/students', [GradeSheetStudentController::class, 'store'])->name('grade-sheets.students.store');
