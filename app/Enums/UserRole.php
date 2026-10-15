@@ -86,6 +86,15 @@ enum UserRole: string
     }
 
     /**
+     * Keep a list of the subjects they teach, which their grade sheets are
+     * made from.
+     */
+    public function canTeachSubjects(): bool
+    {
+        return $this === self::Teacher;
+    }
+
+    /**
      * Invite staff, change their roles, and deactivate their accounts.
      */
     public function canManageStaff(): bool

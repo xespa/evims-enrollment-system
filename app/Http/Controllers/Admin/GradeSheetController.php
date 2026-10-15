@@ -52,7 +52,47 @@ class GradeSheetController extends Controller
             'gradeSheets' => $gradeSheets,
             'schoolYears' => array_reverse(Curriculum::schoolYears()),
             'filters' => ['school_year' => $schoolYear ?? ''],
+            // Only teachers keep a list of subjects; null hides the panel.
+            'mySubjects' => $user->role->canTeachSubjects() ? $this->taughtSubjects($user, $schoolYear) : null,
         ]);
+    }
+
+    /**
+     * The teacher's subjects in published school years, each with their
+     * grade sheet for it if they've made one.
+     *
+     * @return list<array{id: int, name: string, code: string|null, grade_level: string, school_year: string, grade_sheet_id: int|null}>
+     */
+    private function taughtSubjects(User $teacher, ?string $schoolYear): array
+    {
+        $subjects = $teacher->taughtSubjects()
+            ->whereIn('curriculum_id', Curriculum::query()
+                ->published()
+                ->when($schoolYear, fn ($query, string $schoolYear) => $query->forSchoolYear($schoolYear))
+                ->select('id'))
+            ->with('curriculum.gradeLevel')
+            ->get();
+
+        $gradeSheetIds = GradeSheet::query()
+            ->where('teacher_id', $teacher->id)
+            ->whereIn('subject_id', $subjects->modelKeys())
+            ->pluck('id', 'subject_id');
+
+        return array_values($subjects
+            ->sortBy([
+                fn (Subject $a, Subject $b) => $b->curriculum->school_year <=> $a->curriculum->school_year,
+                fn (Subject $a, Subject $b) => $a->curriculum->gradeLevel->level_order <=> $b->curriculum->gradeLevel->level_order,
+                fn (Subject $a, Subject $b) => $a->name <=> $b->name,
+            ])
+            ->map(fn (Subject $subject) => [
+                'id' => $subject->id,
+                'name' => $subject->name,
+                'code' => $subject->code,
+                'grade_level' => $subject->curriculum->gradeLevel->name,
+                'school_year' => $subject->curriculum->school_year,
+                'grade_sheet_id' => $gradeSheetIds->get($subject->id),
+            ])
+            ->all());
     }
 
     public function create(Request $request): Response
@@ -64,7 +104,7 @@ class GradeSheetController extends Controller
 
         $subjects = Subject::query()
             ->whereIn('curriculum_id', Curriculum::query()->published()->select('id'))
-            ->with('curriculum.gradeLevel')
+            ->with(['curriculum.gradeLevel', 'teachers:id'])
             ->get()
             ->sortBy([
                 fn (Subject $a, Subject $b) => $a->curriculum->gradeLevel->level_order <=> $b->curriculum->gradeLevel->level_order,
@@ -76,11 +116,16 @@ class GradeSheetController extends Controller
                 'code' => $subject->code,
                 'grade_level' => $subject->curriculum->gradeLevel->name,
                 'school_year' => $subject->curriculum->school_year,
+                // Who teaches it, so the list can narrow to the chosen
+                // teacher's own subjects.
+                'teacher_ids' => $subject->teachers->modelKeys(),
             ])
             ->values();
 
         return Inertia::render('Admin/GradeSheets/Create', [
             'subjects' => $subjects,
+            // From "Create grade sheet" next to one of the teacher's subjects.
+            'selectedSubjectId' => $request->integer('subject_id') ?: null,
             'schoolYears' => $subjects->pluck('school_year')->unique()->sortDesc()->values(),
             'defaultSchoolYear' => Enrollment::max('school_year') ?? Enrollment::currentSchoolYear(),
             // A teacher's sheet is always their own, so only admins choose.
@@ -96,7 +141,10 @@ class GradeSheetController extends Controller
      */
     public function store(StoreGradeSheetRequest $request): RedirectResponse
     {
-        $gradeSheet = GradeSheet::create($request->validated());
+        $gradeSheet = GradeSheet::create([
+            ...$request->validated(),
+            'created_by' => $request->user()?->id,
+        ]);
 
         return redirect()
             ->route('admin.grade-sheets.student-grades.create', $gradeSheet)

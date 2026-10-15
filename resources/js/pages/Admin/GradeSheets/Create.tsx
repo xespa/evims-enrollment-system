@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
@@ -13,10 +13,14 @@ type SubjectOption = {
     code: string | null;
     grade_level: string;
     school_year: string;
+    /** The teachers who said they teach it. */
+    teacher_ids: number[];
 };
 
 type Props = {
     subjects: SubjectOption[];
+    /** Picked already, from "Create" next to one of the teacher's subjects. */
+    selectedSubjectId: number | null;
     schoolYears: string[];
     defaultSchoolYear: string;
     /** Only admins choose the teacher; empty for teachers. */
@@ -74,29 +78,49 @@ function byGradeLevel(subjects: SubjectOption[]): [string, SubjectOption[]][] {
 
 export default function Create({
     subjects,
+    selectedSubjectId,
     schoolYears,
     defaultSchoolYear,
     teachers,
     currentTeacher,
 }: Props) {
+    const { auth } = usePage().props;
+    const selectedSubject =
+        subjects.find((subject) => subject.id === selectedSubjectId) ?? null;
+
     const [schoolYear, setSchoolYear] = useState(
-        schoolYears.includes(defaultSchoolYear)
-            ? defaultSchoolYear
-            : (schoolYears[0] ?? ''),
+        selectedSubject?.school_year ??
+            (schoolYears.includes(defaultSchoolYear)
+                ? defaultSchoolYear
+                : (schoolYears[0] ?? '')),
     );
+    const [showAllSubjects, setShowAllSubjects] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm<
         { subject_id: string; teacher_id: string } & ScheduleData
     >({
-        subject_id: '',
+        subject_id: selectedSubject ? String(selectedSubject.id) : '',
         teacher_id: currentTeacher ? String(currentTeacher.id) : '',
         schedule_days: [],
         start_time: '',
         end_time: '',
     });
 
+    // The chosen teacher's own subjects (from their Settings), if they've
+    // listed any; otherwise every subject.
+    const teacherId = Number(data.teacher_id);
+    const teacherName =
+        currentTeacher?.name ??
+        teachers.find((teacher) => teacher.id === teacherId)?.name;
+    const teachersSubjects = subjects.filter((subject) =>
+        subject.teacher_ids.includes(teacherId),
+    );
+    const isNarrowed = teachersSubjects.length > 0 && !showAllSubjects;
+
     const subjectGroups = byGradeLevel(
-        subjects.filter((subject) => subject.school_year === schoolYear),
+        (isNarrowed ? teachersSubjects : subjects).filter(
+            (subject) => subject.school_year === schoolYear,
+        ),
     );
 
     const changeSchoolYear = (nextSchoolYear: string) => {
@@ -104,6 +128,28 @@ export default function Create({
         // The chosen subject belongs to the old school year.
         setData('subject_id', '');
     };
+
+    const changeTeacher = (nextTeacherId: string) => {
+        setShowAllSubjects(false);
+        setData((current) => ({
+            ...current,
+            teacher_id: nextTeacherId,
+            // Keep the subject only if it's one of the new teacher's.
+            subject_id: subjects.some(
+                (subject) =>
+                    String(subject.id) === current.subject_id &&
+                    subject.teacher_ids.includes(Number(nextTeacherId)),
+            )
+                ? current.subject_id
+                : '',
+        }));
+    };
+
+    const subjectHint = isNarrowed
+        ? `Showing the subjects ${currentTeacher ? 'you teach' : `${teacherName} teaches`}.`
+        : currentTeacher && teachersSubjects.length === 0
+          ? 'Tip: choose the subjects you teach in Settings → Subjects to see only those here.'
+          : undefined;
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -173,9 +219,51 @@ export default function Create({
                         </Field>
 
                         <Field
+                            id="teacher"
+                            label="Teacher"
+                            error={errors.teacher_id}
+                        >
+                            {currentTeacher ? (
+                                <input
+                                    id="teacher"
+                                    value={currentTeacher.name}
+                                    readOnly
+                                    disabled
+                                    className={SELECT_CLASS}
+                                />
+                            ) : (
+                                <select
+                                    id="teacher"
+                                    value={data.teacher_id}
+                                    onChange={(e) =>
+                                        changeTeacher(e.target.value)
+                                    }
+                                    aria-invalid={!!errors.teacher_id}
+                                    aria-describedby={
+                                        errors.teacher_id
+                                            ? 'teacher-error'
+                                            : undefined
+                                    }
+                                    className={SELECT_CLASS}
+                                >
+                                    <option value="">Choose a teacher</option>
+                                    {teachers.map((teacher) => (
+                                        <option
+                                            key={teacher.id}
+                                            value={teacher.id}
+                                        >
+                                            {teacher.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </Field>
+
+                        <Field
                             id="subject"
                             label="Subject"
                             error={errors.subject_id}
+                            hint={subjectHint}
                         >
                             <select
                                 id="subject"
@@ -212,47 +300,35 @@ export default function Create({
                                     ),
                                 )}
                             </select>
+                            {teachersSubjects.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowAllSubjects(
+                                            (isShowingAll) => !isShowingAll,
+                                        )
+                                    }
+                                    className="mt-1 text-xs font-semibold text-[#2F6F4E] underline-offset-2 hover:underline"
+                                >
+                                    {showAllSubjects
+                                        ? `Only show ${currentTeacher ? 'my' : `${teacherName}'s`} subjects`
+                                        : 'Show all subjects'}
+                                </button>
+                            )}
                         </Field>
 
                         <Field
-                            id="teacher"
-                            label="Teacher"
-                            error={errors.teacher_id}
+                            id="prepared-by"
+                            label="Prepared by"
+                            hint="Printed on the grade sheet."
                         >
-                            {currentTeacher ? (
-                                <input
-                                    id="teacher"
-                                    value={currentTeacher.name}
-                                    readOnly
-                                    disabled
-                                    className={SELECT_CLASS}
-                                />
-                            ) : (
-                                <select
-                                    id="teacher"
-                                    value={data.teacher_id}
-                                    onChange={(e) =>
-                                        setData('teacher_id', e.target.value)
-                                    }
-                                    aria-invalid={!!errors.teacher_id}
-                                    aria-describedby={
-                                        errors.teacher_id
-                                            ? 'teacher-error'
-                                            : undefined
-                                    }
-                                    className={SELECT_CLASS}
-                                >
-                                    <option value="">Choose a teacher</option>
-                                    {teachers.map((teacher) => (
-                                        <option
-                                            key={teacher.id}
-                                            value={teacher.id}
-                                        >
-                                            {teacher.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+                            <input
+                                id="prepared-by"
+                                value={auth.user.name}
+                                readOnly
+                                disabled
+                                className={SELECT_CLASS}
+                            />
                         </Field>
 
                         <ScheduleFields

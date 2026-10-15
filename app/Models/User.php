@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -112,6 +113,16 @@ class User extends Authenticatable
     public function scopePaymentHandlers(Builder $query): void
     {
         $query->active()->whereIn('role', UserRole::paymentHandlers());
+    }
+
+    /**
+     * The subjects a teacher teaches, which their grade sheets are made from.
+     *
+     * @return BelongsToMany<Subject, $this>
+     */
+    public function taughtSubjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class)->withTimestamps();
     }
 
     public function isAdmin(): bool

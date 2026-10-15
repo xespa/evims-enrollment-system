@@ -95,6 +95,7 @@ export default function Show({
         },
         { label: 'Subject Code', value: gradeSheet.subject_code ?? '—' },
         { label: 'School Year', value: gradeSheet.school_year },
+        { label: 'Prepared by', value: gradeSheet.prepared_by ?? '—' },
     ];
 
     return (
@@ -230,7 +231,7 @@ export default function Show({
                                 </dd>
                             </div>
                         ))}
-                        <div className="flex items-start justify-between gap-2 bg-white p-4">
+                        <div className="flex items-start justify-between gap-2 bg-white p-4 sm:col-span-2 lg:col-span-3">
                             <div className="min-w-0">
                                 <dt className="text-xs font-semibold tracking-wide text-[#1F2A24]/55 uppercase">
                                     Schedule

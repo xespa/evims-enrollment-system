@@ -29,6 +29,7 @@ export type StaffAbilities = {
     manageSchool: boolean;
     manageStaff: boolean;
     manageGradeSheets: boolean;
+    teachSubjects: boolean;
     uploadDocumentTypes: string[];
 };
 

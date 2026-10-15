@@ -7,6 +7,8 @@ export type GradeSheetSummary = {
     grade_level: string;
     school_year: string;
     teacher: string;
+    /** Who made the sheet: the teacher, or an admin making it for them. */
+    prepared_by: string | null;
     /** e.g. "Mon, Wed, Fri · 8:00 AM – 9:00 AM"; null until set. */
     schedule: string | null;
     schedule_days: ScheduleDay[];

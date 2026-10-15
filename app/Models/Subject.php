@@ -26,6 +26,16 @@ class Subject extends Model
     }
 
     /**
+     * The teachers who teach this subject.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function teachers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    /**
      * @return BelongsToMany<Enrollment, $this>
      */
     public function enrollments(): BelongsToMany

@@ -1,8 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { ShieldCheck, UserRound } from 'lucide-react';
+import { BookOpen, ShieldCheck, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useStaffAbilities } from '@/hooks/use-staff-abilities';
 import admin from '@/routes/admin';
 
 type SettingsTab = {
@@ -10,6 +11,8 @@ type SettingsTab = {
     description: string;
     href: string;
     icon: LucideIcon;
+    /** Only for teachers, who keep a list of their subjects. */
+    teachersOnly?: boolean;
 };
 
 const TABS: SettingsTab[] = [
@@ -25,6 +28,13 @@ const TABS: SettingsTab[] = [
         href: admin.settings.security.edit.url(),
         icon: ShieldCheck,
     },
+    {
+        label: 'Subjects',
+        description: 'The subjects you teach',
+        href: admin.settings.subjects.edit.url(),
+        icon: BookOpen,
+        teachersOnly: true,
+    },
 ];
 
 /**
@@ -38,6 +48,8 @@ export default function AdminSettingsShell({
     children: ReactNode;
 }) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const can = useStaffAbilities();
+    const tabs = TABS.filter((tab) => !tab.teachersOnly || can.teachSubjects);
 
     return (
         <div className="min-h-full bg-[#FBF8F2] px-4 py-8">
@@ -47,7 +59,7 @@ export default function AdminSettingsShell({
                         Settings
                     </h1>
                     <p className="mt-1 text-sm text-[#1F2A24]/70">
-                        Manage your administrator profile and account security.
+                        Manage your profile and account security.
                     </p>
                 </header>
 
@@ -57,7 +69,7 @@ export default function AdminSettingsShell({
                             aria-label="Settings"
                             className="grid grid-cols-2 gap-1 rounded-xl border border-[#1F2A24]/10 bg-white p-1 lg:flex lg:flex-col lg:gap-1 lg:p-2"
                         >
-                            {TABS.map((tab) => {
+                            {tabs.map((tab) => {
                                 const isActive = isCurrentOrParentUrl(tab.href);
                                 const Icon = tab.icon;
 

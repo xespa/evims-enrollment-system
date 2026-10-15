@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-school', fn (User $user): bool => $user->role->canManageSchool());
         Gate::define('manage-staff', fn (User $user): bool => $user->role->canManageStaff());
         Gate::define('manage-grade-sheets', fn (User $user): bool => $user->role->canManageGradeSheets());
+        Gate::define('teach-subjects', fn (User $user): bool => $user->role->canTeachSubjects());
         Gate::define('upload-document', fn (User $user, string $type): bool => $user->role->canUploadDocument($type));
     }
 

@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $subject_id
  * @property int $teacher_id
+ * @property int|null $created_by
  * @property list<string>|null $schedule_days
  * @property string|null $start_time
  * @property string|null $end_time
@@ -39,7 +40,7 @@ class GradeSheet extends Model
         'SAT' => 'Sat',
     ];
 
-    protected $fillable = ['subject_id', 'teacher_id', 'schedule_days', 'start_time', 'end_time'];
+    protected $fillable = ['subject_id', 'teacher_id', 'created_by', 'schedule_days', 'start_time', 'end_time'];
 
     protected $casts = [
         'schedule_days' => 'array',
@@ -59,6 +60,16 @@ class GradeSheet extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    /**
+     * Who made the grade sheet: its teacher, or an admin making it for them.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
@@ -177,7 +188,7 @@ class GradeSheet extends Model
      * What the grade sheet pages show about the sheet itself. Load
      * summaryRelations() first so this doesn't query per sheet.
      *
-     * @return array{id: int, number: string, subject: string, subject_code: string|null, grade_level: string, school_year: string, teacher: string, schedule: string|null, schedule_days: list<string>, start_time: string|null, end_time: string|null}
+     * @return array{id: int, number: string, subject: string, subject_code: string|null, grade_level: string, school_year: string, teacher: string, prepared_by: string|null, schedule: string|null, schedule_days: list<string>, start_time: string|null, end_time: string|null}
      */
     public function summary(): array
     {
@@ -189,6 +200,7 @@ class GradeSheet extends Model
             'grade_level' => $this->subject->curriculum->gradeLevel->name,
             'school_year' => $this->subject->curriculum->school_year,
             'teacher' => $this->teacher->name,
+            'prepared_by' => $this->creator?->name,
             'schedule' => $this->scheduleLabel(),
             // The parts, for editing the schedule ("08:00", not "08:00:00").
             'schedule_days' => $this->schedule_days ?? [],
@@ -204,6 +216,6 @@ class GradeSheet extends Model
      */
     public static function summaryRelations(): array
     {
-        return ['subject.curriculum.gradeLevel', 'teacher:id,name'];
+        return ['subject.curriculum.gradeLevel', 'teacher:id,name', 'creator:id,name'];
     }
 }

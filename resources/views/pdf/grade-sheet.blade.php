@@ -24,7 +24,9 @@
         .grades td { text-align: center; }
         .grades td.name { text-align: left; }
         .grades td.empty { padding: 16px; font-style: italic; }
-        .signature { margin-top: 48px; width: 260px; margin-left: auto; text-align: center; }
+        .signatures { margin-top: 48px; }
+        .signatures td { width: 50%; vertical-align: bottom; }
+        .signature { width: 240px; margin: 0 auto; text-align: center; }
         .signature .line { border-top: 1px solid #000000; padding-top: 3px; font-weight: bold; }
         .printed { margin-top: 6px; font-size: 9px; text-align: right; color: #444444; }
         /* The school's branding along the bottom of every page. */
@@ -113,10 +115,24 @@
         @endforelse
     </table>
 
-    <div class="signature">
-        <div style="margin-bottom: 2px;">{{ strtoupper($gradeSheet['teacher']) }}</div>
-        <div class="line">Subject Teacher</div>
-    </div>
+    <table class="signatures">
+        <tr>
+            <td>
+                @if ($gradeSheet['prepared_by'])
+                    <div class="signature">
+                        <div style="margin-bottom: 2px;">{{ strtoupper($gradeSheet['prepared_by']) }}</div>
+                        <div class="line">Prepared by</div>
+                    </div>
+                @endif
+            </td>
+            <td>
+                <div class="signature">
+                    <div style="margin-bottom: 2px;">{{ strtoupper($gradeSheet['teacher']) }}</div>
+                    <div class="line">Subject Teacher</div>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <div class="printed">Printed {{ $printedAt->format('M. j, Y g:i A') }}</div>
 </body>

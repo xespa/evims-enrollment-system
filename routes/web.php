@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\StudentAccountPasswordController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentGradeController;
 use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\TeachingSubjectController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\TransactionHistoryController;
 use App\Http\Controllers\Admin\VoidPaymentController;
@@ -257,6 +258,9 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     // Two-factor is managed here, so the password is asked for again first.
     Route::get('settings/security', [SettingsController::class, 'editSecurity'])->middleware('password.confirm')->name('settings.security.edit');
     Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    // A teacher's subjects, which their grade sheets are made from.
+    Route::get('settings/subjects', [TeachingSubjectController::class, 'edit'])->name('settings.subjects.edit');
+    Route::put('settings/subjects', [TeachingSubjectController::class, 'update'])->name('settings.subjects.update');
     // Only admins may delete an account, and never the last one.
     Route::delete('settings', [SettingsController::class, 'destroy'])->middleware('can:manage-staff')->name('settings.destroy');
 });

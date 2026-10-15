@@ -119,6 +119,7 @@ test('the abilities of the signed-in staff member are shared with the pages', fu
                 'manageSchool' => false,
                 'manageStaff' => false,
                 'manageGradeSheets' => true,
+                'teachSubjects' => true,
                 'uploadDocumentTypes' => ['form_138'],
             ])
         );

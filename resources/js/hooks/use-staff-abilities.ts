@@ -8,6 +8,7 @@ const NO_ABILITIES: StaffAbilities = {
     manageSchool: false,
     manageStaff: false,
     manageGradeSheets: false,
+    teachSubjects: false,
     uploadDocumentTypes: [],
 };
 

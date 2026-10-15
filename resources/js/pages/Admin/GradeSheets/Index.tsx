@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronRight, ClipboardList, Plus } from 'lucide-react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
+import MySubjects from './Components/MySubjects';
+import type { TaughtSubject } from './Components/MySubjects';
 import { SELECT_CLASS } from './Components/types';
 import type { GradeSheetSummary } from './Components/types';
 
@@ -14,9 +16,16 @@ type Props = {
     };
     schoolYears: string[];
     filters: { school_year: string };
+    /** A teacher's own subjects; null for admins, who teach none. */
+    mySubjects: TaughtSubject[] | null;
 };
 
-export default function Index({ gradeSheets, schoolYears, filters }: Props) {
+export default function Index({
+    gradeSheets,
+    schoolYears,
+    filters,
+    mySubjects,
+}: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
 
     const changeSchoolYear = (schoolYear: string) => {
@@ -61,6 +70,10 @@ export default function Index({ gradeSheets, schoolYears, filters }: Props) {
                         >
                             {props.flash.success}
                         </div>
+                    )}
+
+                    {mySubjects !== null && (
+                        <MySubjects subjects={mySubjects} />
                     )}
 
                     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4">
