@@ -19,9 +19,13 @@ class GenerateGradeReport
 {
     use EmbedsSchoolLogo;
 
-    public function handle(Student $student): GradeReportPdf
+    /**
+     * Every school year the student was enrolled in, or only the given one
+     * (e.g. the report card sent on as next year's Form 138).
+     */
+    public function handle(Student $student, ?string $schoolYear = null): GradeReportPdf
     {
-        return Pdf::loadView('pdf.grade-report', $this->viewData($student))
+        return Pdf::loadView('pdf.grade-report', $this->viewData($student, $schoolYear))
             ->setPaper('a4')
             ->setOption('isFontSubsettingEnabled', true);
     }
@@ -31,10 +35,11 @@ class GenerateGradeReport
      *
      * @return array{student: array{name: string, lrn: string|null, sex: string}, schoolYears: list<array{school_year: string, grade_level: string|null, section: string|null, age: int, grades: list<array{id: int, subject: string, teacher: string, term_1: string|null, term_2: string|null, term_3: string|null, final_grade: float|null, remarks: string|null}>, term_averages: array{term_1: float|null, term_2: float|null, term_3: float|null}, general_average: float|null, general_remarks: 'Passed'|'Failed'|null}>, logo: ?string}
      */
-    public function viewData(Student $student): array
+    public function viewData(Student $student, ?string $schoolYear = null): array
     {
         $enrollments = $student->enrollments()
             ->withStatus('APPROVED')
+            ->when($schoolYear, fn ($query, string $schoolYear) => $query->where('school_year', $schoolYear))
             ->with(['gradeLevel:id,name', 'section:id,name'])
             ->orderByDesc('school_year')
             ->get();

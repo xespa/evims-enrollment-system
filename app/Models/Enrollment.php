@@ -140,6 +140,15 @@ class Enrollment extends Model
     }
 
     /**
+     * What gradeReport() needs, to eager load for a list of students.
+     */
+    public const GRADE_REPORT_RELATIONS = [
+        'studentGrades.gradeSheet:id,subject_id,teacher_id,archived_at',
+        'studentGrades.gradeSheet.subject:id,name',
+        'studentGrades.gradeSheet.teacher:id,name',
+    ];
+
+    /**
      * The student's rows on grade sheets for this school year.
      *
      * @return HasMany<StudentGrade, $this>
@@ -158,10 +167,15 @@ class Enrollment extends Model
      */
     public function gradeReport(): array
     {
-        return array_values($this->studentGrades()
-            ->whereHas('gradeSheet', fn (Builder $gradeSheet) => $gradeSheet->whereNull('grade_sheets.archived_at'))
-            ->with(['gradeSheet.subject:id,name', 'gradeSheet.teacher:id,name'])
-            ->get()
+        // Eager loaded with GRADE_REPORT_RELATIONS for a list of students.
+        $studentGrades = $this->relationLoaded('studentGrades')
+            ? $this->studentGrades->filter(fn (StudentGrade $studentGrade) => $studentGrade->gradeSheet->archived_at === null)
+            : $this->studentGrades()
+                ->whereHas('gradeSheet', fn (Builder $gradeSheet) => $gradeSheet->whereNull('grade_sheets.archived_at'))
+                ->with(['gradeSheet.subject:id,name', 'gradeSheet.teacher:id,name'])
+                ->get();
+
+        return array_values($studentGrades
             ->sortBy(fn (StudentGrade $studentGrade) => $studentGrade->gradeSheet->subject->name)
             ->map(fn (StudentGrade $studentGrade) => [
                 'id' => $studentGrade->id,
@@ -416,6 +430,68 @@ class Enrollment extends Model
         $query->whereIn('enrollments.enrollment_status', ['PENDING', 'APPROVED'])
             ->whereNull('enrollments.cancelled_at')
             ->whereNull('enrollments.archived_at');
+    }
+
+    /**
+     * Applications whose student the given staff member grades: on one of a
+     * teacher's grade sheets in use, or any application for an admin.
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeGradedBy(Builder $query, User $staff): void
+    {
+        $query->when(! $staff->isAdmin(), fn (Builder $query) => $query->whereHas(
+            'studentGrades.gradeSheet',
+            fn (Builder $gradeSheet) => $gradeSheet->where('teacher_id', $staff->id)->whereNull('grade_sheets.archived_at'),
+        ));
+    }
+
+    /**
+     * Applications whose student has also applied for the given school year
+     * (pending or approved, still active).
+     *
+     * @param  Builder<Enrollment>  $query
+     */
+    public function scopeAppliedAgainFor(Builder $query, string $schoolYear): void
+    {
+        $query->whereIn('enrollments.student_id', self::query()
+            ->select('enrollments.student_id')
+            ->where('enrollments.school_year', $schoolYear)
+            ->holdingSlot());
+    }
+
+    /**
+     * The same student's application for the school year after this one,
+     * while it's pending or approved: where this year's report card goes
+     * as the Form 138.
+     */
+    public function nextApplication(): ?self
+    {
+        return self::query()
+            ->where('student_id', $this->student_id)
+            ->where('school_year', Curriculum::nextSchoolYear($this->school_year))
+            ->holdingSlot()
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * The learning areas the student still has no final grade in, by name.
+     * Reads the subjects and grade report, so load both for a list.
+     *
+     * @return list<string>
+     */
+    public function subjectsWithoutFinalGrade(): array
+    {
+        $finalGrades = collect($this->gradeReport())->pluck('final_grade', 'subject');
+
+        return array_values($this->subjects
+            ->pluck('name')
+            ->merge($finalGrades->keys())
+            ->unique()
+            ->sort()
+            ->filter(fn (string $subject) => $finalGrades->get($subject) === null)
+            ->all());
     }
 
     /**

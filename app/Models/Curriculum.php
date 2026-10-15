@@ -273,6 +273,13 @@ class Curriculum extends Model
     /**
      * The school year right after the given one, e.g. "2026-2027" → "2027-2028".
      */
+    public static function previousSchoolYear(string $schoolYear): string
+    {
+        $start = (int) explode('-', $schoolYear)[0] - 1;
+
+        return $start.'-'.($start + 1);
+    }
+
     public static function nextSchoolYear(string $schoolYear): string
     {
         $start = (int) explode('-', $schoolYear)[0] + 1;
