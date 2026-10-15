@@ -72,7 +72,12 @@ test('the pdf has every approved school year\'s grades in each subject, newest f
     $data = app(GenerateGradeReport::class)->viewData($account->student);
 
     expect($data['student']['lrn'])->toBe($account->student->lrn)
+        ->and($data['student']['sex'])->toBe(ucfirst(strtolower($account->student->sex)))
         ->and(array_column($data['schoolYears'], 'school_year'))->toBe(['2026-2027', '2025-2026'])
+        // Each year's age is the one on that year's application.
+        ->and($data['schoolYears'][0]['age'])->toBe($thisYear->age)
+        ->and($data['schoolYears'][0]['general_remarks'])->toBe('Passed')
+        ->and($data['schoolYears'][1]['general_remarks'])->toBeNull()
         ->and(array_column($data['schoolYears'][0]['grades'], 'subject'))->toBe(['English', 'Mathematics'])
         ->and($data['schoolYears'][0]['grades'][1]['final_grade'])->toEqual(85)
         ->and($data['schoolYears'][0]['general_average'])->toBe(78.5)
