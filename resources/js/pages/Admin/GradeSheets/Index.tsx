@@ -187,81 +187,126 @@ export default function Index({
                             )}
                         </div>
                     ) : (
-                        <div className="overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white">
-                            <table className="w-full min-w-[720px] text-left text-sm">
-                                <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 font-semibold">
-                                            Grade Sheet No.
-                                        </th>
-                                        <th className="px-4 py-3 font-semibold">
-                                            Subject
-                                        </th>
-                                        <th className="px-4 py-3 font-semibold">
-                                            School Year
-                                        </th>
-                                        <th className="px-4 py-3 font-semibold">
-                                            Teacher
-                                        </th>
-                                        <th className="px-4 py-3 text-right font-semibold">
-                                            Students
-                                        </th>
-                                        <th className="px-4 py-3">
-                                            <span className="sr-only">
-                                                Open
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#1F2A24]/10">
-                                    {gradeSheets.data.map((gradeSheet) => (
-                                        <tr
-                                            key={gradeSheet.id}
-                                            className="hover:bg-[#1F2A24]/[0.02]"
+                        <>
+                            {/* Cards (phones): the whole card opens the sheet. */}
+                            <ul className="space-y-3 md:hidden">
+                                {gradeSheets.data.map((gradeSheet) => (
+                                    <li key={gradeSheet.id}>
+                                        <Link
+                                            href={gradeSheetRoutes.show.url(
+                                                gradeSheet.id,
+                                            )}
+                                            className="flex items-center gap-3 rounded-2xl border border-[#1F2A24]/10 bg-white p-4 transition-colors hover:bg-[#2F6F4E]/[0.03] focus-visible:ring-2 focus-visible:ring-[#2F6F4E]/40 focus-visible:outline-none"
                                         >
-                                            <td className="px-4 py-3 font-mono font-semibold text-[#2F6F4E]">
-                                                {gradeSheet.number}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="block font-medium text-[#1F2A24]">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-mono text-xs font-semibold text-[#2F6F4E]">
+                                                    {gradeSheet.number}
+                                                </p>
+                                                <p className="font-medium break-words text-[#1F2A24]">
                                                     {gradeSheet.subject}
-                                                </span>
-                                                <span className="text-xs text-[#1F2A24]/60">
-                                                    {gradeSheet.grade_level}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/80">
-                                                {gradeSheet.school_year}
-                                            </td>
-                                            <td className="px-4 py-3 text-[#1F2A24]/80">
-                                                {gradeSheet.teacher}
-                                            </td>
-                                            <td className="px-4 py-3 text-right text-[#1F2A24]/80 tabular-nums">
-                                                {gradeSheet.students_count}
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <Link
-                                                    href={gradeSheetRoutes.show.url(
-                                                        gradeSheet.id,
-                                                    )}
-                                                    className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
-                                                >
-                                                    Open
-                                                    <span className="sr-only">
-                                                        {' '}
-                                                        {gradeSheet.number}
+                                                </p>
+                                                <p className="text-xs text-[#1F2A24]/60">
+                                                    {gradeSheet.grade_level} ·
+                                                    SY {gradeSheet.school_year}
+                                                </p>
+                                                <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-[#1F2A24]/70">
+                                                    <span>
+                                                        {gradeSheet.teacher}
                                                     </span>
-                                                    <ChevronRight
-                                                        className="h-4 w-4"
-                                                        aria-hidden="true"
-                                                    />
-                                                </Link>
-                                            </td>
+                                                    <span className="tabular-nums">
+                                                        {gradeSheet.students_count ===
+                                                        1
+                                                            ? '1 student'
+                                                            : `${gradeSheet.students_count} students`}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <ChevronRight
+                                                className="h-5 w-5 shrink-0 text-[#2F6F4E]/70"
+                                                aria-hidden="true"
+                                            />
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {/* Table (tablets and up) */}
+                            <div className="hidden overflow-x-auto rounded-2xl border border-[#1F2A24]/10 bg-white md:block">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="border-b border-[#1F2A24]/10 bg-[#1F2A24]/[0.03] text-xs tracking-wide text-[#1F2A24]/60 uppercase">
+                                        <tr>
+                                            <th className="px-4 py-3 font-semibold">
+                                                Grade Sheet No.
+                                            </th>
+                                            <th className="px-4 py-3 font-semibold">
+                                                Subject
+                                            </th>
+                                            <th className="px-4 py-3 font-semibold">
+                                                School Year
+                                            </th>
+                                            <th className="px-4 py-3 font-semibold">
+                                                Teacher
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-semibold">
+                                                Students
+                                            </th>
+                                            <th className="px-4 py-3">
+                                                <span className="sr-only">
+                                                    Open
+                                                </span>
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#1F2A24]/10">
+                                        {gradeSheets.data.map((gradeSheet) => (
+                                            <tr
+                                                key={gradeSheet.id}
+                                                className="hover:bg-[#1F2A24]/[0.02]"
+                                            >
+                                                <td className="px-4 py-3 font-mono font-semibold text-[#2F6F4E]">
+                                                    {gradeSheet.number}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="block font-medium text-[#1F2A24]">
+                                                        {gradeSheet.subject}
+                                                    </span>
+                                                    <span className="text-xs text-[#1F2A24]/60">
+                                                        {gradeSheet.grade_level}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-[#1F2A24]/80">
+                                                    {gradeSheet.school_year}
+                                                </td>
+                                                <td className="px-4 py-3 text-[#1F2A24]/80">
+                                                    {gradeSheet.teacher}
+                                                </td>
+                                                <td className="px-4 py-3 text-right text-[#1F2A24]/80 tabular-nums">
+                                                    {gradeSheet.students_count}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <Link
+                                                        href={gradeSheetRoutes.show.url(
+                                                            gradeSheet.id,
+                                                        )}
+                                                        className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-[#2F6F4E] hover:bg-[#2F6F4E]/5"
+                                                    >
+                                                        Open
+                                                        <span className="sr-only">
+                                                            {' '}
+                                                            {gradeSheet.number}
+                                                        </span>
+                                                        <ChevronRight
+                                                            className="h-4 w-4"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     )}
 
                     {gradeSheets.links.length > 3 && (

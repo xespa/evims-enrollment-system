@@ -182,7 +182,8 @@ export default function Show({
                                 · {gradeSheet.grade_level}
                             </span>
                         </h1>
-                        <div className="flex flex-wrap gap-2">
+                        {/* Two even columns on phones, a row of buttons from there up. */}
+                        <div className="grid w-full grid-cols-2 gap-2 *:justify-center *:px-3 sm:flex sm:w-auto sm:flex-wrap sm:*:px-5">
                             <a
                                 href={gradeSheetRoutes.print.show.url(
                                     gradeSheet.id,
