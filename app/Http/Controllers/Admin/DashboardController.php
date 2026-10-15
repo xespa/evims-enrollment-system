@@ -24,11 +24,8 @@ class DashboardController extends Controller
 
     public function index(Request $request): Response
     {
-        // Same default as the Students page: the newest school year anyone
-        // has applied for; an empty value means every school year.
-        $schoolYear = $request->has('school_year')
-            ? $request->string('school_year')->toString()
-            : Enrollment::max('school_year');
+        // Starts on the current school year; an empty value means every year.
+        $schoolYear = Enrollment::filteredSchoolYear($request->has('school_year'), $request->string('school_year')->toString());
 
         $inSchoolYear = fn (Builder $query): Builder => $query
             ->when(filled($schoolYear), fn (Builder $query) => $query->where($query->qualifyColumn('school_year'), $schoolYear));
@@ -71,11 +68,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'filters' => ['school_year' => $schoolYear ?? ''],
-            'schoolYears' => Enrollment::query()
-                ->select('school_year')
-                ->distinct()
-                ->orderByDesc('school_year')
-                ->pluck('school_year'),
+            'schoolYears' => Enrollment::schoolYearOptions(),
             'stats' => [
                 'totalEnrollments' => Enrollment::query()->tap($activeEnrollments)->count(),
                 'cancelledEnrollments' => Enrollment::query()->tap($inSchoolYear)->whereNotNull('cancelled_at')->count(),

@@ -30,10 +30,10 @@ export default function Index({
 
     const changeSchoolYear = (schoolYear: string) => {
         router.get(
-            gradeSheetRoutes.index.url({
-                query: { school_year: schoolYear || undefined },
-            }),
-            {},
+            gradeSheetRoutes.index.url(),
+            // Empty means "All school years"; leaving it out would start on
+            // the current one again.
+            { school_year: schoolYear },
             { preserveState: true, preserveScroll: true, replace: true },
         );
     };

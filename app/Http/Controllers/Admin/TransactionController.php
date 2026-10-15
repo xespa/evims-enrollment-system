@@ -24,7 +24,11 @@ class TransactionController extends Controller
      */
     public function index(IndexTransactionRequest $request): Response
     {
-        $filters = $request->validated();
+        $filters = [
+            ...$request->validated(),
+            // Starts on the current school year; an empty value means every year.
+            'school_year' => Enrollment::filteredSchoolYear($request->has('school_year'), $request->string('school_year')->toString()),
+        ];
         $tab = $request->tab();
         $today = EnrollmentPeriod::today();
 
@@ -48,7 +52,7 @@ class TransactionController extends Controller
                 'receivable' => $this->owedSummary(IndexTransactionRequest::TAB_RECEIVABLE, $filters, $today),
                 'overdue' => $this->owedSummary(IndexTransactionRequest::TAB_OVERDUE, $filters, $today),
             ],
-            'schoolYears' => Enrollment::query()->distinct()->orderByDesc('school_year')->pluck('school_year'),
+            'schoolYears' => Enrollment::schoolYearOptions(),
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'filters' => [
                 'school_year' => $filters['school_year'] ?? '',

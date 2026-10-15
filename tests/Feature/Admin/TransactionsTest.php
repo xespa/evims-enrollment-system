@@ -206,7 +206,7 @@ test('every tab can be filtered by school year, grade level and student', functi
         );
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE', 'grade_level_id' => $lastYear->grade_level_id]))
+        ->get(route('admin.transactions.index', ['tab' => 'OVERDUE', 'school_year' => '', 'grade_level_id' => $lastYear->grade_level_id]))
         ->assertInertia(fn (Assert $page) => $page
             ->has('rows.data', 1)
             ->where('rows.data.0.student.last_name', 'Bautista')
@@ -214,7 +214,7 @@ test('every tab can be filtered by school year, grade level and student', functi
         );
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transactions.index', ['tab' => 'RECEIVABLE', 'search' => 'bautista']))
+        ->get(route('admin.transactions.index', ['tab' => 'RECEIVABLE', 'school_year' => '', 'search' => 'bautista']))
         ->assertInertia(fn (Assert $page) => $page
             ->has('rows.data', 1)
             ->where('rows.data.0.id', $lastYear->id)

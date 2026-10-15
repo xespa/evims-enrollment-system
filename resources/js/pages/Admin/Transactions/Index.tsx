@@ -372,7 +372,9 @@ export default function Index({
             transactionsIndex().url,
             Object.fromEntries(
                 Object.entries({ tab, ...draft, ...query }).filter(
-                    ([, value]) => value !== '',
+                    // An empty school year is kept: it means "All school
+                    // years", while leaving it out starts on the current one.
+                    ([key, value]) => value !== '' || key === 'school_year',
                 ),
             ),
             {

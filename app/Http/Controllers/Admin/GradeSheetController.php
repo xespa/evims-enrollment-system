@@ -33,7 +33,8 @@ class GradeSheetController extends Controller
 
         /** @var User $user */
         $user = $request->user();
-        $schoolYear = $validated['school_year'] ?? null;
+        // Starts on the current school year; an empty value means every year.
+        $schoolYear = Enrollment::filteredSchoolYear($request->has('school_year'), $validated['school_year'] ?? null);
 
         $gradeSheets = GradeSheet::query()
             ->visibleTo($user)
@@ -50,7 +51,11 @@ class GradeSheetController extends Controller
 
         return Inertia::render('Admin/GradeSheets/Index', [
             'gradeSheets' => $gradeSheets,
-            'schoolYears' => array_reverse(Curriculum::schoolYears()),
+            'schoolYears' => collect(Curriculum::schoolYears())
+                ->push(Enrollment::currentSchoolYear())
+                ->unique()
+                ->sortDesc()
+                ->values(),
             'filters' => ['school_year' => $schoolYear ?? ''],
             // Only teachers keep a list of subjects; null hides the panel.
             'mySubjects' => $user->role->canTeachSubjects() ? $this->taughtSubjects($user, $schoolYear) : null,
@@ -127,7 +132,7 @@ class GradeSheetController extends Controller
             // From "Create grade sheet" next to one of the teacher's subjects.
             'selectedSubjectId' => $request->integer('subject_id') ?: null,
             'schoolYears' => $subjects->pluck('school_year')->unique()->sortDesc()->values(),
-            'defaultSchoolYear' => Enrollment::max('school_year') ?? Enrollment::currentSchoolYear(),
+            'defaultSchoolYear' => Enrollment::currentSchoolYear(),
             // A teacher's sheet is always their own, so only admins choose.
             'teachers' => $user->isAdmin()
                 ? User::query()->active()->where('role', UserRole::Teacher)->orderBy('name')->get(['id', 'name'])

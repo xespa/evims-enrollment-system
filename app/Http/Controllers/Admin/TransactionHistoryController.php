@@ -19,7 +19,11 @@ class TransactionHistoryController extends Controller
      */
     public function __invoke(IndexTransactionHistoryRequest $request): Response
     {
-        $filters = $request->validated();
+        $filters = [
+            ...$request->validated(),
+            // Starts on the current school year; an empty value means every year.
+            'school_year' => Enrollment::filteredSchoolYear($request->has('school_year'), $request->string('school_year')->toString()),
+        ];
 
         $payments = Payment::query()
             ->whereIn('status', isset($filters['status']) ? [$filters['status']] : IndexTransactionHistoryRequest::STATUSES)
@@ -46,7 +50,7 @@ class TransactionHistoryController extends Controller
 
         return Inertia::render('Admin/Transactions/History', [
             'payments' => $payments,
-            'schoolYears' => Enrollment::query()->distinct()->orderByDesc('school_year')->pluck('school_year'),
+            'schoolYears' => Enrollment::schoolYearOptions(),
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
             'filters' => [
                 'status' => $filters['status'] ?? '',

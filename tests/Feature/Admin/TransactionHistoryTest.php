@@ -93,9 +93,11 @@ test('the history can be filtered', function (array $query, string $expected) {
     Carbon::setTestNow();
 
     $query['grade_level_id'] = isset($query['grade_level_id']) ? $bautista->grade_level_id : null;
+    // Across every school year unless the case picks one.
+    $query = ['school_year' => '', ...$query];
 
     $this->actingAs($this->admin)
-        ->get(route('admin.transaction-history.index', array_filter($query)))
+        ->get(route('admin.transaction-history.index', array_filter($query, fn (mixed $value) => $value !== null)))
         ->assertInertia(fn (Assert $page) => $page
             ->has('payments.data', 1)
             ->where('payments.data.0.id', $payments[$expected]->id)

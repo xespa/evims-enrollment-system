@@ -18,16 +18,24 @@ type Props = {
         grade_levels: { name: string; subjects: SubjectOption[] }[];
     }[];
     selectedSubjectIds: number[];
+    /** Shown first, when it's been set up. */
+    currentSchoolYear: string;
 };
 
 /**
  * Where a teacher ticks the subjects they teach. Their grade sheets page
  * then lists these, ready to open or start a grade sheet for.
  */
-export default function Subjects({ schoolYears, selectedSubjectIds }: Props) {
+export default function Subjects({
+    schoolYears,
+    selectedSubjectIds,
+    currentSchoolYear,
+}: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const [schoolYear, setSchoolYear] = useState(
-        schoolYears[0]?.school_year ?? '',
+        schoolYears.some((year) => year.school_year === currentSchoolYear)
+            ? currentSchoolYear
+            : (schoolYears[0]?.school_year ?? ''),
     );
     const form = useForm<{ subject_ids: number[] }>({
         subject_ids: selectedSubjectIds,

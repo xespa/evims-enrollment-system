@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateTeachingSubjectsRequest;
 use App\Models\Curriculum;
+use App\Models\Enrollment;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -56,6 +57,7 @@ class TeachingSubjectController extends Controller
 
         return Inertia::render('Admin/Settings/Subjects', [
             'schoolYears' => $schoolYears,
+            'currentSchoolYear' => Enrollment::currentSchoolYear(),
             'selectedSubjectIds' => $user->taughtSubjects()->pluck('subjects.id'),
         ]);
     }

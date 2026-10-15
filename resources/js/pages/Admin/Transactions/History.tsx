@@ -84,7 +84,9 @@ export default function History({
             transactionHistoryIndex().url,
             Object.fromEntries(
                 Object.entries({ ...draft, ...query }).filter(
-                    ([, value]) => value !== '',
+                    // An empty school year is kept: it means "All school
+                    // years", while leaving it out starts on the current one.
+                    ([key, value]) => value !== '' || key === 'school_year',
                 ),
             ),
             { preserveState: true, replace: true },

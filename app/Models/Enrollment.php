@@ -498,6 +498,38 @@ class Enrollment extends Model
     }
 
     /**
+     * The school years to filter applications by, newest first: every year
+     * with an application, plus the current one, which the filters start on.
+     *
+     * @return list<string>
+     */
+    public static function schoolYearOptions(): array
+    {
+        return array_values(self::query()
+            ->distinct()
+            ->pluck('school_year')
+            ->push(self::currentSchoolYear())
+            ->map(fn (mixed $schoolYear) => (string) $schoolYear)
+            ->unique()
+            ->sortDesc()
+            ->all());
+    }
+
+    /**
+     * The school year a list is filtered to: the one asked for, none (an
+     * empty value, meaning "All school years"), or the current one when
+     * the filter hasn't been touched yet.
+     */
+    public static function filteredSchoolYear(bool $wasChosen, ?string $chosen): ?string
+    {
+        if (! $wasChosen) {
+            return self::currentSchoolYear();
+        }
+
+        return filled($chosen) ? $chosen : null;
+    }
+
+    /**
      * The PH school year runs roughly June–March, so before June we're still
      * in the one that started the previous calendar year (e.g. "2026-2027").
      * Mirrors currentSchoolYearStart() in the enrollment form.

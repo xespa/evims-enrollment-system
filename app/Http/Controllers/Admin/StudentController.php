@@ -16,11 +16,8 @@ class StudentController extends Controller
 {
     public function index(IndexStudentRequest $request): Response
     {
-        $latestSchoolYear = Enrollment::max('school_year');
-
-        $schoolYear = $request->has('school_year')
-            ? $request->string('school_year')->toString()
-            : $latestSchoolYear;
+        // Starts on the current school year; an empty value means every year.
+        $schoolYear = Enrollment::filteredSchoolYear($request->has('school_year'), $request->string('school_year')->toString());
 
         // Driven from Enrollment rather than Student so each application is
         // its own row — a returning student's earlier application (e.g. last
@@ -76,14 +73,10 @@ class StudentController extends Controller
         return Inertia::render('Admin/Students/Index', [
             'applications' => $applications,
             'gradeLevels' => GradeLevel::orderBy('level_order')->get(['id', 'name']),
-            'schoolYears' => Enrollment::query()
-                ->select('school_year')
-                ->distinct()
-                ->orderByDesc('school_year')
-                ->pluck('school_year'),
+            'schoolYears' => Enrollment::schoolYearOptions(),
             'filters' => [
                 'search' => $request->string('search')->toString(),
-                'school_year' => $schoolYear,
+                'school_year' => $schoolYear ?? '',
                 'grade_level_id' => $request->string('grade_level_id')->toString(),
                 'sex' => $request->string('sex')->toString(),
                 'status' => $request->string('status')->toString(),

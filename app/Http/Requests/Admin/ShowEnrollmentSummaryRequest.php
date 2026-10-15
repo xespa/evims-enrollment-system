@@ -33,8 +33,8 @@ class ShowEnrollmentSummaryRequest extends FormRequest
     }
 
     /**
-     * The requested school year, or else the latest one with applications,
-     * the same default the masterlist uses.
+     * The requested school year, or else the current one, the same default
+     * the masterlist uses.
      */
     public function schoolYear(): string
     {
@@ -42,6 +42,6 @@ class ShowEnrollmentSummaryRequest extends FormRequest
             return $this->string('school_year')->toString();
         }
 
-        return Enrollment::max('school_year') ?? Enrollment::currentSchoolYear();
+        return Enrollment::currentSchoolYear();
     }
 }

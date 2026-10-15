@@ -83,8 +83,10 @@ test('it counts approved boys and girls per level for the school year', function
         ->and($summary['schoolYear'])->toBe('2026-2027');
 });
 
-test('it defaults to the latest school year with applications', function () {
-    summaryEnrollment(GradeLevel::factory()->create(), 'MALE', ['school_year' => '2027-2028']);
+test('it defaults to the current school year', function () {
+    // August 2027 falls in SY 2027-2028; a later year's applications don't change that.
+    $this->travelTo('2027-08-01');
+    summaryEnrollment(GradeLevel::factory()->create(), 'MALE', ['school_year' => '2028-2029']);
 
     $this->actingAs(User::factory()->admin()->create())
         ->get(route('admin.enrollment-summary.show'))
