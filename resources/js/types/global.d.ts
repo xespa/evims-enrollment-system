@@ -19,5 +19,10 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             [key: string]: unknown;
         };
+        layoutProps: {
+            /** Shown in the admin top bar instead of the page's own heading. */
+            title?: string;
+            subtitle?: string;
+        };
     }
 }

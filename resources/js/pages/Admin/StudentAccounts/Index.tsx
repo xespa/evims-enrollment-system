@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import StudentAccountActions from '@/components/student-account-actions';
 import type { StudentAccountSummary } from '@/components/student-account-actions';
@@ -88,9 +88,7 @@ function StatusNote({ account }: { account: StudentAccountSummary }) {
     return (
         <>
             {note && (
-                <p className="mt-1 text-xs break-all text-ink/55">
-                    {note}
-                </p>
+                <p className="mt-1 text-xs break-all text-ink/55">{note}</p>
             )}
             {account.blocker && account.status !== 'ACTIVE' && (
                 <p className="mt-1 text-xs text-warn-ink">{account.blocker}</p>
@@ -134,6 +132,7 @@ export default function Index({ students, statuses, filters }: Props) {
         ) : (
             <span className="font-medium text-ink">{student.name}</span>
         );
+    setLayoutProps({ title: 'Student Accounts' });
 
     return (
         <>
@@ -141,18 +140,6 @@ export default function Index({ students, statuses, filters }: Props) {
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            Student Accounts
-                        </h1>
-                        <p className="text-sm text-ink/70">
-                            Students sign in with their LRN to see their grades.
-                            Ask a parent or guardian for consent, then create
-                            the account once they agree. The first password is
-                            the student's LRN.
-                        </p>
-                    </div>
-
                     {props.flash?.success && (
                         <div
                             role="status"

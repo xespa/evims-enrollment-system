@@ -1,6 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     AlertTriangle,
+    ArrowRight,
     CircleCheck,
     CircleX,
     Clock,
@@ -8,6 +9,7 @@ import {
     Wallet,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import {
     Area,
     AreaChart,
@@ -57,14 +59,16 @@ type Props = {
     }[];
 };
 
+type ChartView = 'collections' | 'grades';
+
 // The theme's colours, so the charts follow the light/dark switch.
 const INK = 'var(--color-ink)';
 const GREEN = 'var(--color-brand)';
 
-// Status colours, in the order the stacked bar shows them: amber sits
-// between green and red, which are too alike for red-green colour
-// blindness when side by side (checked with the palette validator). Every
-// status also carries an icon and a label, never colour alone.
+// Status colours, in the order the bars show them: amber sits between green
+// and red, which are too alike for red-green colour blindness when side by
+// side (checked with the palette validator). Every status also carries an
+// icon and a label, never colour alone.
 const STATUSES: {
     key: Status;
     label: string;
@@ -97,6 +101,11 @@ const STATUSES: {
 
 const STATUS_BY_KEY = Object.fromEntries(STATUSES.map((s) => [s.key, s]));
 
+const CHART_VIEWS: { value: ChartView; label: string }[] = [
+    { value: 'collections', label: 'Collections' },
+    { value: 'grades', label: 'By grade' },
+];
+
 const peso = new Intl.NumberFormat('en-PH', {
     style: 'currency',
     currency: 'PHP',
@@ -122,6 +131,10 @@ function formatDate(value: string | null): string {
         : '—';
 }
 
+function formatMethod(method: string): string {
+    return method === 'GCASH' ? 'GCash' : method === 'CASH' ? 'Cash' : method;
+}
+
 function Card({
     title,
     action,
@@ -135,12 +148,10 @@ function Card({
 }) {
     return (
         <section
-            className={`rounded-2xl border border-ink/10 bg-surface p-5 ${className}`}
+            className={`rounded-3xl border border-ink/5 bg-surface p-5 shadow-sm shadow-shade/5 sm:p-6 ${className}`}
         >
-            <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold tracking-[0.1em] text-brand-ink uppercase">
-                    {title}
-                </h2>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-ink">{title}</h2>
                 {action}
             </div>
             {children}
@@ -148,43 +159,81 @@ function Card({
     );
 }
 
-function StatTile({
+function PillLink({ href, children }: { href: string; children: ReactNode }) {
+    return (
+        <Link
+            href={href}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand/10 px-4 text-sm font-medium text-brand-ink transition-colors hover:bg-brand/15"
+        >
+            {children}
+        </Link>
+    );
+}
+
+function StatCard({
     label,
     value,
-    sub,
+    badge,
     icon: Icon,
-    tone = 'neutral',
+    iconClassName,
+    badgeClassName,
     children,
 }: {
     label: string;
     value: ReactNode;
-    sub?: ReactNode;
+    badge: string;
     icon: typeof Clock;
-    tone?: 'neutral' | 'attention' | 'critical';
+    iconClassName: string;
+    badgeClassName: string;
     children?: ReactNode;
 }) {
-    const iconStyle = {
-        neutral: 'bg-brand/10 text-brand-ink',
-        attention: 'bg-warn/15 text-warn-strong',
-        critical: 'bg-danger/10 text-danger-deep',
-    }[tone];
-
     return (
-        <div className="rounded-2xl border border-ink/10 bg-surface p-5">
+        <div className="flex flex-col rounded-3xl border border-ink/5 bg-surface p-5 shadow-sm shadow-shade/5">
             <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-ink/70">{label}</p>
                 <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-full ${iconClassName}`}
                 >
-                    <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                    <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${badgeClassName}`}
+                >
+                    {badge}
                 </span>
             </div>
-            <p className="mt-1 font-serif text-2xl font-semibold text-ink tabular-nums">
+            <p className="mt-6 text-sm text-ink/65">{label}</p>
+            <p className="mt-1 text-2xl font-bold text-ink tabular-nums">
                 {value}
             </p>
-            {sub && <p className="mt-1 text-xs text-ink/65">{sub}</p>}
             {children}
         </div>
+    );
+}
+
+function ProgressRow({
+    label,
+    value,
+    percent,
+    color,
+}: {
+    label: ReactNode;
+    value: ReactNode;
+    percent: number;
+    color: string;
+}) {
+    return (
+        <li>
+            <div className="flex items-center justify-between gap-3 text-xs font-medium text-ink">
+                <span>{label}</span>
+                <span className="tabular-nums">{value}</span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
+                <div
+                    className="h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none"
+                    style={{ width: `${percent}%`, backgroundColor: color }}
+                />
+            </div>
+        </li>
     );
 }
 
@@ -214,8 +263,58 @@ function ChartTooltip({
 }
 
 function EmptyNote({ children }: { children: ReactNode }) {
+    return <p className="py-10 text-center text-sm text-ink/60">{children}</p>;
+}
+
+function HeroIllustration() {
+    const bars = [44, 72, 56, 96, 80];
+
     return (
-        <p className="py-6 text-center text-sm text-ink/60">{children}</p>
+        <svg
+            viewBox="0 0 220 140"
+            className="hidden h-36 w-56 shrink-0 md:block"
+            aria-hidden="true"
+        >
+            <ellipse
+                cx="110"
+                cy="128"
+                rx="100"
+                ry="10"
+                fill="#fff"
+                opacity="0.18"
+            />
+            {bars.map((height, index) => (
+                <g key={index}>
+                    <rect
+                        x={22 + index * 38}
+                        y={124 - height}
+                        width="26"
+                        height={height}
+                        rx="6"
+                        fill={index === 3 ? '#e8a33d' : '#fff'}
+                        opacity={index === 3 ? 1 : 0.5}
+                    />
+                    <rect
+                        x={22 + index * 38}
+                        y={124 - height}
+                        width="26"
+                        height="8"
+                        rx="4"
+                        fill={index === 3 ? '#f3c77f' : '#fff'}
+                    />
+                </g>
+            ))}
+            <polyline
+                points="35,70 73,42 111,58 149,18 187,34"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.9"
+            />
+            <circle cx="149" cy="18" r="5" fill="#e8a33d" />
+        </svg>
     );
 }
 
@@ -226,6 +325,8 @@ export default function Dashboard({
     recentEnrollments,
     recentPayments,
 }: Props) {
+    const [chartView, setChartView] = useState<ChartView>('collections');
+
     const schoolYear = filters.school_year;
     const outstanding = Math.max(0, stats.totalBilled - stats.totalCollected);
     const collectionRate =
@@ -238,6 +339,12 @@ export default function Dashboard({
         0,
     );
     const pending = stats.statusBreakdown.PENDING ?? 0;
+    const approvedShare =
+        statusTotal > 0
+            ? Math.round(
+                  ((stats.statusBreakdown.APPROVED ?? 0) / statusTotal) * 100,
+              )
+            : 0;
 
     const gradeRows = stats.enrollmentsByGrade;
     const hasGradeData = gradeRows.some((row) => row.count > 0);
@@ -246,6 +353,17 @@ export default function Dashboard({
         (sum, row) => sum + Number(row.total),
         0,
     );
+
+    const today = new Date().toLocaleDateString('en-PH', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Asia/Manila',
+    });
+    setLayoutProps({ title: 'Dashboard', subtitle: today });
+    const applicationsHref = route('admin.students.index', {
+        school_year: schoolYear,
+    });
 
     const changeSchoolYear = (value: string) => {
         router.get(
@@ -259,22 +377,12 @@ export default function Dashboard({
         <>
             <Head title="Dashboard" />
             <div className="bg-cream px-4 py-8">
-                <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                        <div>
-                            <h1 className="font-serif text-2xl font-semibold text-ink">
-                                Dashboard
-                            </h1>
-                            <p className="text-sm text-ink/70">
-                                {schoolYear
-                                    ? `School year ${schoolYear} at a glance.`
-                                    : 'All school years at a glance.'}
-                            </p>
-                        </div>
+                <div className="mx-auto flex max-w-6xl flex-col gap-6">
+                    <div className="flex justify-end">
                         <div>
                             <label
                                 htmlFor="dashboard-school-year"
-                                className="mb-1 block text-xs font-medium text-ink/70"
+                                className="sr-only"
                             >
                                 School year
                             </label>
@@ -284,11 +392,11 @@ export default function Dashboard({
                                 onChange={(e) =>
                                     changeSchoolYear(e.target.value)
                                 }
-                                className="min-h-10 rounded-lg border border-ink/15 bg-surface px-3 pr-8 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
+                                className="min-h-11 rounded-full border border-ink/10 bg-surface px-4 pr-9 text-sm text-ink shadow-sm shadow-shade/5 focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                             >
                                 {schoolYears.map((year) => (
                                     <option key={year} value={year}>
-                                        {year}
+                                        S.Y. {year}
                                     </option>
                                 ))}
                                 <option value="">All school years</option>
@@ -296,297 +404,282 @@ export default function Dashboard({
                         </div>
                     </div>
 
+                    {/* Banner */}
+                    {/* EVIMS green, fixed rather than themed so the white
+                        text stays readable in dark mode too. */}
+                    <section className="relative flex items-center justify-between gap-6 overflow-hidden rounded-3xl bg-linear-to-r from-[#1d5236] via-[#2f6f4e] to-[#3a8660] px-6 py-7 text-white sm:px-8">
+                        <span
+                            className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-warn/25 blur-3xl"
+                            aria-hidden="true"
+                        />
+                        <div className="relative min-w-0">
+                            <p className="text-sm font-medium text-[#f3c77f]">
+                                {schoolYear
+                                    ? `School Year ${schoolYear}`
+                                    : 'All school years'}
+                            </p>
+                            <h2 className="mt-3 max-w-xl text-2xl leading-snug font-medium sm:text-3xl">
+                                Enrollment and collections overview
+                            </h2>
+                            <p className="mt-2 text-sm text-white/85">
+                                {pending > 0
+                                    ? `${pending} application${pending === 1 ? '' : 's'} waiting for review.`
+                                    : 'No applications waiting for review.'}
+                            </p>
+                            <Link
+                                href={applicationsHref}
+                                className="mt-5 inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-warn px-4 text-sm font-semibold text-[#1f2a24] transition-colors hover:bg-[#f0b456]"
+                            >
+                                Review applications
+                                <ArrowRight
+                                    className="size-4"
+                                    aria-hidden="true"
+                                />
+                            </Link>
+                        </div>
+                        <div className="relative">
+                            <HeroIllustration />
+                        </div>
+                    </section>
+
                     {/* Headline numbers */}
-                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <StatTile
-                            label="Applications"
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <StatCard
+                            label="Total applications"
                             value={stats.totalEnrollments}
                             icon={FileText}
-                            sub={
+                            iconClassName="bg-warn text-[#1f2a24]"
+                            badge={
                                 stats.cancelledEnrollments > 0
-                                    ? `${stats.cancelledEnrollments} cancelled, not counted`
-                                    : 'Active applications'
+                                    ? `${stats.cancelledEnrollments} cancelled`
+                                    : 'Active'
                             }
+                            badgeClassName="bg-brand/10 text-brand-ink"
                         />
-                        <StatTile
+                        <StatCard
                             label="Pending review"
                             value={pending}
                             icon={Clock}
-                            tone={pending > 0 ? 'attention' : 'neutral'}
-                            sub={
-                                pending > 0 ? (
-                                    <Link
-                                        href={route('admin.students.index', {
-                                            school_year: schoolYear,
-                                        })}
-                                        className="font-medium text-brand-ink hover:underline"
-                                    >
-                                        Review applications →
-                                    </Link>
-                                ) : (
-                                    'Nothing waiting'
-                                )
+                            iconClassName="bg-brand text-on-brand"
+                            badge={pending > 0 ? 'Needs review' : 'All clear'}
+                            badgeClassName={
+                                pending > 0
+                                    ? 'bg-warn/15 text-warn-strong'
+                                    : 'bg-brand/10 text-brand-ink'
                             }
                         />
-                        <StatTile
+                        <StatCard
                             label="Collected"
                             value={formatCurrency(stats.totalCollected)}
                             icon={Wallet}
-                            sub={`${collectionRate.toFixed(1)}% of ${formatCurrency(stats.totalBilled)} billed`}
-                        >
-                            <div
-                                className="mt-3 h-2 overflow-hidden rounded-full bg-ink/10"
-                                role="progressbar"
-                                aria-label="Share of billed fees collected"
-                                aria-valuenow={Math.round(collectionRate)}
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                            >
-                                <div
-                                    className="h-full rounded-full bg-brand transition-[width] duration-500 motion-reduce:transition-none"
-                                    style={{ width: `${collectionRate}%` }}
-                                />
-                            </div>
-                            <p className="mt-1.5 text-xs text-ink/65">
-                                {formatCurrency(outstanding)} still to collect
-                            </p>
-                        </StatTile>
-                        <StatTile
+                            iconClassName="bg-ink text-cream"
+                            badge={`${collectionRate.toFixed(1)}% of billed`}
+                            badgeClassName="bg-brand/10 text-brand-ink"
+                        />
+                        <StatCard
                             label="Overdue"
                             value={formatCurrency(stats.overdue.amount)}
                             icon={AlertTriangle}
-                            tone={
+                            iconClassName={
                                 stats.overdue.installments > 0
-                                    ? 'critical'
-                                    : 'neutral'
+                                    ? 'bg-danger text-white'
+                                    : 'bg-brand/15 text-brand-ink'
                             }
-                            sub={
+                            badge={
                                 stats.overdue.installments > 0
-                                    ? `${stats.overdue.installments} installment${stats.overdue.installments === 1 ? '' : 's'} past due · ${stats.overdue.families} famil${stats.overdue.families === 1 ? 'y' : 'ies'}`
-                                    : 'No installments past due'
+                                    ? `${stats.overdue.families} famil${stats.overdue.families === 1 ? 'y' : 'ies'}`
+                                    : 'On time'
+                            }
+                            badgeClassName={
+                                stats.overdue.installments > 0
+                                    ? 'bg-danger/10 text-danger-deep'
+                                    : 'bg-brand/10 text-brand-ink'
                             }
                         />
                     </div>
 
-                    <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-                        {/* Collections over time */}
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        {/* Collections / applications by grade */}
                         <Card
-                            title="Collections, last 6 months"
+                            title={
+                                chartView === 'collections'
+                                    ? 'Collections, last 6 months'
+                                    : 'Applications by grade level'
+                            }
                             className="lg:col-span-2"
-                        >
-                            {hasCollections ? (
-                                <>
-                                    <div aria-hidden="true">
-                                        <ResponsiveContainer
-                                            width="100%"
-                                            height={240}
+                            action={
+                                <div
+                                    role="group"
+                                    aria-label="Chart"
+                                    className="flex gap-1 rounded-xl border border-ink/10 bg-ink/[0.03] p-1"
+                                >
+                                    {CHART_VIEWS.map((view) => (
+                                        <button
+                                            key={view.value}
+                                            type="button"
+                                            onClick={() =>
+                                                setChartView(view.value)
+                                            }
+                                            aria-pressed={
+                                                chartView === view.value
+                                            }
+                                            className={`min-h-8 rounded-lg px-3 text-sm font-medium transition-colors ${
+                                                chartView === view.value
+                                                    ? 'bg-brand text-on-brand shadow-sm'
+                                                    : 'text-ink/70 hover:text-ink'
+                                            }`}
                                         >
-                                            <AreaChart
-                                                data={stats.monthlyCollections}
-                                                margin={{
-                                                    top: 8,
-                                                    right: 8,
-                                                    left: 0,
-                                                    bottom: 0,
-                                                }}
-                                            >
-                                                <defs>
-                                                    <linearGradient
-                                                        id="collections-fill"
-                                                        x1="0"
-                                                        y1="0"
-                                                        x2="0"
-                                                        y2="1"
-                                                    >
-                                                        <stop
-                                                            offset="0%"
-                                                            stopColor={GREEN}
-                                                            stopOpacity={0.22}
-                                                        />
-                                                        <stop
-                                                            offset="100%"
-                                                            stopColor={GREEN}
-                                                            stopOpacity={0.02}
-                                                        />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid
-                                                    vertical={false}
-                                                    stroke={INK}
-                                                    strokeOpacity={0.08}
-                                                />
-                                                <XAxis
-                                                    dataKey="label"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tick={{
-                                                        fontSize: 12,
-                                                        fill: INK,
-                                                        fillOpacity: 0.6,
-                                                    }}
-                                                />
-                                                <YAxis
-                                                    width={64}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickFormatter={(v) =>
-                                                        pesoCompact.format(v)
-                                                    }
-                                                    tick={{
-                                                        fontSize: 12,
-                                                        fill: INK,
-                                                        fillOpacity: 0.6,
-                                                    }}
-                                                />
-                                                <Tooltip
-                                                    cursor={{
-                                                        stroke: INK,
-                                                        strokeOpacity: 0.2,
-                                                    }}
-                                                    content={
-                                                        <ChartTooltip
-                                                            format={
-                                                                formatCurrency
-                                                            }
-                                                        />
-                                                    }
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="total"
-                                                    stroke={GREEN}
-                                                    strokeWidth={2}
-                                                    fill="url(#collections-fill)"
-                                                    dot={{
-                                                        r: 4,
-                                                        fill: GREEN,
-                                                        stroke: '#fff',
-                                                        strokeWidth: 2,
-                                                    }}
-                                                    activeDot={{
-                                                        r: 6,
-                                                        fill: GREEN,
-                                                        stroke: '#fff',
-                                                        strokeWidth: 2,
-                                                    }}
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    {/* A div, not the table, is hidden: a table can't
-                                        shrink to sr-only's 1px, so it would stretch the page. */}
-                                    <div className="sr-only">
-                                        <table>
-                                            <caption>
-                                                Money collected per month
-                                            </caption>
-                                            <tbody>
-                                                {stats.monthlyCollections.map(
-                                                    (m) => (
-                                                        <tr key={m.month}>
-                                                            <th scope="row">
-                                                                {m.label}
-                                                            </th>
-                                                            <td>
-                                                                {formatCurrency(
-                                                                    m.total,
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </>
-                            ) : (
-                                <EmptyNote>
-                                    No payments collected in the last 6 months.
-                                </EmptyNote>
-                            )}
-                        </Card>
-
-                        {/* Application status */}
-                        <Card title="Application status">
-                            {statusTotal > 0 ? (
-                                <>
-                                    <div
-                                        className="flex h-3 gap-0.5 overflow-hidden rounded-full"
-                                        aria-hidden="true"
-                                    >
-                                        {STATUSES.map((s) => {
-                                            const count =
-                                                stats.statusBreakdown[s.key] ??
-                                                0;
-
-                                            return count > 0 ? (
-                                                <div
-                                                    key={s.key}
-                                                    style={{
-                                                        width: `${(count / statusTotal) * 100}%`,
-                                                        backgroundColor:
-                                                            s.color,
-                                                    }}
-                                                />
-                                            ) : null;
-                                        })}
-                                    </div>
-                                    <ul className="mt-4 space-y-3">
-                                        {STATUSES.map((s) => {
-                                            const count =
-                                                stats.statusBreakdown[s.key] ??
-                                                0;
-                                            const Icon = s.icon;
-
-                                            return (
-                                                <li
-                                                    key={s.key}
-                                                    className="flex items-center gap-3 text-sm"
-                                                >
-                                                    <span
-                                                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                                                        style={{
-                                                            backgroundColor:
-                                                                s.color,
-                                                        }}
-                                                        aria-hidden="true"
-                                                    />
-                                                    <Icon
-                                                        className="h-4 w-4 shrink-0 text-ink/55"
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span className="flex-1 text-ink/80">
-                                                        {s.label}
-                                                    </span>
-                                                    <span className="font-semibold text-ink tabular-nums">
-                                                        {count}
-                                                    </span>
-                                                    <span className="w-11 text-right text-xs text-ink/55 tabular-nums">
-                                                        {Math.round(
-                                                            (count /
-                                                                statusTotal) *
-                                                                100,
-                                                        )}
-                                                        %
-                                                    </span>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </>
-                            ) : (
-                                <EmptyNote>No applications yet.</EmptyNote>
-                            )}
-                        </Card>
-                    </div>
-
-                    <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-                        {/* Enrollments by grade */}
-                        <Card
-                            title="Applications by grade level"
-                            className="lg:col-span-2"
+                                            {view.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            }
                         >
-                            {hasGradeData ? (
+                            {chartView === 'collections' ? (
+                                hasCollections ? (
+                                    <>
+                                        <div aria-hidden="true">
+                                            <ResponsiveContainer
+                                                width="100%"
+                                                height={260}
+                                            >
+                                                <AreaChart
+                                                    data={
+                                                        stats.monthlyCollections
+                                                    }
+                                                    margin={{
+                                                        top: 8,
+                                                        right: 8,
+                                                        left: 0,
+                                                        bottom: 0,
+                                                    }}
+                                                >
+                                                    <defs>
+                                                        <linearGradient
+                                                            id="collections-fill"
+                                                            x1="0"
+                                                            y1="0"
+                                                            x2="0"
+                                                            y2="1"
+                                                        >
+                                                            <stop
+                                                                offset="0%"
+                                                                stopColor={
+                                                                    GREEN
+                                                                }
+                                                                stopOpacity={
+                                                                    0.22
+                                                                }
+                                                            />
+                                                            <stop
+                                                                offset="100%"
+                                                                stopColor={
+                                                                    GREEN
+                                                                }
+                                                                stopOpacity={
+                                                                    0.02
+                                                                }
+                                                            />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <CartesianGrid
+                                                        vertical={false}
+                                                        stroke={INK}
+                                                        strokeOpacity={0.08}
+                                                    />
+                                                    <XAxis
+                                                        dataKey="label"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tick={{
+                                                            fontSize: 12,
+                                                            fill: INK,
+                                                            fillOpacity: 0.6,
+                                                        }}
+                                                    />
+                                                    <YAxis
+                                                        width={64}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickFormatter={(v) =>
+                                                            pesoCompact.format(
+                                                                v,
+                                                            )
+                                                        }
+                                                        tick={{
+                                                            fontSize: 12,
+                                                            fill: INK,
+                                                            fillOpacity: 0.6,
+                                                        }}
+                                                    />
+                                                    <Tooltip
+                                                        cursor={{
+                                                            stroke: INK,
+                                                            strokeOpacity: 0.2,
+                                                        }}
+                                                        content={
+                                                            <ChartTooltip
+                                                                format={
+                                                                    formatCurrency
+                                                                }
+                                                            />
+                                                        }
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="total"
+                                                        stroke={GREEN}
+                                                        strokeWidth={2}
+                                                        fill="url(#collections-fill)"
+                                                        dot={{
+                                                            r: 4,
+                                                            fill: GREEN,
+                                                            stroke: '#fff',
+                                                            strokeWidth: 2,
+                                                        }}
+                                                        activeDot={{
+                                                            r: 6,
+                                                            fill: GREEN,
+                                                            stroke: '#fff',
+                                                            strokeWidth: 2,
+                                                        }}
+                                                    />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                        {/* A div, not the table, is hidden: a table can't
+                                            shrink to sr-only's 1px, so it would stretch the page. */}
+                                        <div className="sr-only">
+                                            <table>
+                                                <caption>
+                                                    Money collected per month
+                                                </caption>
+                                                <tbody>
+                                                    {stats.monthlyCollections.map(
+                                                        (m) => (
+                                                            <tr key={m.month}>
+                                                                <th scope="row">
+                                                                    {m.label}
+                                                                </th>
+                                                                <td>
+                                                                    {formatCurrency(
+                                                                        m.total,
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <EmptyNote>
+                                        No payments collected in the last 6
+                                        months.
+                                    </EmptyNote>
+                                )
+                            ) : hasGradeData ? (
                                 <>
                                     <div aria-hidden="true">
                                         <ResponsiveContainer
@@ -677,10 +770,210 @@ export default function Dashboard({
                             )}
                         </Card>
 
+                        {/* Application status */}
+                        <section className="rounded-3xl border border-ink/5 bg-surface p-5 shadow-sm shadow-shade/5 sm:p-6">
+                            <h2 className="text-sm text-ink/65">
+                                Application status
+                            </h2>
+                            <div className="mt-3 flex items-center gap-3">
+                                <p className="text-2xl font-semibold text-ink tabular-nums">
+                                    {statusTotal}
+                                </p>
+                                {statusTotal > 0 && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand-ink">
+                                        <CircleCheck
+                                            className="size-3.5"
+                                            aria-hidden="true"
+                                        />
+                                        {approvedShare}% approved
+                                    </span>
+                                )}
+                            </div>
+                            <p className="mt-1 text-sm text-ink/60">
+                                {stats.cancelledEnrollments > 0
+                                    ? `${stats.cancelledEnrollments} cancelled, not counted`
+                                    : 'Active applications'}
+                            </p>
+
+                            <ul className="mt-5 space-y-5 border-t border-ink/10 pt-5">
+                                {STATUSES.map((s) => {
+                                    const count =
+                                        stats.statusBreakdown[s.key] ?? 0;
+
+                                    return (
+                                        <ProgressRow
+                                            key={s.key}
+                                            label={s.label}
+                                            value={count}
+                                            percent={
+                                                statusTotal > 0
+                                                    ? (count / statusTotal) *
+                                                      100
+                                                    : 0
+                                            }
+                                            color={s.color}
+                                        />
+                                    );
+                                })}
+                            </ul>
+
+                            <div className="mt-6 border-t border-ink/10 pt-5">
+                                <div className="flex items-center justify-between gap-3 text-xs font-medium text-ink">
+                                    <span>Fees collected</span>
+                                    <span className="rounded-md bg-ink px-1.5 py-0.5 text-cream tabular-nums">
+                                        {Math.round(collectionRate)}%
+                                    </span>
+                                </div>
+                                <div
+                                    className="relative mt-3 h-2.5 rounded-full bg-ink/10"
+                                    role="progressbar"
+                                    aria-label="Share of billed fees collected"
+                                    aria-valuenow={Math.round(collectionRate)}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                >
+                                    <div
+                                        className="h-full rounded-full bg-brand transition-[width] duration-500 motion-reduce:transition-none"
+                                        style={{ width: `${collectionRate}%` }}
+                                    />
+                                    <span
+                                        className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-brand bg-surface"
+                                        style={{ left: `${collectionRate}%` }}
+                                        aria-hidden="true"
+                                    />
+                                </div>
+                                <p className="mt-2 text-xs text-ink/60">
+                                    {formatCurrency(outstanding)} still to
+                                    collect
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Recent applications */}
+                    <Card
+                        title="Recent applications"
+                        action={
+                            <PillLink href={applicationsHref}>
+                                View all
+                            </PillLink>
+                        }
+                    >
+                        {recentEnrollments.length > 0 ? (
+                            <div className="-mx-5 overflow-x-auto sm:-mx-6">
+                                <table className="w-full min-w-[34rem] text-left text-sm">
+                                    <thead>
+                                        <tr className="bg-ink/[0.04] text-ink">
+                                            <th
+                                                scope="col"
+                                                className="px-5 py-3 font-medium sm:px-6"
+                                            >
+                                                Student
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="px-3 py-3 font-medium"
+                                            >
+                                                Grade level
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="px-3 py-3 font-medium"
+                                            >
+                                                Applied
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="px-5 py-3 text-right font-medium sm:px-6"
+                                            >
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-ink/10">
+                                        {recentEnrollments.map((enrollment) => {
+                                            const status =
+                                                enrollment.cancelled_at
+                                                    ? null
+                                                    : STATUS_BY_KEY[
+                                                          enrollment
+                                                              .enrollment_status
+                                                      ];
+                                            const Icon =
+                                                status?.icon ?? CircleX;
+                                            const { student } = enrollment;
+
+                                            return (
+                                                <tr
+                                                    key={enrollment.id}
+                                                    className="transition-colors hover:bg-ink/[0.02]"
+                                                >
+                                                    <td className="px-5 py-3 sm:px-6">
+                                                        <Link
+                                                            href={route(
+                                                                'admin.enrollments.show',
+                                                                enrollment.id,
+                                                            )}
+                                                            className="flex items-center gap-3 font-medium text-ink hover:underline"
+                                                        >
+                                                            <span
+                                                                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-ink"
+                                                                aria-hidden="true"
+                                                            >
+                                                                {student.first_name.charAt(
+                                                                    0,
+                                                                )}
+                                                                {student.last_name.charAt(
+                                                                    0,
+                                                                )}
+                                                            </span>
+                                                            {student.last_name},{' '}
+                                                            {student.first_name}
+                                                        </Link>
+                                                    </td>
+                                                    <td className="px-3 py-3 text-ink/75">
+                                                        {
+                                                            enrollment
+                                                                .grade_level
+                                                                .name
+                                                        }
+                                                    </td>
+                                                    <td className="px-3 py-3 text-ink/75 tabular-nums">
+                                                        {formatDate(
+                                                            enrollment.created_at,
+                                                        )}
+                                                    </td>
+                                                    <td className="px-5 py-3 text-right sm:px-6">
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                                                                status?.badge ??
+                                                                'bg-ink/10 text-ink/70'
+                                                            }`}
+                                                        >
+                                                            <Icon
+                                                                className="size-3.5"
+                                                                aria-hidden="true"
+                                                            />
+                                                            {status?.label ??
+                                                                'Cancelled'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <EmptyNote>No applications yet.</EmptyNote>
+                        )}
+                    </Card>
+
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         {/* Payment methods */}
                         <Card title="Payment methods">
                             {stats.paymentMethodBreakdown.length > 0 ? (
-                                <ul className="space-y-4">
+                                <ul className="space-y-5">
                                     {stats.paymentMethodBreakdown.map((row) => {
                                         const share =
                                             methodTotal > 0
@@ -690,38 +983,19 @@ export default function Dashboard({
                                                 : 0;
 
                                         return (
-                                            <li key={row.method}>
-                                                <div className="flex items-baseline justify-between gap-3 text-sm">
-                                                    <span className="font-medium text-ink">
-                                                        {row.method === 'GCASH'
-                                                            ? 'GCash'
-                                                            : row.method ===
-                                                                'CASH'
-                                                              ? 'Cash (counter)'
-                                                              : row.method}
-                                                    </span>
-                                                    <span className="font-semibold text-ink tabular-nums">
-                                                        {formatCurrency(
-                                                            row.total,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/10">
-                                                    <div
-                                                        className="h-full rounded-full bg-brand"
-                                                        style={{
-                                                            width: `${share}%`,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <p className="mt-1 text-xs text-ink/60 tabular-nums">
-                                                    {row.count} payment
-                                                    {Number(row.count) === 1
-                                                        ? ''
-                                                        : 's'}{' '}
-                                                    · {Math.round(share)}%
-                                                </p>
-                                            </li>
+                                            <ProgressRow
+                                                key={row.method}
+                                                label={
+                                                    row.method === 'CASH'
+                                                        ? 'Cash (counter)'
+                                                        : formatMethod(
+                                                              row.method,
+                                                          )
+                                                }
+                                                value={`${formatCurrency(row.total)} · ${Math.round(share)}%`}
+                                                percent={share}
+                                                color={GREEN}
+                                            />
                                         );
                                     })}
                                 </ul>
@@ -729,103 +1003,19 @@ export default function Dashboard({
                                 <EmptyNote>No payments recorded yet.</EmptyNote>
                             )}
                         </Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        {/* Recent applications */}
-                        <Card
-                            title="Recent applications"
-                            action={
-                                <Link
-                                    href={route('admin.students.index', {
-                                        school_year: schoolYear,
-                                    })}
-                                    className="text-sm font-medium text-brand-ink hover:underline"
-                                >
-                                    View all
-                                </Link>
-                            }
-                        >
-                            {recentEnrollments.length > 0 ? (
-                                <ul className="-mx-2 divide-y divide-ink/10">
-                                    {recentEnrollments.map((enrollment) => {
-                                        const status = enrollment.cancelled_at
-                                            ? null
-                                            : STATUS_BY_KEY[
-                                                  enrollment.enrollment_status
-                                              ];
-                                        const Icon = status?.icon ?? CircleX;
-
-                                        return (
-                                            <li key={enrollment.id}>
-                                                <Link
-                                                    href={route(
-                                                        'admin.enrollments.show',
-                                                        enrollment.id,
-                                                    )}
-                                                    className="flex min-h-14 items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-ink/[0.03]"
-                                                >
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium text-ink">
-                                                            {
-                                                                enrollment
-                                                                    .student
-                                                                    .last_name
-                                                            }
-                                                            ,{' '}
-                                                            {
-                                                                enrollment
-                                                                    .student
-                                                                    .first_name
-                                                            }
-                                                        </p>
-                                                        <p className="text-xs text-ink/65">
-                                                            {
-                                                                enrollment
-                                                                    .grade_level
-                                                                    .name
-                                                            }{' '}
-                                                            · applied{' '}
-                                                            {formatDate(
-                                                                enrollment.created_at,
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                    <span
-                                                        className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-                                                            status?.badge ??
-                                                            'bg-ink/10 text-ink/70'
-                                                        }`}
-                                                    >
-                                                        <Icon
-                                                            className="h-3.5 w-3.5"
-                                                            aria-hidden="true"
-                                                        />
-                                                        {status?.label ??
-                                                            'Cancelled'}
-                                                    </span>
-                                                </Link>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            ) : (
-                                <EmptyNote>No applications yet.</EmptyNote>
-                            )}
-                        </Card>
 
                         {/* Recent payments */}
                         <Card
                             title="Recent payments"
+                            className="lg:col-span-2"
                             action={
-                                <Link
+                                <PillLink
                                     href={route(
                                         'admin.transaction-history.index',
                                     )}
-                                    className="text-sm font-medium text-brand-ink hover:underline"
                                 >
                                     View all
-                                </Link>
+                                </PillLink>
                             }
                         >
                             {recentPayments.length > 0 ? (
@@ -835,6 +1025,12 @@ export default function Dashboard({
                                             key={payment.id}
                                             className="flex min-h-14 items-center gap-3 py-2"
                                         >
+                                            <span
+                                                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink/5 text-ink/70"
+                                                aria-hidden="true"
+                                            >
+                                                <Wallet className="size-4" />
+                                            </span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate text-sm font-medium text-ink">
                                                     {
@@ -848,12 +1044,9 @@ export default function Dashboard({
                                                     }
                                                 </p>
                                                 <p className="text-xs text-ink/65">
-                                                    {payment.method === 'GCASH'
-                                                        ? 'GCash'
-                                                        : payment.method ===
-                                                            'CASH'
-                                                          ? 'Cash'
-                                                          : payment.method}{' '}
+                                                    {formatMethod(
+                                                        payment.method,
+                                                    )}{' '}
                                                     ·{' '}
                                                     {formatDate(
                                                         payment.paid_at,

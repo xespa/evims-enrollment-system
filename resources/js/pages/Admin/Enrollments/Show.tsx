@@ -1,4 +1,11 @@
-import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
+import {
+    Head,
+    Link,
+    router,
+    usePage,
+    useForm,
+    setLayoutProps,
+} from '@inertiajs/react';
 import { CheckCircle2, FileDown } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
@@ -734,6 +741,14 @@ export default function Show({
             { preserveScroll: true },
         );
     };
+    setLayoutProps({
+        title: [
+            `${student.last_name}, ${student.first_name}`,
+            student.middle_name,
+        ]
+            .filter(Boolean)
+            .join(' '),
+    });
 
     return (
         <>
@@ -765,11 +780,7 @@ export default function Show({
                         </div>
                     )}
 
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            {student.last_name}, {student.first_name}{' '}
-                            {student.middle_name}
-                        </h1>
+                    <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
                         <div className="flex flex-wrap items-center gap-2">
                             {!isCancelled &&
                                 enrollment.enrollment_status === 'APPROVED' && (

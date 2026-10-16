@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     BookOpen,
     CalendarClock,
@@ -265,9 +265,7 @@ function GradeLevelCard({
                     <dt className="text-ink/65">Monthly</dt>
                     <dd className="text-ink tabular-nums">
                         {formatCurrency(monthly)}{' '}
-                        <span className="text-ink/55">
-                            × {BILLABLE_MONTHS}
-                        </span>
+                        <span className="text-ink/55">× {BILLABLE_MONTHS}</span>
                     </dd>
                 </div>
                 <div className="flex justify-between gap-3">
@@ -481,6 +479,7 @@ export default function Index({
     const anyModalOpen =
         isFeesOpen || isSubjectsOpen || isSectionsOpen || isPeriodOpen;
     const hasSchoolYears = schoolYears.length > 0;
+    setLayoutProps({ title: 'School Year Setup' });
 
     return (
         <>
@@ -489,18 +488,6 @@ export default function Index({
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 max-w-2xl">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            School Year Setup
-                        </h1>
-                        <p className="mt-1 text-sm text-ink/70">
-                            Set up each school year's enrollment period and
-                            every grade level's fees and subjects. Each year is
-                            kept separate, so next year's changes never touch
-                            this year's students or bills.
-                        </p>
-                    </div>
-
                     {/* School year */}
                     <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink/10 bg-surface p-3">
                         <nav

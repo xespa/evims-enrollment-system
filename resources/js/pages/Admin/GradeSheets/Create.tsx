@@ -1,4 +1,11 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import {
+    Head,
+    Link,
+    router,
+    useForm,
+    usePage,
+    setLayoutProps,
+} from '@inertiajs/react';
 import {
     ArrowLeft,
     ChevronDown,
@@ -277,6 +284,7 @@ export default function Create({
         );
         post(gradeSheetRoutes.store.url());
     };
+    setLayoutProps({ title: 'New Grade Sheet' });
 
     return (
         <>
@@ -291,14 +299,6 @@ export default function Create({
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheets
                     </Link>
-
-                    <h1 className="font-serif text-2xl font-semibold text-ink">
-                        New Grade Sheet
-                    </h1>
-                    <p className="mb-6 text-sm text-ink/70">
-                        Choose the subject. Its enrolled students are added for
-                        you, so you can go straight to entering grades.
-                    </p>
 
                     <form
                         onSubmit={submit}

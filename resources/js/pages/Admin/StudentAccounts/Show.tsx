@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     ArrowLeft,
     Check,
@@ -80,9 +80,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
     return (
         <div className="flex flex-col gap-0.5 border-b border-ink/5 py-2 last:border-0 sm:flex-row sm:gap-4">
-            <dt className="text-sm text-ink/60 sm:w-44 sm:shrink-0">
-                {label}
-            </dt>
+            <dt className="text-sm text-ink/60 sm:w-44 sm:shrink-0">{label}</dt>
             <dd className="text-sm font-medium text-ink">
                 {value ?? <span className="text-ink/40">—</span>}
             </dd>
@@ -100,9 +98,7 @@ function TemporaryPassword({ password }: { password: string }) {
             role="status"
             className="rounded-2xl border border-brand/30 bg-brand/5 p-5"
         >
-            <p className="text-sm font-semibold text-ink">
-                Temporary password
-            </p>
+            <p className="text-sm font-semibold text-ink">Temporary password</p>
             <p className="mt-1 text-sm text-ink/70">
                 Give this to the student or their parent now. It won't be shown
                 again, and the student must change it when they sign in.
@@ -172,6 +168,10 @@ export default function Show({
             },
         );
     };
+    setLayoutProps({
+        title: student.name,
+        subtitle: `Student account · ${account.status_label}`,
+    });
 
     return (
         <>
@@ -187,15 +187,6 @@ export default function Show({
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Student Accounts
                     </Link>
-
-                    <div>
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            {student.name}
-                        </h1>
-                        <p className="text-sm text-ink/70">
-                            Student account · {account.status_label}
-                        </p>
-                    </div>
 
                     {props.flash?.success && (
                         <div

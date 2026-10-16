@@ -1,4 +1,11 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import {
+    Head,
+    Link,
+    router,
+    useForm,
+    usePage,
+    setLayoutProps,
+} from '@inertiajs/react';
 import { IdCard, MailCheck, MailWarning, UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -303,9 +310,7 @@ function AccountSummary({
                     ? ACCOUNT_TYPE_LABELS[account.account_type]
                     : 'Type not given'}
             </span>
-            <span className="block break-all text-ink/70">
-                {account.email}
-            </span>
+            <span className="block break-all text-ink/70">{account.email}</span>
             {account.email_verified_at ? (
                 <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand-ink">
                     <MailCheck className="h-3 w-3" aria-hidden="true" />
@@ -580,6 +585,7 @@ export default function Index({
         setRejecting(account);
         setIsRejecting(true);
     };
+    setLayoutProps({ title: 'Portal Accounts' });
 
     return (
         <>
@@ -588,16 +594,6 @@ export default function Index({
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            Portal Accounts
-                        </h1>
-                        <p className="text-sm text-ink/70">
-                            Approve portal accounts before they can view
-                            applications, upload documents, or pay online.
-                        </p>
-                    </div>
-
                     {props.flash?.success && (
                         <div
                             role="status"

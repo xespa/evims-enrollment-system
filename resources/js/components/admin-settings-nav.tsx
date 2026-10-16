@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, setLayoutProps } from '@inertiajs/react';
 import { BookOpen, ShieldCheck, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -38,7 +38,7 @@ const TABS: SettingsTab[] = [
 ];
 
 /**
- * Page frame shared by the admin settings pages: the heading, the tab
+ * Page frame shared by the admin settings pages: the top-bar title, the tab
  * list (a sidebar on desktop, a segmented control on mobile), and the
  * content column.
  */
@@ -50,20 +50,12 @@ export default function AdminSettingsShell({
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const can = useStaffAbilities();
     const tabs = TABS.filter((tab) => !tab.teachersOnly || can.teachSubjects);
+    setLayoutProps({ title: 'Settings' });
 
     return (
         <div className="min-h-full bg-cream px-4 py-8">
             <div className="mx-auto max-w-6xl">
-                <header>
-                    <h1 className="font-serif text-2xl font-semibold text-ink">
-                        Settings
-                    </h1>
-                    <p className="mt-1 text-sm text-ink/70">
-                        Manage your profile and account security.
-                    </p>
-                </header>
-
-                <div className="mt-6 flex flex-col gap-6 lg:mt-8 lg:flex-row lg:gap-10">
+                <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
                     <aside className="w-full lg:sticky lg:top-6 lg:w-60 lg:shrink-0 lg:self-start">
                         <nav
                             aria-label="Settings"

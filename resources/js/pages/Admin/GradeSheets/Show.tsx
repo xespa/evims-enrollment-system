@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     Archive,
     ArchiveRestore,
@@ -128,6 +128,10 @@ export default function Show({
         { label: 'School Year', value: gradeSheet.school_year },
         { label: 'Prepared by', value: gradeSheet.prepared_by ?? '—' },
     ];
+    setLayoutProps({
+        title: gradeSheet.subject,
+        subtitle: gradeSheet.grade_level,
+    });
 
     return (
         <>
@@ -175,13 +179,7 @@ export default function Show({
                         Grade Sheets
                     </Link>
 
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            {gradeSheet.subject}{' '}
-                            <span className="text-ink/50">
-                                · {gradeSheet.grade_level}
-                            </span>
-                        </h1>
+                    <div className="mb-6 flex flex-wrap items-end justify-end gap-3">
                         {/* Two even columns on phones, a row of buttons from there up. */}
                         <div className="grid w-full grid-cols-2 gap-2 *:justify-center *:px-3 sm:flex sm:w-auto sm:flex-wrap sm:*:px-5">
                             <a

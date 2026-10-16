@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     AlertTriangle,
     CalendarClock,
@@ -462,6 +462,7 @@ export default function Index({
 
     const empty = TABS[tab].empty;
     const EmptyIcon = empty.icon;
+    setLayoutProps({ title: 'Billing & Collections' });
 
     return (
         <>
@@ -470,16 +471,7 @@ export default function Index({
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
                     {/* Header */}
-                    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                            <h1 className="font-serif text-2xl font-semibold text-ink">
-                                Billing &amp; Collections
-                            </h1>
-                            <p className="mt-1 text-sm text-ink/65">
-                                What's been collected, and what each student
-                                still owes.
-                            </p>
-                        </div>
+                    <div className="mb-6 flex justify-end">
                         <Link
                             href={transactionHistoryIndex().url}
                             className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand/30 bg-surface px-5 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"

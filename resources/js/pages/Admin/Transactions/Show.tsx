@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -156,7 +156,9 @@ const TIMELINE_ICONS = {
     waiting: (
         <CircleDashed className="h-5 w-5 text-warn-ink" aria-hidden="true" />
     ),
-    failed: <XCircle className="h-5 w-5 text-danger-alert" aria-hidden="true" />,
+    failed: (
+        <XCircle className="h-5 w-5 text-danger-alert" aria-hidden="true" />
+    ),
 };
 
 export default function Show({ payment, canVoid, receipt }: Props) {
@@ -166,6 +168,7 @@ export default function Show({ payment, canVoid, receipt }: Props) {
 
     const { enrollment, installment } = payment;
     const student = enrollment.student;
+    setLayoutProps({ title: `Transaction ${referenceId(payment)}` });
 
     return (
         <>
@@ -227,9 +230,9 @@ export default function Show({ payment, canVoid, receipt }: Props) {
                             )}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3">
-                            <h1 className="font-serif text-3xl font-semibold text-ink tabular-nums">
+                            <p className="font-serif text-3xl font-semibold text-ink tabular-nums">
                                 {formatCurrency(payment.amount)}
-                            </h1>
+                            </p>
                             <span
                                 className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[payment.status]}`}
                             >

@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft, Search } from 'lucide-react';
 import { useState } from 'react';
 import DateRangePicker from '@/components/date-range-picker';
@@ -140,6 +140,7 @@ export default function History({
             })),
         },
     ];
+    setLayoutProps({ title: 'Payment History' });
 
     return (
         <>
@@ -149,20 +150,11 @@ export default function History({
                 <div className="mx-auto max-w-6xl">
                     <Link
                         href={transactionsIndex().url}
-                        className="mb-3 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-brand-ink hover:underline"
+                        className="mb-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-brand-ink hover:underline"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Billing &amp; Collections
                     </Link>
-                    <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            Payment History
-                        </h1>
-                        <p className="mt-1 text-sm text-ink/65">
-                            Every GCash and cash payment, newest first. Voided
-                            payments stay listed so the record is complete.
-                        </p>
-                    </div>
 
                     {/* Filters */}
                     <form

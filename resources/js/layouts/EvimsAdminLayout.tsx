@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeftRight,
     Calendar,
-    ChevronsUpDown,
+    ChevronDown,
     ClipboardList,
     GraduationCap,
     KeyRound,
@@ -236,54 +236,49 @@ function NavLink({
     );
 }
 
-/** The signed-in staff member, with links to their settings and log out. */
-function AccountMenu({
-    isCollapsed,
-    onNavigate,
-}: {
-    isCollapsed: boolean;
-    onNavigate?: () => void;
-}) {
+/**
+ * The signed-in staff member at the end of the top bar, with links to their
+ * settings and log out. `compact` shows only the photo, for phones.
+ */
+function AccountMenu({ compact = false }: { compact?: boolean }) {
     const { auth } = usePage().props;
     const user = auth.user;
 
     return (
         <DropdownMenu>
-            <CollapsedTooltip label={user.name} isCollapsed={isCollapsed}>
-                <DropdownMenuTrigger
-                    className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none data-[state=open]:bg-ink/5 ${
-                        isCollapsed ? 'justify-center' : ''
-                    }`}
-                >
-                    <AdminAvatar
-                        name={user.name}
-                        photoUrl={user.profile_photo_url}
-                        className="size-9 text-xs"
-                    />
-                    {isCollapsed ? (
-                        <span className="sr-only">Account menu</span>
-                    ) : (
-                        <>
-                            <span className="min-w-0 flex-1">
-                                <span className="block truncate text-sm font-semibold text-ink">
-                                    {user.name}
-                                </span>
-                                <span className="block truncate text-xs text-ink/60">
-                                    {auth.roleLabel ?? user.email}
-                                </span>
+            <DropdownMenuTrigger
+                className={`flex shrink-0 items-center rounded-full border border-ink/10 bg-surface text-left transition-colors hover:bg-ink/[0.03] focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none data-[state=open]:bg-ink/[0.04] ${
+                    compact ? 'p-0.5' : 'max-w-64 gap-3 py-1 pr-3 pl-1'
+                }`}
+            >
+                <AdminAvatar
+                    name={user.name}
+                    photoUrl={user.profile_photo_url}
+                    className="size-9 text-xs"
+                />
+                {compact ? (
+                    <span className="sr-only">Account menu</span>
+                ) : (
+                    <>
+                        <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-ink">
+                                {user.name}
                             </span>
-                            <ChevronsUpDown
-                                className="size-4 shrink-0 text-ink/50"
-                                aria-hidden="true"
-                            />
-                        </>
-                    )}
-                </DropdownMenuTrigger>
-            </CollapsedTooltip>
+                            <span className="block truncate text-xs text-ink/60">
+                                {auth.roleLabel ?? user.email}
+                            </span>
+                        </span>
+                        <ChevronDown
+                            className="size-4 shrink-0 text-ink/50"
+                            aria-hidden="true"
+                        />
+                    </>
+                )}
+            </DropdownMenuTrigger>
 
             <DropdownMenuContent
-                side={isCollapsed ? 'right' : 'top'}
-                align={isCollapsed ? 'end' : 'start'}
+                side="bottom"
+                align="end"
                 sideOffset={8}
                 className="w-64 rounded-xl border-ink/10 bg-surface p-1.5 text-ink shadow-lg"
             >
@@ -312,10 +307,7 @@ function AccountMenu({
                     asChild
                     className="min-h-10 cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink"
                 >
-                    <Link
-                        href={admin.settings.profile.edit.url()}
-                        onClick={onNavigate}
-                    >
+                    <Link href={admin.settings.profile.edit.url()}>
                         <UserRound aria-hidden="true" />
                         Profile
                     </Link>
@@ -324,10 +316,7 @@ function AccountMenu({
                     asChild
                     className="min-h-10 cursor-pointer rounded-lg focus:bg-brand/10 focus:text-brand-ink"
                 >
-                    <Link
-                        href={admin.settings.security.edit.url()}
-                        onClick={onNavigate}
-                    >
+                    <Link href={admin.settings.security.edit.url()}>
                         <ShieldCheck aria-hidden="true" />
                         Password &amp; two-factor
                     </Link>
@@ -458,18 +447,63 @@ function SidebarBody({
                     isCollapsed={isCollapsed}
                     onNavigate={onNavigate}
                 />
-                <AccountMenu
-                    isCollapsed={isCollapsed}
-                    onNavigate={onNavigate}
-                />
+                <CollapsedTooltip label="Log out" isCollapsed={isCollapsed}>
+                    <Link
+                        href={logout()}
+                        as="button"
+                        className={`flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-ink/70 transition-colors hover:bg-danger/10 hover:text-danger-strong focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none ${
+                            isCollapsed ? 'justify-center px-0' : ''
+                        }`}
+                    >
+                        <LogOut
+                            className="size-[1.125rem] shrink-0"
+                            aria-hidden="true"
+                        />
+                        <span className={isCollapsed ? 'sr-only' : 'truncate'}>
+                            Log out
+                        </span>
+                    </Link>
+                </CollapsedTooltip>
             </div>
         </div>
     );
 }
 
+/**
+ * The page's heading, shown in the top bar when a page sets it with
+ * setLayoutProps(). Only one of the two top bars is ever displayed, so
+ * there's still a single h1 on screen.
+ */
+function PageTitle({
+    title,
+    subtitle,
+    className = '',
+}: {
+    title: string;
+    subtitle?: string;
+    className?: string;
+}) {
+    return (
+        <div className={`min-w-0 ${className}`}>
+            <h1 className="truncate text-lg leading-tight font-semibold text-ink lg:text-xl">
+                {title}
+            </h1>
+            {subtitle && (
+                <p className="hidden truncate text-xs text-ink/60 sm:block lg:text-sm">
+                    {subtitle}
+                </p>
+            )}
+        </div>
+    );
+}
+
 export default function EvimsAdminLayout({
+    title,
+    subtitle,
     children,
 }: {
+    title?: string;
+    subtitle?: string;
     children: ReactNode;
 }) {
     const { sidebarOpen } = usePage().props;
@@ -527,19 +561,33 @@ export default function EvimsAdminLayout({
                 {/* Each role's own home page (Teachers have no Dashboard). */}
                 <Link
                     href={dashboard.url()}
-                    className="flex min-w-0 flex-1 items-center gap-2.5"
+                    className={`items-center gap-2.5 ${title ? 'hidden shrink-0 sm:flex' : 'flex min-w-0 flex-1'}`}
                 >
                     <img
                         src="/images/logoevims.png"
                         alt=""
                         className="size-9 rounded-full object-cover"
                     />
-                    <span className="font-serif text-lg font-semibold text-ink">
+                    <span
+                        className={
+                            title
+                                ? 'sr-only'
+                                : 'font-serif text-lg font-semibold text-ink'
+                        }
+                    >
                         EVIMS
                     </span>
                 </Link>
+                {title && (
+                    <PageTitle
+                        title={title}
+                        subtitle={subtitle}
+                        className="flex-1"
+                    />
+                )}
                 <AppearanceToggle />
                 <NotificationBell scope="admin" />
+                <AccountMenu compact />
             </header>
 
             {/* Drawer (phones and tablets) */}
@@ -551,7 +599,7 @@ export default function EvimsAdminLayout({
                 >
                     <SheetTitle className="sr-only">Admin menu</SheetTitle>
                     <SheetDescription className="sr-only">
-                        Pages in the admin panel and your account.
+                        Pages in the admin panel, settings, and log out.
                     </SheetDescription>
                     <SidebarBody isCollapsed={false} onNavigate={closeMobile} />
                 </SheetContent>
@@ -576,7 +624,7 @@ export default function EvimsAdminLayout({
                 className="min-w-0 flex-1 pt-16 focus:outline-none lg:h-full lg:overflow-y-auto lg:overscroll-contain lg:pt-0"
             >
                 {/* Same height as the sidebar's logo row, so their borders line up. */}
-                <div className="sticky top-0 z-20 hidden h-16 items-center justify-between gap-2 border-b border-ink/10 bg-cream/90 px-4 backdrop-blur lg:flex">
+                <div className="sticky top-0 z-20 hidden h-16 items-center gap-3 border-b border-ink/10 bg-cream/90 px-4 backdrop-blur lg:flex">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
@@ -609,9 +657,17 @@ export default function EvimsAdminLayout({
                                 : 'Collapse sidebar'}
                         </TooltipContent>
                     </Tooltip>
-                    <div className="flex items-center gap-1">
+                    <div className="min-w-0 flex-1">
+                        {title && (
+                            <PageTitle title={title} subtitle={subtitle} />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
                         <AppearanceToggle />
-                        <NotificationBell scope="admin" />
+                        <div className="rounded-full border border-ink/10 bg-surface">
+                            <NotificationBell scope="admin" />
+                        </div>
+                        <AccountMenu />
                     </div>
                 </div>
                 {children}

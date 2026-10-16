@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     CalendarDays,
     Clock,
@@ -55,6 +55,7 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
             preserveScroll: true,
         });
     };
+    setLayoutProps({ title: 'Events' });
 
     return (
         <>
@@ -68,16 +69,7 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <h1 className="font-serif text-2xl font-semibold text-ink">
-                                Events
-                            </h1>
-                            <p className="text-sm text-ink/70">
-                                Post events for families to see on the public
-                                Events page.
-                            </p>
-                        </div>
+                    <div className="mb-6 flex justify-end">
                         <button
                             type="button"
                             onClick={openCreate}

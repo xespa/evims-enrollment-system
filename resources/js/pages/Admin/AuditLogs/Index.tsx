@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { TriangleAlert } from 'lucide-react';
 import auditLogRoutes from '@/routes/admin/audit-logs';
 
@@ -66,9 +66,7 @@ function Subject({ entry }: { entry: AuditEntry }) {
             {entry.subject.label}
         </Link>
     ) : (
-        <span className="font-medium text-ink">
-            {entry.subject.label}
-        </span>
+        <span className="font-medium text-ink">{entry.subject.label}</span>
     );
 }
 
@@ -86,6 +84,7 @@ export default function Index({ entries, filters, actions, staff }: Props) {
     };
 
     const hasFilters = !!filters.action || !!filters.user_id;
+    setLayoutProps({ title: 'Audit Log' });
 
     return (
         <>
@@ -93,17 +92,6 @@ export default function Index({ entries, filters, actions, staff }: Props) {
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            Audit Log
-                        </h1>
-                        <p className="text-sm text-ink/70">
-                            Sign-ins, staff account changes, two-factor changes,
-                            and document uploads. Entries can't be edited or
-                            deleted.
-                        </p>
-                    </div>
-
                     <div className="mb-4 rounded-2xl border border-ink/10 bg-surface p-4">
                         <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
                             <select

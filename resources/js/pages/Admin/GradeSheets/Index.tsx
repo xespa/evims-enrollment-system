@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import {
     Archive,
     ArrowLeft,
@@ -54,6 +54,9 @@ export default function Index({
 
     const changeSchoolYear = (schoolYear: string) =>
         visit({ school_year: schoolYear, archived: showsArchive });
+    setLayoutProps({
+        title: showsArchive ? 'Archived Grade Sheets' : 'Grade Sheets',
+    });
 
     return (
         <>
@@ -61,19 +64,7 @@ export default function Index({
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <h1 className="font-serif text-2xl font-semibold text-ink">
-                                {showsArchive
-                                    ? 'Archived Grade Sheets'
-                                    : 'Grade Sheets'}
-                            </h1>
-                            <p className="text-sm text-ink/70">
-                                {showsArchive
-                                    ? 'Sheets taken out of use. Open one to restore it.'
-                                    : "Record each student's Term 1, 2 and 3 grades, one sheet per subject."}
-                            </p>
-                        </div>
+                    <div className="mb-6 flex justify-end">
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"

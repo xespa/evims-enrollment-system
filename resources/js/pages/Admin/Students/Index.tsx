@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, setLayoutProps } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
 import { useState } from 'react';
 import AssignLrnForm from '@/components/assign-lrn-form';
@@ -108,10 +108,7 @@ function PaymentCell({ enrollment, onRecord, onViewInstallments }) {
             </span>
             <p className="mt-1 text-xs text-ink/60 tabular-nums">
                 {formatPeso(payment.paid)} of {formatPeso(payment.total)}
-                <span className="text-ink/45">
-                    {' '}
-                    · {payment.channel_label}
-                </span>
+                <span className="text-ink/45"> · {payment.channel_label}</span>
             </p>
             <button
                 type="button"
@@ -517,6 +514,7 @@ export default function Index({
         e.preventDefault();
         applyFilters();
     };
+    setLayoutProps({ title: 'Students' });
 
     return (
         <>
@@ -524,10 +522,7 @@ export default function Index({
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                        <h1 className="font-serif text-2xl font-semibold text-ink">
-                            Students
-                        </h1>
+                    <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
                         <div className="flex flex-wrap items-center gap-2">
                             {viewDashboard && (
                                 // A plain link in a new tab, since the browser opens the PDF to print.

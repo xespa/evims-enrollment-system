@@ -1,4 +1,4 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
@@ -76,6 +76,10 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
     };
 
     const errorCount = Object.keys(errors).length;
+    setLayoutProps({
+        title: 'Enter Grades',
+        subtitle: `${gradeSheet.subject} · ${gradeSheet.grade_level} · SY ${gradeSheet.school_year} · ${gradeSheet.teacher}`,
+    });
 
     return (
         <>
@@ -90,16 +94,6 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheet {gradeSheet.number}
                     </Link>
-
-                    <h1 className="font-serif text-2xl font-semibold text-ink">
-                        Enter Grades
-                    </h1>
-                    <p className="mb-6 text-sm text-ink/70">
-                        {gradeSheet.subject} · {gradeSheet.grade_level} · SY{' '}
-                        {gradeSheet.school_year} · {gradeSheet.teacher}. Grades
-                        are 0–100, up to two decimals; leave a term blank until
-                        it's graded.
-                    </p>
 
                     {props.flash?.success && (
                         <div

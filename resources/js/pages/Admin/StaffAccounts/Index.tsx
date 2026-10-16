@@ -1,4 +1,10 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import {
+    Head,
+    router,
+    useForm,
+    usePage,
+    setLayoutProps,
+} from '@inertiajs/react';
 import { Check, Loader2, MailPlus, Send, UserPlus, X } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -459,9 +465,7 @@ export default function Index({ staffAccounts, roles }: Props) {
                         </span>
                     )}
                 </p>
-                <p className="text-sm break-all text-ink/65">
-                    {account.email}
-                </p>
+                <p className="text-sm break-all text-ink/65">{account.email}</p>
             </div>
         </div>
     );
@@ -476,6 +480,7 @@ export default function Index({ staffAccounts, roles }: Props) {
                 : null;
 
     const errorMessage = props.errors?.staff_account ?? props.errors?.role;
+    setLayoutProps({ title: 'Staff Accounts' });
 
     return (
         <>
@@ -489,17 +494,7 @@ export default function Index({ staffAccounts, roles }: Props) {
 
             <div className="bg-cream px-4 py-8">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <h1 className="font-serif text-2xl font-semibold text-ink">
-                                Staff Accounts
-                            </h1>
-                            <p className="text-sm text-ink/70">
-                                Approve sign-up requests, invite staff, choose
-                                what they can do, and deactivate accounts that
-                                are no longer needed.
-                            </p>
-                        </div>
+                    <div className="mb-6 flex justify-end">
                         <button
                             type="button"
                             onClick={() => setIsInviting(true)}

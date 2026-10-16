@@ -1,4 +1,4 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage, setLayoutProps } from '@inertiajs/react';
 import { ArrowLeft, Loader2, UserRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
@@ -99,6 +99,10 @@ export default function StudentGradeForm(props: Props) {
     const title = isEditing ? 'Edit Student Grades' : 'Add Student Grades';
     const noStudentsLeft =
         props.mode === 'create' && props.students.length === 0;
+    setLayoutProps({
+        title,
+        subtitle: `${gradeSheet.subject} · ${gradeSheet.grade_level} · SY ${gradeSheet.school_year} · ${gradeSheet.teacher}`,
+    });
 
     return (
         <>
@@ -113,14 +117,6 @@ export default function StudentGradeForm(props: Props) {
                         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                         Grade Sheet {gradeSheet.number}
                     </Link>
-
-                    <h1 className="font-serif text-2xl font-semibold text-ink">
-                        {title}
-                    </h1>
-                    <p className="mb-6 text-sm text-ink/70">
-                        {gradeSheet.subject} · {gradeSheet.grade_level} · SY{' '}
-                        {gradeSheet.school_year} · {gradeSheet.teacher}
-                    </p>
 
                     {pageProps.flash?.success && (
                         <div

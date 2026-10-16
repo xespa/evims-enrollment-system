@@ -204,6 +204,13 @@ html:has(.theme-light) body {
     color-scheme: light;
 }
 
+/* The admin uses one typeface throughout, so headings that are serif on the
+   public site and portals are set in the sans there. Set on the root, so
+   dialogs and menus (rendered outside the page) follow it too. */
+html:has(.evims-admin) {
+    --font-serif: var(--font-sans);
+}
+
 /* The admin's dark theme. Set on the root, so dialogs and menus (rendered
    outside the page) follow it too. */
 html.dark:has(.evims-admin) {
