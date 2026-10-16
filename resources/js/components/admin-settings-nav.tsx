@@ -50,7 +50,10 @@ export default function AdminSettingsShell({
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const can = useStaffAbilities();
     const tabs = TABS.filter((tab) => !tab.teachersOnly || can.teachSubjects);
-    setLayoutProps({ title: 'Settings' });
+    setLayoutProps({
+        title: 'Settings',
+        help: 'Manage your profile and account security.',
+    });
 
     return (
         <div className="min-h-full bg-cream px-4 py-8">

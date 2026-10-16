@@ -3,6 +3,7 @@ import {
     ArrowLeftRight,
     Calendar,
     ChevronDown,
+    CircleHelp,
     ClipboardList,
     GraduationCap,
     KeyRound,
@@ -470,6 +471,36 @@ function SidebarBody({
 }
 
 /**
+ * A (?) beside the page title that explains the page. Opens on hover or
+ * focus, and on tap too, since touch screens never hover.
+ */
+function PageHelp({ help }: { help: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+            <TooltipTrigger asChild>
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(!isOpen)}
+                    aria-label="About this page"
+                    className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-ink/45 transition-colors hover:bg-ink/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
+                >
+                    <CircleHelp className="size-4" aria-hidden="true" />
+                </button>
+            </TooltipTrigger>
+            <TooltipContent
+                side="bottom"
+                align="start"
+                className="max-w-xs bg-ink px-3 py-2 text-sm leading-relaxed text-cream [&_svg]:bg-ink [&_svg]:fill-ink"
+            >
+                {help}
+            </TooltipContent>
+        </Tooltip>
+    );
+}
+
+/**
  * The page's heading, shown in the top bar when a page sets it with
  * setLayoutProps(). Only one of the two top bars is ever displayed, so
  * there's still a single h1 on screen.
@@ -477,17 +508,22 @@ function SidebarBody({
 function PageTitle({
     title,
     subtitle,
+    help,
     className = '',
 }: {
     title: string;
     subtitle?: string;
+    help?: string;
     className?: string;
 }) {
     return (
         <div className={`min-w-0 ${className}`}>
-            <h1 className="truncate text-lg leading-tight font-semibold text-ink lg:text-xl">
-                {title}
-            </h1>
+            <div className="flex items-center gap-1.5">
+                <h1 className="min-w-0 truncate text-lg leading-tight font-semibold text-ink lg:text-xl">
+                    {title}
+                </h1>
+                {help && <PageHelp help={help} />}
+            </div>
             {subtitle && (
                 <p className="hidden truncate text-xs text-ink/60 sm:block lg:text-sm">
                     {subtitle}
@@ -500,10 +536,12 @@ function PageTitle({
 export default function EvimsAdminLayout({
     title,
     subtitle,
+    help,
     children,
 }: {
     title?: string;
     subtitle?: string;
+    help?: string;
     children: ReactNode;
 }) {
     const { sidebarOpen } = usePage().props;
@@ -582,6 +620,7 @@ export default function EvimsAdminLayout({
                     <PageTitle
                         title={title}
                         subtitle={subtitle}
+                        help={help}
                         className="flex-1"
                     />
                 )}
@@ -659,7 +698,11 @@ export default function EvimsAdminLayout({
                     </Tooltip>
                     <div className="min-w-0 flex-1">
                         {title && (
-                            <PageTitle title={title} subtitle={subtitle} />
+                            <PageTitle
+                                title={title}
+                                subtitle={subtitle}
+                                help={help}
+                            />
                         )}
                     </div>
                     <div className="flex items-center gap-2">

@@ -462,7 +462,10 @@ export default function Index({
 
     const empty = TABS[tab].empty;
     const EmptyIcon = empty.icon;
-    setLayoutProps({ title: 'Billing & Collections' });
+    setLayoutProps({
+        title: 'Billing & Collections',
+        help: "What's been collected, and what each student still owes.",
+    });
 
     return (
         <>

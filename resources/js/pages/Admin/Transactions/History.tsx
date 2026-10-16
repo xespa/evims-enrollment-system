@@ -140,7 +140,10 @@ export default function History({
             })),
         },
     ];
-    setLayoutProps({ title: 'Payment History' });
+    setLayoutProps({
+        title: 'Payment History',
+        help: 'Every GCash and cash payment, newest first. Voided payments stay listed so the record is complete.',
+    });
 
     return (
         <>

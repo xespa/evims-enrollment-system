@@ -23,6 +23,8 @@ declare module '@inertiajs/core' {
             /** Shown in the admin top bar instead of the page's own heading. */
             title?: string;
             subtitle?: string;
+            /** Explains the page, behind a (?) beside the title. */
+            help?: string;
         };
     }
 }

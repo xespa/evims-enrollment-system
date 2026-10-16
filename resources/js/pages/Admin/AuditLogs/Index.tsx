@@ -84,7 +84,10 @@ export default function Index({ entries, filters, actions, staff }: Props) {
     };
 
     const hasFilters = !!filters.action || !!filters.user_id;
-    setLayoutProps({ title: 'Audit Log' });
+    setLayoutProps({
+        title: 'Audit Log',
+        help: "Sign-ins, staff account changes, two-factor changes, and document uploads. Entries can't be edited or deleted.",
+    });
 
     return (
         <>

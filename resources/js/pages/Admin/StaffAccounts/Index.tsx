@@ -480,7 +480,10 @@ export default function Index({ staffAccounts, roles }: Props) {
                 : null;
 
     const errorMessage = props.errors?.staff_account ?? props.errors?.role;
-    setLayoutProps({ title: 'Staff Accounts' });
+    setLayoutProps({
+        title: 'Staff Accounts',
+        help: 'Approve sign-up requests, invite staff, choose what they can do, and deactivate accounts that are no longer needed.',
+    });
 
     return (
         <>

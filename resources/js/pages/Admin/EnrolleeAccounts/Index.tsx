@@ -585,7 +585,10 @@ export default function Index({
         setRejecting(account);
         setIsRejecting(true);
     };
-    setLayoutProps({ title: 'Portal Accounts' });
+    setLayoutProps({
+        title: 'Portal Accounts',
+        help: 'Approve portal accounts before they can view applications, upload documents, or pay online.',
+    });
 
     return (
         <>
