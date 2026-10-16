@@ -56,6 +56,9 @@ export default function Index({
         visit({ school_year: schoolYear, archived: showsArchive });
     setLayoutProps({
         title: showsArchive ? 'Archived Grade Sheets' : 'Grade Sheets',
+        help: showsArchive
+            ? 'Sheets taken out of use. Open one to restore it.'
+            : "Record each student's Term 1, 2 and 3 grades, one sheet per subject.",
     });
 
     return (

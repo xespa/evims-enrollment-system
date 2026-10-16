@@ -55,7 +55,10 @@ export default function Index({ events }: { events: SchoolEvent[] }) {
             preserveScroll: true,
         });
     };
-    setLayoutProps({ title: 'Events' });
+    setLayoutProps({
+        title: 'Events',
+        help: 'Post events for families to see on the public Events page.',
+    });
 
     return (
         <>

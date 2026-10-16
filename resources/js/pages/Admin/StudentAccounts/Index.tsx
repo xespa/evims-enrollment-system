@@ -132,7 +132,10 @@ export default function Index({ students, statuses, filters }: Props) {
         ) : (
             <span className="font-medium text-ink">{student.name}</span>
         );
-    setLayoutProps({ title: 'Student Accounts' });
+    setLayoutProps({
+        title: 'Student Accounts',
+        help: "Students sign in with their LRN to see their grades. Ask a parent or guardian for consent, then create the account once they agree. The first password is the student's LRN.",
+    });
 
     return (
         <>

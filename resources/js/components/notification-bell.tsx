@@ -649,7 +649,7 @@ export default function NotificationBell({
                                     key={group.label}
                                     aria-label={group.label}
                                 >
-                                    <h3 className="sticky top-0 z-10 bg-white/95 px-4 pt-3 pb-1 text-[11px] font-semibold tracking-[0.1em] text-ink/50 uppercase backdrop-blur">
+                                    <h3 className="sticky top-0 z-10 bg-surface/95 px-4 pt-3 pb-1 text-[11px] font-semibold tracking-[0.1em] text-ink/50 uppercase backdrop-blur">
                                         {group.label}
                                     </h3>
                                     <ul className="divide-y divide-ink/5">

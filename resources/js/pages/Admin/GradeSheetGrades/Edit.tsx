@@ -79,6 +79,7 @@ export default function Edit({ gradeSheet, studentGrades }: Props) {
     setLayoutProps({
         title: 'Enter Grades',
         subtitle: `${gradeSheet.subject} · ${gradeSheet.grade_level} · SY ${gradeSheet.school_year} · ${gradeSheet.teacher}`,
+        help: "Grades are 0–100, up to two decimals; leave a term blank until it's graded.",
     });
 
     return (

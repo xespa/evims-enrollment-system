@@ -284,7 +284,10 @@ export default function Create({
         );
         post(gradeSheetRoutes.store.url());
     };
-    setLayoutProps({ title: 'New Grade Sheet' });
+    setLayoutProps({
+        title: 'New Grade Sheet',
+        help: 'Choose the subject. Its enrolled students are added for you, so you can go straight to entering grades.',
+    });
 
     return (
         <>

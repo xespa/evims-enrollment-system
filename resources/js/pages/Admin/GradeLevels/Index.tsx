@@ -479,7 +479,10 @@ export default function Index({
     const anyModalOpen =
         isFeesOpen || isSubjectsOpen || isSectionsOpen || isPeriodOpen;
     const hasSchoolYears = schoolYears.length > 0;
-    setLayoutProps({ title: 'School Year Setup' });
+    setLayoutProps({
+        title: 'School Year Setup',
+        help: "Set up each school year's enrollment period and every grade level's fees and subjects. Each year is kept separate, so next year's changes never touch this year's students or bills.",
+    });
 
     return (
         <>
