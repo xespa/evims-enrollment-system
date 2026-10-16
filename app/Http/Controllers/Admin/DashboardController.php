@@ -77,7 +77,7 @@ class DashboardController extends Controller
                 'totalCollected' => $totalCollected,
                 'overdue' => [
                     'installments' => $overdueInstallments->count(),
-                    'families' => $overdueInstallments->pluck('billingContract.enrollment_id')->unique()->count(),
+                    'students' => $overdueInstallments->pluck('billingContract.enrollment_id')->unique()->count(),
                     'amount' => round($overdueInstallments->sum(
                         fn (Installment $installment) => max(0, (float) $installment->amount_due - (float) $installment->getAttribute('paid_amount')),
                     ), 2),

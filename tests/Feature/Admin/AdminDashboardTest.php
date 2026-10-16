@@ -107,7 +107,7 @@ test('collections and overdue installments only count completed payments', funct
         ->assertInertia(fn (Assert $page) => $page
             ->where('stats.totalCollected', 2000)
             ->where('stats.overdue.installments', 1)
-            ->where('stats.overdue.families', 1)
+            ->where('stats.overdue.students', 1)
             ->where('stats.overdue.amount', 3000)
             ->where('stats.paymentMethodBreakdown.0.method', 'CASH')
             ->where('recentPayments.0.amount', '2000.00')

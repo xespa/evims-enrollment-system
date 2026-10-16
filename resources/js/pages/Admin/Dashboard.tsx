@@ -33,7 +33,7 @@ type Props = {
         statusBreakdown: Partial<Record<Status, number>>;
         totalBilled: number;
         totalCollected: number;
-        overdue: { installments: number; families: number; amount: number };
+        overdue: { installments: number; students: number; amount: number };
         enrollmentsByGrade: { name: string; count: number }[];
         paymentMethodBreakdown: {
             method: string;
@@ -487,7 +487,7 @@ export default function Dashboard({
                             }
                             badge={
                                 stats.overdue.installments > 0
-                                    ? `${stats.overdue.families} famil${stats.overdue.families === 1 ? 'y' : 'ies'}`
+                                    ? `${stats.overdue.students} student${stats.overdue.students === 1 ? '' : 's'}`
                                     : 'On time'
                             }
                             badgeClassName={

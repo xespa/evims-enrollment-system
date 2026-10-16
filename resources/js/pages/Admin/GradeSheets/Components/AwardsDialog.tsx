@@ -63,8 +63,7 @@ export type AwardCriterion = {
 export type RecognitionOption = { value: string; label: string };
 
 const AWARD_STYLES: Record<AwardType, string> = {
-    ACADEMIC_EXCELLENCE:
-        'bg-warn/20 text-warn-deep ring-1 ring-warn/40',
+    ACADEMIC_EXCELLENCE: 'bg-warn/20 text-warn-deep ring-1 ring-warn/40',
     LEARNING_AREA_EXCELLENCE: 'bg-brand/10 text-brand-ink',
 };
 
@@ -366,12 +365,16 @@ export default function AwardsDialog({
                                     onChange={(e) =>
                                         setRecognition(e.target.value)
                                     }
-                                    className="min-h-11 rounded-lg border border-brand/40 bg-brand/5 px-3 py-2 text-sm font-medium text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
+                                    // A solid background, so the open list (drawn by
+                                    // the browser) gets one too and stays readable
+                                    // in dark mode.
+                                    className="min-h-11 rounded-lg border border-brand/40 bg-surface px-3 py-2 text-sm font-medium text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
                                 >
                                     {recognitionOptions.map((option) => (
                                         <option
                                             key={option.value}
                                             value={option.value}
+                                            className="bg-surface text-ink"
                                         >
                                             {option.label}
                                             {countFor[option.value] !==
