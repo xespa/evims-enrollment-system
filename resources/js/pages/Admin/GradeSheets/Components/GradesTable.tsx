@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { FileText, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import gradeSheetRoutes from '@/routes/admin/grade-sheets';
@@ -9,6 +9,44 @@ import { PASSING_GRADE, TERMS, formatGrade } from './types';
 import type { StudentGradeRow, TermKey } from './types';
 
 type GradeRow = { id: number } & Record<TermKey, string>;
+
+type SortOrder = 'name' | 'highest' | 'lowest';
+
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+    { value: 'name', label: 'Name (A–Z)' },
+    { value: 'highest', label: 'Highest final grade' },
+    { value: 'lowest', label: 'Lowest final grade' },
+];
+
+/**
+ * The rows' positions in the chosen order. Sorts by the saved final grade,
+ * not what's being typed, so a row doesn't jump while its grades change;
+ * students without a final grade yet go last. The server sends them by
+ * name, so that order is the list as it came.
+ */
+function sortedIndexes(
+    studentGrades: StudentGradeRow[],
+    sortOrder: SortOrder,
+): number[] {
+    const indexes = studentGrades.map((_, index) => index);
+
+    if (sortOrder === 'name') {
+        return indexes;
+    }
+
+    const direction = sortOrder === 'highest' ? -1 : 1;
+
+    return indexes.sort((a, b) => {
+        const gradeA = studentGrades[a].final_grade;
+        const gradeB = studentGrades[b].final_grade;
+
+        if (gradeA === null || gradeB === null) {
+            return gradeA === gradeB ? a - b : gradeA === null ? 1 : -1;
+        }
+
+        return (gradeA - gradeB) * direction || a - b;
+    });
+}
 
 const cellInputClass =
     'min-h-10 w-20 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-right text-base text-ink tabular-nums transition-colors placeholder:text-ink/30 hover:border-ink/15 hover:bg-surface focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:bg-danger/5 sm:text-sm';
@@ -90,6 +128,8 @@ export default function GradesTable({
     readOnly?: boolean;
 }) {
     const isMobile = useIsMobile();
+    const [sortOrder, setSortOrder] = useState<SortOrder>('name');
+    const order = sortedIndexes(studentGrades, sortOrder);
     const savedRows = toFormRows(studentGrades);
     const {
         data,
@@ -156,14 +196,16 @@ export default function GradesTable({
             ),
         );
 
+    /** `position` is the row's place on screen, so Enter goes to the next one shown. */
     const onCellKeyDown = (
         event: KeyboardEvent<HTMLInputElement>,
         index: number,
+        position: number,
         term: TermKey,
     ) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            document.getElementById(`grade-${index + 1}-${term}`)?.focus();
+            document.getElementById(`grade-${position + 1}-${term}`)?.focus();
         }
 
         if (event.key === 'Escape') {
@@ -186,6 +228,7 @@ export default function GradesTable({
     const termInput = (
         studentGrade: StudentGradeRow,
         index: number,
+        position: number,
         term: (typeof TERMS)[number],
         className: string,
     ) => {
@@ -194,7 +237,7 @@ export default function GradesTable({
         return (
             <>
                 <input
-                    id={`grade-${index}-${term.key}`}
+                    id={`grade-${position}-${term.key}`}
                     type="number"
                     inputMode="decimal"
                     min={0}
@@ -205,7 +248,9 @@ export default function GradesTable({
                     tabIndex={readOnly ? -1 : undefined}
                     value={data.grades[index][term.key]}
                     onChange={(e) => setGrade(index, term.key, e.target.value)}
-                    onKeyDown={(e) => onCellKeyDown(e, index, term.key)}
+                    onKeyDown={(e) =>
+                        onCellKeyDown(e, index, position, term.key)
+                    }
                     aria-label={`${term.label} grade for ${studentGrade.student_name}`}
                     aria-invalid={!!error}
                     title={error}
@@ -249,19 +294,50 @@ export default function GradesTable({
 
     return (
         <form onSubmit={save}>
-            {!readOnly && (
-                <p className="mb-2 text-xs text-ink/60">
-                    {isMobile
-                        ? 'Tap a term to change it.'
-                        : 'Click a term to change it. Enter moves down, Esc undoes the box.'}{' '}
-                    Grades are 0–100, up to two decimals.
-                </p>
-            )}
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                {readOnly ? (
+                    <span />
+                ) : (
+                    <p className="text-xs text-ink/60">
+                        {isMobile
+                            ? 'Tap a term to change it.'
+                            : 'Click a term to change it. Enter moves down, Esc undoes the box.'}{' '}
+                        Grades are 0–100, up to two decimals.
+                    </p>
+                )}
+                <div className="flex items-center gap-2">
+                    <label
+                        htmlFor={`grade-sort-${gradeSheetId}`}
+                        className="text-xs font-medium text-ink/60"
+                    >
+                        Sort by
+                    </label>
+                    <select
+                        id={`grade-sort-${gradeSheetId}`}
+                        value={sortOrder}
+                        onChange={(e) =>
+                            setSortOrder(e.target.value as SortOrder)
+                        }
+                        className="min-h-10 rounded-lg border border-ink/15 bg-surface px-3 text-sm text-ink focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none"
+                    >
+                        {SORT_OPTIONS.map((option) => (
+                            <option
+                                key={option.value}
+                                value={option.value}
+                                className="bg-surface text-ink"
+                            >
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
             {isMobile ? (
                 // One card per student on phones, so nothing scrolls sideways.
                 <ul className="divide-y divide-ink/10 overflow-hidden rounded-2xl border border-ink/10 bg-surface">
-                    {studentGrades.map((studentGrade, index) => {
+                    {order.map((index, position) => {
+                        const studentGrade = studentGrades[index];
                         const row = data.grades[index];
                         const final = finalGrade(row);
 
@@ -274,7 +350,7 @@ export default function GradesTable({
                                     <div className="min-w-0">
                                         <p className="font-medium break-words text-ink">
                                             <span className="mr-1.5 text-ink/45 tabular-nums">
-                                                {index + 1}.
+                                                {position + 1}.
                                             </span>
                                             {studentGrade.student_name}
                                         </p>
@@ -293,7 +369,7 @@ export default function GradesTable({
                                     {TERMS.map((term) => (
                                         <div key={term.key}>
                                             <label
-                                                htmlFor={`grade-${index}-${term.key}`}
+                                                htmlFor={`grade-${position}-${term.key}`}
                                                 className="mb-1 block text-[11px] font-medium text-ink/60"
                                             >
                                                 {term.label}
@@ -301,6 +377,7 @@ export default function GradesTable({
                                             {termInput(
                                                 studentGrade,
                                                 index,
+                                                position,
                                                 term,
                                                 mobileInputClass,
                                             )}
@@ -354,7 +431,8 @@ export default function GradesTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink/10">
-                            {studentGrades.map((studentGrade, index) => {
+                            {order.map((index, position) => {
+                                const studentGrade = studentGrades[index];
                                 const row = data.grades[index];
                                 const isChanged = isRowChanged(row, index);
                                 const final = finalGrade(row);
@@ -363,13 +441,11 @@ export default function GradesTable({
                                     <tr
                                         key={studentGrade.id}
                                         className={
-                                            isChanged
-                                                ? 'bg-warn/[0.07]'
-                                                : ''
+                                            isChanged ? 'bg-warn/[0.07]' : ''
                                         }
                                     >
                                         <td className="px-4 py-2 text-ink/50 tabular-nums">
-                                            {index + 1}
+                                            {position + 1}
                                         </td>
                                         <td className="px-4 py-2">
                                             <span className="block font-medium text-ink">
@@ -389,6 +465,7 @@ export default function GradesTable({
                                                 {termInput(
                                                     studentGrade,
                                                     index,
+                                                    position,
                                                     term,
                                                     cellInputClass,
                                                 )}
