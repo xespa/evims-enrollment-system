@@ -245,33 +245,20 @@ test('parents cannot upload a returning student\'s Form 138 from the portal', fu
     expect($enrollment->officeVerification()->first()?->form_138_path)->toBeNull();
 });
 
-test('the admin dashboard reminds the registrar to upload returning students\' Form 138', function () {
+test('the admin dashboard does not list returning students awaiting their Form 138', function () {
     $admin = User::factory()->create(['role' => 'ADMIN']);
     approvedLastYear();
-    $returning = Enrollment::factory()->create([
+    Enrollment::factory()->create([
         'student_id' => $this->student->id,
         'school_year' => '2026-2027',
     ]);
-    $newStudent = Enrollment::factory()->create(['school_year' => '2026-2027']);
 
     $this->actingAs($admin)
         ->get(route('admin.dashboard', ['school_year' => '2026-2027']))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('awaitingForm138', 1)
-            ->where('awaitingForm138.0.id', $returning->id)
+            ->component('Admin/Dashboard')
+            ->missing('awaitingForm138')
         );
-
-    $this->actingAs($admin)
-        ->post(route('admin.enrollments.documents.store', [$returning, 'form_138']), [
-            'file' => UploadedFile::fake()->create('form138.pdf', 100, 'application/pdf'),
-        ])
-        ->assertSessionHasNoErrors();
-
-    $this->actingAs($admin)
-        ->get(route('admin.dashboard', ['school_year' => '2026-2027']))
-        ->assertInertia(fn (Assert $page) => $page->has('awaitingForm138', 0));
-
-    expect($newStudent->isReturning())->toBeFalse();
 });
 
 test('the enrollment page tells the admin the student is returning', function () {

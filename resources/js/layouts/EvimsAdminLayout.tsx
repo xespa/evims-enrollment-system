@@ -24,6 +24,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import AdminAvatar from '@/components/admin-avatar';
+import AppearanceToggle from '@/components/appearance-toggle';
 import NotificationBell from '@/components/notification-bell';
 import {
     DropdownMenu,
@@ -512,7 +513,7 @@ export default function EvimsAdminLayout({
             </a>
 
             {/* Top bar (phones and tablets) */}
-            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-ink/10 bg-white/95 px-2 backdrop-blur lg:hidden">
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-ink/10 bg-surface/95 px-2 backdrop-blur lg:hidden">
                 <button
                     type="button"
                     onClick={() => setIsMobileOpen(true)}
@@ -537,6 +538,7 @@ export default function EvimsAdminLayout({
                         EVIMS
                     </span>
                 </Link>
+                <AppearanceToggle />
                 <NotificationBell scope="admin" />
             </header>
 
@@ -607,7 +609,10 @@ export default function EvimsAdminLayout({
                                 : 'Collapse sidebar'}
                         </TooltipContent>
                     </Tooltip>
-                    <NotificationBell scope="admin" />
+                    <div className="flex items-center gap-1">
+                        <AppearanceToggle />
+                        <NotificationBell scope="admin" />
+                    </div>
                 </div>
                 {children}
             </main>

@@ -564,20 +564,6 @@ class Enrollment extends Model
             ->whereNull('previous.cancelled_at'));
     }
 
-    /**
-     * Pending returning-student applications whose latest Form 138 the
-     * registrar hasn't uploaded yet.
-     *
-     * @param  Builder<Enrollment>  $query
-     */
-    public function scopeAwaitingSchoolForm138(Builder $query): void
-    {
-        $query->returning()
-            ->archived(false)
-            ->withStatus('PENDING')
-            ->whereDoesntHave('officeVerification', fn (Builder $verification) => $verification->whereNotNull('form_138_path'));
-    }
-
     public function isReturning(): bool
     {
         return $this->previousApprovedEnrollment() !== null;
