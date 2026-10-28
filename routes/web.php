@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AcknowledgementReceiptController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AwardListPrintController;
 use App\Http\Controllers\Admin\CounterPaymentHistoryController;
+use App\Http\Controllers\Admin\CounterPaymentPayersController;
 use App\Http\Controllers\Admin\CurriculumController;
 use App\Http\Controllers\Admin\CurriculumSectionController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -183,6 +184,7 @@ Route::middleware(['auth', 'staff.active', 'two-factor.required'])->prefix('admi
     });
 
     Route::middleware('can:handle-payments')->group(function () {
+        Route::get('enrollments/{enrollment}/payers', CounterPaymentPayersController::class)->name('enrollments.payers.index');
         Route::get('enrollments/{enrollment}/cash-payments', CounterPaymentHistoryController::class)->name('enrollments.cash-payments.index');
         Route::post('enrollments/{enrollment}/cash-payments', [EnrollmentManagementController::class, 'recordCashPayment'])->name('enrollments.cash-payments.store');
         Route::post('payments/{payment}/void', VoidPaymentController::class)->name('payments.void');

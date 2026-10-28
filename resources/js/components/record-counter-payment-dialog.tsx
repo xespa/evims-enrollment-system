@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import CounterPaymentHistory from '@/components/counter-payment-history';
 import {
@@ -34,6 +35,12 @@ type Props = {
 };
 
 type PaymentForm = 'CASH' | 'CHECK';
+
+/** Someone who can hand over the money: a parent, the guardian, or the account holder. */
+type Payer = { name: string; relationship: string };
+
+/** The dropdown's "someone else" choice, which shows a box to type the name in. */
+const OTHER_PAYER = '__other__';
 
 function toDateInputValue(date: Date) {
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -122,6 +129,38 @@ export default function RecordCounterPaymentDialog({
             check_date: '',
         });
 
+    // Who the cashier can pick as "Received from", loaded for this application.
+    const [payers, setPayers] = useState<Payer[]>([]);
+    // What the dropdown shows: a payer's name, OTHER_PAYER, or '' for nothing chosen.
+    const [payerChoice, setPayerChoice] = useState('');
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        (async () => {
+            try {
+                const response = await fetch(
+                    route('admin.enrollments.payers.index', enrollmentId),
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        signal: controller.signal,
+                    },
+                );
+
+                if (response.ok) {
+                    setPayers((await response.json()).payers);
+                }
+            } catch {
+                // No list: "Other…" below still lets the cashier type a name.
+            }
+        })();
+
+        return () => controller.abort();
+    }, [enrollmentId]);
+
     const isCheck = data.payment_form === 'CHECK';
     const amount = Number(data.amount || 0);
 
@@ -149,6 +188,7 @@ export default function RecordCounterPaymentDialog({
         if (!isOpen) {
             reset();
             clearErrors();
+            setPayerChoice('');
         }
         onOpenChange(isOpen);
     };
@@ -282,21 +322,57 @@ export default function RecordCounterPaymentDialog({
                                 >
                                     Received from
                                 </label>
-                                <input
+                                <select
                                     id="counter-received-from"
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="Parent or guardian who paid"
-                                    maxLength={150}
-                                    value={data.received_from}
-                                    onChange={(e) =>
-                                        setData('received_from', e.target.value)
-                                    }
+                                    value={payerChoice}
+                                    onChange={(e) => {
+                                        const choice = e.target.value;
+                                        setPayerChoice(choice);
+                                        setData(
+                                            'received_from',
+                                            choice === OTHER_PAYER
+                                                ? ''
+                                                : choice,
+                                        );
+                                    }}
                                     aria-invalid={
                                         errors.received_from ? true : undefined
                                     }
                                     className={INPUT_CLASS}
-                                />
+                                >
+                                    <option value="">Select who paid</option>
+                                    {payers.map((payer) => (
+                                        <option
+                                            key={payer.name}
+                                            value={payer.name}
+                                        >
+                                            {payer.name} ({payer.relationship})
+                                        </option>
+                                    ))}
+                                    <option value={OTHER_PAYER}>Other…</option>
+                                </select>
+                                {payerChoice === OTHER_PAYER && (
+                                    <input
+                                        type="text"
+                                        autoComplete="off"
+                                        aria-label="Name of the person who paid"
+                                        placeholder="Full name of the person who paid"
+                                        maxLength={150}
+                                        value={data.received_from}
+                                        onChange={(e) =>
+                                            setData(
+                                                'received_from',
+                                                e.target.value,
+                                            )
+                                        }
+                                        aria-invalid={
+                                            errors.received_from
+                                                ? true
+                                                : undefined
+                                        }
+                                        className={`${INPUT_CLASS} mt-2`}
+                                    />
+                                )}
                                 <FieldError message={errors.received_from} />
                             </div>
 
